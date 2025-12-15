@@ -140,6 +140,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom settings
 INSTALLED_APPS = [
+    'unfold',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -150,12 +151,14 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
 
+
     # Local apps
     'catalog',
     'store',
     'inventory',
     'prescriptions',
     'notifications',
+
 ]
 
 # Django REST Framework configuration
