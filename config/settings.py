@@ -153,6 +153,7 @@ INSTALLED_APPS = [
     # Local apps
     'catalog',
     'store',
+    'inventory',
 ]
 
 # Django REST Framework configuration
