@@ -155,6 +155,7 @@ INSTALLED_APPS = [
     'store',
     'inventory',
     'prescriptions',
+    'notifications',
 ]
 
 # Django REST Framework configuration
