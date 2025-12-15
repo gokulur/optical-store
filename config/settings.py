@@ -29,18 +29,7 @@ SECRET_KEY = 'django-insecure-x@n!rmr0x4nmz_qjpl&lh)fap_$!_o(lv3v$f0m4uyz+ox3t@y
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
-
-# Application definition
-
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-]
+ 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
