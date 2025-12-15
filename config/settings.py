@@ -17,19 +17,30 @@ DEBUG = config("DEBUG", cast=bool)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-x@n!rmr0x4nmz_qjpl&lh)fap_$!_o(lv3v$f0m4uyz+ox3t@y'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
  
+ALLOWED_HOSTS = []
+
+# Custom settings
+INSTALLED_APPS = [
+    "unfold",
+    "django.contrib.sites",   
+    "django.contrib.humanize", 
+
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+
+    "rest_framework",
+
+    "catalog",
+    "store",
+    "inventory",
+    "prescriptions",
+    "notifications",
+]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -126,8 +137,10 @@ USE_TZ = True
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"  
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -138,28 +151,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom settings
-INSTALLED_APPS = [
-    'unfold',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
-    # Third-party
-    'rest_framework',
 
 
-    # Local apps
-    'catalog',
-    'store',
-    'inventory',
-    'prescriptions',
-    'notifications',
-
-]
+SITE_ID = 1
 
 # Django REST Framework configuration
 REST_FRAMEWORK = {
@@ -169,4 +163,51 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ],
+}
+
+
+# UNFOLD = {
+#     "SITE_TITLE": "Admin Dashboard",
+#     "SITE_HEADER": "Optical Admin",
+#     "SITE_URL": "/",
+#     "SHOW_HISTORY": True,
+# }
+
+UNFOLD = {
+    "SITE_TITLE": "My Project Admin",
+    "SITE_HEADER": "My Project Admin",
+    "SITE_URL": "/admin/",
+    "SITE_ICON": "settings",
+    "SHOW_HISTORY": True,
+
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": False,
+
+        "navigation": [
+            {
+                "title": "Catalog",
+                "icon": "inventory",
+                "items": [
+                    {"title": "Brands", "link": "/admin/catalog/brand/"},
+                    {"title": "Categories", "link": "/admin/catalog/category/"},
+                    {"title": "Products", "link": "/admin/catalog/product/"},
+                ],
+            },
+            {
+                "title": "Inventory",
+                "icon": "warehouse",
+                "items": [
+                    {"title": "Stocks", "link": "/admin/inventory/stock/"},
+                ],
+            },
+            {
+                "title": "Users",
+                "icon": "group",
+                "items": [
+                    {"title": "Users", "link": "/admin/auth/user/"},
+                ],
+            },
+        ],
+    },
 }

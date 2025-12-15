@@ -1,1 +1,10 @@
- 
+{% extends "unfold/layouts/base.html" %}
+
+{% block title %}My Admin Panel{% endblock %}
+
+{% block branding %}
+<a href="{% url 'admin:index' %}"
+   class="flex items-center gap-2 text-xl font-bold text-indigo-600 hover:text-indigo-800">
+    My Project Admin
+</a>
+{% endblock %}

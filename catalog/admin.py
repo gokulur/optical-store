@@ -1,12 +1,14 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin  # Import Unfold's ModelAdmin
 from .models import (
     Brand, Category, Product, ProductVariant,
     ContactLensPower, LensRule, LensPowerAvailability,
     LensOption, LensAddon
 )
 
+
 @admin.register(Brand)
-class BrandAdmin(admin.ModelAdmin):
+class BrandAdmin(ModelAdmin):  # Changed from admin.ModelAdmin to ModelAdmin
     list_display = ("name", "active")
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
@@ -14,7 +16,7 @@ class BrandAdmin(admin.ModelAdmin):
 
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(ModelAdmin):  # Changed
     list_display = ("name", "parent", "active")
     prepopulated_fields = {"slug": ("name",)}
     list_filter = ("active",)
@@ -32,7 +34,7 @@ class LensRuleInline(admin.TabularInline):
 
 
 @admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(ModelAdmin):  # Changed
     list_display = ("name", "brand", "category", "product_type", "active")
     list_filter = ("brand", "category", "product_type", "active")
     search_fields = ("name", "brand__name")
@@ -41,20 +43,20 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 @admin.register(ProductVariant)
-class ProductVariantAdmin(admin.ModelAdmin):
+class ProductVariantAdmin(ModelAdmin):  # Changed
     list_display = ("product", "color_name", "is_power_allowed", "active")
     list_filter = ("is_power_allowed", "active")
     search_fields = ("product__name", "color_name")
 
 
 @admin.register(ContactLensPower)
-class ContactLensPowerAdmin(admin.ModelAdmin):
+class ContactLensPowerAdmin(ModelAdmin):  # Changed
     list_display = ("value", "is_plano")
     list_filter = ("is_plano",)
 
 
 @admin.register(LensPowerAvailability)
-class LensPowerAvailabilityAdmin(admin.ModelAdmin):
+class LensPowerAvailabilityAdmin(ModelAdmin):  # Changed
     list_display = ("variant", "power", "is_available", "stock")
     list_filter = ("is_available",)
     search_fields = ("variant__product__name",)
@@ -66,6 +68,6 @@ class LensAddonInline(admin.TabularInline):
 
 
 @admin.register(LensOption)
-class LensOptionAdmin(admin.ModelAdmin):
+class LensOptionAdmin(ModelAdmin):  # Changed
     list_display = ("name", "provider", "base_price")
     inlines = [LensAddonInline]
