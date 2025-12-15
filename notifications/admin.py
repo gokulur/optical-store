@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import NotificationRequest
 
-# Register your models here.
+@admin.register(NotificationRequest)
+class NotificationRequestAdmin(admin.ModelAdmin):
+    list_display = ("variant", "requested_power", "notified", "created_at")
+    list_filter = ("notified",)
