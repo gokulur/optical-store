@@ -1,10 +1,245 @@
 {% extends "unfold/layouts/base.html" %}
+{% load static %}
 
-{% block title %}My Admin Panel{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block branding %}
-<a href="{% url 'admin:index' %}"
-   class="flex items-center gap-2 text-xl font-bold text-indigo-600 hover:text-indigo-800">
-    My Project Admin
-</a>
+<div class="flex items-center gap-3 px-4 py-3">
+    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+    </div>
+    <div>
+        <a href="{% url 'admin:index' %}" class="text-lg font-bold text-gray-900 hover:text-indigo-600 transition-colors">
+            Lens cart
+        </a>
+        <p class="text-xs text-gray-500">Professional Dashboard</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome back, {{ request.user.get_full_name|default:request.user.username }}</h1>
+        <p class="text-gray-600">Here's what's happening with your store today.</p>
+    </div>
+
+    <!-- Metrics Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Metric Card 1 -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </svg>
+                </div>
+                <span class="text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">+12%</span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ total_products|default:"248" }}</h3>
+            <p class="text-sm text-gray-600">Total Products</p>
+        </div>
+
+        <!-- Metric Card 2 -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                </div>
+                <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Active</span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ total_brands|default:"42" }}</h3>
+            <p class="text-sm text-gray-600">Active Brands</p>
+        </div>
+
+        <!-- Metric Card 3 -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <span class="text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">Alert</span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ low_stock|default:"15" }}</h3>
+            <p class="text-sm text-gray-600">Low Stock Items</p>
+        </div>
+
+        <!-- Metric Card 4 -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                    </svg>
+                </div>
+                <span class="text-xs font-semibold text-gray-600 bg-gray-50 px-3 py-1 rounded-full">Total</span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ total_categories|default:"18" }}</h3>
+            <p class="text-sm text-gray-600">Categories</p>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Sales Chart -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-bold text-gray-900">Products by Category</h2>
+                <select class="text-sm border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    <option>Last 7 days</option>
+                    <option>Last 30 days</option>
+                    <option>Last 90 days</option>
+                </select>
+            </div>
+            <canvas id="categoryChart" height="300"></canvas>
+        </div>
+
+        <!-- Stock Levels -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-bold text-gray-900">Stock Levels Trend</h2>
+                <button class="text-sm text-indigo-600 hover:text-indigo-700 font-medium">View All</button>
+            </div>
+            <canvas id="stockChart" height="300"></canvas>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Recent Products -->
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Recent Products</h2>
+            <div class="space-y-4">
+                {% for product in recent_products|slice:":5" %}
+                <div class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors">
+                    <div class="w-12 h-12 bg-gray-200 rounded-lg flex-shrink-0"></div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-gray-900 truncate">{{ product.name }}</h3>
+                        <p class="text-sm text-gray-500">{{ product.brand.name }} • {{ product.category.name }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-gray-900">${{ product.price }}</p>
+                        <p class="text-xs text-gray-500">Stock: {{ product.stock.quantity }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-gray-500 text-center py-4">No recent products</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Quick Actions</h2>
+            <div class="space-y-3">
+                <a href="{% url 'admin:catalog_product_add' %}" class="flex items-center gap-3 p-3 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors group">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                    </div>
+                    <span class="font-medium text-gray-900 group-hover:text-indigo-600">Add Product</span>
+                </a>
+                
+                <a href="{% url 'admin:catalog_brand_add' %}" class="flex items-center gap-3 p-3 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors group">
+                    <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                    </div>
+                    <span class="font-medium text-gray-900 group-hover:text-purple-600">Add Brand</span>
+                </a>
+                
+                <a href="{% url 'admin:inventory_stock_changelist' %}" class="flex items-center gap-3 p-3 bg-green-50 rounded-xl hover:bg-green-100 transition-colors group">
+                    <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                    </div>
+                    <span class="font-medium text-gray-900 group-hover:text-green-600">Manage Stock</span>
+                </a>
+                
+                <a href="/admin/reports/" class="flex items-center gap-3 p-3 bg-orange-50 rounded-xl hover:bg-orange-100 transition-colors group">
+                    <div class="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <span class="font-medium text-gray-900 group-hover:text-orange-600">View Reports</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Category Chart
+const ctxCategory = document.getElementById('categoryChart');
+if (ctxCategory) {
+    new Chart(ctxCategory, {
+        type: 'bar',
+        data: {
+            labels: ['Electronics', 'Clothing', 'Food', 'Books', 'Toys', 'Sports'],
+            datasets: [{
+                label: 'Products',
+                data: [65, 59, 80, 45, 56, 72],
+                backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                borderColor: 'rgba(99, 102, 241, 1)',
+                borderWidth: 2,
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { display: false } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+}
+
+// Stock Chart
+const ctxStock = document.getElementById('stockChart');
+if (ctxStock) {
+    new Chart(ctxStock, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Stock Level',
+                data: [1200, 1900, 1500, 2100, 1800, 2400],
+                borderColor: 'rgba(168, 85, 247, 1)',
+                backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                fill: true,
+                tension: 0.4,
+                borderWidth: 3,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.05)' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+}
+</script>
 {% endblock %}
