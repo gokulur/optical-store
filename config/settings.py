@@ -22,9 +22,7 @@ ALLOWED_HOSTS = []
 
 # Custom settings
 INSTALLED_APPS = [
-    # Unfold MUST be first
-    "unfold",
-
+ 
     # Django core
     "django.contrib.admin",
     "django.contrib.auth",
@@ -44,6 +42,7 @@ INSTALLED_APPS = [
     "inventory",
     "prescriptions",
     "notifications",
+    "adminpanel",
 ]
 
 

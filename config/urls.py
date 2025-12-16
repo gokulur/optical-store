@@ -8,7 +8,7 @@ urlpatterns = [
     # Custom admin dashboard
     path('admin/', admin.site.urls),
     path('admin/dashboard/', admin_dashboard, name='admin_dashboard'),
-    
+    path('adminpanel/', include('adminpanel.urls')),    
     # Your other URL patterns here
 ]
 
