@@ -9,4 +9,4 @@ def dashboard(request):
         "brands": Brand.objects.count(),
         "categories": Category.objects.count(),
     }
-    return render(request, "admin/admin-dashboard.html", context)
+    return render(request, "admin-dashboard.html", context)
