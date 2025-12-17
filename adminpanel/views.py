@@ -10,3 +10,8 @@ def dashboard(request):
         "categories": Category.objects.count(),
     }
     return render(request, "admin-dashboard.html", context)
+
+@login_required
+def add_category_page(request):
+   
+    return render(request, "category_add.html")

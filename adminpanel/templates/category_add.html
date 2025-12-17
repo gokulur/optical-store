@@ -1,0 +1,58 @@
+{% extends 'admin-dashboard.html' %}
+{% block content %}
+<title>{% block title %}ADD CATEGORY{% endblock %}</title>
+<div class="main-panel">
+    <div class="content-wrapper">
+        <div class="row">
+            <div class="col-md-6 grid-margin stretch-card">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">{% if category %}Edit Category{% else %}Add Category{% endif %}</h4>
+                        <form class="forms-sample"
+                              action=""
+                              method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="form-group mb-4">
+                                <label>Name:</label>
+                                <input type="text" class="form-control" name="name"
+                                       value="{{ category.name|default:'' }}" placeholder="Category Name">
+                            </div>
+                            <div class="form-group mb-4">
+                                <label>Image:</label>
+                                <input type="file" name="image" class="file-upload-default" style="display:none;">
+                                <div class="input-group col-xs-12">
+                                    <input type="text" class="form-control file-upload-info" disabled placeholder="Upload Image">
+                                    <span class="input-group-append">
+                                        <button class="file-upload-browse btn btn-primary" type="button">Upload</button>
+                                    </span>
+                                </div>
+                                {% if category.image %}
+                                    <img src="{{ category.image.url }}" alt="{{ category.name }}" class="mt-3 rounded" width="100">
+                                {% endif %}
+                            </div>
+                            <button type="submit" class="btn btn-primary mr-2">Submit</button>
+                            <a href=" " class="btn btn-dark">Cancel</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.file-upload-browse').forEach(button => {
+        button.addEventListener('click', function () {
+            const fileInput = this.closest('.form-group').querySelector('.file-upload-default');
+            fileInput.click();
+        });
+    });
+
+    document.querySelectorAll('.file-upload-default').forEach(input => {
+        input.addEventListener('change', function () {
+            const fileName = this.value.split('\\').pop();
+            this.closest('.form-group').querySelector('.file-upload-info').value = fileName;
+        });
+    });
+</script>
+{% endblock %}

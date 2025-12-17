@@ -1,0 +1,53 @@
+{% extends 'admin_dashboard.html' %}
+{% block content %}
+<title>{% block title %}CATEGORY LIST{% endblock %}</title>
+<div class="main-panel">
+    <div class="content-wrapper">
+        <div class="col-lg-6 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cat in categories %}
+                                <tr>
+                                    <td>{{ cat.name }}</td>
+                                    <td>{{ cat.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'category_edit' cat.id %}"
+                                            class="btn btn-sm btn-outline-success" data-toggle="tooltip"
+                                            title="Edit Category">
+                                            <i class="mdi mdi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'category_delete' cat.id %}"
+                                            class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Are you sure you want to delete {{ cat.name }}?')"
+                                            data-toggle="tooltip" title="Delete Category">
+                                            <i class="mdi mdi-delete"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No categories found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
