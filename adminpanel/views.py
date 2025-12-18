@@ -15,3 +15,8 @@ def dashboard(request):
 def add_category_page(request):
    
     return render(request, "category_add.html")
+
+@login_required
+def category_list(request):
+   
+    return render(request, "category_list.html")

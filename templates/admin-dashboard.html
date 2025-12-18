@@ -13,9 +13,9 @@
   <link rel="stylesheet" href="{% static 'assets/vendors/flag-icon-css/css/flag-icon.min.css' %}">
   <link rel="stylesheet" href="{% static 'assets/vendors/owl-carousel-2/owl.carousel.min.css' %}">
   <link rel="stylesheet" href="{% static 'assets/vendors/owl-carousel-2/owl.theme.default.min.css' %}">
-  
+
   <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
- 
+
 
 </head>
 <style>
@@ -95,137 +95,139 @@
         <li class="nav-item nav-category">
           <span class="nav-link">Navigation</span>
         </li>
-        <li class="nav-item menu-items active">
-          <a class="nav-link" href="{% url 'admin_dashboard' %}">
-            <span class="menu-icon">
-              <i class="mdi mdi-speedometer"></i>
-            </span>
-            <span class="menu-title">Dashboard</span>
-          </a>
-        </li>
+         <!-- Dashboard -->
+    <li class="nav-item menu-items">
+      <a class="nav-link" href="{% url 'admin_dashboard' %}">
+        <span class="menu-icon"><i class="mdi mdi-speedometer"></i></span>
+        <span class="menu-title">Dashboard</span>
+      </a>
+    </li>
 
-        <!-- Categories -->
-        <li class="nav-item menu-items">
-          <a class="nav-link" data-toggle="collapse" href="#category-menu" aria-expanded="false"
-            aria-controls="category-menu">
-            <span class="menu-icon">
-              <i class="mdi mdi-shape-outline"></i>
-            </span>
-            <span class="menu-title">Categories</span>
-            <i class="menu-arrow"></i>
-          </a>
-          <div class="collapse" id="category-menu">
-            <ul class="nav flex-column sub-menu">
-              <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:add_category_page' %}">
-                  <i class="mdi mdi-plus-box-outline"></i> Add Category</a></li>
-              <li class="nav-item"><a class="nav-link" href=" ">
-                  <i class="mdi mdi-format-list-bulleted"></i> All Categories</a></li>
-            </ul>
-          </div>
-        </li>
+    <!-- Catalog -->
+    <li class="nav-item menu-items">
+      <a class="nav-link" data-toggle="collapse" href="#catalogMenu">
+        <span class="menu-icon"><i class="mdi mdi-shape-outline"></i></span>
+        <span class="menu-title">Catalog</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="catalogMenu">
+        <ul class="nav flex-column sub-menu">
+          <li><a class="nav-link" href="{% url 'adminpanel:add_category_page' %}">Add Category</a></li>
+          <li><a class="nav-link" href="{% url 'adminpanel:category_list' %}">List Categories</a></li>
+          <li><a class="nav-link" href=" ">Add Brand</a></li>
+          <li><a class="nav-link" href=" ">List Brands</a></li>
+          <li><a class="nav-link" href="#">Attributes</a></li>
+        </ul>
+      </div>
+    </li>
 
-        <!-- Perfume Collections -->
-        <li class="nav-item menu-items">
-          <a class="nav-link" data-toggle="collapse" href="#perfume-menu" aria-expanded="false"
-            aria-controls="perfume-menu">
-            <span class="menu-icon">
-              <i class="mdi mdi-flask-outline"></i>
-            </span>
-            <span class="menu-title">Perfume Brand</span>
-            <i class="menu-arrow"></i>
-          </a>
-          <div class="collapse" id="perfume-menu">
-            <ul class="nav flex-column sub-menu">
-              <li class="nav-item"><a class="nav-link" href=" "><i
-                    class="mdi mdi-plus-circle-outline"></i> Add
-                  Brand</a></li>
-              <li class="nav-item"><a class="nav-link" href=" "><i
-                    class="mdi mdi-eye-outline"></i> View Brands</a>
-              </li>
-            </ul>
-          </div>
-        </li>
+    <!-- Products -->
+    <li class="nav-item menu-items">
+      <a class="nav-link" data-toggle="collapse" href="#productMenu">
+        <span class="menu-icon"><i class="mdi mdi-package-variant"></i></span>
+        <span class="menu-title">Products</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="productMenu">
+        <ul class="nav flex-column sub-menu">
+          <li><a class="nav-link" href="#">Add Product</a></li>
+          <li><a class="nav-link" href="#">All Products</a></li>
+          <li><a class="nav-link" href="#">Variants</a></li>
+          <li><a class="nav-link" href="#">Import / Export</a></li>
+        </ul>
+      </div>
+    </li>
 
-        <!-- Products -->
-        <li class="nav-item menu-items">
-          <a class="nav-link" data-toggle="collapse" href="#products-menu" aria-expanded="false"
-            aria-controls="products-menu">
-            <span class="menu-icon">
-              <i class="mdi mdi-package-variant-closed"></i>
-            </span>
-            <span class="menu-title">Products</span>
-            <i class="menu-arrow"></i>
-          </a>
-          <div class="collapse" id="products-menu">
-            <ul class="nav flex-column sub-menu">
-              <li class="nav-item"><a class="nav-link" href=" "><i
-                    class="mdi mdi-plus-box-outline"></i> Add Product</a>
-              </li>
-              <li class="nav-item"><a class="nav-link" href=" "><i
-                    class="mdi mdi-format-list-bulleted"></i> All
-                  Products</a></li>
+    <!-- Lenses -->
+    <li class="nav-item menu-items">
+      <a class="nav-link" data-toggle="collapse" href="#lensMenu">
+        <span class="menu-icon"><i class="mdi mdi-glasses"></i></span>
+        <span class="menu-title">Lenses</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="lensMenu">
+        <ul class="nav flex-column sub-menu">
+          <li><a class="nav-link" href="#">Lens Options</a></li>
+          <li><a class="nav-link" href="#">Lens Addons</a></li>
+          <li><a class="nav-link" href="#">Power Rules</a></li>
+        </ul>
+      </div>
+    </li>
 
-            </ul>
-          </div>
-        </li>
+    <!-- Inventory -->
+    <li class="nav-item menu-items">
+      <a class="nav-link" data-toggle="collapse" href="#inventoryMenu">
+        <span class="menu-icon"><i class="mdi mdi-warehouse"></i></span>
+        <span class="menu-title">Inventory</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="inventoryMenu">
+        <ul class="nav flex-column sub-menu">
+          <li><a class="nav-link" href="#">Stock Overview</a></li>
+          <li><a class="nav-link" href="#">Low Stock Alerts</a></li>
+          <li><a class="nav-link" href="#">Bulk Update</a></li>
+        </ul>
+      </div>
+    </li>
 
+    <!-- Orders -->
+    <li class="nav-item menu-items">
+      <a class="nav-link" data-toggle="collapse" href="#orderMenu">
+        <span class="menu-icon"><i class="mdi mdi-cart-outline"></i></span>
+        <span class="menu-title">Orders</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="orderMenu">
+        <ul class="nav flex-column sub-menu">
+          <li><a class="nav-link" href="#">All Orders</a></li>
+          <li><a class="nav-link" href="#">Pending / Processing</a></li>
+          <li><a class="nav-link" href="#">Returns & Refunds</a></li>
+          <li><a class="nav-link" href="#">Shipments</a></li>
+        </ul>
+      </div>
+    </li>
 
+    <!-- Customers -->
+    <li class="nav-item menu-items">
+      <a class="nav-link" data-toggle="collapse" href="#customerMenu">
+        <span class="menu-icon"><i class="mdi mdi-account-group"></i></span>
+        <span class="menu-title">Customers</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="customerMenu">
+        <ul class="nav flex-column sub-menu">
+          <li><a class="nav-link" href="#">All Customers</a></li>
+          <li><a class="nav-link" href="#">Prescriptions</a></li>
+          <li><a class="nav-link" href="#">Communication Logs</a></li>
+        </ul>
+      </div>
+    </li>
 
-        <!-- Orders -->
-        <li class="nav-item menu-items">
-          <a class="nav-link" data-toggle="collapse" href="#orders-menu" aria-expanded="false"
-            aria-controls="orders-menu">
-            <span class="menu-icon">
-              <i class="mdi mdi-cart-outline"></i>
-            </span>
-            <span class="menu-title">Orders</span>
-            <i class="menu-arrow"></i>
-          </a>
-          <div class="collapse" id="orders-menu">
-            <ul class="nav flex-column sub-menu">
-              <li class="nav-item"><a class="nav-link" href=" "><i
-                    class="mdi mdi-reorder-horizontal"></i> All
-                  Orders</a></li>
-              <!-- <li class="nav-item"><a class="nav-link" href=" "><i class="mdi mdi-truck-outline"></i> Shipped /
-                  Delivered</a></li>
-              <li class="nav-item"><a class="nav-link" href=" "><i class="mdi mdi-cancel"></i> Cancelled / Returns</a>
-              </li> -->
-            </ul>
-          </div>
-        </li>
+    <!-- Notifications -->
+    <li class="nav-item menu-items">
+      <a class="nav-link" data-toggle="collapse" href="#notifyMenu">
+        <span class="menu-icon"><i class="mdi mdi-bell-outline"></i></span>
+        <span class="menu-title">Notifications</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="notifyMenu">
+        <ul class="nav flex-column sub-menu">
+          <li><a class="nav-link" href="#">Email Logs</a></li>
+          <li><a class="nav-link" href="#">SMS Logs</a></li>
+          <li><a class="nav-link" href="#">Push Notifications</a></li>
+        </ul>
+      </div>
+    </li>
 
-        <!-- Customers -->
-        <li class="nav-item menu-items">
-          <a class="nav-link" data-toggle="collapse" href="#customers-menu" aria-expanded="false"
-            aria-controls="customers-menu">
-            <span class="menu-icon">
-              <i class="mdi mdi-account-group-outline"></i>
-            </span>
-            <span class="menu-title">Customers</span>
-            <i class="menu-arrow"></i>
-          </a>
-          <div class="collapse" id="customers-menu">
-            <ul class="nav flex-column sub-menu">
-              <li class="nav-item"><a class="nav-link" href=" "><i
-                    class="mdi mdi-account-multiple-outline"></i> All
-                  Customers</a></li>
-              <!-- <li class="nav-item"><a class="nav-link" href=" "><i class="mdi mdi-eye-outline"></i> View Customer
-                  Details</a></li> -->
-            </ul>
-          </div>
-        </li>
+    <!-- Logout -->
+    <li class="nav-item menu-items">
+      <a class="nav-link text-danger" href=" ">
+        <span class="menu-icon"><i class="mdi mdi-logout"></i></span>
+        <span class="menu-title">Logout</span>
+      </a>
+    </li>
 
-        <!-- Logout -->
-        <li class="nav-item menu-items">
-          <a class="nav-link" href=" ">
-            <span class="menu-icon">
-              <i class="mdi mdi-logout"></i>
-            </span>
-            <span class="menu-title text-danger">Logout</span>
-          </a>
-        </li>
-
-      </ul>
+  </ul>
     </nav>
     <!-- partial -->
     <div class="container-fluid page-body-wrapper">
@@ -420,7 +422,7 @@
                     </div>
                   </div>
                   <div class="preview-item-content">
-                    
+
                     <p class="preview-subject mb-1">Log out</p>
                   </div>
                 </a>
@@ -509,7 +511,7 @@
             <div class="col-sm-4 grid-margin">
               <div class="card">
                 <div class="card-body">
-                 <h5>Items Sold</h5>
+                  <h5>Items Sold</h5>
 
                   <div class="row">
                     <div class="col-8 col-sm-12 col-xl-8 my-auto">
