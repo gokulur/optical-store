@@ -35,9 +35,12 @@ INSTALLED_APPS = [
 
     # Core domain apps
     'catalog',
+    'cart',
     'inventory',
     'lenses',
+    'prescriptions',
     'store',
+    
 ]
 
 

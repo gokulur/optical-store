@@ -7,8 +7,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('adminpanel/', include('adminpanel.urls')),
     path('catalog/', include('catalog.urls')),
+    path('cart/', include('cart.urls')),
     path('lenses/', include('lenses.urls')),
+    path('prescriptions/', include('prescriptions.urls')),
     path('store/', include('store.urls')),
+    
 ]
 
 if settings.DEBUG:
