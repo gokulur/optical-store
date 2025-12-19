@@ -30,18 +30,20 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Custom admin/dashboard FIRST
+ 
+    'users',
+
+    # Admin/dashboard
     'adminpanel',
 
-    # Core domain apps
+ 
     'catalog',
-    'cart',
     'inventory',
     'lenses',
+    'store',
+    'cart',
     'orders',
     'prescriptions',
-    'store',
-    
 ]
 
 
@@ -373,3 +375,5 @@ UNFOLD = {
     "SHOW_VIEW_ON_SITE": True,
     "ENVIRONMENT": "development",
 }
+
+AUTH_USER_MODEL = 'users.User'
