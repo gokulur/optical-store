@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'cart',
     'inventory',
     'lenses',
+    'orders',
     'prescriptions',
     'store',
     
