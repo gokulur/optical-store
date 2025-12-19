@@ -22,28 +22,25 @@ ALLOWED_HOSTS = []
 
 # Custom settings
 INSTALLED_APPS = [
- 
     # Django core
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "django.contrib.sites",
-    "django.contrib.humanize",
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
 
-    # Third party
-    "rest_framework",
+    # Custom admin/dashboard FIRST
+    'adminpanel',
 
-    # Local apps
-    "catalog",
-    "store",
-    "inventory",
-    "prescriptions",
-    "notifications",
-    "adminpanel",
+    # Core domain apps
+    'catalog',
+    'inventory',
+    'lenses',
+    'store',
 ]
+
+
 
 
 MIDDLEWARE = [
