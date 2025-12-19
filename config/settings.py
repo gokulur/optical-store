@@ -38,6 +38,7 @@ INSTALLED_APPS = [
 
  
     'catalog',
+    'content',
     'inventory',
     'lenses',
     'store',
