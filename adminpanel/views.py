@@ -153,8 +153,49 @@ def category_list(request):
     }
     return render(request, 'category_list.html', context)
 
- 
+
+
+
+# @login_required
+# @user_passes_test(is_admin)
 def add_category_page(request):
-   
-    return render(request, "category_add.html")
+    """Add new category"""
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        slug = request.POST.get('slug')
+        description = request.POST.get('description', '')
+        product_type = request.POST.get('product_type')
+        parent_id = request.POST.get('parent')
+        display_order = request.POST.get('display_order', 0)
+        is_active = request.POST.get('is_active') == 'on'
+        
+        # Handle image upload
+        image = request.FILES.get('image')
+        
+        parent = None
+        if parent_id:
+            parent = Category.objects.get(id=parent_id)
+        
+        category = Category.objects.create(
+            name=name,
+            slug=slug,
+            description=description,
+            product_type=product_type,
+            parent=parent,
+            display_order=display_order,
+            is_active=is_active,
+            image=image
+        )
+        
+        messages.success(request, f'Category "{name}" created successfully!')
+        return redirect('adminpanel:category_list')
+    
+    # GET request
+    parent_categories = Category.objects.filter(parent__isnull=True)
+    
+    context = {
+        'parent_categories': parent_categories,
+    }
+    return render(request, 'category_add.html', context)
+ 
  

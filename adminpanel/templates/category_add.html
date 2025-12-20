@@ -1,4 +1,4 @@
-{% extends 'admin-dashboard.html' %}
+<!-- 
 {% block content %}
 <title>{% block title %}ADD CATEGORY{% endblock %}</title>
 <div class="main-panel">
@@ -55,4 +55,135 @@
         });
     });
 </script>
-{% endblock %}
+{% endblock %} -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Category</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container-fluid p-4">
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold">Add New Category</h4>
+        <a href="{% url 'adminpanel:category_list' %}" class="btn btn-outline-secondary">
+            ← Back to Categories
+        </a>
+    </div>
+
+    <!-- FORM CARD -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- NAME -->
+                <div class="mb-3">
+                    <label class="form-label">Category Name *</label>
+                    <input type="text"
+                           name="name"
+                           class="form-control"
+                           required>
+                </div>
+
+                <!-- SLUG -->
+                <div class="mb-3">
+                    <label class="form-label">Slug *</label>
+                    <input type="text"
+                           name="slug"
+                           class="form-control"
+                           placeholder="example: sunglasses-men"
+                           required>
+                    <small class="text-muted">URL-friendly (no spaces)</small>
+                </div>
+
+                <!-- DESCRIPTION -->
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea name="description"
+                              class="form-control"
+                              rows="3"></textarea>
+                </div>
+
+                <!-- PRODUCT TYPE -->
+                <div class="mb-3">
+                    <label class="form-label">Product Type *</label>
+                    <select name="product_type" class="form-select" required>
+                        <option value="">Select product type</option>
+                        <option value="sunglasses">Sunglasses</option>
+                        <option value="eyeglasses">Eyeglasses</option>
+                        <option value="contact_lenses">Contact Lenses</option>
+                        <option value="accessories">Accessories</option>
+                        <option value="reading_glasses">Reading Glasses</option>
+                    </select>
+                </div>
+
+                <!-- PARENT CATEGORY -->
+                <div class="mb-3">
+                    <label class="form-label">Parent Category</label>
+                    <select name="parent" class="form-select">
+                        <option value="">None (Main Category)</option>
+                        {% for cat in parent_categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- DISPLAY ORDER -->
+                <div class="mb-3">
+                    <label class="form-label">Display Order</label>
+                    <input type="number"
+                           name="display_order"
+                           class="form-control"
+                           value="0">
+                </div>
+
+                <!-- IMAGE -->
+                <div class="mb-3">
+                    <label class="form-label">Category Image</label>
+                    <input type="file"
+                           name="image"
+                           class="form-control"
+                           accept="image/*">
+                </div>
+
+                <!-- STATUS -->
+                <div class="form-check mb-4">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           name="is_active"
+                           id="is_active"
+                           checked>
+                    <label class="form-check-label" for="is_active">
+                        Active
+                    </label>
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        Save Category
+                    </button>
+                    <a href="{% url 'adminpanel:category_list' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
