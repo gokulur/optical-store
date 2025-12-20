@@ -23,6 +23,8 @@ from prescriptions.models import Prescription
 from cart.models import Cart, CartItem
 from content.models import Banner, Page, StoreLocation, EyeTestBooking
 from reviews.models import Review, ReviewImage
+from django.db.models import F
+
 # from notifications.models import Notification, StockAlert
 # from promotions.models import Coupon, CouponUsage
 # from analytics.models import ProductView, CartAbandonment
@@ -66,7 +68,7 @@ def dashboard(request):
     total_products = Product.objects.filter(is_active=True).count()
     low_stock_products = Product.objects.filter(
         track_inventory=True,
-        # stock_quantity__lte=models.f('low_stock_threshold')
+        stock_quantity__lte=F('low_stock_threshold')
     ).count()
     out_of_stock = Product.objects.filter(
         track_inventory=True,
@@ -95,7 +97,7 @@ def dashboard(request):
     # Low stock alerts
     low_stock_items = Product.objects.filter(
         track_inventory=True,
-        # stock_quantity__lte=models.F('low_stock_threshold'),
+        stock_quantity__lte=F('low_stock_threshold'),
         stock_quantity__gt=0
     ).select_related('brand', 'category')[:10]
     
