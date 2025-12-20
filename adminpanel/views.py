@@ -232,3 +232,19 @@ def category_edit(request, category_id):
         'parent_categories': parent_categories,
     }
     return render(request, 'adminpanel/categories/edit.html', context)
+
+
+# @login_required
+# @user_passes_test(is_admin)
+def category_delete(request, category_id):
+    """Delete category"""
+    category = get_object_or_404(Category, id=category_id)
+    
+    if request.method == 'POST':
+        name = category.name
+        category.delete()
+        messages.success(request, f'Category "{name}" deleted successfully!')
+        return redirect('adminpanel:category_list')
+    
+    context = {'category': category}
+    return render(request, 'adminpanel/categories/delete_confirm.html', context)
