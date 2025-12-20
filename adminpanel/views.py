@@ -151,7 +151,7 @@ def category_list(request):
         'search': search,
         'product_type': product_type,
     }
-    return render(request, 'category_list.html', context)
+    return render(request, 'adminpanel/categories/list.html', context)
 
 
 
@@ -196,6 +196,39 @@ def add_category_page(request):
     context = {
         'parent_categories': parent_categories,
     }
-    return render(request, 'category_add.html', context)
+    return render(request, 'adminpanel/categories/add.html', context)
  
  
+# @login_required
+# @user_passes_test(is_admin)
+def category_edit(request, category_id):
+    """Edit category"""
+    category = get_object_or_404(Category, id=category_id)
+    
+    if request.method == 'POST':
+        category.name = request.POST.get('name')
+        category.slug = request.POST.get('slug')
+        category.description = request.POST.get('description', '')
+        category.product_type = request.POST.get('product_type')
+        
+        parent_id = request.POST.get('parent')
+        category.parent = Category.objects.get(id=parent_id) if parent_id else None
+        
+        category.display_order = request.POST.get('display_order', 0)
+        category.is_active = request.POST.get('is_active') == 'on'
+        
+        if 'image' in request.FILES:
+            category.image = request.FILES['image']
+        
+        category.save()
+        
+        messages.success(request, f'Category "{category.name}" updated successfully!')
+        return redirect('adminpanel:category_list')
+    
+    parent_categories = Category.objects.filter(parent__isnull=True).exclude(id=category_id)
+    
+    context = {
+        'category': category,
+        'parent_categories': parent_categories,
+    }
+    return render(request, 'adminpanel/categories/edit.html', context)

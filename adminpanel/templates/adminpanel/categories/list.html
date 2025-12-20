@@ -23,12 +23,12 @@
                                     <td>{{ cat.name }}</td>
                                     <td>{{ cat.created_at|date:"M d, Y" }}</td>
                                     <td>
-                                        <a href="{% url 'category_edit' cat.id %}"
+                                        <a href=" 
                                             class="btn btn-sm btn-outline-success" data-toggle="tooltip"
                                             title="Edit Category">
                                             <i class="mdi mdi-pencil"></i>
                                         </a>
-                                        <a href="{% url 'category_delete' cat.id %}"
+                                        <a href=" "
                                             class="btn btn-sm btn-outline-danger"
                                             onclick="return confirm('Are you sure you want to delete {{ cat.name }}?')"
                                             data-toggle="tooltip" title="Delete Category">
@@ -142,7 +142,7 @@
                                class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <a href="{% url 'adminpanel:category_delete' category.id %}"
+                            <a href=" "
                                class="btn btn-sm btn-outline-danger"
                                onclick="return confirm('Are you sure?');">
                                 <i class="bi bi-trash"></i>
