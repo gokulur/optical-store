@@ -122,14 +122,39 @@ def dashboard(request):
     
     return render(request, "admin-dashboard.html", context)
  
- 
+
+# ==================== CATEGORIES ====================
+
+# @login_required
+# @user_passes_test(is_admin)
+def category_list(request):
+    """List all categories"""
+    search = request.GET.get('search', '')
+    product_type = request.GET.get('product_type', '')
+    
+    categories = Category.objects.all().order_by('display_order', 'name')
+    
+    if search:
+        categories = categories.filter(
+            Q(name__icontains=search) | Q(description__icontains=search)
+        )
+    
+    if product_type:
+        categories = categories.filter(product_type=product_type)
+    
+    paginator = Paginator(categories, 25)
+    page = request.GET.get('page', 1)
+    categories = paginator.get_page(page)
+    
+    context = {
+        'categories': categories,
+        'search': search,
+        'product_type': product_type,
+    }
+    return render(request, 'category_list.html', context)
 
  
 def add_category_page(request):
    
     return render(request, "category_add.html")
-
  
-def category_list(request):
-   
-    return render(request, "category_list.html")
