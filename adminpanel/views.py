@@ -357,3 +357,244 @@ def brand_delete(request, brand_id):
     
     context = {'brand': brand}
     return render(request, 'adminpanel/brands/delete_confirm.html', context)
+
+
+
+# ==================== PRODUCTS ====================
+
+@login_required
+@user_passes_test(is_admin)
+def product_list(request):
+    """List all products"""
+    search = request.GET.get('search', '')
+    product_type = request.GET.get('product_type', '')
+    brand_id = request.GET.get('brand', '')
+    category_id = request.GET.get('category', '')
+    is_active = request.GET.get('is_active', '')
+    stock_status = request.GET.get('stock_status', '')
+    
+    products = Product.objects.select_related('brand', 'category').order_by('-created_at')
+    
+    if search:
+        products = products.filter(
+            Q(name__icontains=search) | 
+            Q(sku__icontains=search) |
+            Q(description__icontains=search)
+        )
+    
+    if product_type:
+        products = products.filter(product_type=product_type)
+    
+    if brand_id:
+        products = products.filter(brand_id=brand_id)
+    
+    if category_id:
+        products = products.filter(category_id=category_id)
+    
+    if is_active:
+        products = products.filter(is_active=(is_active == 'true'))
+    
+    if stock_status == 'low':
+        products = products.filter(
+            track_inventory=True,
+            stock_quantity__lte=models.F('low_stock_threshold'),
+            stock_quantity__gt=0
+        )
+    elif stock_status == 'out':
+        products = products.filter(track_inventory=True, stock_quantity=0)
+    
+    paginator = Paginator(products, 25)
+    page = request.GET.get('page', 1)
+    products = paginator.get_page(page)
+    
+    # For filters
+    brands = Brand.objects.filter(is_active=True).order_by('name')
+    categories = Category.objects.filter(is_active=True).order_by('name')
+    
+    context = {
+        'products': products,
+        'brands': brands,
+        'categories': categories,
+        'search': search,
+        'product_type': product_type,
+        'brand_id': brand_id,
+        'category_id': category_id,
+        'is_active': is_active,
+        'stock_status': stock_status,
+    }
+    return render(request, 'adminpanel/products/list.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def product_add(request):
+    """Add new product"""
+    if request.method == 'POST':
+        # Basic info
+        sku = request.POST.get('sku')
+        name = request.POST.get('name')
+        slug = request.POST.get('slug')
+        product_type = request.POST.get('product_type')
+        category_id = request.POST.get('category')
+        brand_id = request.POST.get('brand')
+        
+        # Description
+        short_description = request.POST.get('short_description', '')
+        description = request.POST.get('description', '')
+        
+        # Pricing
+        base_price = request.POST.get('base_price')
+        compare_at_price = request.POST.get('compare_at_price') or None
+        cost_price = request.POST.get('cost_price') or None
+        
+        # Categorization
+        gender = request.POST.get('gender', 'unisex')
+        age_group = request.POST.get('age_group', 'adult')
+        
+        # Inventory
+        track_inventory = request.POST.get('track_inventory') == 'on'
+        stock_quantity = request.POST.get('stock_quantity', 0)
+        low_stock_threshold = request.POST.get('low_stock_threshold', 5)
+        allow_backorder = request.POST.get('allow_backorder') == 'on'
+        
+        # SEO
+        meta_title = request.POST.get('meta_title', '')
+        meta_description = request.POST.get('meta_description', '')
+        meta_keywords = request.POST.get('meta_keywords', '')
+        
+        # Status
+        is_active = request.POST.get('is_active') == 'on'
+        is_featured = request.POST.get('is_featured') == 'on'
+        is_on_sale = request.POST.get('is_on_sale') == 'on'
+        
+        product = Product.objects.create(
+            sku=sku,
+            name=name,
+            slug=slug,
+            product_type=product_type,
+            category_id=category_id,
+            brand_id=brand_id if brand_id else None,
+            short_description=short_description,
+            description=description,
+            base_price=base_price,
+            compare_at_price=compare_at_price,
+            cost_price=cost_price,
+            gender=gender,
+            age_group=age_group,
+            track_inventory=track_inventory,
+            stock_quantity=stock_quantity,
+            low_stock_threshold=low_stock_threshold,
+            allow_backorder=allow_backorder,
+            meta_title=meta_title,
+            meta_description=meta_description,
+            meta_keywords=meta_keywords,
+            is_active=is_active,
+            is_featured=is_featured,
+            is_on_sale=is_on_sale
+        )
+        
+        messages.success(request, f'Product "{name}" created successfully!')
+        return redirect('adminpanel:product_edit', product_id=product.id)
+    
+    # GET request
+    brands = Brand.objects.filter(is_active=True).order_by('name')
+    categories = Category.objects.filter(is_active=True).order_by('name')
+    
+    context = {
+        'brands': brands,
+        'categories': categories,
+    }
+    return render(request, 'adminpanel/products/add.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def product_edit(request, product_id):
+    """Edit product"""
+    product = get_object_or_404(Product, id=product_id)
+    
+    if request.method == 'POST':
+        # Update basic info
+        product.sku = request.POST.get('sku')
+        product.name = request.POST.get('name')
+        product.slug = request.POST.get('slug')
+        product.product_type = request.POST.get('product_type')
+        product.category_id = request.POST.get('category')
+        
+        brand_id = request.POST.get('brand')
+        product.brand_id = brand_id if brand_id else None
+        
+        product.short_description = request.POST.get('short_description', '')
+        product.description = request.POST.get('description', '')
+        
+        product.base_price = request.POST.get('base_price')
+        product.compare_at_price = request.POST.get('compare_at_price') or None
+        product.cost_price = request.POST.get('cost_price') or None
+        
+        product.gender = request.POST.get('gender', 'unisex')
+        product.age_group = request.POST.get('age_group', 'adult')
+        
+        product.track_inventory = request.POST.get('track_inventory') == 'on'
+        product.stock_quantity = request.POST.get('stock_quantity', 0)
+        product.low_stock_threshold = request.POST.get('low_stock_threshold', 5)
+        product.allow_backorder = request.POST.get('allow_backorder') == 'on'
+        
+        product.meta_title = request.POST.get('meta_title', '')
+        product.meta_description = request.POST.get('meta_description', '')
+        product.meta_keywords = request.POST.get('meta_keywords', '')
+        
+        product.is_active = request.POST.get('is_active') == 'on'
+        product.is_featured = request.POST.get('is_featured') == 'on'
+        product.is_on_sale = request.POST.get('is_on_sale') == 'on'
+        
+        product.save()
+        
+        messages.success(request, f'Product "{product.name}" updated successfully!')
+        return redirect('adminpanel:product_edit', product_id=product.id)
+    
+    # GET request
+    brands = Brand.objects.filter(is_active=True).order_by('name')
+    categories = Category.objects.filter(is_active=True).order_by('name')
+    
+    # Get related data
+    variants = product.variants.all()
+    images = product.images.all()
+    specifications = product.specifications.all()
+    
+    # Check if contact lens
+    contact_lens_details = None
+    contact_lens_powers = []
+    if product.product_type == 'contact_lenses':
+        try:
+            contact_lens_details = product.contact_lens_details
+            contact_lens_powers = contact_lens_details.power_options.all()
+        except ContactLensProduct.DoesNotExist:
+            pass
+    
+    context = {
+        'product': product,
+        'brands': brands,
+        'categories': categories,
+        'variants': variants,
+        'images': images,
+        'specifications': specifications,
+        'contact_lens_details': contact_lens_details,
+        'contact_lens_powers': contact_lens_powers,
+    }
+    return render(request, 'adminpanel/products/edit.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def product_delete(request, product_id):
+    """Delete product"""
+    product = get_object_or_404(Product, id=product_id)
+    
+    if request.method == 'POST':
+        name = product.name
+        product.delete()
+        messages.success(request, f'Product "{name}" deleted successfully!')
+        return redirect('adminpanel:product_list')
+    
+    context = {'product': product}
+    return render(request, 'adminpanel/products/delete_confirm.html', context)

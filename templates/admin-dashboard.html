@@ -1,23 +1,22 @@
-<!-- {% load static %}
+<!-- adminpanel/templates/adminpanel/dashboard.html -->
+
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
- 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>{% block title %} ADMIN DASHBOARD {% endblock %}</title>
+  <title>Dashboard - Admin Panel</title>
   <link rel="stylesheet" href="{% static 'assets/vendors/mdi/css/materialdesignicons.min.css' %}">
   <link rel="stylesheet" href="{% static 'assets/vendors/css/vendor.bundle.base.css' %}">
   <link rel="stylesheet" href="{% static 'assets/vendors/jvectormap/jquery-jvectormap.css' %}">
   <link rel="stylesheet" href="{% static 'assets/vendors/flag-icon-css/css/flag-icon.min.css' %}">
   <link rel="stylesheet" href="{% static 'assets/vendors/owl-carousel-2/owl.carousel.min.css' %}">
   <link rel="stylesheet" href="{% static 'assets/vendors/owl-carousel-2/owl.theme.default.min.css' %}">
-
   <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
-
-
 </head>
+
 <style>
   .white-logo {
     filter: brightness(0) invert(1);
@@ -27,11 +26,97 @@
   .white-logo:hover {
     filter: brightness(0) invert(0.9);
   }
+
+  .bg-warning-light {
+    background-color: rgba(255, 193, 7, 0.1);
+  }
+
+  .bg-primary-light {
+    background-color: rgba(0, 123, 255, 0.1);
+  }
+
+  .bg-info-light {
+    background-color: rgba(23, 162, 184, 0.1);
+  }
+
+  .bg-success-light {
+    background-color: rgba(40, 167, 69, 0.1);
+  }
+
+  .card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.3s ease;
+  }
+
+  .card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .icon-box-success {
+    background-color: rgba(40, 167, 69, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .icon-box-info {
+    background-color: rgba(23, 162, 184, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .icon-box-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .icon-box-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .icon-item {
+    font-size: 24px;
+  }
+
+  .table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+
+  .badge {
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-card {
+    border-left: 4px solid;
+  }
+
+  .stat-card.success {
+    border-left-color: #28a745;
+  }
+
+  .stat-card.info {
+    border-left-color: #17a2b8;
+  }
+
+  .stat-card.warning {
+    border-left-color: #ffc107;
+  }
+
+  .stat-card.danger {
+    border-left-color: #dc3545;
+  }
 </style>
 
 <body>
   <div class="container-scroller">
-  
+
+    <!-- Sidebar -->
     <nav class="sidebar sidebar-offcanvas" id="sidebar">
       <div class="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
         <a class="sidebar-brand brand-logo" href="#">
@@ -46,12 +131,11 @@
           <div class="profile-desc">
             <div class="profile-pic">
               <div class="count-indicator">
-                <img class="img-xs rounded-circle " src="{% static 'assets/images/faces/admin2.jpg' %}" alt="">
+                <img class="img-xs rounded-circle" src="{% static 'assets/images/faces/admin2.jpg' %}" alt="">
                 <span class="count bg-success"></span>
               </div>
               <div class="profile-name">
-                <h5 class="mb-0 font-weight-normal">Admin</h5>
-
+                <h5 class="mb-0 font-weight-normal">{{ request.user.get_full_name|default:'Admin' }}</h5>
               </div>
             </div>
             <a href="#" id="profile-dropdown" data-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></a>
@@ -71,39 +155,28 @@
               <a href="#" class="dropdown-item preview-item">
                 <div class="preview-thumbnail">
                   <div class="preview-icon bg-dark rounded-circle">
-                    <i class="mdi mdi-onepassword  text-info"></i>
+                    <i class="mdi mdi-onepassword text-info"></i>
                   </div>
                 </div>
                 <div class="preview-item-content">
                   <p class="preview-subject ellipsis mb-1 text-small">Change Password</p>
                 </div>
               </a>
-              <div class="dropdown-divider"></div>
-              <a href="#" class="dropdown-item preview-item">
-                <div class="preview-thumbnail">
-                  <div class="preview-icon bg-dark rounded-circle">
-                    <i class="mdi mdi-calendar-today text-success"></i>
-                  </div>
-                </div>
-                <div class="preview-item-content">
-                  <p class="preview-subject ellipsis mb-1 text-small">To-do list</p>
-                </div>
-              </a>
             </div>
           </div>
         </li>
+
         <li class="nav-item nav-category">
           <span class="nav-link">Navigation</span>
         </li>
-     
-        <li class="nav-item menu-items">
-          <a class="nav-link" href="{% url 'adminpanel:dashboard' %}">
+
+        <li class="nav-item menu-items active">
+          <a class="nav-link" href="#">
             <span class="menu-icon"><i class="mdi mdi-speedometer"></i></span>
             <span class="menu-title">Dashboard</span>
           </a>
         </li>
 
- 
         <li class="nav-item menu-items">
           <a class="nav-link" data-toggle="collapse" href="#catalogMenu">
             <span class="menu-icon"><i class="mdi mdi-shape-outline"></i></span>
@@ -112,16 +185,14 @@
           </a>
           <div class="collapse" id="catalogMenu">
             <ul class="nav flex-column sub-menu">
-              <li><a class="nav-link" href="{% url 'adminpanel:add_category_page' %}">Add Category</a></li>
-              <li><a class="nav-link" href="{% url 'adminpanel:category_list' %}">List Categories</a></li>
-              <li><a class="nav-link" href=" ">Add Brand</a></li>
-              <li><a class="nav-link" href=" ">List Brands</a></li>
-              <li><a class="nav-link" href="#">Attributes</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:add_category_page' %}">Add Category</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:category_list' %}">List Categories</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:add_brand_page' %}">Add Brand</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:brand_list' %}">List Brands</a></li>
             </ul>
           </div>
         </li>
 
-     
         <li class="nav-item menu-items">
           <a class="nav-link" data-toggle="collapse" href="#productMenu">
             <span class="menu-icon"><i class="mdi mdi-package-variant"></i></span>
@@ -130,15 +201,12 @@
           </a>
           <div class="collapse" id="productMenu">
             <ul class="nav flex-column sub-menu">
-              <li><a class="nav-link" href="#">Add Product</a></li>
-              <li><a class="nav-link" href="#">All Products</a></li>
-              <li><a class="nav-link" href="#">Variants</a></li>
-              <li><a class="nav-link" href="#">Import / Export</a></li>
+              <li class="nav-item"><a class="nav-link" href="#">Add Product</a></li>
+              <li class="nav-item"><a class="nav-link" href="#">All Products</a></li>
             </ul>
           </div>
         </li>
 
- 
         <li class="nav-item menu-items">
           <a class="nav-link" data-toggle="collapse" href="#lensMenu">
             <span class="menu-icon"><i class="mdi mdi-glasses"></i></span>
@@ -147,29 +215,12 @@
           </a>
           <div class="collapse" id="lensMenu">
             <ul class="nav flex-column sub-menu">
-              <li><a class="nav-link" href="#">Lens Options</a></li>
-              <li><a class="nav-link" href="#">Lens Addons</a></li>
-              <li><a class="nav-link" href="#">Power Rules</a></li>
+              <li class="nav-item"><a class="nav-link" href="#">Lens Options</a></li>
+              <li class="nav-item"><a class="nav-link" href="#">Lens Categories</a></li>
             </ul>
           </div>
         </li>
 
-    
-        <li class="nav-item menu-items">
-          <a class="nav-link" data-toggle="collapse" href="#inventoryMenu">
-            <span class="menu-icon"><i class="mdi mdi-warehouse"></i></span>
-            <span class="menu-title">Inventory</span>
-            <i class="menu-arrow"></i>
-          </a>
-          <div class="collapse" id="inventoryMenu">
-            <ul class="nav flex-column sub-menu">
-              <li><a class="nav-link" href="#">Stock Overview</a></li>
-              <li><a class="nav-link" href="#">Low Stock Alerts</a></li>
-              <li><a class="nav-link" href="#">Bulk Update</a></li>
-            </ul>
-          </div>
-        </li>
- 
         <li class="nav-item menu-items">
           <a class="nav-link" data-toggle="collapse" href="#orderMenu">
             <span class="menu-icon"><i class="mdi mdi-cart-outline"></i></span>
@@ -178,15 +229,11 @@
           </a>
           <div class="collapse" id="orderMenu">
             <ul class="nav flex-column sub-menu">
-              <li><a class="nav-link" href="#">All Orders</a></li>
-              <li><a class="nav-link" href="#">Pending / Processing</a></li>
-              <li><a class="nav-link" href="#">Returns & Refunds</a></li>
-              <li><a class="nav-link" href="#">Shipments</a></li>
+              <li class="nav-item"><a class="nav-link" href="#">All Orders</a></li>
             </ul>
           </div>
         </li>
 
- 
         <li class="nav-item menu-items">
           <a class="nav-link" data-toggle="collapse" href="#customerMenu">
             <span class="menu-icon"><i class="mdi mdi-account-group"></i></span>
@@ -195,32 +242,39 @@
           </a>
           <div class="collapse" id="customerMenu">
             <ul class="nav flex-column sub-menu">
-              <li><a class="nav-link" href="#">All Customers</a></li>
-              <li><a class="nav-link" href="#">Prescriptions</a></li>
-              <li><a class="nav-link" href="#">Communication Logs</a></li>
+              <li class="nav-item"><a class="nav-link" href="#">All Customers</a></li>
             </ul>
           </div>
         </li>
 
- 
         <li class="nav-item menu-items">
-          <a class="nav-link" data-toggle="collapse" href="#notifyMenu">
-            <span class="menu-icon"><i class="mdi mdi-bell-outline"></i></span>
-            <span class="menu-title">Notifications</span>
+          <a class="nav-link" data-toggle="collapse" href="#contentMenu">
+            <span class="menu-icon"><i class="mdi mdi-image-multiple"></i></span>
+            <span class="menu-title">Content</span>
             <i class="menu-arrow"></i>
           </a>
-          <div class="collapse" id="notifyMenu">
+          <div class="collapse" id="contentMenu">
             <ul class="nav flex-column sub-menu">
-              <li><a class="nav-link" href="#">Email Logs</a></li>
-              <li><a class="nav-link" href="#">SMS Logs</a></li>
-              <li><a class="nav-link" href="#">Push Notifications</a></li>
+              <li class="nav-item"><a class="nav-link" href="#">Banners</a></li>
             </ul>
           </div>
         </li>
 
- 
         <li class="nav-item menu-items">
-          <a class="nav-link text-danger" href=" ">
+          <a class="nav-link" data-toggle="collapse" href="#reviewMenu">
+            <span class="menu-icon"><i class="mdi mdi-star"></i></span>
+            <span class="menu-title">Reviews</span>
+            <i class="menu-arrow"></i>
+          </a>
+          <div class="collapse" id="reviewMenu">
+            <ul class="nav flex-column sub-menu">
+              <li class="nav-item"><a class="nav-link" href="#">All Reviews</a></li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="nav-item menu-items">
+          <a class="nav-link text-danger" href="#">
             <span class="menu-icon"><i class="mdi mdi-logout"></i></span>
             <span class="menu-title">Logout</span>
           </a>
@@ -228,47 +282,42 @@
 
       </ul>
     </nav>
- 
+
+    <!-- Main Content -->
     <div class="container-fluid page-body-wrapper">
-    
+
+      <!-- Top Navbar -->
       <nav class="navbar p-0 fixed-top d-flex flex-row">
-        <div class="navbar-brand-wrapper d-flex d-lg-none align-items-center justify-content-center">
-         
-        </div>
+        <div class="navbar-brand-wrapper d-flex d-lg-none align-items-center justify-content-center"></div>
         <div class="navbar-menu-wrapper flex-grow d-flex align-items-stretch">
           <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
             <span class="mdi mdi-menu"></span>
           </button>
-          
+
           <ul class="navbar-nav navbar-nav-right">
-         
             <li class="nav-item dropdown">
               <a class="nav-link" id="profileDropdown" href="#" data-toggle="dropdown">
                 <div class="navbar-profile">
                   <img class="img-xs rounded-circle" src="{% static 'assets/images/faces/admin2.jpg' %}" alt="">
-                  <p class="mb-0 d-none d-sm-block navbar-profile-name">Admin</p>
+                  <p class="mb-0 d-none d-sm-block navbar-profile-name">
+                    {{ request.user.get_full_name|default:'Admin' }}
+                  </p>
                   <i class="mdi mdi-menu-down d-none d-sm-block"></i>
                 </div>
               </a>
               <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list"
                 aria-labelledby="profileDropdown">
-        
                 <div class="dropdown-divider"></div>
-                 
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item preview-item" href="  ">
+                <a class="dropdown-item preview-item" href="#">
                   <div class="preview-thumbnail">
                     <div class="preview-icon bg-dark rounded-circle">
                       <i class="mdi mdi-logout text-danger"></i>
                     </div>
                   </div>
                   <div class="preview-item-content">
-
                     <p class="preview-subject mb-1">Log out</p>
                   </div>
                 </a>
-                <div class="dropdown-divider"></div>
-             
               </div>
             </li>
           </ul>
@@ -278,318 +327,541 @@
           </button>
         </div>
       </nav>
-      {% block content %}
- 
+
+      <!-- Main Panel -->
       <div class="main-panel">
         <div class="content-wrapper">
 
+          <!-- Page Header -->
+          <div class="row mb-3">
+            <div class="col-12">
+              <h3 class="font-weight-bold">Dashboard Overview</h3>
+              <p class="text-muted mb-0">Welcome back, {{ request.user.get_full_name|default:'Admin' }}! Here's what's
+                happening with your store today.</p>
+            </div>
+          </div>
+
+          <!-- Top Stats Row -->
           <div class="row">
+            <!-- Monthly Income -->
             <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-              <div class="card">
+              <div class="card stat-card success">
                 <div class="card-body">
                   <div class="row">
                     <div class="col-9">
                       <div class="d-flex align-items-center align-self-start">
-                        <h3 class="mb-0" id="monthly_income">₹ {{ monthly_income }}</h3>
+                        <h3 class="mb-0 font-weight-bold">QAR {{ monthly_income|floatformat:2 }}</h3>
+                        <p class="text-success ml-2 mb-0 font-weight-medium">
+                          {% if income_growth > 0 %}+{% endif %}{{ income_growth }}%
+                        </p>
                       </div>
                     </div>
-                    <div class="col-3">
-                      <div class="icon icon-box-info">
-                        <span class="mdi mdi-cash-multiple icon-item"></span>
+                    <div class="col-3 text-right">
+                      <div class="icon-box-success d-inline-block">
+                        <span class="mdi mdi-cash-multiple icon-item text-success"></span>
                       </div>
                     </div>
                   </div>
-                  <h6 class="text-muted font-weight-normal">Monthly Income</h6>
+                  <h6 class="text-muted font-weight-normal mt-2">Monthly Income</h6>
                 </div>
               </div>
             </div>
 
-
+            <!-- Daily Income -->
             <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-              <div class="card">
+              <div class="card stat-card info">
                 <div class="card-body">
                   <div class="row">
                     <div class="col-9">
                       <div class="d-flex align-items-center align-self-start">
-                        <h3 class="mb-0" id="daily_income">₹ {{ daily_income }}</h3>
+                        <h3 class="mb-0 font-weight-bold">QAR {{ daily_income|floatformat:2 }}</h3>
                       </div>
                     </div>
-                    <div class="col-3">
-                      <div class="icon icon-box-info">
-                        <span class="mdi mdi-wallet icon-item"></span>
+                    <div class="col-3 text-right">
+                      <div class="icon-box-info d-inline-block">
+                        <span class="mdi mdi-wallet icon-item text-info"></span>
                       </div>
                     </div>
                   </div>
-                  <h6 class="text-muted font-weight-normal">Daily Income</h6>
+                  <h6 class="text-muted font-weight-normal mt-2">Daily Income</h6>
                 </div>
               </div>
             </div>
 
+            <!-- Today Orders -->
+            <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
+              <div class="card stat-card warning">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-9">
+                      <div class="d-flex align-items-center align-self-start">
+                        <h3 class="mb-0 font-weight-bold">{{ today_orders }}</h3>
+                      </div>
+                    </div>
+                    <div class="col-3 text-right">
+                      <div class="icon-box-warning d-inline-block">
+                        <span class="mdi mdi-cart-outline icon-item text-warning"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <h6 class="text-muted font-weight-normal mt-2">Today's Orders</h6>
+                </div>
+              </div>
+            </div>
 
+            <!-- Total Customers -->
+            <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
+              <div class="card stat-card danger">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-9">
+                      <div class="d-flex align-items-center align-self-start">
+                        <h3 class="mb-0 font-weight-bold">{{ total_customers }}</h3>
+                      </div>
+                    </div>
+                    <div class="col-3 text-right">
+                      <div class="icon-box-danger d-inline-block">
+                        <span class="mdi mdi-account-group icon-item text-danger"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <h6 class="text-muted font-weight-normal mt-2">Total Customers</h6>
+                </div>
+              </div>
+            </div>
           </div>
 
+          <!-- Revenue & Sales Row -->
           <div class="row">
-            <div class="col-sm-4 grid-margin">
+            <!-- Total Revenue -->
+            <div class="col-md-4 grid-margin stretch-card">
               <div class="card">
                 <div class="card-body">
-                  <h5>Revenue</h5>
-                  <div class="row">
-                    <div class="col-8 col-sm-12 col-xl-8 my-auto">
-                      <div class="d-flex d-sm-block d-md-flex align-items-center">
-                        <h2 class="mb-0" id="revenue">₹ {{ revenue }}</h2>
-
-                     
-                      </div>
-                   
-                    </div>
-                    <div class="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                      <i class="icon-lg mdi mdi-codepen text-primary ml-auto"></i>
-                    </div>
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Total Revenue</h5>
+                    <i class="icon-lg mdi mdi-codepen text-primary"></i>
                   </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-sm-4 grid-margin">
-              <div class="card">
-                <div class="card-body">
-                  <h5>Items Sold</h5>
-
                   <div class="row">
-                    <div class="col-8 col-sm-12 col-xl-8 my-auto">
-                      <div class="d-flex d-sm-block d-md-flex align-items-center">
-                        <h2 class="mb-0" id="sales">{{ sales }}</h2>
-
-                   
-                      </div>
-          
-                    </div>
-                    <div class="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                      <i class="icon-lg mdi mdi-wallet-travel text-danger ml-auto"></i>
+                    <div class="col-12">
+                      <h2 class="mb-2 font-weight-bold">QAR {{ revenue|floatformat:2 }}</h2>
+                      <h6 class="text-muted font-weight-normal">All Time Revenue</h6>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
+            <!-- Items Sold -->
+            <div class="col-md-4 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Items Sold</h5>
+                    <i class="icon-lg mdi mdi-wallet-travel text-danger"></i>
+                  </div>
+                  <div class="row">
+                    <div class="col-12">
+                      <h2 class="mb-2 font-weight-bold">{{ sales }}</h2>
+                      <h6 class="text-muted font-weight-normal">Total Units Sold</h6>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active Products -->
+            <div class="col-md-4 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Active Products</h5>
+                    <i class="icon-lg mdi mdi-package-variant text-success"></i>
+                  </div>
+                  <div class="row">
+                    <div class="col-12">
+                      <h2 class="mb-2 font-weight-bold">{{ total_products }}</h2>
+                      <h6 class="text-muted font-weight-normal">Products in Stock</h6>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {% endblock %}
-        
-        </div>
-  
-      </div>
- 
-    </div>
-    
-    <script src="{% static 'assets/vendors/js/vendor.bundle.base.js' %}"></script>
-  
-  
-    <script src="{% static 'assets/vendors/chart.js/Chart.min.js' %}"></script>
-    <script src="{% static 'assets/vendors/progressbar.js/progressbar.min.js' %}"></script>
-    <script src="{% static 'assets/vendors/jvectormap/jquery-jvectormap.min.js' %}"></script>
-    <script src="{% static 'assets/vendors/jvectormap/jquery-jvectormap-world-mill-en.js' %}"></script>
-    <script src="{% static 'assets/vendors/owl-carousel-2/owl.carousel.min.js' %}"></script>
- 
-    <script src="{% static 'assets/js/off-canvas.js' %}"></script>
-    <script src="{% static 'assets/js/hoverable-collapse.js' %}"></script>
-    <script src="{% static 'assets/js/misc.js' %}"></script>
-    <script src="{% static 'assets/js/settings.js' %}"></script>
-    <script src="{% static 'assets/js/todolist.js' %}"></script>
- 
-    <script src="{% static 'assets/js/dashboard.js' %}"></script>
-    
-
-
-</body>
-
-</html> -->
-
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
-
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-
-    <style>
-        .stat-card {
-            border-radius: 12px;
-            padding: 20px;
-            color: #fff;
-        }
-        .bg-1 { background: #4e73df; }
-        .bg-2 { background: #1cc88a; }
-        .bg-3 { background: #36b9cc; }
-        .bg-4 { background: #f6c23e; }
-        .bg-5 { background: #e74a3b; }
-    </style>
-</head>
-
-<body class="bg-light">
-
-<div class="container-fluid p-4">
-
-    <!-- PAGE HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold">Admin Dashboard</h3>
-        <span class="text-muted">Overview & Statistics</span>
-    </div>
-
-    <!-- STATISTICS ROW -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="stat-card bg-1">
-                <h6>Total Orders</h6>
-                <h3>{{ total_orders }}</h3>
-                <small>Today: {{ today_orders }}</small>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="stat-card bg-2">
-                <h6>Total Revenue</h6>
-                <h3>₹ {{ total_revenue }}</h3>
-                <small>Last 30 days: ₹ {{ month_revenue }}</small>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="stat-card bg-3">
-                <h6>Customers</h6>
-                <h3>{{ total_customers }}</h3>
-                <small>New (30 days): {{ new_customers }}</small>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="stat-card bg-4">
-                <h6>Products</h6>
-                <h3>{{ total_products }}</h3>
-                <small>Out of stock: {{ out_of_stock }}</small>
-            </div>
-        </div>
-    </div>
-
-    <!-- ALERT CARDS -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <i class="bi bi-clock-history fs-2 text-warning"></i>
-                    <h6 class="mt-2">Pending Orders</h6>
-                    <h4>{{ pending_orders }}</h4>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <i class="bi bi-star fs-2 text-primary"></i>
-                    <h6 class="mt-2">Pending Reviews</h6>
-                    <h4>{{ pending_reviews }}</h4>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <i class="bi bi-eye fs-2 text-success"></i>
-                    <h6 class="mt-2">Eye Test Bookings</h6>
-                    <h4>{{ pending_bookings }}</h4>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <i class="bi bi-exclamation-triangle fs-2 text-danger"></i>
-                    <h6 class="mt-2">Low Stock</h6>
-                    <h4>{{ low_stock_products }}</h4>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- RECENT ORDERS & TOP PRODUCTS -->
-    <div class="row g-4">
-
-        <!-- RECENT ORDERS -->
-        <div class="col-md-7">
-            <div class="card shadow-sm">
-                <div class="card-header fw-bold">Recent Orders</div>
-                <div class="card-body p-0">
-                    <table class="table table-striped mb-0">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Customer</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {% for order in recent_orders %}
-                            <tr>
-                                <td>{{ order.id }}</td>
-                                <td>{{ order.customer }}</td>
-                                <td>
-                                    <span class="badge bg-secondary">
-                                        {{ order.status }}
-                                    </span>
-                                </td>
-                                <td>{{ order.created_at|date:"d M Y" }}</td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center">No recent orders</td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
+          <!-- Order Status & Alerts -->
+          <div class="row">
+            <!-- Orders by Status -->
+            <div class="col-md-6 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Orders by Status</h5>
+                    <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-borderless">
+                      <tbody>
+                        <tr>
+                          <td class="pl-0">
+                            <i class="mdi mdi-clock-outline text-warning mr-2"></i>
+                            <span class="font-weight-medium">Pending</span>
+                          </td>
+                          <td class="text-right pr-0">
+                            <span class="badge badge-warning">{{ pending_orders }}</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="pl-0">
+                            <i class="mdi mdi-check-circle text-success mr-2"></i>
+                            <span class="font-weight-medium">Confirmed</span>
+                          </td>
+                          <td class="text-right pr-0">
+                            <span class="badge badge-success">{{ confirmed_orders }}</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="pl-0">
+                            <i class="mdi mdi-package-variant text-info mr-2"></i>
+                            <span class="font-weight-medium">Processing</span>
+                          </td>
+                          <td class="text-right pr-0">
+                            <span class="badge badge-info">{{ processing_orders }}</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="pl-0">
+                            <i class="mdi mdi-truck text-primary mr-2"></i>
+                            <span class="font-weight-medium">Shipped</span>
+                          </td>
+                          <td class="text-right pr-0">
+                            <span class="badge badge-primary">{{ shipped_orders }}</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="pl-0">
+                            <i class="mdi mdi-check-all text-success mr-2"></i>
+                            <span class="font-weight-medium">Delivered</span>
+                          </td>
+                          <td class="text-right pr-0">
+                            <span class="badge badge-success">{{ delivered_orders }}</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="pl-0 border-0">
+                            <i class="mdi mdi-close-circle text-danger mr-2"></i>
+                            <span class="font-weight-medium">Cancelled</span>
+                          </td>
+                          <td class="text-right pr-0 border-0">
+                            <span class="badge badge-danger">{{ cancelled_orders }}</span>
+                          </td>
+                        </tr>
+                      </tbody>
                     </table>
+                  </div>
                 </div>
+              </div>
             </div>
-        </div>
 
-        <!-- TOP PRODUCTS -->
-        <div class="col-md-5">
-            <div class="card shadow-sm">
-                <div class="card-header fw-bold">Top Selling Products</div>
-                <div class="card-body p-0">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Sales</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {% for product in top_products %}
-                            <tr>
-                                <td>{{ product.name }}</td>
-                                <td>{{ product.sales_count }}</td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="2" class="text-center">No data</td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+            <!-- Alerts & Notifications -->
+            <div class="col-md-6 grid-margin stretch-card">
+              <div class="card">
+<div class="card-body">
+  <h5 class="card-title mb-3">Alerts & Notifications</h5>
 
-    </div>
+  {% if low_stock_products > 0 %}
+  <div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <strong><i class="mdi mdi-alert"></i> Low Stock Alert!</strong>
+    <p class="mb-0 mt-1 small">
+      {{ low_stock_products }} products are running low on stock.
+    </p>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %}
+
+  {% if out_of_stock > 0 %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <strong><i class="mdi mdi-alert-circle"></i> Out of Stock!</strong>
+    <p class="mb-0 mt-1 small">
+      {{ out_of_stock }} products are out of stock.
+    </p>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %}
+
+  {% if pending_reviews > 0 %}
+  <div class="alert alert-info alert-dismissible fade show" role="alert">
+    <strong><i class="mdi mdi-star"></i> Pending Reviews</strong>
+    <p class="mb-0 mt-1 small">
+      {{ pending_reviews }} reviews waiting for approval.
+    </p>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %}
+
+  {% if pending_bookings > 0 %}
+  <div class="alert alert-primary alert-dismissible fade show" role="alert">
+    <strong><i class="mdi mdi-calendar"></i> Eye Test Bookings</strong>
+    <p class="mb-0 mt-1 small">
+      {{ pending_bookings }} bookings pending confirmation.
+    </p>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %}
+
+  {% if low_stock_products == 0 and out_of_stock == 0 and pending_reviews == 0 and pending_bookings == 0 %}
+  <div class="alert alert-success" role="alert">
+    <strong><i class="mdi mdi-check-circle"></i> All Clear!</strong>
+    <p class="mb-0 mt-1 small">
+      No pending alerts at the moment. Everything looks good!
+    </p>
+  </div>
+  {% endif %}
 
 </div>
 
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Orders -->
+          <div class="row">
+            <div class="col-md-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Recent Orders</h5>
+                    <a href="#" class="btn btn-sm btn-outline-primary">View All Orders</a>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th class="font-weight-bold">Order #</th>
+                          <th class="font-weight-bold">Customer</th>
+                          <th class="font-weight-bold">Date</th>
+                          <th class="font-weight-bold">Items</th>
+                          <th class="font-weight-bold">Amount</th>
+                          <th class="font-weight-bold">Status</th>
+                          <th class="font-weight-bold text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                          <td class="font-weight-medium">#{{ order.order_number }}</td>
+                          <td>{{ order.customer_name }}</td>
+                          <td>{{ order.created_at|date:"d M Y, h:i A" }}</td>
+                          <td>{{ order.items.count }}</td>
+                          <td class="font-weight-medium">QAR {{ order.total_amount|floatformat:2 }}</td>
+                          <td>
+                            {% if order.status == 'pending' %}
+                            <label class="badge badge-warning">Pending</label>
+                            {% elif order.status == 'confirmed' %}
+                            <label class="badge badge-success">Confirmed</label>
+                            {% elif order.status == 'processing' %}
+                            <label class="badge badge-info">Processing</label>
+                            {% elif order.status == 'shipped' %}
+                            <label class="badge badge-primary">Shipped</label>
+                            {% elif order.status == 'delivered' %}
+                            <label class="badge badge-success">Delivered</label>
+                            {% elif order.status == 'cancelled' %}
+                            <label class="badge badge-danger">Cancelled</label>
+                            {% endif %}
+                          </td>
+                          <td class="text-right">
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                              <i class="mdi mdi-eye"></i> View
+                            </a>
+                          </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                          <td colspan="7" class="text-center text-muted py-4">
+                            <i class="mdi mdi-cart-outline" style="font-size: 48px;"></i>
+                            <p class="mb-0 mt-2">No orders found</p>
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Products & Low Stock -->
+          <div class="row">
+            <!-- Top Selling Products -->
+            <div class="col-md-6 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Top Selling Products</h5>
+                    <i class="mdi mdi-trending-up text-success"></i>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th class="font-weight-bold">Product</th>
+                          <th class="font-weight-bold">Brand</th>
+                          <th class="font-weight-bold">Sold</th>
+                          <th class="font-weight-bold text-right">Price</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for product in top_products %}
+                        <tr>
+                          <td class="font-weight-medium">{{ product.name|truncatewords:5 }}</td>
+                          <td>{{ product.brand.name|default:"N/A" }}</td>
+                          <td><span class="badge badge-success">{{ product.total_sold|default:0 }}</span></td>
+                          <td class="text-right font-weight-medium">QAR {{ product.base_price|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                          <td colspan="4" class="text-center text-muted py-4">No data available</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Low Stock Items -->
+            <div class="col-md-6 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0 text-danger">Low Stock Alert</h5>
+                    <i class="mdi mdi-alert text-danger"></i>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th class="font-weight-bold">Product</th>
+                          <th class="font-weight-bold">SKU</th>
+                          <th class="font-weight-bold">Stock</th>
+                          <th class="font-weight-bold text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for item in low_stock_items %}
+                        <tr>
+                          <td class="font-weight-medium">{{ item.name|truncatewords:5 }}</td>
+                          <td><code class="text-dark">{{ item.sku }}</code></td>
+                          <td><span class="badge badge-warning">{{ item.stock_quantity }}</span></td>
+                          <td class="text-right">
+                            <button class="btn btn-sm btn-outline-info">
+                              <i class="mdi mdi-plus"></i> Restock
+                            </button>
+                          </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                          <td colspan="4" class="text-center text-success py-4">
+                            <i class="mdi mdi-check-circle" style="font-size: 36px;"></i>
+                            <p class="mb-0 mt-2">All products have sufficient stock!</p>
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Product Categories Overview -->
+          <div class="row">
+            <div class="col-md-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title mb-4">Products by Category</h5>
+                  <div class="row">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                      <div class="d-flex align-items-center p-3 bg-warning-light rounded">
+                        <div class="icon-box-warning mr-3">
+                          <i class="mdi mdi-sunglasses text-warning icon-lg"></i>
+                        </div>
+                        <div>
+                          <h4 class="mb-0 font-weight-bold">{{ sunglasses_count }}</h4>
+                          <p class="text-muted mb-0">Sunglasses</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                      <div class="d-flex align-items-center p-3 bg-primary-light rounded">
+                        <div class="icon-box-info mr-3">
+                          <i class="mdi mdi-glasses text-primary icon-lg"></i>
+                        </div>
+                        <div>
+                          <h4 class="mb-0 font-weight-bold">{{ eyeglasses_count }}</h4>
+                          <p class="text-muted mb-0">Eyeglasses</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                      <div class="d-flex align-items-center p-3 bg-info-light rounded">
+                        <div class="icon-box-info mr-3">
+                          <i class="mdi mdi-eye text-info icon-lg"></i>
+                        </div>
+                        <div>
+                          <h4 class="mb-0 font-weight-bold">{{ contact_lenses_count }}</h4>
+                          <p class="text-muted mb-0">Contact Lenses</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                      <div class="d-flex align-items-center p-3 bg-success-light rounded">
+                        <div class="icon-box-success mr-3">
+                          <i class="mdi mdi-bag-personal text-success icon-lg"></i>
+                        </div>
+                        <div>
+                          <h4 class="mb-0 font-weight-bold">{{ accessories_count }}</h4>
+                          <p class="text-muted mb-0">Accessories</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- content-wrapper ends -->
+      </div>
+      <!-- main-panel ends -->
+    </div>
+    <!-- page-body-wrapper ends -->
+  </div>
+  <!-- container-scroller -->
+  <!-- Scripts -->
+  <script src="{% static 'assets/vendors/js/vendor.bundle.base.js' %}"></script>
+  <script src="{% static 'assets/vendors/chart.js/Chart.min.js' %}"></script>
+  <script src="{% static 'assets/vendors/progressbar.js/progressbar.min.js' %}"></script>
+  <script src="{% static 'assets/vendors/jvectormap/jquery-jvectormap.min.js' %}"></script>
+  <script src="{% static 'assets/vendors/jvectormap/jquery-jvectormap-world-mill-en.js' %}"></script>
+  <script src="{% static 'assets/vendors/owl-carousel-2/owl.carousel.min.js' %}"></script>
+  <script src="{% static 'assets/js/off-canvas.js' %}"></script>
+  <script src="{% static 'assets/js/hoverable-collapse.js' %}"></script>
+  <script src="{% static 'assets/js/misc.js' %}"></script>
+  <script src="{% static 'assets/js/settings.js' %}"></script>
+  <script src="{% static 'assets/js/todolist.js' %}"></script>
+  <script src="{% static 'assets/js/dashboard.js' %}"></script>
 </body>
+
 </html>
