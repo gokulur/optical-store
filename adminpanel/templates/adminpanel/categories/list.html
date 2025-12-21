@@ -142,7 +142,7 @@
                                class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <a href=" "
+                            <a href="{% url 'adminpanel:delete_category' category.id %}"
                                class="btn btn-sm btn-outline-danger"
                                onclick="return confirm('Are you sure?');">
                                 <i class="bi bi-trash"></i>
