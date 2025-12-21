@@ -248,3 +248,28 @@ def category_delete(request, category_id):
     
     context = {'category': category}
     return render(request, 'adminpanel/categories/delete_confirm.html', context)
+
+
+
+# ==================== BRANDS ====================
+
+# @login_required
+# @user_passes_test(is_admin)
+def brand_list(request):
+    """List all brands"""
+    search = request.GET.get('search', '')
+    
+    brands = Brand.objects.all().order_by('display_order', 'name')
+    
+    if search:
+        brands = brands.filter(name__icontains=search)
+    
+    paginator = Paginator(brands, 25)
+    page = request.GET.get('page', 1)
+    brands = paginator.get_page(page)
+    
+    context = {
+        'brands': brands,
+        'search': search,
+    }
+    return render(request, 'adminpanel/brands/list.html', context)
