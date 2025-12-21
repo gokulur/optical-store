@@ -285,7 +285,9 @@
 
     <!-- Main Content -->
     <div class="container-fluid page-body-wrapper">
-
+   
+      {% block content %}
+    
       <!-- Top Navbar -->
       <nav class="navbar p-0 fixed-top d-flex flex-row">
         <div class="navbar-brand-wrapper d-flex d-lg-none align-items-center justify-content-center"></div>
@@ -847,7 +849,9 @@
       <!-- main-panel ends -->
     </div>
     <!-- page-body-wrapper ends -->
+     
   </div>
+  {% endblock %}
   <!-- container-scroller -->
   <!-- Scripts -->
   <script src="{% static 'assets/vendors/js/vendor.bundle.base.js' %}"></script>
