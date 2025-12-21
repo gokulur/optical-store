@@ -1,0 +1,49 @@
+<h4>Edit Product: {{ product.name }}</h4>
+<p class="text-muted">SKU: {{ product.sku }}</p>
+
+<!-- reuse same form as add.html with value="{{ product.field }}" -->
+
+<hr>
+<h6>Variants ({{ variants.count }})</h6>
+
+<ul class="list-group mb-3">
+{% for v in variants %}
+    <li class="list-group-item">
+        {{ v.variant_sku }} | {{ v.color_name }} | Stock: {{ v.stock_quantity }}
+    </li>
+{% empty %}
+    <li class="list-group-item">No variants</li>
+{% endfor %}
+</ul>
+
+<hr>
+<h6>Images</h6>
+<div class="row">
+{% for img in images %}
+    <div class="col-md-2 mb-2">
+        <img src="{{ img.image.url }}" class="img-fluid rounded">
+    </div>
+{% endfor %}
+</div>
+
+<hr>
+<h6>Specifications</h6>
+<ul>
+{% for s in specifications %}
+    <li>{{ s.spec_key }} : {{ s.spec_value }}</li>
+{% endfor %}
+</ul>
+
+{% if contact_lens_details %}
+<hr>
+<h6>Contact Lens Details</h6>
+<p>Type: {{ contact_lens_details.lens_type }}</p>
+<p>Schedule: {{ contact_lens_details.replacement_schedule }}</p>
+
+<h6>Power Options</h6>
+<ul>
+{% for p in contact_lens_powers %}
+    <li>{{ p.power_value }} (Stock {{ p.stock_quantity }})</li>
+{% endfor %}
+</ul>
+{% endif %}
