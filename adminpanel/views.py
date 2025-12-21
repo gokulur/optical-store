@@ -273,3 +273,87 @@ def brand_list(request):
         'search': search,
     }
     return render(request, 'adminpanel/brands/list.html', context)
+
+
+# @login_required
+# @user_passes_test(is_admin)
+def brand_add(request):
+    """Add new brand"""
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        slug = request.POST.get('slug')
+        description = request.POST.get('description', '')
+        logo = request.FILES.get('logo')
+        
+        available_for_sunglasses = request.POST.get('available_for_sunglasses') == 'on'
+        available_for_eyeglasses = request.POST.get('available_for_eyeglasses') == 'on'
+        available_for_kids = request.POST.get('available_for_kids') == 'on'
+        available_for_contact_lenses = request.POST.get('available_for_contact_lenses') == 'on'
+        
+        display_order = request.POST.get('display_order', 0)
+        is_active = request.POST.get('is_active') == 'on'
+        
+        brand = Brand.objects.create(
+            name=name,
+            slug=slug,
+            description=description,
+            logo=logo,
+            available_for_sunglasses=available_for_sunglasses,
+            available_for_eyeglasses=available_for_eyeglasses,
+            available_for_kids=available_for_kids,
+            available_for_contact_lenses=available_for_contact_lenses,
+            display_order=display_order,
+            is_active=is_active
+        )
+        
+        messages.success(request, f'Brand "{name}" created successfully!')
+        return redirect('adminpanel:brand_list')
+    
+    return render(request, 'adminpanel/brands/add.html')
+
+
+# @login_required
+# @user_passes_test(is_admin)
+def brand_edit(request, brand_id):
+    """Edit brand"""
+    brand = get_object_or_404(Brand, id=brand_id)
+    
+    if request.method == 'POST':
+        brand.name = request.POST.get('name')
+        brand.slug = request.POST.get('slug')
+        brand.description = request.POST.get('description', '')
+        
+        if 'logo' in request.FILES:
+            brand.logo = request.FILES['logo']
+        
+        brand.available_for_sunglasses = request.POST.get('available_for_sunglasses') == 'on'
+        brand.available_for_eyeglasses = request.POST.get('available_for_eyeglasses') == 'on'
+        brand.available_for_kids = request.POST.get('available_for_kids') == 'on'
+        brand.available_for_contact_lenses = request.POST.get('available_for_contact_lenses') == 'on'
+        
+        brand.display_order = request.POST.get('display_order', 0)
+        brand.is_active = request.POST.get('is_active') == 'on'
+        
+        brand.save()
+        
+        messages.success(request, f'Brand "{brand.name}" updated successfully!')
+        return redirect('adminpanel:brand_list')
+    
+    context = {'brand': brand}
+    return render(request, 'adminpanel/brands/edit.html', context)
+
+
+# @login_required
+# @user_passes_test(is_admin)
+def brand_delete(request, brand_id):
+    """Delete brand"""
+    brand = get_object_or_404(Brand, id=brand_id)
+    
+    if request.method == 'POST':
+        name = brand.name
+        brand.delete()
+        messages.success(request, f'Brand "{name}" deleted successfully!')
+        return redirect('adminpanel:brand_list')
+    
+    context = {'brand': brand}
+    return render(request, 'adminpanel/brands/delete_confirm.html', context)

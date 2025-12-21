@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Brand</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container-fluid p-4">
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold">Add New Brand</h4>
+        <a href="{% url 'adminpanel:brand_list' %}" class="btn btn-outline-secondary">
+            ← Back to Brands
+        </a>
+    </div>
+
+    <!-- FORM CARD -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- BRAND NAME -->
+                <div class="mb-3">
+                    <label class="form-label">Brand Name *</label>
+                    <input type="text"
+                           name="name"
+                           class="form-control"
+                           required>
+                </div>
+
+                <!-- SLUG -->
+                <div class="mb-3">
+                    <label class="form-label">Slug *</label>
+                    <input type="text"
+                           name="slug"
+                           class="form-control"
+                           placeholder="example: ray-ban"
+                           required>
+                </div>
+
+                <!-- DESCRIPTION -->
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea name="description"
+                              class="form-control"
+                              rows="3"></textarea>
+                </div>
+
+                <!-- LOGO -->
+                <div class="mb-3">
+                    <label class="form-label">Brand Logo *</label>
+                    <input type="file"
+                           name="logo"
+                           class="form-control"
+                           accept="image/*"
+                           required>
+                </div>
+
+                <!-- AVAILABILITY -->
+                <div class="mb-3">
+                    <label class="form-label">Available For</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="available_for_sunglasses" id="sunglasses">
+                        <label class="form-check-label" for="sunglasses">Sunglasses</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="available_for_eyeglasses" id="eyeglasses">
+                        <label class="form-check-label" for="eyeglasses">Eyeglasses</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="available_for_kids" id="kids">
+                        <label class="form-check-label" for="kids">Kids</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="available_for_contact_lenses" id="contact">
+                        <label class="form-check-label" for="contact">Contact Lenses</label>
+                    </div>
+                </div>
+
+                <!-- DISPLAY ORDER -->
+                <div class="mb-3">
+                    <label class="form-label">Display Order</label>
+                    <input type="number"
+                           name="display_order"
+                           class="form-control"
+                           value="0">
+                </div>
+
+                <!-- STATUS -->
+                <div class="form-check mb-4">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           name="is_active"
+                           id="is_active"
+                           checked>
+                    <label class="form-check-label" for="is_active">
+                        Active
+                    </label>
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        Save Brand
+                    </button>
+                    <a href="{% url 'adminpanel:brand_list' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -14,6 +14,8 @@ urlpatterns = [
 
     # Brands
     path("brands/", views.brand_list, name="brand_list"),
-
+    path("brands/add/", views.brand_add, name="add_brand_page"),
+    path("brands/edit/<int:brand_id>/", views.brand_edit, name="brand_edit"),
+    path("brands/delete/<int:brand_id>/", views.brand_delete, name="delete_brand"),
 ]
 
