@@ -1,148 +1,661 @@
+<!-- adminpanel/templates/adminpanel/categories/edit.html -->
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Category</title>
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Edit Category - Admin Panel</title>
+  <link rel="stylesheet" href="{% static 'assets/vendors/mdi/css/materialdesignicons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/vendors/css/vendor.bundle.base.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/vendors/jvectormap/jquery-jvectormap.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/vendors/flag-icon-css/css/flag-icon.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/vendors/owl-carousel-2/owl.carousel.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/vendors/owl-carousel-2/owl.theme.default.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
 </head>
 
-<body class="bg-light">
+<style>
+  .white-logo {
+    filter: brightness(0) invert(1);
+    transition: 0.3s ease;
+  }
 
-<div class="container-fluid p-4">
+  .white-logo:hover {
+    filter: brightness(0) invert(0.9);
+  }
 
-    <!-- PAGE HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold">Edit Category</h4>
-        <a href="{% url 'adminpanel:category_list' %}" class="btn btn-outline-secondary">
-            ← Back to Categories
+  .form-control:focus {
+    border-color: #b66dff;
+    box-shadow: 0 0 0 0.2rem rgba(182, 109, 255, 0.25);
+  }
+
+  .card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.3s ease;
+  }
+
+  .image-preview {
+    max-width: 200px;
+    max-height: 200px;
+    margin-top: 10px;
+    border-radius: 8px;
+  }
+
+  .current-image {
+    max-width: 150px;
+    max-height: 150px;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    padding: 5px;
+  }
+
+  .custom-file-label::after {
+    content: "Browse";
+  }
+
+  .btn-gradient-primary {
+    background: linear-gradient(to right, #da8cff, #9a55ff);
+  }
+
+  .page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+  }
+
+  .info-card {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .image-section {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px dashed #dee2e6;
+  }
+
+  .remove-image-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .image-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+</style>
+
+<body>
+  <div class="container-scroller">
+
+    <!-- Sidebar -->
+    <nav class="sidebar sidebar-offcanvas" id="sidebar">
+      <div class="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
+        <a class="sidebar-brand brand-logo" href="#">
+          <img src="{% static 'cdn/shop/files/rihazain.logo.png' %}" alt="logo" class="white-logo" />
         </a>
-    </div>
-
-    <!-- FORM CARD -->
-    <div class="card shadow-sm">
-        <div class="card-body">
-
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-
-                <!-- NAME -->
-                <div class="mb-3">
-                    <label class="form-label">Category Name *</label>
-                    <input type="text"
-                           name="name"
-                           class="form-control"
-                           value="{{ category.name }}"
-                           required>
+        <a class="sidebar-brand brand-logo-mini" href="#">
+          <img src="{% static 'cdn/shop/files/rihazain.logo.png' %}" alt="logo" class="white-logo" />
+        </a>
+      </div>
+      <ul class="nav">
+        <li class="nav-item profile">
+          <div class="profile-desc">
+            <div class="profile-pic">
+              <div class="count-indicator">
+                <img class="img-xs rounded-circle" src="{% static 'assets/images/faces/admin2.jpg' %}" alt="">
+                <span class="count bg-success"></span>
+              </div>
+              <div class="profile-name">
+                <h5 class="mb-0 font-weight-normal">{{ request.user.get_full_name|default:'Admin' }}</h5>
+              </div>
+            </div>
+            <a href="#" id="profile-dropdown" data-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></a>
+            <div class="dropdown-menu dropdown-menu-right sidebar-dropdown preview-list"
+              aria-labelledby="profile-dropdown">
+              <a href="#" class="dropdown-item preview-item">
+                <div class="preview-thumbnail">
+                  <div class="preview-icon bg-dark rounded-circle">
+                    <i class="mdi mdi-settings text-primary"></i>
+                  </div>
                 </div>
-
-                <!-- SLUG -->
-                <div class="mb-3">
-                    <label class="form-label">Slug *</label>
-                    <input type="text"
-                           name="slug"
-                           class="form-control"
-                           value="{{ category.slug }}"
-                           required>
+                <div class="preview-item-content">
+                  <p class="preview-subject ellipsis mb-1 text-small">Account settings</p>
                 </div>
-
-                <!-- DESCRIPTION -->
-                <div class="mb-3">
-                    <label class="form-label">Description</label>
-                    <textarea name="description"
-                              class="form-control"
-                              rows="3">{{ category.description }}</textarea>
+              </a>
+              <div class="dropdown-divider"></div>
+              <a href="#" class="dropdown-item preview-item">
+                <div class="preview-thumbnail">
+                  <div class="preview-icon bg-dark rounded-circle">
+                    <i class="mdi mdi-onepassword text-info"></i>
+                  </div>
                 </div>
-
-                <!-- PRODUCT TYPE -->
-                <div class="mb-3">
-                    <label class="form-label">Product Type *</label>
-                    <select name="product_type" class="form-select" required>
-                        <option value="">Select product type</option>
-                        <option value="sunglasses" {% if category.product_type == 'sunglasses' %}selected{% endif %}>Sunglasses</option>
-                        <option value="eyeglasses" {% if category.product_type == 'eyeglasses' %}selected{% endif %}>Eyeglasses</option>
-                        <option value="contact_lenses" {% if category.product_type == 'contact_lenses' %}selected{% endif %}>Contact Lenses</option>
-                        <option value="accessories" {% if category.product_type == 'accessories' %}selected{% endif %}>Accessories</option>
-                        <option value="reading_glasses" {% if category.product_type == 'reading_glasses' %}selected{% endif %}>Reading Glasses</option>
-                    </select>
+                <div class="preview-item-content">
+                  <p class="preview-subject ellipsis mb-1 text-small">Change Password</p>
                 </div>
+              </a>
+            </div>
+          </div>
+        </li>
 
-                <!-- PARENT CATEGORY -->
-                <div class="mb-3">
-                    <label class="form-label">Parent Category</label>
-                    <select name="parent" class="form-select">
-                        <option value="">None (Main Category)</option>
-                        {% for cat in parent_categories %}
-                            <option value="{{ cat.id }}"
-                                {% if category.parent and category.parent.id == cat.id %}
-                                    selected
-                                {% endif %}
-                            >
-                                {{ cat.name }}
+        <li class="nav-item nav-category">
+          <span class="nav-link">Navigation</span>
+        </li>
+
+        <li class="nav-item menu-items">
+          <a class="nav-link" href="#">
+            <span class="menu-icon"><i class="mdi mdi-speedometer"></i></span>
+            <span class="menu-title">Dashboard</span>
+          </a>
+        </li>
+
+        <li class="nav-item menu-items active">
+          <a class="nav-link" data-toggle="collapse" href="#catalogMenu" aria-expanded="true">
+            <span class="menu-icon"><i class="mdi mdi-shape-outline"></i></span>
+            <span class="menu-title">Catalog</span>
+            <i class="menu-arrow"></i>
+          </a>
+          <div class="collapse show" id="catalogMenu">
+            <ul class="nav flex-column sub-menu">
+              <li class="nav-item"><a class="nav-link" href="#">Add Category</a></li>
+              <li class="nav-item"><a class="nav-link active" href="#">List Categories</a></li>
+              <li class="nav-item"><a class="nav-link" href="#">Add Brand</a></li>
+              <li class="nav-item"><a class="nav-link" href="#">List Brands</a></li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="nav-item menu-items">
+          <a class="nav-link" data-toggle="collapse" href="#productMenu">
+            <span class="menu-icon"><i class="mdi mdi-package-variant"></i></span>
+            <span class="menu-title">Products</span>
+            <i class="menu-arrow"></i>
+          </a>
+          <div class="collapse" id="productMenu">
+            <ul class="nav flex-column sub-menu">
+              <li class="nav-item"><a class="nav-link" href="#">Add Product</a></li>
+              <li class="nav-item"><a class="nav-link" href="#">All Products</a></li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="nav-item menu-items">
+          <a class="nav-link" data-toggle="collapse" href="#lensMenu">
+            <span class="menu-icon"><i class="mdi mdi-glasses"></i></span>
+            <span class="menu-title">Lenses</span>
+            <i class="menu-arrow"></i>
+          </a>
+          <div class="collapse" id="lensMenu">
+            <ul class="nav flex-column sub-menu">
+              <li class="nav-item"><a class="nav-link" href="#">Lens Options</a></li>
+              <li class="nav-item"><a class="nav-link" href="#">Lens Categories</a></li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="nav-item menu-items">
+          <a class="nav-link" data-toggle="collapse" href="#orderMenu">
+            <span class="menu-icon"><i class="mdi mdi-cart-outline"></i></span>
+            <span class="menu-title">Orders</span>
+            <i class="menu-arrow"></i>
+          </a>
+          <div class="collapse" id="orderMenu">
+            <ul class="nav flex-column sub-menu">
+              <li class="nav-item"><a class="nav-link" href="#">All Orders</a></li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="nav-item menu-items">
+          <a class="nav-link" data-toggle="collapse" href="#customerMenu">
+            <span class="menu-icon"><i class="mdi mdi-account-group"></i></span>
+            <span class="menu-title">Customers</span>
+            <i class="menu-arrow"></i>
+          </a>
+          <div class="collapse" id="customerMenu">
+            <ul class="nav flex-column sub-menu">
+              <li class="nav-item"><a class="nav-link" href="#">All Customers</a></li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="nav-item menu-items">
+          <a class="nav-link" data-toggle="collapse" href="#contentMenu">
+            <span class="menu-icon"><i class="mdi mdi-image-multiple"></i></span>
+            <span class="menu-title">Content</span>
+            <i class="menu-arrow"></i>
+          </a>
+          <div class="collapse" id="contentMenu">
+            <ul class="nav flex-column sub-menu">
+              <li class="nav-item"><a class="nav-link" href="#">Banners</a></li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="nav-item menu-items">
+          <a class="nav-link" data-toggle="collapse" href="#reviewMenu">
+            <span class="menu-icon"><i class="mdi mdi-star"></i></span>
+            <span class="menu-title">Reviews</span>
+            <i class="menu-arrow"></i>
+          </a>
+          <div class="collapse" id="reviewMenu">
+            <ul class="nav flex-column sub-menu">
+              <li class="nav-item"><a class="nav-link" href="#">All Reviews</a></li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="nav-item menu-items">
+          <a class="nav-link text-danger" href="#">
+            <span class="menu-icon"><i class="mdi mdi-logout"></i></span>
+            <span class="menu-title">Logout</span>
+          </a>
+        </li>
+
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid page-body-wrapper">
+
+      <!-- Top Navbar -->
+      <nav class="navbar p-0 fixed-top d-flex flex-row">
+        <div class="navbar-brand-wrapper d-flex d-lg-none align-items-center justify-content-center"></div>
+        <div class="navbar-menu-wrapper flex-grow d-flex align-items-stretch">
+          <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+            <span class="mdi mdi-menu"></span>
+          </button>
+
+          <ul class="navbar-nav navbar-nav-right">
+            <li class="nav-item dropdown">
+              <a class="nav-link" id="profileDropdown" href="#" data-toggle="dropdown">
+                <div class="navbar-profile">
+                  <img class="img-xs rounded-circle" src="{% static 'assets/images/faces/admin2.jpg' %}" alt="">
+                  <p class="mb-0 d-none d-sm-block navbar-profile-name">
+                    {{ request.user.get_full_name|default:'Admin' }}
+                  </p>
+                  <i class="mdi mdi-menu-down d-none d-sm-block"></i>
+                </div>
+              </a>
+              <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list"
+                aria-labelledby="profileDropdown">
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item preview-item" href="#">
+                  <div class="preview-thumbnail">
+                    <div class="preview-icon bg-dark rounded-circle">
+                      <i class="mdi mdi-logout text-danger"></i>
+                    </div>
+                  </div>
+                  <div class="preview-item-content">
+                    <p class="preview-subject mb-1">Log out</p>
+                  </div>
+                </a>
+              </div>
+            </li>
+          </ul>
+          <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button"
+            data-toggle="offcanvas">
+            <span class="mdi mdi-format-line-spacing"></span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Main Panel -->
+      <div class="main-panel">
+        <div class="content-wrapper">
+
+          <!-- Page Header -->
+          <div class="page-header">
+            <h3 class="mb-2"><i class="mdi mdi-pencil"></i> Edit Category</h3>
+            <p class="mb-0">Update category information - <strong>{{ category.name }}</strong></p>
+          </div>
+
+          <!-- Breadcrumb -->
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent p-0 mb-4">
+              <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+              <li class="breadcrumb-item"><a href="#">Catalog</a></li>
+              <li class="breadcrumb-item"><a href="#">Categories</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Edit Category</li>
+            </ol>
+          </nav>
+
+          <!-- Messages -->
+          {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <strong>
+              {% if message.tags == 'success' %}
+              <i class="mdi mdi-check-circle"></i>
+              {% elif message.tags == 'error' %}
+              <i class="mdi mdi-alert-circle"></i>
+              {% elif message.tags == 'warning' %}
+              <i class="mdi mdi-alert"></i>
+              {% else %}
+              <i class="mdi mdi-information"></i>
+              {% endif %}
+            </strong>
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endfor %}
+          {% endif %}
+
+          <!-- Category Info Card -->
+          <div class="info-card">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h5 class="mb-2"><i class="mdi mdi-information"></i> Category Details</h5>
+                <p class="mb-1"><strong>Category ID:</strong> #{{ category.id }}</p>
+                <p class="mb-1"><strong>Created:</strong> {{ category.created_at|date:"d M Y, h:i A" }}</p>
+                <p class="mb-0"><strong>Last Updated:</strong> {{ category.updated_at|date:"d M Y, h:i A" }}</p>
+              </div>
+              <div class="col-md-4 text-right">
+                <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#deleteModal">
+                  <i class="mdi mdi-delete"></i> Delete Category
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit Category Form -->
+          <div class="row">
+            <div class="col-md-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title mb-4">
+                    <i class="mdi mdi-form-select"></i> Category Information
+                  </h4>
+
+                  <form method="POST" enctype="multipart/form-data" id="categoryForm">
+                    {% csrf_token %}
+
+                    <div class="row">
+                      <!-- Left Column -->
+                      <div class="col-md-6">
+                        
+                        <!-- Category Name -->
+                        <div class="form-group">
+                          <label for="name" class="font-weight-bold">
+                            Category Name <span class="text-danger">*</span>
+                          </label>
+                          <input type="text" class="form-control form-control-lg" id="name" name="name" 
+                                 placeholder="Enter category name" value="{{ category.name }}" required>
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information"></i> Enter a unique category name
+                          </small>
+                        </div>
+
+                        <!-- Slug -->
+                        <div class="form-group">
+                          <label for="slug" class="font-weight-bold">
+                            Slug <span class="text-danger">*</span>
+                          </label>
+                          <input type="text" class="form-control form-control-lg" id="slug" name="slug" 
+                                 placeholder="category-slug" value="{{ category.slug }}" required>
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information"></i> URL-friendly version (auto-generated from name)
+                          </small>
+                        </div>
+
+                        <!-- Product Type -->
+                        <div class="form-group">
+                          <label for="product_type" class="font-weight-bold">
+                            Product Type <span class="text-danger">*</span>
+                          </label>
+                          <select class="form-control form-control-lg" id="product_type" name="product_type" required>
+                            <option value="">-- Select Product Type --</option>
+                            <option value="sunglasses" {% if category.product_type == 'sunglasses' %}selected{% endif %}>Sunglasses</option>
+                            <option value="eyeglasses" {% if category.product_type == 'eyeglasses' %}selected{% endif %}>Eyeglasses</option>
+                            <option value="contact_lenses" {% if category.product_type == 'contact_lenses' %}selected{% endif %}>Contact Lenses</option>
+                            <option value="accessories" {% if category.product_type == 'accessories' %}selected{% endif %}>Accessories</option>
+                            <option value="reading_glasses" {% if category.product_type == 'reading_glasses' %}selected{% endif %}>Reading Glasses</option>
+                          </select>
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information"></i> Select the type of products in this category
+                          </small>
+                        </div>
+
+                        <!-- Parent Category -->
+                        <div class="form-group">
+                          <label for="parent" class="font-weight-bold">Parent Category</label>
+                          <select class="form-control form-control-lg" id="parent" name="parent">
+                            <option value="">-- No Parent (Root Category) --</option>
+                            {% for cat in parent_categories %}
+                            <option value="{{ cat.id }}" {% if category.parent and category.parent.id == cat.id %}selected{% endif %}>
+                              {{ cat.name }}
                             </option>
-                        {% endfor %}
-                    </select>
-                </div>
+                            {% endfor %}
+                          </select>
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information"></i> Optional: Select a parent category for hierarchy
+                          </small>
+                        </div>
 
-                <!-- DISPLAY ORDER -->
-                <div class="mb-3">
-                    <label class="form-label">Display Order</label>
-                    <input type="number"
-                           name="display_order"
-                           class="form-control"
-                           value="{{ category.display_order }}">
-                </div>
+                      </div>
 
-                <!-- CURRENT IMAGE -->
-                {% if category.image %}
-                <div class="mb-3">
-                    <label class="form-label">Current Image</label><br>
-                    <img src="{{ category.image.url }}"
-                         alt="Category Image"
-                         class="img-thumbnail"
-                         style="max-height: 120px;">
-                </div>
-                {% endif %}
+                      <!-- Right Column -->
+                      <div class="col-md-6">
 
-                <!-- IMAGE UPLOAD -->
-                <div class="mb-3">
-                    <label class="form-label">Change Image</label>
-                    <input type="file"
-                           name="image"
-                           class="form-control"
-                           accept="image/*">
-                </div>
+                        <!-- Description -->
+                        <div class="form-group">
+                          <label for="description" class="font-weight-bold">Description</label>
+                          <textarea class="form-control" id="description" name="description" rows="5" 
+                                    placeholder="Enter category description...">{{ category.description }}</textarea>
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information"></i> Brief description of this category
+                          </small>
+                        </div>
 
-                <!-- STATUS -->
-                <div class="form-check mb-4">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           name="is_active"
-                           id="is_active"
-                           {% if category.is_active %}checked{% endif %}>
-                    <label class="form-check-label" for="is_active">
-                        Active
-                    </label>
-                </div>
+                        <!-- Current Image -->
+                        {% if category.image %}
+                        <div class="form-group">
+                          <label class="font-weight-bold">Current Image</label>
+                          <div class="image-section">
+                            <div class="image-wrapper">
+                              <img src="{{ category.image.url }}" alt="{{ category.name }}" class="current-image">
+                              <button type="button" class="remove-image-btn" onclick="removeCurrentImage()">
+                                <i class="mdi mdi-close"></i>
+                              </button>
+                            </div>
+                            <input type="hidden" name="remove_image" id="remove_image" value="0">
+                          </div>
+                        </div>
+                        {% endif %}
 
-                <!-- ACTION BUTTONS -->
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        Update Category
-                    </button>
-                    <a href="{% url 'adminpanel:category_list' %}" class="btn btn-secondary">
-                        Cancel
-                    </a>
-                </div>
+                        <!-- Category Image -->
+                        <div class="form-group">
+                          <label for="image" class="font-weight-bold">
+                            {% if category.image %}Change{% else %}Upload{% endif %} Category Image
+                          </label>
+                          <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="image" name="image" 
+                                   accept="image/*" onchange="previewImage(event)">
+                            <label class="custom-file-label" for="image">Choose image...</label>
+                          </div>
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information"></i> Recommended size: 800x600px (JPG, PNG)
+                          </small>
+                          <img id="imagePreview" class="image-preview" style="display: none;" alt="New Image Preview">
+                        </div>
 
-            </form>
+                        <!-- Display Order -->
+                        <div class="form-group">
+                          <label for="display_order" class="font-weight-bold">Display Order</label>
+                          <input type="number" class="form-control form-control-lg" id="display_order" 
+                                 name="display_order" value="{{ category.display_order }}" min="0">
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information"></i> Lower numbers appear first
+                          </small>
+                        </div>
+
+                        <!-- Active Status -->
+                        <div class="form-group">
+                          <div class="form-check form-check-success">
+                            <label class="form-check-label">
+                              <input type="checkbox" class="form-check-input" name="is_active" 
+                                     {% if category.is_active %}checked{% endif %}>
+                              <span class="font-weight-bold">Active</span>
+                              <i class="input-helper"></i>
+                            </label>
+                          </div>
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information"></i> Check to make this category visible on the website
+                          </small>
+                        </div>
+
+                      </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="row mt-4">
+                      <div class="col-12">
+                        <hr>
+                        <button type="submit" class="btn btn-gradient-primary btn-lg mr-2">
+                          <i class="mdi mdi-check"></i> Update Category
+                        </button>
+                        <a href="#" class="btn btn-light btn-lg">
+                          <i class="mdi mdi-close"></i> Cancel
+                        </a>
+                        <button type="button" class="btn btn-outline-danger btn-lg float-right" 
+                                data-toggle="modal" data-target="#deleteModal">
+                          <i class="mdi mdi-delete"></i> Delete Category
+                        </button>
+                      </div>
+                    </div>
+
+                  </form>
+
+                </div>
+              </div>
+            </div>
+          </div>
 
         </div>
+        <!-- content-wrapper ends -->
+      </div>
+      <!-- main-panel ends -->
     </div>
+    <!-- page-body-wrapper ends -->
+  </div>
+  <!-- container-scroller -->
 
-</div>
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">
+            <i class="mdi mdi-alert"></i> Confirm Delete
+          </h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0">Are you sure you want to delete the category <strong>{{ category.name }}</strong>?</p>
+          <p class="text-danger mb-0 mt-2"><small><i class="mdi mdi-alert"></i> This action cannot be undone! All products in this category will be affected.</small></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+          <form action="#" method="POST" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+              <i class="mdi mdi-delete"></i> Yes, Delete Category
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="{% static 'assets/vendors/js/vendor.bundle.base.js' %}"></script>
+  <script src="{% static 'assets/vendors/chart.js/Chart.min.js' %}"></script>
+  <script src="{% static 'assets/vendors/progressbar.js/progressbar.min.js' %}"></script>
+  <script src="{% static 'assets/vendors/jvectormap/jquery-jvectormap.min.js' %}"></script>
+  <script src="{% static 'assets/vendors/jvectormap/jquery-jvectormap-world-mill-en.js' %}"></script>
+  <script src="{% static 'assets/vendors/owl-carousel-2/owl.carousel.min.js' %}"></script>
+  <script src="{% static 'assets/js/off-canvas.js' %}"></script>
+  <script src="{% static 'assets/js/hoverable-collapse.js' %}"></script>
+  <script src="{% static 'assets/js/misc.js' %}"></script>
+  <script src="{% static 'assets/js/settings.js' %}"></script>
+  <script src="{% static 'assets/js/todolist.js' %}"></script>
+
+  <script>
+    // Auto-generate slug from category name
+    document.getElementById('name').addEventListener('input', function(e) {
+      const slug = e.target.value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      document.getElementById('slug').value = slug;
+    });
+
+    // Image preview function
+    function previewImage(event) {
+      const reader = new FileReader();
+      const imagePreview = document.getElementById('imagePreview');
+      const file = event.target.files[0];
+      
+      if (file) {
+        reader.onload = function(e) {
+          imagePreview.src = e.target.result;
+          imagePreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+        
+        // Update file label
+        const fileName = file.name;
+        event.target.nextElementSibling.textContent = fileName;
+      }
+    }
+
+    // Remove current image
+    function removeCurrentImage() {
+      if (confirm('Are you sure you want to remove the current image?')) {
+        document.getElementById('remove_image').value = '1';
+        document.querySelector('.image-wrapper').style.display = 'none';
+      }
+    }
+
+    // Form validation
+    document.getElementById('categoryForm').addEventListener('submit', function(e) {
+      const name = document.getElementById('name').value.trim();
+      const slug = document.getElementById('slug').value.trim();
+      const productType = document.getElementById('product_type').value;
+
+      if (!name || !slug || !productType) {
+        e.preventDefault();
+        alert('Please fill in all required fields!');
+        return false;
+      }
+    });
+  </script>
 
 </body>
+
 </html>
