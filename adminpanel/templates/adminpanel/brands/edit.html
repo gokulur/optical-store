@@ -1,158 +1,490 @@
+{% extends 'admin-dashboard.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Brand</title>
+{% block content %}
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+<style>
+  .white-logo {
+    filter: brightness(0) invert(1);
+    transition: 0.3s ease;
+  }
 
-<body class="bg-light">
+  .white-logo:hover {
+    filter: brightness(0) invert(0.9);
+  }
 
-<div class="container-fluid p-4">
+  .form-control:focus {
+    border-color: #b66dff;
+    box-shadow: 0 0 0 0.2rem rgba(182, 109, 255, 0.25);
+  }
 
-    <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold">Edit Brand</h4>
-        <a href="{% url 'adminpanel:brand_list' %}" class="btn btn-outline-secondary">
-            ← Back to Brands
-        </a>
-    </div>
+  .card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.3s ease;
+  }
 
-    <!-- FORM -->
-    <div class="card shadow-sm">
-        <div class="card-body">
+  .image-preview {
+    max-width: 200px;
+    max-height: 200px;
+    margin-top: 10px;
+    border-radius: 8px;
+    display: none;
+  }
 
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
+  /* Specific style for showing current logo vs preview */
+  .current-logo {
+    max-width: 200px;
+    max-height: 100px;
+    object-fit: contain;
+    padding: 10px;
+    border: 2px dashed #e9ecef;
+    border-radius: 8px;
+    background: #f8f9fa;
+  }
 
-                <!-- NAME -->
-                <div class="mb-3">
-                    <label class="form-label">Brand Name *</label>
-                    <input type="text"
-                           name="name"
-                           class="form-control"
-                           value="{{ brand.name }}"
-                           required>
-                </div>
+  .custom-file-label::after {
+    content: "Browse";
+  }
 
-                <!-- SLUG -->
-                <div class="mb-3">
-                    <label class="form-label">Slug *</label>
-                    <input type="text"
-                           name="slug"
-                           class="form-control"
-                           value="{{ brand.slug }}"
-                           required>
-                </div>
+  .btn-gradient-primary {
+    background: linear-gradient(to right, #da8cff, #9a55ff);
+  }
 
-                <!-- DESCRIPTION -->
-                <div class="mb-3">
-                    <label class="form-label">Description</label>
-                    <textarea name="description"
-                              class="form-control"
-                              rows="3">{{ brand.description }}</textarea>
-                </div>
+  .page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+  }
 
-                <!-- CURRENT LOGO -->
-                {% if brand.logo %}
-                <div class="mb-3">
-                    <label class="form-label">Current Logo</label><br>
-                    <img src="{{ brand.logo.url }}"
-                         class="img-thumbnail"
-                         style="max-height:120px;">
-                </div>
-                {% endif %}
+  .availability-section {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+  }
 
-                <!-- LOGO -->
-                <div class="mb-3">
-                    <label class="form-label">Change Logo</label>
-                    <input type="file"
-                           name="logo"
-                           class="form-control"
-                           accept="image/*">
-                </div>
+  .checkbox-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
 
-                <!-- AVAILABILITY -->
-                <div class="mb-3">
-                    <label class="form-label">Available For</label>
+  .checkbox-card:hover {
+    border-color: #b66dff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(182, 109, 255, 0.2);
+  }
 
-                    <div class="form-check">
-                        <input class="form-check-input"
-                               type="checkbox"
-                               name="available_for_sunglasses"
-                               id="sunglasses"
-                               {% if brand.available_for_sunglasses %}checked{% endif %}>
-                        <label class="form-check-label" for="sunglasses">Sunglasses</label>
+  .checkbox-card.checked {
+    border-color: #b66dff;
+    background-color: rgba(182, 109, 255, 0.1);
+  }
+
+  .checkbox-card input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+
+  .checkbox-card label {
+    cursor: pointer;
+    margin-bottom: 0;
+  }
+
+  .icon-box {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  .icon-box.sunglasses { background-color: rgba(255, 193, 7, 0.2); color: #ffc107; }
+  .icon-box.eyeglasses { background-color: rgba(0, 123, 255, 0.2); color: #007bff; }
+  .icon-box.kids { background-color: rgba(40, 167, 69, 0.2); color: #28a745; }
+  .icon-box.contact-lenses { background-color: rgba(23, 162, 184, 0.2); color: #17a2b8; }
+
+  .info-card {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+</style>
+  
+      <div class="main-panel">
+        <div class="content-wrapper">
+
+          <div class="page-header">
+            <h3 class="mb-2"><i class="mdi mdi-pencil"></i> Edit Brand</h3>
+            <p class="mb-0">Update brand information - <strong>{{ brand.name }}</strong></p>
+          </div>
+
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent p-0 mb-4">
+              <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+              <li class="breadcrumb-item"><a href="#">Catalog</a></li>
+              <li class="breadcrumb-item"><a href="#">Brands</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Edit Brand</li>
+            </ol>
+          </nav>
+
+          {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <strong>
+              {% if message.tags == 'success' %}
+              <i class="mdi mdi-check-circle"></i>
+              {% elif message.tags == 'error' %}
+              <i class="mdi mdi-alert-circle"></i>
+              {% elif message.tags == 'warning' %}
+              <i class="mdi mdi-alert"></i>
+              {% else %}
+              <i class="mdi mdi-information"></i>
+              {% endif %}
+            </strong>
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endfor %}
+          {% endif %}
+
+          <div class="info-card">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h5 class="mb-2"><i class="mdi mdi-information"></i> Brand Details</h5>
+                <p class="mb-1"><strong>Brand ID:</strong> #{{ brand.id }}</p>
+                <p class="mb-0"><strong>Last Updated:</strong> {{ brand.updated_at|date:"d M Y, h:i A" }}</p>
+              </div>
+              <div class="col-md-4 text-right">
+                <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#deleteModal">
+                  <i class="mdi mdi-delete"></i> Delete Brand
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title mb-4">
+                    <i class="mdi mdi-form-select"></i> Brand Information
+                  </h4>
+
+                  <form method="POST" enctype="multipart/form-data" id="brandForm">
+                    {% csrf_token %}
+
+                    <div class="row">
+                      <div class="col-md-6">
+                        
+                        <div class="form-group">
+                          <label for="name" class="font-weight-bold">
+                            Brand Name <span class="text-danger">*</span>
+                          </label>
+                          <input type="text" class="form-control form-control-lg" id="name" name="name" 
+                                 placeholder="Enter brand name" value="{{ brand.name }}" required>
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information"></i> Enter the official brand name
+                          </small>
+                        </div>
+
+                        <div class="form-group">
+                          <label for="slug" class="font-weight-bold">
+                            Slug <span class="text-danger">*</span>
+                          </label>
+                          <input type="text" class="form-control form-control-lg" id="slug" name="slug" 
+                                 placeholder="brand-slug" value="{{ brand.slug }}" required>
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information"></i> URL-friendly version (auto-generated from name)
+                          </small>
+                        </div>
+
+                        <div class="form-group">
+                          <label class="font-weight-bold">Current Logo</label>
+                          {% if brand.logo %}
+                            <div class="mb-2">
+                              <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" class="current-logo">
+                            </div>
+                          {% else %}
+                            <div class="alert alert-secondary py-2">No logo uploaded</div>
+                          {% endif %}
+
+                          <label for="logo" class="font-weight-bold mt-3">
+                            Change Logo <span class="text-muted small">(Optional)</span>
+                          </label>
+                          <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="logo" name="logo" 
+                                   accept="image/*" onchange="previewImage(event)">
+                            <label class="custom-file-label" for="logo">Choose new logo...</label>
+                          </div>
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information"></i> Recommended size: 400x200px (PNG)
+                          </small>
+                          <img id="imagePreview" class="image-preview" alt="New Logo Preview">
+                        </div>
+
+                        <div class="form-group">
+                          <label for="description" class="font-weight-bold">Description</label>
+                          <textarea class="form-control" id="description" name="description" rows="5" 
+                                    placeholder="Enter brand description...">{{ brand.description }}</textarea>
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information"></i> Brief description about the brand
+                          </small>
+                        </div>
+
+                      </div>
+
+                      <div class="col-md-6">
+
+                        <div class="form-group">
+                          <label class="font-weight-bold mb-3">
+                            <i class="mdi mdi-checkbox-multiple-marked"></i> Brand Availability 
+                            <span class="text-danger">*</span>
+                          </label>
+                          <p class="text-muted small mb-3">Select where this brand will be available</p>
+                          
+                          <div class="availability-section">
+                            <div class="row">
+                              <div class="col-md-6 mb-3">
+                                <div class="checkbox-card {% if brand.available_for_sunglasses %}checked{% endif %}" onclick="toggleCheckbox('sunglasses')">
+                                  <div class="text-center">
+                                    <div class="icon-box sunglasses mx-auto">
+                                      <i class="mdi mdi-sunglasses"></i>
+                                    </div>
+                                    <div class="form-check">
+                                      <label class="form-check-label">
+                                        <input type="checkbox" class="form-check-input" 
+                                               name="available_for_sunglasses" id="sunglasses"
+                                               {% if brand.available_for_sunglasses %}checked{% endif %}>
+                                        <span class="font-weight-bold">Sunglasses</span>
+                                        <i class="input-helper"></i>
+                                      </label>
+                                    </div>
+                                    <small class="text-muted">Available for sunglasses products</small>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="col-md-6 mb-3">
+                                <div class="checkbox-card {% if brand.available_for_eyeglasses %}checked{% endif %}" onclick="toggleCheckbox('eyeglasses')">
+                                  <div class="text-center">
+                                    <div class="icon-box eyeglasses mx-auto">
+                                      <i class="mdi mdi-glasses"></i>
+                                    </div>
+                                    <div class="form-check">
+                                      <label class="form-check-label">
+                                        <input type="checkbox" class="form-check-input" 
+                                               name="available_for_eyeglasses" id="eyeglasses"
+                                               {% if brand.available_for_eyeglasses %}checked{% endif %}>
+                                        <span class="font-weight-bold">Eyeglasses</span>
+                                        <i class="input-helper"></i>
+                                      </label>
+                                    </div>
+                                    <small class="text-muted">Available for eyeglasses products</small>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="col-md-6 mb-3">
+                                <div class="checkbox-card {% if brand.available_for_kids %}checked{% endif %}" onclick="toggleCheckbox('kids')">
+                                  <div class="text-center">
+                                    <div class="icon-box kids mx-auto">
+                                      <i class="mdi mdi-human-child"></i>
+                                    </div>
+                                    <div class="form-check">
+                                      <label class="form-check-label">
+                                        <input type="checkbox" class="form-check-input" 
+                                               name="available_for_kids" id="kids"
+                                               {% if brand.available_for_kids %}checked{% endif %}>
+                                        <span class="font-weight-bold">Kids</span>
+                                        <i class="input-helper"></i>
+                                      </label>
+                                    </div>
+                                    <small class="text-muted">Available for kids products</small>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="col-md-6 mb-3">
+                                <div class="checkbox-card {% if brand.available_for_contact_lenses %}checked{% endif %}" onclick="toggleCheckbox('contact_lenses')">
+                                  <div class="text-center">
+                                    <div class="icon-box contact-lenses mx-auto">
+                                      <i class="mdi mdi-eye"></i>
+                                    </div>
+                                    <div class="form-check">
+                                      <label class="form-check-label">
+                                        <input type="checkbox" class="form-check-input" 
+                                               name="available_for_contact_lenses" id="contact_lenses"
+                                               {% if brand.available_for_contact_lenses %}checked{% endif %}>
+                                        <span class="font-weight-bold">Contact Lenses</span>
+                                        <i class="input-helper"></i>
+                                      </label>
+                                    </div>
+                                    <small class="text-muted">Available for contact lenses</small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="form-group mt-3">
+                          <label for="display_order" class="font-weight-bold">Display Order</label>
+                          <input type="number" class="form-control form-control-lg" id="display_order" 
+                                 name="display_order" value="{{ brand.display_order }}" min="0">
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information"></i> Lower numbers appear first
+                          </small>
+                        </div>
+
+                        <div class="form-group">
+                          <div class="form-check form-check-success">
+                            <label class="form-check-label">
+                              <input type="checkbox" class="form-check-input" name="is_active" 
+                                     {% if brand.is_active %}checked{% endif %}>
+                              <span class="font-weight-bold">Active</span>
+                              <i class="input-helper"></i>
+                            </label>
+                          </div>
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information"></i> Check to make this brand visible on the website
+                          </small>
+                        </div>
+
+                      </div>
                     </div>
 
-                    <div class="form-check">
-                        <input class="form-check-input"
-                               type="checkbox"
-                               name="available_for_eyeglasses"
-                               id="eyeglasses"
-                               {% if brand.available_for_eyeglasses %}checked{% endif %}>
-                        <label class="form-check-label" for="eyeglasses">Eyeglasses</label>
+                    <div class="row mt-4">
+                      <div class="col-12">
+                        <hr>
+                        <button type="submit" class="btn btn-gradient-primary btn-lg mr-2">
+                          <i class="mdi mdi-check"></i> Update Brand
+                        </button>
+                        <a href="#" class="btn btn-light btn-lg">
+                          <i class="mdi mdi-close"></i> Cancel
+                        </a>
+                        <button type="button" class="btn btn-outline-danger btn-lg float-right" 
+                                data-toggle="modal" data-target="#deleteModal">
+                          <i class="mdi mdi-delete"></i> Delete
+                        </button>
+                      </div>
                     </div>
 
-                    <div class="form-check">
-                        <input class="form-check-input"
-                               type="checkbox"
-                               name="available_for_kids"
-                               id="kids"
-                               {% if brand.available_for_kids %}checked{% endif %}>
-                        <label class="form-check-label" for="kids">Kids</label>
-                    </div>
+                  </form>
 
-                    <div class="form-check">
-                        <input class="form-check-input"
-                               type="checkbox"
-                               name="available_for_contact_lenses"
-                               id="contact"
-                               {% if brand.available_for_contact_lenses %}checked{% endif %}>
-                        <label class="form-check-label" for="contact">Contact Lenses</label>
-                    </div>
                 </div>
-
-                <!-- DISPLAY ORDER -->
-                <div class="mb-3">
-                    <label class="form-label">Display Order</label>
-                    <input type="number"
-                           name="display_order"
-                           class="form-control"
-                           value="{{ brand.display_order }}">
-                </div>
-
-                <!-- STATUS -->
-                <div class="form-check mb-4">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           name="is_active"
-                           id="is_active"
-                           {% if brand.is_active %}checked{% endif %}>
-                    <label class="form-check-label" for="is_active">
-                        Active
-                    </label>
-                </div>
-
-                <!-- ACTIONS -->
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        Update Brand
-                    </button>
-                    <a href="{% url 'adminpanel:brand_list' %}" class="btn btn-secondary">
-                        Cancel
-                    </a>
-                </div>
-
-            </form>
+              </div>
+            </div>
+          </div>
 
         </div>
+        </div>
+      </div>
     </div>
+  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">
+            <i class="mdi mdi-alert"></i> Confirm Delete
+          </h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0">Are you sure you want to delete the brand <strong>{{ brand.name }}</strong>?</p>
+          <p class="text-danger mb-0 mt-2"><small><i class="mdi mdi-alert"></i> This action cannot be undone! Products associated with this brand may be affected.</small></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+          <form action="#" method="POST" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+              <i class="mdi mdi-delete"></i> Yes, Delete Brand
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
-</div>
+  <script>
+    // Auto-generate slug from brand name
+    document.getElementById('name').addEventListener('input', function(e) {
+      const slug = e.target.value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      document.getElementById('slug').value = slug;
+    });
 
-</body>
-</html>
+    // Image preview function
+    function previewImage(event) {
+      const reader = new FileReader();
+      const imagePreview = document.getElementById('imagePreview');
+      const file = event.target.files[0];
+      
+      if (file) {
+        reader.onload = function(e) {
+          imagePreview.src = e.target.result;
+          imagePreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+        
+        // Update file label
+        const fileName = file.name;
+        event.target.nextElementSibling.textContent = fileName;
+      }
+    }
+
+    // Toggle checkbox and card style
+    function toggleCheckbox(id) {
+      const checkbox = document.getElementById(id);
+      const card = checkbox.closest('.checkbox-card');
+      
+      checkbox.checked = !checkbox.checked;
+      
+      if (checkbox.checked) {
+        card.classList.add('checked');
+      } else {
+        card.classList.remove('checked');
+      }
+    }
+
+    // Form validation
+    document.getElementById('brandForm').addEventListener('submit', function(e) {
+      const name = document.getElementById('name').value.trim();
+      const slug = document.getElementById('slug').value.trim();
+      
+      // Note: Logo is not required in edit mode unless we removed the old one (logic handled in backend)
+      
+      if (!name || !slug) {
+        e.preventDefault();
+        alert('Please fill in required fields!');
+        return false;
+      }
+
+      // Check if at least one availability option is selected
+      const checkboxes = document.querySelectorAll('input[type="checkbox"][name^="available_for_"]');
+      const isAnyChecked = Array.from(checkboxes).some(cb => cb.checked);
+      
+      if (!isAnyChecked) {
+        e.preventDefault();
+        alert('Please select at least one product category for brand availability!');
+        return false;
+      }
+    });
+  </script>
+ {% endblock %}
