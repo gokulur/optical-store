@@ -1,83 +1,431 @@
+{% extends 'admin-dashboard.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add Product</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+{% block content %}
 
-<div class="container p-4">
-<h4 class="fw-bold mb-3">Add Product</h4>
+<style>
+  /* Custom Styles for Product Form */
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #3e4b5b;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f2f4f6;
+  }
 
-<form method="post">
-{% csrf_token %}
+  .form-control:focus {
+    border-color: #b66dff;
+    box-shadow: 0 0 0 0.2rem rgba(182, 109, 255, 0.25);
+  }
 
-<div class="card card-body shadow-sm">
+  .card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 20px;
+  }
 
-<h6 class="fw-bold">Basic Info</h6>
-<div class="row g-2 mb-3">
-    <div class="col-md-4"><input name="sku" class="form-control" placeholder="SKU" required></div>
-    <div class="col-md-8"><input name="name" class="form-control" placeholder="Product Name" required></div>
-</div>
+  /* Image Upload Box Style */
+  .image-upload-box {
+    border: 2px dashed #d1d3e2;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+  }
+  
+  .image-upload-box:hover {
+    border-color: #b66dff;
+    background: #fdfaff;
+  }
 
-<div class="row g-2 mb-3">
-    <div class="col-md-6"><input name="slug" class="form-control" placeholder="Slug" required></div>
-    <div class="col-md-6">
-        <select name="product_type" class="form-select" required>
-            <option value="">Select Type</option>
-            <option value="sunglasses">Sunglasses</option>
-            <option value="eyeglasses">Eyeglasses</option>
-            <option value="contact_lenses">Contact Lenses</option>
-        </select>
+  .preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  .preview-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e3e3e3;
+  }
+
+  /* Dynamic Table Styles */
+  .table-dynamic thead th {
+    font-size: 0.85rem;
+    font-weight: 700;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e3e3e3;
+  }
+  
+  .btn-remove-row {
+    color: #dc3545;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  
+  .btn-remove-row:hover {
+    color: #a71d2a;
+  }
+
+  /* SEO Preview Card */
+  .seo-preview {
+    border: 1px solid #e0e0e0;
+    padding: 15px;
+    border-radius: 8px;
+    background: white;
+  }
+  .seo-title { color: #1a0dab; font-size: 18px; line-height: 1.2; margin-bottom: 2px; }
+  .seo-url { color: #006621; font-size: 14px; margin-bottom: 2px; }
+  .seo-desc { color: #545454; font-size: 13px; line-height: 1.4; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <h3 class="mb-2"><i class="mdi mdi-cube-outline"></i> Add New Product</h3>
+      <p class="mb-0">Create a new item in your catalog</p>
     </div>
-</div>
 
-<div class="row g-2 mb-3">
-    <div class="col-md-6">
-        <select name="category" class="form-select" required>
-            {% for c in categories %}
-            <option value="{{ c.id }}">{{ c.name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-md-6">
-        <select name="brand" class="form-select">
-            <option value="">No Brand</option>
-            {% for b in brands %}
-            <option value="{{ b.id }}">{{ b.name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-</div>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-transparent p-0 mb-4">
+        <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="#">Catalog</a></li>
+        <li class="breadcrumb-item"><a href="#">Products</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Add Product</li>
+      </ol>
+    </nav>
 
-<h6 class="fw-bold">Pricing</h6>
-<div class="row g-2 mb-3">
-    <div class="col"><input name="base_price" class="form-control" placeholder="Base Price"></div>
-    <div class="col"><input name="compare_at_price" class="form-control" placeholder="Compare Price"></div>
-    <div class="col"><input name="cost_price" class="form-control" placeholder="Cost Price"></div>
-</div>
+    <form method="POST" enctype="multipart/form-data" id="productForm">
+      {% csrf_token %}
+      
+      <div class="row">
+        
+        <div class="col-lg-8 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              
+              <h4 class="section-title"><i class="mdi mdi-information-outline"></i> Basic Information</h4>
+              
+              <div class="form-group">
+                <label class="font-weight-bold">Product Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-lg" id="name" name="name" placeholder="e.g. Ray-Ban Aviator Classic" required>
+              </div>
 
-<h6 class="fw-bold">Inventory</h6>
-<div class="row g-2 mb-3">
-    <div class="col"><input name="stock_quantity" class="form-control" value="0"></div>
-    <div class="col"><input name="low_stock_threshold" class="form-control" value="5"></div>
-</div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Slug <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="slug" name="slug" placeholder="ray-ban-aviator-classic" required>
+                    <small class="text-muted">Auto-generated from name</small>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">SKU (Stock Keeping Unit) <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="sku" placeholder="RB-3025-L0205" required>
+                  </div>
+                </div>
+              </div>
 
-<div class="form-check mb-2">
-    <input class="form-check-input" type="checkbox" name="track_inventory" checked>
-    <label class="form-check-label">Track Inventory</label>
-</div>
+              <div class="form-group">
+                <label class="font-weight-bold">Short Description</label>
+                <textarea class="form-control" name="short_description" rows="3" placeholder="Brief summary for product cards..."></textarea>
+              </div>
 
-<div class="form-check mb-3">
-    <input class="form-check-input" type="checkbox" name="is_active" checked>
-    <label class="form-check-label">Active</label>
-</div>
+              <div class="form-group">
+                <label class="font-weight-bold">Full Description</label>
+                <textarea class="form-control" name="description" rows="6" placeholder="Detailed product description..."></textarea>
+              </div>
 
-<button class="btn btn-primary">Create Product</button>
+              <h4 class="section-title mt-5"><i class="mdi mdi-image-multiple"></i> Product Images</h4>
+              <div class="form-group">
+                <div class="image-upload-box" onclick="document.getElementById('product_images').click()">
+                  <i class="mdi mdi-cloud-upload text-primary" style="font-size: 48px;"></i>
+                  <p class="mt-2 font-weight-bold">Click to upload images</p>
+                  <p class="text-muted small">JPG, PNG allowed. First image will be the main cover.</p>
+                  <input type="file" id="product_images" name="images" multiple accept="image/*" style="display:none;" onchange="previewImages(event)">
+                </div>
+                <div class="preview-container" id="imagePreviewContainer"></div>
+              </div>
 
-</div>
-</form>
-</div>
-</body>
-</html>
+              <h4 class="section-title mt-5"><i class="mdi mdi-layers-outline"></i> Variants (Colors/Sizes)</h4>
+              <div class="table-responsive">
+                <table class="table table-bordered table-dynamic" id="variantsTable">
+                  <thead>
+                    <tr>
+                      <th style="width: 25%">Variant SKU</th>
+                      <th style="width: 20%">Color</th>
+                      <th style="width: 15%">Size</th>
+                      <th style="width: 20%">Price Adjustment (+/-)</th>
+                      <th style="width: 15%">Stock</th>
+                      <th style="width: 5%">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><input type="text" class="form-control form-control-sm" name="variant_sku[]" placeholder="SKU-01" required></td>
+                      <td><input type="text" class="form-control form-control-sm" name="variant_color[]" placeholder="Gold/Green"></td>
+                      <td><input type="text" class="form-control form-control-sm" name="variant_size[]" placeholder="58mm"></td>
+                      <td><input type="number" class="form-control form-control-sm" name="variant_price[]" value="0.00" step="0.01"></td>
+                      <td><input type="number" class="form-control form-control-sm" name="variant_stock[]" value="0" min="0"></td>
+                      <td class="text-center"><i class="mdi mdi-close-circle btn-remove-row" onclick="removeRow(this)"></i></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button type="button" class="btn btn-sm btn-info mt-2" onclick="addVariantRow()">
+                <i class="mdi mdi-plus"></i> Add Another Variant
+              </button>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+
+              <h4 class="section-title"><i class="mdi mdi-shape"></i> Organization</h4>
+              
+              <div class="form-group">
+                <label class="font-weight-bold">Product Type <span class="text-danger">*</span></label>
+                <select class="form-control" name="product_type" id="product_type" required>
+                  <option value="">Select Type</option>
+                  {% for code, name in product_types %}
+                  <option value="{{ code }}">{{ name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Category <span class="text-danger">*</span></label>
+                <select class="form-control" name="category" required>
+                  <option value="">Select Category</option>
+                  {% for category in categories %}
+                  <option value="{{ category.id }}">{{ category.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Brand</label>
+                <select class="form-control" name="brand">
+                  <option value="">Select Brand</option>
+                  {% for brand in brands %}
+                  <option value="{{ brand.id }}">{{ brand.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Gender</label>
+                <select class="form-control" name="gender">
+                  <option value="unisex">Unisex</option>
+                  <option value="men">Men</option>
+                  <option value="women">Women</option>
+                  <option value="kids">Kids</option>
+                </select>
+              </div>
+
+              <h4 class="section-title mt-4"><i class="mdi mdi-cash-usd"></i> Pricing</h4>
+              
+              <div class="form-group">
+                <label class="font-weight-bold">Base Price ($) <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" name="base_price" step="0.01" min="0" placeholder="0.00" required>
+              </div>
+              
+              <div class="form-group">
+                <label class="font-weight-bold">Compare at Price ($)</label>
+                <input type="number" class="form-control" name="compare_at_price" step="0.01" min="0" placeholder="0.00">
+                <small class="text-muted">Original price (strikethrough)</small>
+              </div>
+              
+              <div class="form-group">
+                <label class="font-weight-bold">Cost Price ($)</label>
+                <input type="number" class="form-control" name="cost_price" step="0.01" min="0" placeholder="0.00">
+                <small class="text-muted">Customers won't see this</small>
+              </div>
+
+              <h4 class="section-title mt-4"><i class="mdi mdi-archive"></i> Inventory</h4>
+              
+              <div class="form-check form-check-flat form-check-primary">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="track_inventory" checked>
+                  Track Inventory
+                </label>
+              </div>
+
+              <div class="form-group">
+                <label>Total Stock Quantity</label>
+                <input type="number" class="form-control" name="stock_quantity" value="0">
+              </div>
+
+              <hr>
+              <div class="form-group">
+                <div class="form-check form-check-success">
+                  <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" name="is_active" checked>
+                    <strong>Active (Visible)</strong>
+                  </label>
+                </div>
+                <div class="form-check form-check-warning">
+                  <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" name="is_featured">
+                    Featured Product
+                  </label>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="row">
+        <div class="col-12 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              <div class="row">
+                
+                <div class="col-md-6">
+                  <h4 class="section-title"><i class="mdi mdi-cogs"></i> Specifications</h4>
+                  <table class="table table-bordered table-dynamic" id="specsTable">
+                    <thead>
+                      <tr>
+                        <th>Specification Key</th>
+                        <th>Value</th>
+                        <th style="width: 50px;"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><input type="text" class="form-control form-control-sm" name="spec_key[]" placeholder="e.g. Frame Material"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="spec_value[]" placeholder="e.g. Metal"></td>
+                        <td class="text-center"><i class="mdi mdi-close-circle btn-remove-row" onclick="removeRow(this)"></i></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <button type="button" class="btn btn-sm btn-secondary mt-2" onclick="addSpecRow()">
+                    <i class="mdi mdi-plus"></i> Add Specification
+                  </button>
+                </div>
+
+                <div class="col-md-6">
+                  <h4 class="section-title"><i class="mdi mdi-google"></i> SEO Preview</h4>
+                  <div class="form-group">
+                    <label>Meta Title</label>
+                    <input type="text" class="form-control" id="meta_title" name="meta_title" oninput="updateSeoPreview()">
+                  </div>
+                  <div class="form-group">
+                    <label>Meta Description</label>
+                    <textarea class="form-control" id="meta_description" name="meta_description" rows="3" oninput="updateSeoPreview()"></textarea>
+                  </div>
+                  
+                  <div class="seo-preview mt-3">
+                    <div class="seo-title" id="seoTitlePreview">Product Name</div>
+                    <div class="seo-url" id="seoUrlPreview">http://yoursite.com/products/slug</div>
+                    <div class="seo-desc" id="seoDescPreview">Product description will appear here...</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-5">
+        <div class="col-12 text-right">
+          <a href="#" class="btn btn-light btn-lg mr-2">Cancel</a>
+          <button type="submit" class="btn btn-gradient-primary btn-lg">
+            <i class="mdi mdi-content-save"></i> Save Product
+          </button>
+        </div>
+      </div>
+
+    </form>
+
+  </div>
+  </div>
+
+<script>
+  // --- Slug Generator ---
+  document.getElementById('name').addEventListener('input', function(e) {
+    const slug = e.target.value.toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    document.getElementById('slug').value = slug;
+    updateSeoPreview();
+  });
+
+  // --- Image Preview ---
+  function previewImages(event) {
+    const container = document.getElementById('imagePreviewContainer');
+    container.innerHTML = ''; // Clear previous
+    const files = event.target.files;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.classList.add('preview-image');
+        container.appendChild(img);
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // --- Dynamic Rows (Variants) ---
+  function addVariantRow() {
+    const table = document.getElementById('variantsTable').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow();
+    newRow.innerHTML = `
+      <td><input type="text" class="form-control form-control-sm" name="variant_sku[]" required></td>
+      <td><input type="text" class="form-control form-control-sm" name="variant_color[]"></td>
+      <td><input type="text" class="form-control form-control-sm" name="variant_size[]"></td>
+      <td><input type="number" class="form-control form-control-sm" name="variant_price[]" value="0.00" step="0.01"></td>
+      <td><input type="number" class="form-control form-control-sm" name="variant_stock[]" value="0" min="0"></td>
+      <td class="text-center"><i class="mdi mdi-close-circle btn-remove-row" onclick="removeRow(this)"></i></td>
+    `;
+  }
+
+  // --- Dynamic Rows (Specs) ---
+  function addSpecRow() {
+    const table = document.getElementById('specsTable').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow();
+    newRow.innerHTML = `
+      <td><input type="text" class="form-control form-control-sm" name="spec_key[]"></td>
+      <td><input type="text" class="form-control form-control-sm" name="spec_value[]"></td>
+      <td class="text-center"><i class="mdi mdi-close-circle btn-remove-row" onclick="removeRow(this)"></i></td>
+    `;
+  }
+
+  // --- Remove Row Helper ---
+  function removeRow(btn) {
+    const row = btn.parentNode.parentNode;
+    row.parentNode.removeChild(row);
+  }
+
+  // --- SEO Preview ---
+  function updateSeoPreview() {
+    const title = document.getElementById('meta_title').value || document.getElementById('name').value || 'Product Name';
+    const desc = document.getElementById('meta_description').value || 'Product description will appear here...';
+    const slug = document.getElementById('slug').value || 'product-url';
+    
+    document.getElementById('seoTitlePreview').innerText = title;
+    document.getElementById('seoDescPreview').innerText = desc.substring(0, 160) + (desc.length > 160 ? '...' : '');
+    document.getElementById('seoUrlPreview').innerText = 'http://yoursite.com/products/' + slug;
+  }
+</script>
+
+{% endblock %}

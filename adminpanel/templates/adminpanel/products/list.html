@@ -1,122 +1,313 @@
+{% extends 'admin-dashboard.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Products</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+{% block content %}
 
-<div class="container-fluid p-4">
+<style>
+  .product-img-table {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e3e3e3;
+    background: #f8f9fa;
+  }
 
-    <div class="d-flex justify-content-between mb-3">
-        <h4 class="fw-bold">Products</h4>
-        <a href="{% url 'adminpanel:product_add' %}" class="btn btn-primary">
-            + Add Product
+  .sku-text {
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-family: monospace;
+  }
+
+  .price-text {
+    font-weight: 600;
+    color: #3e4b5b;
+  }
+  
+  .old-price {
+    text-decoration: line-through;
+    color: #999;
+    font-size: 0.85rem;
+    margin-right: 5px;
+  }
+
+  /* Status Dots for Stock */
+  .stock-dot {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+  }
+  .dot-success { background-color: #1bcfb4; }
+  .dot-warning { background-color: #fed713; }
+  .dot-danger { background-color: #fe7c96; }
+
+  .filter-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 25px;
+  }
+
+  .stats-icon-bg {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-right: 15px;
+  }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+          <h3 class="mb-2"><i class="mdi mdi-cube-outline"></i> Products List</h3>
+          <p class="mb-0">Manage your optical catalog inventory</p>
+        </div>
+        <a href=" " class="btn btn-gradient-primary btn-lg">
+          <i class="mdi mdi-plus"></i> Add New Product
         </a>
+      </div>
     </div>
 
-    <!-- FILTERS -->
-    <form method="get" class="card card-body mb-3">
-        <div class="row g-2">
-            <div class="col-md-3">
-                <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="Search name / SKU">
-            </div>
-
-            <div class="col-md-2">
-                <select name="product_type" class="form-select">
-                    <option value="">All Types</option>
-                    <option value="sunglasses" {% if product_type == 'sunglasses' %}selected{% endif %}>Sunglasses</option>
-                    <option value="eyeglasses" {% if product_type == 'eyeglasses' %}selected{% endif %}>Eyeglasses</option>
-                    <option value="contact_lenses" {% if product_type == 'contact_lenses' %}selected{% endif %}>Contact Lenses</option>
-                </select>
-            </div>
-
-            <div class="col-md-2">
-                <select name="brand" class="form-select">
-                    <option value="">All Brands</option>
-                    {% for brand in brands %}
-                        <option value="{{ brand.id }}" {% if brand.id|stringformat:"s" == brand_id %}selected{% endif %}>
-                            {{ brand.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="col-md-2">
-                <select name="category" class="form-select">
-                    <option value="">All Categories</option>
-                    {% for cat in categories %}
-                        <option value="{{ cat.id }}" {% if cat.id|stringformat:"s" == category_id %}selected{% endif %}>
-                            {{ cat.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="col-md-2">
-                <select name="stock_status" class="form-select">
-                    <option value="">Stock Status</option>
-                    <option value="low" {% if stock_status == 'low' %}selected{% endif %}>Low Stock</option>
-                    <option value="out" {% if stock_status == 'out' %}selected{% endif %}>Out of Stock</option>
-                </select>
-            </div>
-
-            <div class="col-md-1 d-grid">
-                <button class="btn btn-dark">Filter</button>
-            </div>
+    <div class="row mb-4">
+      <div class="col-md-4 grid-margin stretch-card">
+        <div class="card card-img-holder text-white" style="background: linear-gradient(to right, #90caf9, #047edf);">
+          <div class="card-body">
+            <h4 class="font-weight-normal mb-3">Total Products <i class="mdi mdi-cube-outline mdi-24px float-right"></i></h4>
+            <h2 class="mb-5">{{ products.paginator.count }}</h2>
+            <h6 class="card-text">Active in Catalog</h6>
+          </div>
         </div>
-    </form>
+      </div>
+      <div class="col-md-4 grid-margin stretch-card">
+        <div class="card card-img-holder text-white" style="background: linear-gradient(to right, #ffc107, #ff9800);">
+          <div class="card-body">
+            <h4 class="font-weight-normal mb-3">Low Stock Alerts <i class="mdi mdi-alert mdi-24px float-right"></i></h4>
+            <h2 class="mb-5">{{ low_stock_count|default:"0" }}</h2>
+            <h6 class="card-text">Items needing reorder</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 grid-margin stretch-card">
+        <div class="card card-img-holder text-white" style="background: linear-gradient(to right, #ffab91, #d84315);">
+          <div class="card-body">
+            <h4 class="font-weight-normal mb-3">Out of Stock <i class="mdi mdi-close-octagon mdi-24px float-right"></i></h4>
+            <h2 class="mb-5">{{ out_of_stock_count|default:"0" }}</h2>
+            <h6 class="card-text">Currently unavailable</h6>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <!-- TABLE -->
-    <div class="card shadow-sm">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>SKU</th>
-                        <th>Name</th>
-                        <th>Brand</th>
-                        <th>Category</th>
-                        <th>Stock</th>
-                        <th>Status</th>
-                        <th width="150">Actions</th>
-                    </tr>
+    <div class="filter-card">
+      <form method="GET" class="row">
+        <div class="col-md-4">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text bg-transparent border-right-0"><i class="mdi mdi-magnify text-primary"></i></span>
+            </div>
+            <input type="text" class="form-control border-left-0" name="search" placeholder="Search Name or SKU..." value="{{ search }}">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select class="form-control" name="category">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if current_category == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-control" name="stock_status">
+            <option value="">All Stock Status</option>
+            <option value="in_stock" {% if stock_status == 'in_stock' %}selected{% endif %}>In Stock</option>
+            <option value="low_stock" {% if stock_status == 'low_stock' %}selected{% endif %}>Low Stock</option>
+            <option value="out_of_stock" {% if stock_status == 'out_of_stock' %}selected{% endif %}>Out of Stock</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary btn-block">Filter</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="row">
+      <div class="col-12 grid-margin">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title mb-4">Product Inventory</h4>
+            
+            {% if products %}
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Category / Brand</th>
+                    <th>Price</th>
+                    <th>Stock Status</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th class="text-right">Action</th>
+                  </tr>
                 </thead>
                 <tbody>
-                {% for product in products %}
-                    <tr>
-                        <td>{{ product.sku }}</td>
-                        <td>{{ product.name }}</td>
-                        <td>{{ product.brand.name|default:"-" }}</td>
-                        <td>{{ product.category.name }}</td>
-                        <td>
-                            {% if product.track_inventory %}
-                                {{ product.stock_quantity }}
-                            {% else %}
-                                ∞
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if product.is_active %}
-                                <span class="badge bg-success">Active</span>
-                            {% else %}
-                                <span class="badge bg-secondary">Inactive</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a href="{% url 'adminpanel:product_edit' product.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <a href="{% url 'adminpanel:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
-                        </td>
-                    </tr>
-                {% empty %}
-                    <tr><td colspan="7" class="text-center">No products found</td></tr>
-                {% endfor %}
+                  {% for product in products %}
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        {% with image=product.images.first %}
+                          {% if image and image.image %}
+                            <img src="{{ image.image.url }}" class="product-img-table mr-3" alt="{{ product.name }}">
+                          {% else %}
+                            <div class="product-img-table mr-3 d-flex align-items-center justify-content-center text-muted">
+                              <i class="mdi mdi-image-off"></i>
+                            </div>
+                          {% endif %}
+                        {% endwith %}
+                        <div>
+                          <div class="font-weight-bold mb-1">{{ product.name|truncatechars:30 }}</div>
+                          <div class="sku-text">{{ product.sku }}</div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>
+                      <div class="text-primary mb-1">{{ product.category.name }}</div>
+                      <small class="text-muted">{{ product.brand.name|default:"No Brand" }}</small>
+                    </td>
+
+                    <td>
+                      {% if product.compare_at_price and product.compare_at_price > product.base_price %}
+                        <div class="old-price">${{ product.compare_at_price }}</div>
+                      {% endif %}
+                      <div class="price-text">${{ product.base_price }}</div>
+                    </td>
+
+                    <td>
+                      {% if not product.track_inventory %}
+                        <span class="badge badge-info badge-pill">Unlimited</span>
+                      {% elif product.stock_quantity <= 0 %}
+                        <span class="text-danger font-weight-bold">
+                          <span class="stock-dot dot-danger"></span> Out of Stock
+                        </span>
+                      {% elif product.stock_quantity <= product.low_stock_threshold %}
+                        <span class="text-warning font-weight-bold">
+                          <span class="stock-dot dot-warning"></span> Low Stock ({{ product.stock_quantity }})
+                        </span>
+                      {% else %}
+                        <span class="text-success font-weight-bold">
+                          <span class="stock-dot dot-success"></span> {{ product.stock_quantity }} Available
+                        </span>
+                      {% endif %}
+                    </td>
+
+                    <td>
+                      {% if product.product_type == 'sunglasses' %}
+                        <i class="mdi mdi-sunglasses text-warning" title="Sunglasses" style="font-size: 20px;"></i>
+                      {% elif product.product_type == 'eyeglasses' %}
+                        <i class="mdi mdi-glasses text-primary" title="Eyeglasses" style="font-size: 20px;"></i>
+                      {% elif product.product_type == 'contact_lenses' %}
+                        <i class="mdi mdi-eye text-info" title="Contact Lenses" style="font-size: 20px;"></i>
+                      {% else %}
+                        <i class="mdi mdi-tag-text-outline text-muted" title="{{ product.get_product_type_display }}" style="font-size: 20px;"></i>
+                      {% endif %}
+                    </td>
+
+                    <td>
+                      {% if product.is_active %}
+                        <label class="badge badge-gradient-success">Active</label>
+                      {% else %}
+                        <label class="badge badge-gradient-danger">Draft</label>
+                      {% endif %}
+                    </td>
+
+                    <td class="text-right">
+                      <a href="#" class="btn btn-inverse-info btn-icon btn-sm" title="View Details">
+                        <i class="mdi mdi-eye"></i>
+                      </a>
+                      <a href="{% url 'product_edit' product.id %}" class="btn btn-inverse-warning btn-icon btn-sm" title="Edit">
+                        <i class="mdi mdi-pencil"></i>
+                      </a>
+                      <button type="button" class="btn btn-inverse-danger btn-icon btn-sm" 
+                              onclick="confirmDelete('{{ product.name }}', '{{ product.id }}')" title="Delete">
+                        <i class="mdi mdi-delete"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  {% endfor %}
                 </tbody>
-            </table>
+              </table>
+            </div>
+
+            {% if products.has_other_pages %}
+            <nav class="d-flex justify-content-center mt-4">
+              <ul class="pagination rounded-flat pagination-success">
+                {% if products.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ products.previous_page_number }}{% if search %}&search={{ search }}{% endif %}"><i class="mdi mdi-chevron-left"></i></a></li>
+                {% endif %}
+                
+                <li class="page-item active"><a class="page-link" href="#">{{ products.number }}</a></li>
+                
+                {% if products.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ products.next_page_number }}{% if search %}&search={{ search }}{% endif %}"><i class="mdi mdi-chevron-right"></i></a></li>
+                {% endif %}
+              </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+              <div class="text-center py-5">
+                <i class="mdi mdi-cube-off text-muted" style="font-size: 4rem;"></i>
+                <h4 class="mt-3 text-muted">No products found</h4>
+                <p>Try adjusting your filters or search criteria</p>
+              </div>
+            {% endif %}
+          </div>
         </div>
+      </div>
     </div>
 
+  </div>
+  </div>
+
+<div class="modal fade" id="deleteProductModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger">
+        <h5 class="modal-title text-white"><i class="mdi mdi-alert-circle"></i> Confirm Deletion</h5>
+        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete product: <strong id="deleteProductName"></strong>?</p>
+        <p class="text-danger small mb-0">This creates a permanent removal including all variants and images.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+        <form id="deleteProductForm" method="POST">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
-</body>
-</html>
+
+<script>
+  function confirmDelete(name, id) {
+    document.getElementById('deleteProductName').innerText = name;
+    // Update this URL logic based on your urls.py structure
+    document.getElementById('deleteProductForm').action = `/dashboard/products/delete/${id}/`;
+    $('#deleteProductModal').modal('show');
+  }
+</script>
+
+{% endblock %}
