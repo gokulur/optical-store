@@ -584,50 +584,71 @@ def brand_delete(request, brand_id):
 
 # @login_required
 # @user_passes_test(is_admin)
+# adminpanel/views.py
+ 
 def product_list(request):
-    """List all products"""
+    """List all products with advanced filtering and stats"""
+    
+    # 1. Get Filter Parameters
     search = request.GET.get('search', '')
     product_type = request.GET.get('product_type', '')
     brand_id = request.GET.get('brand', '')
     category_id = request.GET.get('category', '')
-    is_active = request.GET.get('is_active', '')
     stock_status = request.GET.get('stock_status', '')
+
+    # 2. Base Queryset
+    products_queryset = Product.objects.select_related('brand', 'category').prefetch_related('images').order_by('-created_at')
+
+    # 3. Calculate Global Stats
+    total_products = Product.objects.count()
     
-    products = Product.objects.select_related('brand', 'category').order_by('-created_at')
+    # ✅ FIX: Used fixed number '5' instead of F('low_stock_threshold')
+    low_stock_count = Product.objects.filter(
+        track_inventory=True,
+        stock_quantity__lte=5, 
+        stock_quantity__gt=0
+    ).count()
     
+    out_of_stock_count = Product.objects.filter(
+        track_inventory=True, 
+        stock_quantity=0
+    ).count()
+
+    # 4. Apply Filters
     if search:
-        products = products.filter(
+        products_queryset = products_queryset.filter(
             Q(name__icontains=search) | 
             Q(sku__icontains=search) |
             Q(description__icontains=search)
         )
     
     if product_type:
-        products = products.filter(product_type=product_type)
+        products_queryset = products_queryset.filter(product_type=product_type)
     
     if brand_id:
-        products = products.filter(brand_id=brand_id)
+        products_queryset = products_queryset.filter(brand_id=brand_id)
     
     if category_id:
-        products = products.filter(category_id=category_id)
+        products_queryset = products_queryset.filter(category_id=category_id)
     
-    if is_active:
-        products = products.filter(is_active=(is_active == 'true'))
-    
-    if stock_status == 'low':
-        products = products.filter(
+    # ✅ FIX: Updated Stock Filter Logic with fixed number '5'
+    if stock_status == 'in_stock':
+        products_queryset = products_queryset.filter(stock_quantity__gt=5)
+    elif stock_status == 'low_stock':
+        products_queryset = products_queryset.filter(
             track_inventory=True,
-            stock_quantity__lte=F('low_stock_threshold'),
+            stock_quantity__lte=5,
             stock_quantity__gt=0
         )
-    elif stock_status == 'out':
-        products = products.filter(track_inventory=True, stock_quantity=0)
-    
-    paginator = Paginator(products, 25)
+    elif stock_status == 'out_of_stock':
+        products_queryset = products_queryset.filter(track_inventory=True, stock_quantity=0)
+
+    # 5. Pagination
+    paginator = Paginator(products_queryset, 20)
     page = request.GET.get('page', 1)
     products = paginator.get_page(page)
     
-    # For filters
+    # 6. Context Data
     brands = Brand.objects.filter(is_active=True).order_by('name')
     categories = Category.objects.filter(is_active=True).order_by('name')
     
@@ -636,11 +657,12 @@ def product_list(request):
         'brands': brands,
         'categories': categories,
         'search': search,
-        'product_type': product_type,
-        'brand_id': brand_id,
-        'category_id': category_id,
-        'is_active': is_active,
+        'current_category': category_id, # Make sure these match template variables
+        'current_brand': brand_id,
         'stock_status': stock_status,
+        'total_count': total_products,
+        'low_stock_count': low_stock_count,
+        'out_of_stock_count': out_of_stock_count,
     }
     return render(request, 'adminpanel/products/list.html', context)
 
@@ -651,10 +673,23 @@ def product_list(request):
 # @login_required
 # @user_passes_test(is_admin)
 def product_add(request):
+    """Add new product with Images, Variants, and Specs"""
     if request.method == 'POST':
         try:
-            with transaction.atomic(): # Start transaction
-                # 1. Create Basic Product
+            with transaction.atomic():  # Start transaction
+                
+                # --- 1. HANDLE NUMERIC FIELDS SAFELY ---
+                # Empty strings cause errors in DecimalFields, convert to None or 0
+                compare_at_price = request.POST.get('compare_at_price')
+                compare_at_price = compare_at_price if compare_at_price else None
+                
+                cost_price = request.POST.get('cost_price')
+                cost_price = cost_price if cost_price else None
+
+                stock_quantity = request.POST.get('stock_quantity')
+                stock_quantity = int(stock_quantity) if stock_quantity else 0
+
+                # --- 2. CREATE BASIC PRODUCT ---
                 product = Product.objects.create(
                     name=request.POST.get('name'),
                     sku=request.POST.get('sku'),
@@ -662,56 +697,83 @@ def product_add(request):
                     product_type=request.POST.get('product_type'),
                     category_id=request.POST.get('category'),
                     brand_id=request.POST.get('brand') or None,
+                    
+                    short_description=request.POST.get('short_description', ''),
+                    description=request.POST.get('description', ''),
+                    
+                    gender=request.POST.get('gender', 'unisex'),
                     base_price=request.POST.get('base_price'),
-                    stock_quantity=request.POST.get('stock_quantity', 0),
+                    compare_at_price=compare_at_price,
+                    # cost_price=cost_price, # Uncomment if you added this field to model
+                    
                     track_inventory=request.POST.get('track_inventory') == 'on',
-                    # ... add other fields here
+                    stock_quantity=stock_quantity,
+                    
+                    is_active=request.POST.get('is_active') == 'on',
+                    is_featured=request.POST.get('is_featured') == 'on',
+                    
+                    # SEO Fields (If added to model)
+                    # meta_title=request.POST.get('meta_title', ''),
+                    # meta_description=request.POST.get('meta_description', ''),
                 )
 
-                # 2. Handle Contact Lens Specifics
-                if product.product_type == 'contact_lenses':
-                    ContactLensProduct.objects.create(
+                # --- 3. HANDLE IMAGES ---
+                images = request.FILES.getlist('images')
+                for index, img in enumerate(images):
+                    ProductImage.objects.create(
                         product=product,
-                        lens_type=request.POST.get('lens_type'),
-                        replacement_schedule=request.POST.get('replacement_schedule'),
-                        diameter=request.POST.get('diameter'),
-                        base_curve=request.POST.get('base_curve'),
-                        water_content=request.POST.get('water_content')
+                        image=img,
+                        is_primary=(index == 0) # Set first uploaded image as primary
                     )
 
-                # 3. Handle Product Images (Multiple Uploads)
-                images = request.FILES.getlist('images') # HTML input name="images" multiple
-                for img in images:
-                    ProductImage.objects.create(product=product, image=img)
+                # --- 4. HANDLE DYNAMIC VARIANTS ---
+                # Get lists from HTML array inputs: name="variant_sku[]"
+                v_skus = request.POST.getlist('variant_sku[]')
+                v_colors = request.POST.getlist('variant_color[]')
+                v_sizes = request.POST.getlist('variant_size[]')
+                v_prices = request.POST.getlist('variant_price[]')
+                v_stocks = request.POST.getlist('variant_stock[]')
 
-                # 4. Handle Variants (Dynamic logic needed based on frontend)
-                # This usually requires getting a list from POST like variant_color[], variant_sku[]
-                colors = request.POST.getlist('variant_color')
-                sizes = request.POST.getlist('variant_size')
-                skus = request.POST.getlist('variant_sku')
-                
-                if colors:
-                    for i in range(len(skus)):
+                # Zip them together to iterate row by row
+                for sku, color, size, price, stock in zip(v_skus, v_colors, v_sizes, v_prices, v_stocks):
+                    if sku.strip():  # Only create if SKU exists
                         ProductVariant.objects.create(
                             product=product,
-                            variant_sku=skus[i],
-                            color_name=colors[i],
-                            size=sizes[i] if i < len(sizes) else '',
-                            # ... prices and stock
+                            variant_sku=sku,
+                            color_name=color,
+                            size=size,
+                            price_adjustment=price if price else 0,
+                            stock_quantity=stock if stock else 0
+                        )
+
+                # --- 5. HANDLE DYNAMIC SPECIFICATIONS ---
+                s_keys = request.POST.getlist('spec_key[]')
+                s_values = request.POST.getlist('spec_value[]')
+
+                for key, value in zip(s_keys, s_values):
+                    if key.strip() and value.strip():
+                        ProductSpecification.objects.create(
+                            product=product,
+                            spec_key=key,
+                            spec_value=value
                         )
 
                 messages.success(request, f'Product "{product.name}" added successfully!')
                 return redirect('adminpanel:product_list')
 
-        except IntegrityError:
-            messages.error(request, "Error: Product SKU or Slug already exists.")
+        except IntegrityError as e:
+            if 'unique constraint' in str(e).lower():
+                messages.error(request, "Error: Product Name, SKU, or Slug already exists.")
+            else:
+                messages.error(request, f"Database Error: {str(e)}")
         except Exception as e:
             messages.error(request, f"Something went wrong: {str(e)}")
 
-    # GET Request context...
+    # --- GET REQUEST: PREPARE FORM DATA ---
     context = {
-        'brands': Brand.objects.filter(is_active=True),
-        'categories': Category.objects.filter(is_active=True),
+        'brands': Brand.objects.filter(is_active=True).order_by('name'),
+        'categories': Category.objects.filter(is_active=True).order_by('name'),
+        'product_types': Product.PRODUCT_TYPES,
     }
     return render(request, 'adminpanel/products/add.html', context)
 
@@ -719,79 +781,152 @@ def product_add(request):
 # @login_required
 # @user_passes_test(is_admin)
 def product_edit(request, product_id):
-    """Edit product"""
+    """Edit existing product with Sync Logic (Create/Update/Delete child rows)"""
     product = get_object_or_404(Product, id=product_id)
-    
+
     if request.method == 'POST':
-        # Update basic info
-        product.sku = request.POST.get('sku')
-        product.name = request.POST.get('name')
-        product.slug = request.POST.get('slug')
-        product.product_type = request.POST.get('product_type')
-        product.category_id = request.POST.get('category')
-        
-        brand_id = request.POST.get('brand')
-        product.brand_id = brand_id if brand_id else None
-        
-        product.short_description = request.POST.get('short_description', '')
-        product.description = request.POST.get('description', '')
-        
-        product.base_price = request.POST.get('base_price')
-        product.compare_at_price = request.POST.get('compare_at_price') or None
-        product.cost_price = request.POST.get('cost_price') or None
-        
-        product.gender = request.POST.get('gender', 'unisex')
-        product.age_group = request.POST.get('age_group', 'adult')
-        
-        product.track_inventory = request.POST.get('track_inventory') == 'on'
-        product.stock_quantity = request.POST.get('stock_quantity', 0)
-        product.low_stock_threshold = request.POST.get('low_stock_threshold', 5)
-        product.allow_backorder = request.POST.get('allow_backorder') == 'on'
-        
-        product.meta_title = request.POST.get('meta_title', '')
-        product.meta_description = request.POST.get('meta_description', '')
-        product.meta_keywords = request.POST.get('meta_keywords', '')
-        
-        product.is_active = request.POST.get('is_active') == 'on'
-        product.is_featured = request.POST.get('is_featured') == 'on'
-        product.is_on_sale = request.POST.get('is_on_sale') == 'on'
-        
-        product.save()
-        
-        messages.success(request, f'Product "{product.name}" updated successfully!')
-        return redirect('adminpanel:product_edit', product_id=product.id)
-    
-    # GET request
-    brands = Brand.objects.filter(is_active=True).order_by('name')
-    categories = Category.objects.filter(is_active=True).order_by('name')
-    
-    # Get related data
-    variants = product.variants.all()
-    images = product.images.all()
-    specifications = product.specifications.all()
-    
-    # Check if contact lens
-    contact_lens_details = None
-    contact_lens_powers = []
-    if product.product_type == 'contact_lenses':
         try:
-            contact_lens_details = product.contact_lens_details
-            contact_lens_powers = contact_lens_details.power_options.all()
-        except ContactLensProduct.DoesNotExist:
-            pass
-    
+            with transaction.atomic():
+                
+                # --- 1. UPDATE BASIC INFO ---
+                product.name = request.POST.get('name')
+                product.sku = request.POST.get('sku')
+                product.slug = request.POST.get('slug')
+                product.product_type = request.POST.get('product_type')
+                
+                # Foreign Keys
+                cat_id = request.POST.get('category')
+                product.category = Category.objects.get(id=cat_id) if cat_id else None
+                
+                brand_id = request.POST.get('brand')
+                product.brand = Brand.objects.get(id=brand_id) if brand_id else None
+
+                # Text Fields
+                product.short_description = request.POST.get('short_description', '')
+                product.description = request.POST.get('description', '')
+                product.gender = request.POST.get('gender', 'unisex')
+
+                # Numeric Fields (Handle empty strings)
+                product.base_price = request.POST.get('base_price') or 0
+                product.compare_at_price = request.POST.get('compare_at_price') or None
+                # product.cost_price = request.POST.get('cost_price') or None 
+                
+                # Inventory
+                product.track_inventory = request.POST.get('track_inventory') == 'on'
+                stock_qty = request.POST.get('stock_quantity')
+                product.stock_quantity = int(stock_qty) if stock_qty else 0
+                
+                # Status
+                product.is_active = request.POST.get('is_active') == 'on'
+                product.is_featured = request.POST.get('is_featured') == 'on'
+                
+                product.save()
+
+                # --- 2. HANDLE IMAGES ---
+                # A. Add New Images
+                new_images = request.FILES.getlist('images')
+                for img in new_images:
+                    ProductImage.objects.create(product=product, image=img)
+                
+                # B. Delete Removed Images
+                # We expect a hidden input "delete_image_ids" containing "1,5,8"
+                delete_img_ids = request.POST.get('delete_image_ids', '')
+                if delete_img_ids:
+                    ids_to_delete = [int(i) for i in delete_img_ids.split(',') if i.isdigit()]
+                    ProductImage.objects.filter(id__in=ids_to_delete, product=product).delete()
+
+                # --- 3. SYNC VARIANTS (Create/Update/Delete) ---
+                # Get lists from form
+                v_ids = request.POST.getlist('variant_id[]') # Hidden ID field
+                v_skus = request.POST.getlist('variant_sku[]')
+                v_colors = request.POST.getlist('variant_color[]')
+                v_sizes = request.POST.getlist('variant_size[]')
+                v_prices = request.POST.getlist('variant_price[]')
+                v_stocks = request.POST.getlist('variant_stock[]')
+
+                kept_variant_ids = []
+
+                for i, sku in enumerate(v_skus):
+                    if not sku.strip(): continue # Skip empty rows
+
+                    vid = v_ids[i] if i < len(v_ids) else None # Get ID if exists
+                    
+                    price_adj = v_prices[i] if v_prices[i] else 0
+                    stock_qty = v_stocks[i] if v_stocks[i] else 0
+
+                    if vid and vid != '0':
+                        # UPDATE Existing
+                        variant = ProductVariant.objects.get(id=vid)
+                        variant.variant_sku = sku
+                        variant.color_name = v_colors[i]
+                        variant.size = v_sizes[i]
+                        variant.price_adjustment = price_adj
+                        variant.stock_quantity = stock_qty
+                        variant.save()
+                        kept_variant_ids.append(variant.id)
+                    else:
+                        # CREATE New
+                        new_var = ProductVariant.objects.create(
+                            product=product,
+                            variant_sku=sku,
+                            color_name=v_colors[i],
+                            size=v_sizes[i],
+                            price_adjustment=price_adj,
+                            stock_quantity=stock_qty
+                        )
+                        kept_variant_ids.append(new_var.id)
+
+                # DELETE Variants not in the form anymore
+                product.variants.exclude(id__in=kept_variant_ids).delete()
+
+                # --- 4. SYNC SPECIFICATIONS ---
+                s_ids = request.POST.getlist('spec_id[]')
+                s_keys = request.POST.getlist('spec_key[]')
+                s_values = request.POST.getlist('spec_value[]')
+
+                kept_spec_ids = []
+
+                for i, key in enumerate(s_keys):
+                    if not key.strip(): continue
+
+                    sid = s_ids[i] if i < len(s_ids) else None
+
+                    if sid and sid != '0':
+                        spec = ProductSpecification.objects.get(id=sid)
+                        spec.spec_key = key
+                        spec.spec_value = s_values[i]
+                        spec.save()
+                        kept_spec_ids.append(spec.id)
+                    else:
+                        new_spec = ProductSpecification.objects.create(
+                            product=product,
+                            spec_key=key,
+                            spec_value=s_values[i]
+                        )
+                        kept_spec_ids.append(new_spec.id)
+
+                product.specifications.exclude(id__in=kept_spec_ids).delete()
+
+                messages.success(request, f'Product "{product.name}" updated successfully!')
+                return redirect('adminpanel:product_list')
+
+        except Exception as e:
+            messages.error(request, f"Error updating product: {str(e)}")
+
+    # --- GET REQUEST ---
     context = {
         'product': product,
-        'brands': brands,
-        'categories': categories,
-        'variants': variants,
-        'images': images,
-        'specifications': specifications,
-        'contact_lens_details': contact_lens_details,
-        'contact_lens_powers': contact_lens_powers,
+        'brands': Brand.objects.filter(is_active=True).order_by('name'),
+        'categories': Category.objects.filter(is_active=True).order_by('name'),
+        'product_types': Product.PRODUCT_TYPES,
+        
+        # We pass related objects directly in template using product.variants.all
+        # But images need distinct handling if you want to show primary first
+        'images': product.images.all().order_by('-is_primary', 'id'),
+        'variants': product.variants.all(),
+        'specifications': product.specifications.all(),
     }
     return render(request, 'adminpanel/products/edit.html', context)
-
 
 # @login_required
 # @user_passes_test(is_admin)

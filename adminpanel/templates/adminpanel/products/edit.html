@@ -1,49 +1,346 @@
-<h4>Edit Product: {{ product.name }}</h4>
-<p class="text-muted">SKU: {{ product.sku }}</p>
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
 
-<!-- reuse same form as add.html with value="{{ product.field }}" -->
+<style>
+  /* Reuse styles from Add Product */
+  .section-title { font-size: 1.1rem; font-weight: 600; color: #3e4b5b; margin-bottom: 1.5rem; border-bottom: 2px solid #f2f4f6; padding-bottom: 0.5rem; }
+  .form-control:focus { border-color: #b66dff; box-shadow: 0 0 0 0.2rem rgba(182, 109, 255, 0.25); }
+  .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); margin-bottom: 20px; }
+  
+  /* Existing Images Style */
+  .existing-images-container { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
+  .img-wrap { position: relative; width: 100px; height: 100px; border-radius: 8px; overflow: hidden; border: 1px solid #e3e3e3; }
+  .img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  .btn-del-img { position: absolute; top: 2px; right: 2px; background: rgba(255, 255, 255, 0.9); color: red; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #ddd; font-size: 14px; }
+  .btn-del-img:hover { background: red; color: white; }
 
-<hr>
-<h6>Variants ({{ variants.count }})</h6>
+  /* New Upload Box */
+  .image-upload-box { border: 2px dashed #d1d3e2; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; background: #f8f9fa; }
+  .preview-image { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; margin: 5px; border: 1px solid #ddd; }
+  
+  .btn-remove-row { color: #dc3545; cursor: pointer; transition: 0.2s; }
+  .btn-remove-row:hover { color: #a71d2a; }
+  .table-dynamic thead th { background-color: #f8f9fa; }
+</style>
 
-<ul class="list-group mb-3">
-{% for v in variants %}
-    <li class="list-group-item">
-        {{ v.variant_sku }} | {{ v.color_name }} | Stock: {{ v.stock_quantity }}
-    </li>
-{% empty %}
-    <li class="list-group-item">No variants</li>
-{% endfor %}
-</ul>
+<div class="main-panel">
+  <div class="content-wrapper">
 
-<hr>
-<h6>Images</h6>
-<div class="row">
-{% for img in images %}
-    <div class="col-md-2 mb-2">
-        <img src="{{ img.image.url }}" class="img-fluid rounded">
+    <div class="page-header">
+      <h3 class="mb-2"><i class="mdi mdi-pencil"></i> Edit Product</h3>
+      <p class="mb-0">Update details for <strong>{{ product.name }}</strong></p>
     </div>
-{% endfor %}
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-transparent p-0 mb-4">
+        <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="#">Catalog</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:product_list' %}">Products</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Product</li>
+      </ol>
+    </nav>
+
+    <form method="POST" enctype="multipart/form-data" id="productForm">
+      {% csrf_token %}
+      
+      <input type="hidden" name="delete_image_ids" id="delete_image_ids" value="">
+
+      <div class="row">
+        
+        <div class="col-lg-8 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              
+              <h4 class="section-title"><i class="mdi mdi-information-outline"></i> Basic Information</h4>
+              
+              <div class="form-group">
+                <label class="font-weight-bold">Product Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-lg" id="name" name="name" value="{{ product.name }}" required>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Slug <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="slug" name="slug" value="{{ product.slug }}" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">SKU <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="sku" value="{{ product.sku }}" required>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Short Description</label>
+                <textarea class="form-control" name="short_description" rows="3">{{ product.short_description }}</textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Full Description</label>
+                <textarea class="form-control" name="description" rows="6">{{ product.description }}</textarea>
+              </div>
+
+              <h4 class="section-title mt-5"><i class="mdi mdi-image-multiple"></i> Product Images</h4>
+              
+              <div class="existing-images-container">
+                {% for img in images %}
+                <div class="img-wrap" id="img-card-{{ img.id }}">
+                  <img src="{{ img.image.url }}" alt="Product Image">
+                  <div class="btn-del-img" onclick="markImageForDelete('{{ img.id }}')">
+                    <i class="mdi mdi-close"></i>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+
+              <div class="form-group">
+                <div class="image-upload-box" onclick="document.getElementById('product_images').click()">
+                  <i class="mdi mdi-cloud-upload text-primary" style="font-size: 32px;"></i>
+                  <p class="mt-2 mb-0">Click to add more images</p>
+                  <input type="file" id="product_images" name="images" multiple accept="image/*" style="display:none;" onchange="previewImages(event)">
+                </div>
+                <div class="preview-container mt-2" id="imagePreviewContainer" style="display: flex; gap: 10px;"></div>
+              </div>
+
+              <h4 class="section-title mt-5"><i class="mdi mdi-layers-outline"></i> Variants</h4>
+              <div class="table-responsive">
+                <table class="table table-bordered table-dynamic" id="variantsTable">
+                  <thead>
+                    <tr>
+                      <th style="width: 25%">Variant SKU</th>
+                      <th style="width: 20%">Color</th>
+                      <th style="width: 15%">Size</th>
+                      <th style="width: 20%">Price (+/-)</th>
+                      <th style="width: 15%">Stock</th>
+                      <th style="width: 5%"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for variant in variants %}
+                    <tr>
+                      <input type="hidden" name="variant_id[]" value="{{ variant.id }}">
+                      
+                      <td><input type="text" class="form-control form-control-sm" name="variant_sku[]" value="{{ variant.variant_sku }}" required></td>
+                      <td><input type="text" class="form-control form-control-sm" name="variant_color[]" value="{{ variant.color_name }}"></td>
+                      <td><input type="text" class="form-control form-control-sm" name="variant_size[]" value="{{ variant.size }}"></td>
+                      <td><input type="number" class="form-control form-control-sm" name="variant_price[]" value="{{ variant.price_adjustment }}" step="0.01"></td>
+                      <td><input type="number" class="form-control form-control-sm" name="variant_stock[]" value="{{ variant.stock_quantity }}"></td>
+                      <td class="text-center"><i class="mdi mdi-close-circle btn-remove-row" onclick="removeRow(this)"></i></td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              <button type="button" class="btn btn-sm btn-info mt-2" onclick="addVariantRow()">
+                <i class="mdi mdi-plus"></i> Add Variant
+              </button>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+
+              <h4 class="section-title"><i class="mdi mdi-shape"></i> Organization</h4>
+              
+              <div class="form-group">
+                <label class="font-weight-bold">Product Type</label>
+                <select class="form-control" name="product_type" required>
+                  {% for code, name in product_types %}
+                  <option value="{{ code }}" {% if product.product_type == code %}selected{% endif %}>{{ name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Category</label>
+                <select class="form-control" name="category" required>
+                  {% for category in categories %}
+                  <option value="{{ category.id }}" {% if product.category.id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Brand</label>
+                <select class="form-control" name="brand">
+                  <option value="">No Brand</option>
+                  {% for brand in brands %}
+                  <option value="{{ brand.id }}" {% if product.brand.id == brand.id %}selected{% endif %}>{{ brand.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Gender</label>
+                <select class="form-control" name="gender">
+                  <option value="unisex" {% if product.gender == 'unisex' %}selected{% endif %}>Unisex</option>
+                  <option value="men" {% if product.gender == 'men' %}selected{% endif %}>Men</option>
+                  <option value="women" {% if product.gender == 'women' %}selected{% endif %}>Women</option>
+                  <option value="kids" {% if product.gender == 'kids' %}selected{% endif %}>Kids</option>
+                </select>
+              </div>
+
+              <h4 class="section-title mt-4"><i class="mdi mdi-cash-usd"></i> Pricing</h4>
+              <div class="form-group">
+                <label class="font-weight-bold">Base Price</label>
+                <input type="number" class="form-control" name="base_price" value="{{ product.base_price }}" step="0.01" required>
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold">Compare at Price</label>
+                <input type="number" class="form-control" name="compare_at_price" value="{{ product.compare_at_price|default:'' }}" step="0.01">
+              </div>
+
+              <h4 class="section-title mt-4"><i class="mdi mdi-archive"></i> Inventory</h4>
+              <div class="form-check form-check-flat form-check-primary">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="track_inventory" {% if product.track_inventory %}checked{% endif %}> Track Inventory
+                </label>
+              </div>
+              <div class="form-group">
+                <label>Total Stock Quantity</label>
+                <input type="number" class="form-control" name="stock_quantity" value="{{ product.stock_quantity }}">
+              </div>
+
+              <hr>
+              <div class="form-group">
+                <div class="form-check form-check-success">
+                  <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" name="is_active" {% if product.is_active %}checked{% endif %}> <strong>Active</strong>
+                  </label>
+                </div>
+                <div class="form-check form-check-warning">
+                  <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" name="is_featured" {% if product.is_featured %}checked{% endif %}> Featured Product
+                  </label>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              <h4 class="section-title"><i class="mdi mdi-cogs"></i> Specifications</h4>
+              <table class="table table-bordered table-dynamic" id="specsTable">
+                <thead>
+                  <tr>
+                    <th>Key</th>
+                    <th>Value</th>
+                    <th style="width: 50px;"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for spec in specifications %}
+                  <tr>
+                    <input type="hidden" name="spec_id[]" value="{{ spec.id }}">
+                    <td><input type="text" class="form-control form-control-sm" name="spec_key[]" value="{{ spec.spec_key }}"></td>
+                    <td><input type="text" class="form-control form-control-sm" name="spec_value[]" value="{{ spec.spec_value }}"></td>
+                    <td class="text-center"><i class="mdi mdi-close-circle btn-remove-row" onclick="removeRow(this)"></i></td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              <button type="button" class="btn btn-sm btn-secondary mt-2" onclick="addSpecRow()">
+                <i class="mdi mdi-plus"></i> Add Spec
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-5">
+        <div class="col-12 text-right">
+          <a href="{% url 'adminpanel:product_list' %}" class="btn btn-light btn-lg mr-2">Cancel</a>
+          <button type="submit" class="btn btn-gradient-primary btn-lg"><i class="mdi mdi-content-save"></i> Update Product</button>
+        </div>
+      </div>
+
+    </form>
+
+  </div>
 </div>
 
-<hr>
-<h6>Specifications</h6>
-<ul>
-{% for s in specifications %}
-    <li>{{ s.spec_key }} : {{ s.spec_value }}</li>
-{% endfor %}
-</ul>
+<script>
+  // --- Slug Generator ---
+  document.getElementById('name').addEventListener('input', function(e) {
+    // Only auto-generate if slug is empty (don't overwrite existing slug on edit unless cleared)
+    if(document.getElementById('slug').value === '') {
+       const slug = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+       document.getElementById('slug').value = slug;
+    }
+  });
 
-{% if contact_lens_details %}
-<hr>
-<h6>Contact Lens Details</h6>
-<p>Type: {{ contact_lens_details.lens_type }}</p>
-<p>Schedule: {{ contact_lens_details.replacement_schedule }}</p>
+  // --- Image Delete Logic ---
+  let deletedImages = [];
+  function markImageForDelete(id) {
+    if(confirm('Remove this image on save?')) {
+        document.getElementById('img-card-' + id).style.display = 'none';
+        deletedImages.push(id);
+        document.getElementById('delete_image_ids').value = deletedImages.join(',');
+    }
+  }
 
-<h6>Power Options</h6>
-<ul>
-{% for p in contact_lens_powers %}
-    <li>{{ p.power_value }} (Stock {{ p.stock_quantity }})</li>
-{% endfor %}
-</ul>
-{% endif %}
+  // --- Preview New Images ---
+  function previewImages(event) {
+    const container = document.getElementById('imagePreviewContainer');
+    container.innerHTML = ''; 
+    const files = event.target.files;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.classList.add('preview-image');
+        container.appendChild(img);
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // --- Add Variant Row ---
+  function addVariantRow() {
+    const table = document.getElementById('variantsTable').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow();
+    newRow.innerHTML = `
+      <input type="hidden" name="variant_id[]" value="0">
+      <td><input type="text" class="form-control form-control-sm" name="variant_sku[]" required></td>
+      <td><input type="text" class="form-control form-control-sm" name="variant_color[]"></td>
+      <td><input type="text" class="form-control form-control-sm" name="variant_size[]"></td>
+      <td><input type="number" class="form-control form-control-sm" name="variant_price[]" value="0.00" step="0.01"></td>
+      <td><input type="number" class="form-control form-control-sm" name="variant_stock[]" value="0" min="0"></td>
+      <td class="text-center"><i class="mdi mdi-close-circle btn-remove-row" onclick="removeRow(this)"></i></td>
+    `;
+  }
+
+  // --- Add Spec Row ---
+  function addSpecRow() {
+    const table = document.getElementById('specsTable').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow();
+    newRow.innerHTML = `
+      <input type="hidden" name="spec_id[]" value="0">
+      <td><input type="text" class="form-control form-control-sm" name="spec_key[]"></td>
+      <td><input type="text" class="form-control form-control-sm" name="spec_value[]"></td>
+      <td class="text-center"><i class="mdi mdi-close-circle btn-remove-row" onclick="removeRow(this)"></i></td>
+    `;
+  }
+
+  // --- Remove Row ---
+  function removeRow(btn) {
+    const row = btn.parentNode.parentNode;
+    row.parentNode.removeChild(row);
+  }
+</script>
+
+{% endblock %}

@@ -3,63 +3,16 @@
 {% block content %}
 
 <style>
-  .product-img-table {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 6px;
-    border: 1px solid #e3e3e3;
-    background: #f8f9fa;
-  }
-
-  .sku-text {
-    font-size: 0.8rem;
-    color: #6c757d;
-    font-family: monospace;
-  }
-
-  .price-text {
-    font-weight: 600;
-    color: #3e4b5b;
-  }
-  
-  .old-price {
-    text-decoration: line-through;
-    color: #999;
-    font-size: 0.85rem;
-    margin-right: 5px;
-  }
-
-  /* Status Dots for Stock */
-  .stock-dot {
-    height: 10px;
-    width: 10px;
-    border-radius: 50%;
-    display: inline-block;
-    margin-right: 5px;
-  }
+  /* Your existing styles... */
+  .product-img-table { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid #e3e3e3; background: #f8f9fa; }
+  .sku-text { font-size: 0.8rem; color: #6c757d; font-family: monospace; }
+  .price-text { font-weight: 600; color: #3e4b5b; }
+  .old-price { text-decoration: line-through; color: #999; font-size: 0.85rem; margin-right: 5px; }
+  .stock-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
   .dot-success { background-color: #1bcfb4; }
   .dot-warning { background-color: #fed713; }
   .dot-danger { background-color: #fe7c96; }
-
-  .filter-card {
-    background: #fff;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    margin-bottom: 25px;
-  }
-
-  .stats-icon-bg {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    margin-right: 15px;
-  }
+  .filter-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px; }
 </style>
 
 <div class="main-panel">
@@ -71,19 +24,29 @@
           <h3 class="mb-2"><i class="mdi mdi-cube-outline"></i> Products List</h3>
           <p class="mb-0">Manage your optical catalog inventory</p>
         </div>
-        <a href=" " class="btn btn-gradient-primary btn-lg">
+        <a href="{% url 'adminpanel:product_add' %}" class="btn btn-gradient-primary btn-lg">
           <i class="mdi mdi-plus"></i> Add New Product
         </a>
       </div>
     </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endfor %}
+    {% endif %}
 
     <div class="row mb-4">
       <div class="col-md-4 grid-margin stretch-card">
         <div class="card card-img-holder text-white" style="background: linear-gradient(to right, #90caf9, #047edf);">
           <div class="card-body">
             <h4 class="font-weight-normal mb-3">Total Products <i class="mdi mdi-cube-outline mdi-24px float-right"></i></h4>
-            <h2 class="mb-5">{{ products.paginator.count }}</h2>
-            <h6 class="card-text">Active in Catalog</h6>
+            <h2 class="mb-5">{{ total_count }}</h2> <h6 class="card-text">Active in Catalog</h6>
           </div>
         </div>
       </div>
@@ -91,8 +54,7 @@
         <div class="card card-img-holder text-white" style="background: linear-gradient(to right, #ffc107, #ff9800);">
           <div class="card-body">
             <h4 class="font-weight-normal mb-3">Low Stock Alerts <i class="mdi mdi-alert mdi-24px float-right"></i></h4>
-            <h2 class="mb-5">{{ low_stock_count|default:"0" }}</h2>
-            <h6 class="card-text">Items needing reorder</h6>
+            <h2 class="mb-5">{{ low_stock_count }}</h2> <h6 class="card-text">Items needing reorder</h6>
           </div>
         </div>
       </div>
@@ -100,8 +62,7 @@
         <div class="card card-img-holder text-white" style="background: linear-gradient(to right, #ffab91, #d84315);">
           <div class="card-body">
             <h4 class="font-weight-normal mb-3">Out of Stock <i class="mdi mdi-close-octagon mdi-24px float-right"></i></h4>
-            <h2 class="mb-5">{{ out_of_stock_count|default:"0" }}</h2>
-            <h6 class="card-text">Currently unavailable</h6>
+            <h2 class="mb-5">{{ out_of_stock_count }}</h2> <h6 class="card-text">Currently unavailable</h6>
           </div>
         </div>
       </div>
@@ -121,7 +82,7 @@
           <select class="form-control" name="category">
             <option value="">All Categories</option>
             {% for cat in categories %}
-            <option value="{{ cat.id }}" {% if current_category == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.name }}</option>
+            <option value="{{ cat.id }}" {% if current_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
             {% endfor %}
           </select>
         </div>
@@ -187,9 +148,9 @@
 
                     <td>
                       {% if product.compare_at_price and product.compare_at_price > product.base_price %}
-                        <div class="old-price">${{ product.compare_at_price }}</div>
+                        <div class="old-price">QAR {{ product.compare_at_price }}</div>
                       {% endif %}
-                      <div class="price-text">${{ product.base_price }}</div>
+                      <div class="price-text">QAR {{ product.base_price }}</div>
                     </td>
 
                     <td>
@@ -231,14 +192,11 @@
                     </td>
 
                     <td class="text-right">
-                      <a href="#" class="btn btn-inverse-info btn-icon btn-sm" title="View Details">
-                        <i class="mdi mdi-eye"></i>
-                      </a>
-                      <a href="{% url 'product_edit' product.id %}" class="btn btn-inverse-warning btn-icon btn-sm" title="Edit">
+                      <a href="{% url 'adminpanel:product_edit' product.id %}" class="btn btn-inverse-warning btn-icon btn-sm" title="Edit">
                         <i class="mdi mdi-pencil"></i>
                       </a>
                       <button type="button" class="btn btn-inverse-danger btn-icon btn-sm" 
-                              onclick="confirmDelete('{{ product.name }}', '{{ product.id }}')" title="Delete">
+                              onclick="confirmDelete('{{ product.name|escapejs }}', '{{ product.id }}')" title="Delete">
                         <i class="mdi mdi-delete"></i>
                       </button>
                     </td>
@@ -252,13 +210,21 @@
             <nav class="d-flex justify-content-center mt-4">
               <ul class="pagination rounded-flat pagination-success">
                 {% if products.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page={{ products.previous_page_number }}{% if search %}&search={{ search }}{% endif %}"><i class="mdi mdi-chevron-left"></i></a></li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ products.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if stock_status %}&stock_status={{ stock_status }}{% endif %}">
+                        <i class="mdi mdi-chevron-left"></i>
+                    </a>
+                </li>
                 {% endif %}
                 
                 <li class="page-item active"><a class="page-link" href="#">{{ products.number }}</a></li>
                 
                 {% if products.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ products.next_page_number }}{% if search %}&search={{ search }}{% endif %}"><i class="mdi mdi-chevron-right"></i></a></li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ products.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if stock_status %}&stock_status={{ stock_status }}{% endif %}">
+                        <i class="mdi mdi-chevron-right"></i>
+                    </a>
+                </li>
                 {% endif %}
               </ul>
             </nav>
@@ -277,7 +243,7 @@
     </div>
 
   </div>
-  </div>
+</div>
 
 <div class="modal fade" id="deleteProductModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-dialog-centered" role="document">
@@ -302,10 +268,15 @@
 </div>
 
 <script>
+  // ✅ FIXED: Safer URL Construction for Delete
   function confirmDelete(name, id) {
     document.getElementById('deleteProductName').innerText = name;
-    // Update this URL logic based on your urls.py structure
-    document.getElementById('deleteProductForm').action = `/dashboard/products/delete/${id}/`;
+    
+    // Uses the safer dummy-replace method for Django URLs
+    // Ensure your URL pattern is named 'adminpanel:product_delete'
+    var deleteUrl = "{% url 'adminpanel:product_delete' 0 %}".replace('0', id);
+    
+    document.getElementById('deleteProductForm').action = deleteUrl;
     $('#deleteProductModal').modal('show');
   }
 </script>
