@@ -3,414 +3,279 @@
 {% block content %}
 
 <style>
-  .white-logo {
-    filter: brightness(0) invert(1);
-    transition: 0.3s ease;
-  }
-
-  .white-logo:hover {
-    filter: brightness(0) invert(0.9);
-  }
-
-  .form-control:focus {
-    border-color: #b66dff;
-    box-shadow: 0 0 0 0.2rem rgba(182, 109, 255, 0.25);
-  }
-
-  .card {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    transition: all 0.3s ease;
-  }
-
-  .image-preview {
-    max-width: 200px;
-    max-height: 200px;
-    margin-top: 10px;
-    border-radius: 8px;
-  }
-
-  .current-image {
-    max-width: 150px;
-    max-height: 150px;
-    border-radius: 8px;
-    border: 2px solid #e0e0e0;
-    padding: 5px;
-  }
-
-  .custom-file-label::after {
-    content: "Browse";
-  }
-
-  .btn-gradient-primary {
-    background: linear-gradient(to right, #da8cff, #9a55ff);
-  }
-
-  .page-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 30px;
-  }
-
-  .info-card {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-  }
-
-  .image-section {
-    background-color: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    border: 2px dashed #dee2e6;
-  }
-
-  .remove-image-btn {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .image-wrapper {
-    position: relative;
-    display: inline-block;
-  }
+  /* User's Original Styles */
+  .white-logo { filter: brightness(0) invert(1); transition: 0.3s ease; }
+  .white-logo:hover { filter: brightness(0) invert(0.9); }
+  .form-control:focus { border-color: #b66dff; box-shadow: 0 0 0 0.2rem rgba(182, 109, 255, 0.25); }
+  .card { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); transition: all 0.3s ease; }
+  .image-preview { max-width: 200px; max-height: 200px; margin-top: 10px; border-radius: 8px; }
+  .current-image { max-width: 150px; max-height: 150px; border-radius: 8px; border: 2px solid #e0e0e0; padding: 5px; }
+  .custom-file-label::after { content: "Browse"; }
+  .btn-gradient-primary { background: linear-gradient(to right, #da8cff, #9a55ff); border: 0; color: white;}
+  .btn-gradient-primary:hover { background: linear-gradient(to right, #9a55ff, #da8cff); color: white;}
+  .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+  .info-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+  .image-section { background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 2px dashed #dee2e6; }
+  .remove-image-btn { position: absolute; top: -10px; right: -10px; width: 30px; height: 30px; border-radius: 50%; background-color: #dc3545; color: white; border: none; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .image-wrapper { position: relative; display: inline-block; }
 </style>
 
- 
-      <!-- Main Panel -->
-      <div class="main-panel">
-        <div class="content-wrapper">
+<div class="main-panel">
+  <div class="content-wrapper">
 
-          <!-- Page Header -->
-          <div class="page-header">
-            <h3 class="mb-2"><i class="mdi mdi-pencil"></i> Edit Category</h3>
-            <p class="mb-0">Update category information - <strong>{{ category.name }}</strong></p>
-          </div>
-
-          <!-- Breadcrumb -->
-          <nav aria-label="breadcrumb">
-            <ol class="breadcrumb bg-transparent p-0 mb-4">
-              <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-              <li class="breadcrumb-item"><a href="#">Catalog</a></li>
-              <li class="breadcrumb-item"><a href="#">Categories</a></li>
-              <li class="breadcrumb-item active" aria-current="page">Edit Category</li>
-            </ol>
-          </nav>
-
-          <!-- Messages -->
-          {% if messages %}
-          {% for message in messages %}
-          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            <strong>
-              {% if message.tags == 'success' %}
-              <i class="mdi mdi-check-circle"></i>
-              {% elif message.tags == 'error' %}
-              <i class="mdi mdi-alert-circle"></i>
-              {% elif message.tags == 'warning' %}
-              <i class="mdi mdi-alert"></i>
-              {% else %}
-              <i class="mdi mdi-information"></i>
-              {% endif %}
-            </strong>
-            {{ message }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          {% endfor %}
-          {% endif %}
-
-          <!-- Category Info Card -->
-          <div class="info-card">
-            <div class="row align-items-center">
-              <div class="col-md-8">
-                <h5 class="mb-2"><i class="mdi mdi-information"></i> Category Details</h5>
-                <p class="mb-1"><strong>Category ID:</strong> #{{ category.id }}</p>
-                <p class="mb-1"><strong>Created:</strong> {{ category.created_at|date:"d M Y, h:i A" }}</p>
-                <p class="mb-0"><strong>Last Updated:</strong> {{ category.updated_at|date:"d M Y, h:i A" }}</p>
-              </div>
-              <div class="col-md-4 text-right">
-                <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#deleteModal">
-                  <i class="mdi mdi-delete"></i> Delete Category
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Edit Category Form -->
-          <div class="row">
-            <div class="col-md-12 grid-margin stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <h4 class="card-title mb-4">
-                    <i class="mdi mdi-form-select"></i> Category Information
-                  </h4>
-
-                  <form method="POST" enctype="multipart/form-data" id="categoryForm">
-                    {% csrf_token %}
-
-                    <div class="row">
-                      <!-- Left Column -->
-                      <div class="col-md-6">
-                        
-                        <!-- Category Name -->
-                        <div class="form-group">
-                          <label for="name" class="font-weight-bold">
-                            Category Name <span class="text-danger">*</span>
-                          </label>
-                          <input type="text" class="form-control form-control-lg" id="name" name="name" 
-                                 placeholder="Enter category name" value="{{ category.name }}" required>
-                          <small class="form-text text-muted">
-                            <i class="mdi mdi-information"></i> Enter a unique category name
-                          </small>
-                        </div>
-
-                        <!-- Slug -->
-                        <div class="form-group">
-                          <label for="slug" class="font-weight-bold">
-                            Slug <span class="text-danger">*</span>
-                          </label>
-                          <input type="text" class="form-control form-control-lg" id="slug" name="slug" 
-                                 placeholder="category-slug" value="{{ category.slug }}" required>
-                          <small class="form-text text-muted">
-                            <i class="mdi mdi-information"></i> URL-friendly version (auto-generated from name)
-                          </small>
-                        </div>
-
-                        <!-- Product Type -->
-                        <div class="form-group">
-                          <label for="product_type" class="font-weight-bold">
-                            Product Type <span class="text-danger">*</span>
-                          </label>
-                          <select class="form-control form-control-lg" id="product_type" name="product_type" required>
-                            <option value="">-- Select Product Type --</option>
-                            <option value="sunglasses" {% if category.product_type == 'sunglasses' %}selected{% endif %}>Sunglasses</option>
-                            <option value="eyeglasses" {% if category.product_type == 'eyeglasses' %}selected{% endif %}>Eyeglasses</option>
-                            <option value="contact_lenses" {% if category.product_type == 'contact_lenses' %}selected{% endif %}>Contact Lenses</option>
-                            <option value="accessories" {% if category.product_type == 'accessories' %}selected{% endif %}>Accessories</option>
-                            <option value="reading_glasses" {% if category.product_type == 'reading_glasses' %}selected{% endif %}>Reading Glasses</option>
-                          </select>
-                          <small class="form-text text-muted">
-                            <i class="mdi mdi-information"></i> Select the type of products in this category
-                          </small>
-                        </div>
-
-                        <!-- Parent Category -->
-                        <div class="form-group">
-                          <label for="parent" class="font-weight-bold">Parent Category</label>
-                          <select class="form-control form-control-lg" id="parent" name="parent">
-                            <option value="">-- No Parent (Root Category) --</option>
-                            {% for cat in parent_categories %}
-                            <option value="{{ cat.id }}" {% if category.parent and category.parent.id == cat.id %}selected{% endif %}>
-                              {{ cat.name }}
-                            </option>
-                            {% endfor %}
-                          </select>
-                          <small class="form-text text-muted">
-                            <i class="mdi mdi-information"></i> Optional: Select a parent category for hierarchy
-                          </small>
-                        </div>
-
-                      </div>
-
-                      <!-- Right Column -->
-                      <div class="col-md-6">
-
-                        <!-- Description -->
-                        <div class="form-group">
-                          <label for="description" class="font-weight-bold">Description</label>
-                          <textarea class="form-control" id="description" name="description" rows="5" 
-                                    placeholder="Enter category description...">{{ category.description }}</textarea>
-                          <small class="form-text text-muted">
-                            <i class="mdi mdi-information"></i> Brief description of this category
-                          </small>
-                        </div>
-
-                        <!-- Current Image -->
-                        {% if category.image %}
-                        <div class="form-group">
-                          <label class="font-weight-bold">Current Image</label>
-                          <div class="image-section">
-                            <div class="image-wrapper">
-                              <img src="{{ category.image.url }}" alt="{{ category.name }}" class="current-image">
-                              <button type="button" class="remove-image-btn" onclick="removeCurrentImage()">
-                                <i class="mdi mdi-close"></i>
-                              </button>
-                            </div>
-                            <input type="hidden" name="remove_image" id="remove_image" value="0">
-                          </div>
-                        </div>
-                        {% endif %}
-
-                        <!-- Category Image -->
-                        <div class="form-group">
-                          <label for="image" class="font-weight-bold">
-                            {% if category.image %}Change{% else %}Upload{% endif %} Category Image
-                          </label>
-                          <div class="custom-file">
-                            <input type="file" class="custom-file-input" id="image" name="image" 
-                                   accept="image/*" onchange="previewImage(event)">
-                            <label class="custom-file-label" for="image">Choose image...</label>
-                          </div>
-                          <small class="form-text text-muted">
-                            <i class="mdi mdi-information"></i> Recommended size: 800x600px (JPG, PNG)
-                          </small>
-                          <img id="imagePreview" class="image-preview" style="display: none;" alt="New Image Preview">
-                        </div>
-
-                        <!-- Display Order -->
-                        <div class="form-group">
-                          <label for="display_order" class="font-weight-bold">Display Order</label>
-                          <input type="number" class="form-control form-control-lg" id="display_order" 
-                                 name="display_order" value="{{ category.display_order }}" min="0">
-                          <small class="form-text text-muted">
-                            <i class="mdi mdi-information"></i> Lower numbers appear first
-                          </small>
-                        </div>
-
-                        <!-- Active Status -->
-                        <div class="form-group">
-                          <div class="form-check form-check-success">
-                            <label class="form-check-label">
-                              <input type="checkbox" class="form-check-input" name="is_active" 
-                                     {% if category.is_active %}checked{% endif %}>
-                              <span class="font-weight-bold">Active</span>
-                              <i class="input-helper"></i>
-                            </label>
-                          </div>
-                          <small class="form-text text-muted">
-                            <i class="mdi mdi-information"></i> Check to make this category visible on the website
-                          </small>
-                        </div>
-
-                      </div>
-                    </div>
-
-                    <!-- Form Actions -->
-                    <div class="row mt-4">
-                      <div class="col-12">
-                        <hr>
-                        <button type="submit" class="btn btn-gradient-primary btn-lg mr-2">
-                          <i class="mdi mdi-check"></i> Update Category
-                        </button>
-                        <a href="#" class="btn btn-light btn-lg">
-                          <i class="mdi mdi-close"></i> Cancel
-                        </a>
-                        <button type="button" class="btn btn-outline-danger btn-lg float-right" 
-                                data-toggle="modal" data-target="#deleteModal">
-                          <i class="mdi mdi-delete"></i> Delete Category
-                        </button>
-                      </div>
-                    </div>
-
-                  </form>
-
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-        <!-- content-wrapper ends -->
-      </div>
-      <!-- main-panel ends -->
+    <div class="page-header">
+      <h3 class="mb-2"><i class="mdi mdi-pencil"></i> Edit Category</h3>
+      <p class="mb-0">Update category information - <strong>{{ category.name }}</strong></p>
     </div>
-    <!-- page-body-wrapper ends -->
-  </div>
-  <!-- container-scroller -->
 
-  <!-- Delete Confirmation Modal -->
-  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title">
-            <i class="mdi mdi-alert"></i> Confirm Delete
-          </h5>
-          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-transparent p-0 mb-4">
+        <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="#">Catalog</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:category_list' %}">Categories</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Category</li>
+      </ol>
+    </nav>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      <strong>
+        {% if message.tags == 'success' %} <i class="mdi mdi-check-circle"></i>
+        {% elif message.tags == 'error' %} <i class="mdi mdi-alert-circle"></i>
+        {% else %} <i class="mdi mdi-information"></i> {% endif %}
+      </strong>
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="info-card">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h5 class="mb-2"><i class="mdi mdi-information"></i> Category Details</h5>
+          <p class="mb-1"><strong>Category ID:</strong> #{{ category.id }}</p>
+          <p class="mb-1"><strong>Last Updated:</strong> {{ category.updated_at|date:"d M Y, h:i A" }}</p>
+        </div>
+        <div class="col-md-4 text-right">
+          <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#deleteModal">
+            <i class="mdi mdi-delete"></i> Delete
           </button>
         </div>
-        <div class="modal-body">
-          <p class="mb-0">Are you sure you want to delete the category <strong>{{ category.name }}</strong>?</p>
-          <p class="text-danger mb-0 mt-2"><small><i class="mdi mdi-alert"></i> This action cannot be undone! All products in this category will be affected.</small></p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
-          <form action="#" method="POST" style="display: inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">
-              <i class="mdi mdi-delete"></i> Yes, Delete Category
-            </button>
-          </form>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title mb-4"><i class="mdi mdi-form-select"></i> Update Information</h4>
+
+            <form method="POST" enctype="multipart/form-data" id="categoryForm">
+              {% csrf_token %}
+
+              <input type="hidden" name="has_prescription" id="has_prescription" value="{{ category.has_prescription }}">
+              <input type="hidden" name="has_lens_selection" id="has_lens_selection" value="{{ category.has_lens_selection }}">
+              <input type="hidden" name="has_power" id="has_power" value="{{ category.has_power }}">
+              <input type="hidden" name="has_color_variants" id="has_color_variants" value="{{ category.has_color_variants }}">
+              <input type="hidden" name="has_size_variants" id="has_size_variants" value="{{ category.has_size_variants }}">
+
+              <div class="row">
+                <div class="col-md-6">
+                  
+                  <div class="form-group">
+                    <label for="name" class="font-weight-bold">Category Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-lg" id="name" name="name" 
+                           placeholder="Enter category name" value="{{ category.name }}" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="slug" class="font-weight-bold">Slug <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-lg" id="slug" name="slug" 
+                           placeholder="category-slug" value="{{ category.slug }}" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="product_type_selector" class="font-weight-bold">Product Type <span class="text-danger">*</span></label>
+                    <select class="form-control form-control-lg" id="product_type_selector" name="product_type_selector" required onchange="updateCategoryFlags()">
+                      <option value="">-- Select Product Type --</option>
+                      <option value="sunglasses" {% if category.product_type == 'sunglasses' %}selected{% endif %}>Sunglasses</option>
+                      <option value="eyeglasses" {% if category.product_type == 'eyeglasses' %}selected{% endif %}>Eyeglasses</option>
+                      <option value="contact_lenses" {% if category.product_type == 'contact_lenses' %}selected{% endif %}>Contact Lenses</option>
+                      <option value="accessories" {% if category.product_type == 'accessories' %}selected{% endif %}>Accessories</option>
+                      <option value="reading_glasses" {% if category.product_type == 'reading_glasses' %}selected{% endif %}>Reading Glasses</option>
+                    </select>
+                    <small class="form-text text-muted text-primary"><i class="mdi mdi-settings"></i> Changing this will update technical settings.</small>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="parent" class="font-weight-bold">Parent Category</label>
+                    <select class="form-control form-control-lg" id="parent" name="parent">
+                      <option value="">-- No Parent (Root Category) --</option>
+                      {% for cat in parent_categories %}
+                      <option value="{{ cat.id }}" {% if category.parent and category.parent.id == cat.id %}selected{% endif %}>
+                        {{ cat.name }}
+                      </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="description" class="font-weight-bold">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="5">{{ category.description }}</textarea>
+                  </div>
+
+                  {% if category.image %}
+                  <div class="form-group">
+                    <label class="font-weight-bold">Current Image</label>
+                    <div class="image-section">
+                      <div class="image-wrapper">
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}" class="current-image">
+                        <button type="button" class="remove-image-btn" onclick="removeCurrentImage()">
+                          <i class="mdi mdi-close"></i>
+                        </button>
+                      </div>
+                      <input type="hidden" name="remove_image" id="remove_image" value="0">
+                    </div>
+                  </div>
+                  {% endif %}
+
+                  <div class="form-group">
+                    <label for="image" class="font-weight-bold">{% if category.image %}Change{% else %}Upload{% endif %} Image</label>
+                    <div class="custom-file">
+                      <input type="file" class="custom-file-input" id="image" name="image" accept="image/*" onchange="previewImage(event)">
+                      <label class="custom-file-label" for="image">Choose image...</label>
+                    </div>
+                    <img id="imagePreview" class="image-preview" style="display: none;" alt="New Image Preview">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="display_order" class="font-weight-bold">Display Order</label>
+                    <input type="number" class="form-control form-control-lg" id="display_order" name="display_order" value="{{ category.display_order }}" min="0">
+                  </div>
+
+                  <div class="form-group">
+                    <div class="form-check form-check-flat form-check-primary">
+                      <label class="form-check-label">
+                        <input type="checkbox" class="form-check-input" name="is_active" {% if category.is_active %}checked{% endif %}>
+                        <span class="font-weight-bold">Active</span>
+                        <i class="input-helper"></i>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row mt-4">
+                <div class="col-12">
+                  <hr>
+                  <button type="submit" class="btn btn-gradient-primary btn-lg mr-2">
+                    <i class="mdi mdi-check"></i> Update Category
+                  </button>
+                  <a href="{% url 'adminpanel:category_list' %}" class="btn btn-light btn-lg">
+                    <i class="mdi mdi-close"></i> Cancel
+                  </a>
+                </div>
+              </div>
+
+            </form>
+          </div>
         </div>
       </div>
     </div>
   </div>
- 
-  <script>
-    // Auto-generate slug from category name
-    document.getElementById('name').addEventListener('input', function(e) {
-      const slug = e.target.value
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-      document.getElementById('slug').value = slug;
-    });
+</div>
 
-    // Image preview function
-    function previewImage(event) {
-      const reader = new FileReader();
-      const imagePreview = document.getElementById('imagePreview');
-      const file = event.target.files[0];
-      
-      if (file) {
-        reader.onload = function(e) {
-          imagePreview.src = e.target.result;
-          imagePreview.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-        
-        // Update file label
-        const fileName = file.name;
-        event.target.nextElementSibling.textContent = fileName;
-      }
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="mdi mdi-alert"></i> Confirm Delete</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete <strong>{{ category.name }}</strong>?</p>
+        <p class="text-danger"><small>This cannot be undone!</small></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+        <form action=" " method="POST">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 1. Slug Generation
+  document.getElementById('name').addEventListener('input', function(e) {
+    const slug = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    document.getElementById('slug').value = slug;
+  });
+
+  // 2. Image Preview
+  function previewImage(event) {
+    const reader = new FileReader();
+    const imagePreview = document.getElementById('imagePreview');
+    const file = event.target.files[0];
+    if (file) {
+      reader.onload = function(e) {
+        imagePreview.src = e.target.result;
+        imagePreview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+      event.target.nextElementSibling.textContent = file.name;
+    }
+  }
+
+  // 3. Remove Image Flag
+  function removeCurrentImage() {
+    if (confirm('Remove current image?')) {
+      document.getElementById('remove_image').value = '1';
+      document.querySelector('.image-wrapper').style.display = 'none';
+    }
+  }
+
+  // 4. ✅ MAIN LOGIC: Update Flags
+  function updateCategoryFlags() {
+    const type = document.getElementById('product_type_selector').value;
+    
+    let hasPrescription = 'False';
+    let hasLensSelection = 'False';
+    let hasPower = 'False';
+    let hasColor = 'False';
+    let hasSize = 'False';
+
+    if (type === 'sunglasses') {
+        hasColor = 'True'; hasSize = 'True';
+    } else if (type === 'eyeglasses') {
+        hasPrescription = 'True'; hasLensSelection = 'True'; hasSize = 'True'; hasColor = 'True';
+    } else if (type === 'contact_lenses') {
+        hasPower = 'True'; hasColor = 'True'; 
+    } else if (type === 'reading_glasses') {
+        hasPower = 'True'; 
     }
 
-    // Remove current image
-    function removeCurrentImage() {
-      if (confirm('Are you sure you want to remove the current image?')) {
-        document.getElementById('remove_image').value = '1';
-        document.querySelector('.image-wrapper').style.display = 'none';
-      }
-    }
+    document.getElementById('has_prescription').value = hasPrescription;
+    document.getElementById('has_lens_selection').value = hasLensSelection;
+    document.getElementById('has_power').value = hasPower;
+    document.getElementById('has_color_variants').value = hasColor;
+    document.getElementById('has_size_variants').value = hasSize;
+  }
 
-    // Form validation
-    document.getElementById('categoryForm').addEventListener('submit', function(e) {
-      const name = document.getElementById('name').value.trim();
-      const slug = document.getElementById('slug').value.trim();
-      const productType = document.getElementById('product_type').value;
+  // Run on load to ensure consistency
+  document.addEventListener('DOMContentLoaded', function() {
+    updateCategoryFlags();
+  });
+</script>
 
-      if (!name || !slug || !productType) {
-        e.preventDefault();
-        alert('Please fill in all required fields!');
-        return false;
-      }
-    });
-  </script>
-  {% endblock %}
+{% endblock %}

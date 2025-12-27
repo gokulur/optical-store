@@ -201,7 +201,7 @@ def dashboard(request):
         is_active=True
     ).select_related('brand', 'category').order_by('stock_quantity')[:10]
     
-    # ============ MONTHLY COMPARISON ============
+ 
     
     # Previous month
     previous_month_start = (first_day_of_month - timedelta(days=1)).replace(day=1)
@@ -306,9 +306,7 @@ def category_list(request):
 # @login_required
 # @user_passes_test(is_admin)
 # adminpanel/views.py
-
-@login_required
-@user_passes_test(is_admin)
+ 
 def category_add(request):
     """Add new category with Technical Flags"""
     if request.method == 'POST':
@@ -382,29 +380,43 @@ def category_edit(request, category_id):
     category = get_object_or_404(Category, id=category_id)
     
     if request.method == 'POST':
+        # 1. Basic Info
         category.name = request.POST.get('name')
         category.slug = request.POST.get('slug')
         category.description = request.POST.get('description', '')
         
+        # 2. Parent Category
         parent_id = request.POST.get('parent')
-        category.parent = Category.objects.get(id=parent_id) if parent_id else None
+        if parent_id:
+            category.parent = Category.objects.get(id=parent_id)
+        else:
+            category.parent = None
         
+        # 3. Display & Active
         category.display_order = request.POST.get('display_order', 0)
         category.is_active = request.POST.get('is_active') == 'on'
         
-        # Handle remove image
+        # 4. Image Handling
         if request.POST.get('remove_image') == '1':
             category.image = None
-        
-        # Handle new image upload
         if 'image' in request.FILES:
             category.image = request.FILES['image']
-        
-        category.save()
-        
-        messages.success(request, f'Category "{category.name}" updated successfully!')
-        return redirect('adminpanel:category_list')
+            
+      
+        category.has_prescription = request.POST.get('has_prescription') == 'True'
+        category.has_lens_selection = request.POST.get('has_lens_selection') == 'True'
+        category.has_power = request.POST.get('has_power') == 'True'
+        category.has_color_variants = request.POST.get('has_color_variants') == 'True'
+        category.has_size_variants = request.POST.get('has_size_variants') == 'True'
+
+        try:
+            category.save()
+            messages.success(request, f'Category "{category.name}" updated successfully!')
+            return redirect('adminpanel:category_list')
+        except Exception as e:
+            messages.error(request, f"Error updating category: {str(e)}")
     
+    # GET Request
     parent_categories = Category.objects.filter(parent__isnull=True).exclude(id=category_id)
     
     context = {
