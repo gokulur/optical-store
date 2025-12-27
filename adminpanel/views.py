@@ -2,13 +2,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.db.models import Q, Count, Sum, Avg
+from django.db.models import Q, Count, Sum, Avg, F
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.utils import timezone
 from datetime import timedelta
+from decimal import Decimal
 
-from catalog import models
 from catalog.models import (
     Category, Brand, Product, ProductVariant, ProductImage,
     ProductSpecification, ContactLensProduct, ContactLensPowerOption,
@@ -23,12 +23,6 @@ from prescriptions.models import Prescription
 from cart.models import Cart, CartItem
 from content.models import Banner, Page, StoreLocation, EyeTestBooking
 from reviews.models import Review, ReviewImage
-from django.db.models import F
-
-# from notifications.models import Notification, StockAlert
-# from promotions.models import Coupon, CouponUsage
-# from analytics.models import ProductView, CartAbandonment
-# from settings.models import SiteSettings, Currency, TaxRate
 
 
 # Helper function to check if user is admin
@@ -45,92 +39,251 @@ def dashboard(request):
     
     # Date ranges
     today = timezone.now().date()
+    yesterday = today - timedelta(days=1)
     last_30_days = today - timedelta(days=30)
     last_7_days = today - timedelta(days=7)
+    first_day_of_month = today.replace(day=1)
     
-    # Orders statistics
-    total_orders = Order.objects.count()
-    pending_orders = Order.objects.filter(status='pending').count()
-    today_orders = Order.objects.filter(created_at__date=today).count()
-    month_orders = Order.objects.filter(created_at__date__gte=last_30_days).count()
+    # ============ REVENUE CALCULATIONS ============
     
-    # Revenue statistics
-    total_revenue = Order.objects.filter(payment_status='paid').aggregate(
-        total=Sum('total_amount')
-    )['total'] or 0
+    # Total Revenue (all time)
+    total_revenue = Order.objects.filter(
+        payment_status='paid'
+    ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
     
-    month_revenue = Order.objects.filter(
+    # Monthly Income (current month)
+    monthly_income = Order.objects.filter(
         payment_status='paid',
-        created_at__date__gte=last_30_days
-    ).aggregate(total=Sum('total_amount'))['total'] or 0
+        created_at__date__gte=first_day_of_month
+    ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
     
-    # Products statistics
+    # Daily Income (today)
+    daily_income = Order.objects.filter(
+        payment_status='paid',
+        created_at__date=today
+    ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
+    
+    # Yesterday's Income
+    yesterday_income = Order.objects.filter(
+        payment_status='paid',
+        created_at__date=yesterday
+    ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
+    
+    # Week income
+    week_income = Order.objects.filter(
+        payment_status='paid',
+        created_at__date__gte=last_7_days
+    ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
+    
+    # ============ SALES CALCULATIONS ============
+    
+    # Total items sold (all time)
+    total_sales = OrderItem.objects.filter(
+        order__payment_status='paid'
+    ).aggregate(total=Sum('quantity'))['total'] or 0
+    
+    # Monthly sales
+    monthly_sales = OrderItem.objects.filter(
+        order__payment_status='paid',
+        order__created_at__date__gte=first_day_of_month
+    ).aggregate(total=Sum('quantity'))['total'] or 0
+    
+    # Daily sales
+    daily_sales = OrderItem.objects.filter(
+        order__payment_status='paid',
+        order__created_at__date=today
+    ).aggregate(total=Sum('quantity'))['total'] or 0
+    
+    # ============ ORDER STATISTICS ============
+    
+    # Total orders
+    total_orders = Order.objects.count()
+    
+    # Orders by status
+    pending_orders = Order.objects.filter(status='pending').count()
+    confirmed_orders = Order.objects.filter(status='confirmed').count()
+    processing_orders = Order.objects.filter(status='processing').count()
+    shipped_orders = Order.objects.filter(status='shipped').count()
+    delivered_orders = Order.objects.filter(status='delivered').count()
+    cancelled_orders = Order.objects.filter(status='cancelled').count()
+    
+    # Today's orders
+    today_orders = Order.objects.filter(created_at__date=today).count()
+    
+    # Monthly orders
+    month_orders = Order.objects.filter(created_at__date__gte=first_day_of_month).count()
+    
+    # ============ PRODUCT STATISTICS ============
+    
+    # Total products
     total_products = Product.objects.filter(is_active=True).count()
+    
+    # Products by type
+    sunglasses_count = Product.objects.filter(product_type='sunglasses', is_active=True).count()
+    eyeglasses_count = Product.objects.filter(product_type='eyeglasses', is_active=True).count()
+    contact_lenses_count = Product.objects.filter(product_type='contact_lenses', is_active=True).count()
+    accessories_count = Product.objects.filter(product_type='accessories', is_active=True).count()
+    
+    # Low stock products (stock_quantity <= 5)
     low_stock_products = Product.objects.filter(
         track_inventory=True,
-        stock_quantity__lte=F('low_stock_threshold')
+        stock_quantity__lte=5,
+        stock_quantity__gt=0,
+        is_active=True
     ).count()
+    
+    # Out of stock
     out_of_stock = Product.objects.filter(
         track_inventory=True,
-        stock_quantity=0
+        stock_quantity=0,
+        is_active=True
     ).count()
     
-    # Customers
+    # Featured products
+    featured_products = Product.objects.filter(is_featured=True, is_active=True).count()
+    
+    # ============ CUSTOMER STATISTICS ============
+    
+    # Total customers
     total_customers = User.objects.filter(user_type='customer').count()
-    new_customers = User.objects.filter(
+    
+    # New customers this month
+    new_customers_month = User.objects.filter(
         user_type='customer',
-        created_at__date__gte=last_30_days
+        created_at__date__gte=first_day_of_month
     ).count()
     
-    # Recent orders
-    recent_orders = Order.objects.select_related('customer').order_by('-created_at')[:10]
+    # New customers today
+    new_customers_today = User.objects.filter(
+        user_type='customer',
+        created_at__date=today
+    ).count()
     
-    # Top selling products
-    top_products = Product.objects.filter(is_active=True).order_by('-sales_count')[:5]
+    # ============ RECENT DATA ============
+    
+    # Recent orders (last 10)
+    recent_orders = Order.objects.select_related(
+        'customer'
+    ).prefetch_related('items').order_by('-created_at')[:10]
+    
+    # Top selling products (by stock quantity - as proxy for sales since no sales_count field)
+    top_products = Product.objects.filter(
+        is_active=True
+    ).order_by('-stock_quantity')[:5]
+    
+    # Recent customers
+    recent_customers = User.objects.filter(
+        user_type='customer'
+    ).order_by('-created_at')[:5]
+    
+    # ============ REVIEWS & RATINGS ============
     
     # Pending reviews
     pending_reviews = Review.objects.filter(is_approved=False).count()
     
+    # Total reviews
+    total_reviews = Review.objects.count()
+    
+    # ============ BOOKINGS & ALERTS ============
+    
     # Eye test bookings pending
     pending_bookings = EyeTestBooking.objects.filter(status='pending').count()
     
-    # Low stock alerts
+    # Today's bookings
+    today_bookings = EyeTestBooking.objects.filter(booking_date=today).count()
+    
+    # ============ LOW STOCK ITEMS ============
+    
     low_stock_items = Product.objects.filter(
         track_inventory=True,
-        stock_quantity__lte=F('low_stock_threshold'),
-        stock_quantity__gt=0
-    ).select_related('brand', 'category')[:10]
+        stock_quantity__lte=5,
+        stock_quantity__gt=0,
+        is_active=True
+    ).select_related('brand', 'category').order_by('stock_quantity')[:10]
     
+    # ============ MONTHLY COMPARISON ============
+    
+    # Previous month
+    previous_month_start = (first_day_of_month - timedelta(days=1)).replace(day=1)
+    previous_month_end = first_day_of_month - timedelta(days=1)
+    
+    previous_month_income = Order.objects.filter(
+        payment_status='paid',
+        created_at__date__gte=previous_month_start,
+        created_at__date__lte=previous_month_end
+    ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
+    
+    # Growth percentage
+    if previous_month_income > 0:
+        income_growth = ((monthly_income - previous_month_income) / previous_month_income) * 100
+    else:
+        income_growth = 100 if monthly_income > 0 else 0
+
     context = {
+        # Revenue
+        'revenue': total_revenue,
+        'monthly_income': monthly_income,
+        'daily_income': daily_income,
+        'yesterday_income': yesterday_income,
+        'week_income': week_income,
+        'income_growth': round(income_growth, 2),
+        
+        # Sales
+        'sales': total_sales,
+        'monthly_sales': monthly_sales,
+        'daily_sales': daily_sales,
+        
+        # Orders
         'total_orders': total_orders,
         'pending_orders': pending_orders,
+        'confirmed_orders': confirmed_orders,
+        'processing_orders': processing_orders,
+        'shipped_orders': shipped_orders,
+        'delivered_orders': delivered_orders,
+        'cancelled_orders': cancelled_orders,
         'today_orders': today_orders,
         'month_orders': month_orders,
-        'total_revenue': total_revenue,
-        'month_revenue': month_revenue,
+        
+        # Products
         'total_products': total_products,
+        'sunglasses_count': sunglasses_count,
+        'eyeglasses_count': eyeglasses_count,
+        'contact_lenses_count': contact_lenses_count,
+        'accessories_count': accessories_count,
         'low_stock_products': low_stock_products,
         'out_of_stock': out_of_stock,
+        'featured_products': featured_products,
+        
+        # Customers
         'total_customers': total_customers,
-        'new_customers': new_customers,
+        'new_customers_month': new_customers_month,
+        'new_customers_today': new_customers_today,
+        
+        # Recent data
         'recent_orders': recent_orders,
         'top_products': top_products,
-        'pending_reviews': pending_reviews,
-        'pending_bookings': pending_bookings,
+        'recent_customers': recent_customers,
         'low_stock_items': low_stock_items,
+        
+        # Reviews
+        'pending_reviews': pending_reviews,
+        'total_reviews': total_reviews,
+        
+        # Bookings
+        'pending_bookings': pending_bookings,
+        'today_bookings': today_bookings,
     }
     
-    return render(request, "admin-dashboard.html", context)
- 
+    return render(request, 'admin-dashboard.html', context)
+
 
 # ==================== CATEGORIES ====================
 
-# @login_required
-# @user_passes_test(is_admin)
+@login_required
+@user_passes_test(is_admin)
 def category_list(request):
     """List all categories"""
     search = request.GET.get('search', '')
-    product_type = request.GET.get('product_type', '')
     
     categories = Category.objects.all().order_by('display_order', 'name')
     
@@ -139,9 +292,6 @@ def category_list(request):
             Q(name__icontains=search) | Q(description__icontains=search)
         )
     
-    if product_type:
-        categories = categories.filter(product_type=product_type)
-    
     paginator = Paginator(categories, 25)
     page = request.GET.get('page', 1)
     categories = paginator.get_page(page)
@@ -149,22 +299,18 @@ def category_list(request):
     context = {
         'categories': categories,
         'search': search,
-        'product_type': product_type,
     }
     return render(request, 'adminpanel/categories/list.html', context)
 
 
-
-
-# @login_required
-# @user_passes_test(is_admin)
-def add_category_page(request):
+@login_required
+@user_passes_test(is_admin)
+def category_add(request):
     """Add new category"""
     if request.method == 'POST':
         name = request.POST.get('name')
         slug = request.POST.get('slug')
         description = request.POST.get('description', '')
-        product_type = request.POST.get('product_type')
         parent_id = request.POST.get('parent')
         display_order = request.POST.get('display_order', 0)
         is_active = request.POST.get('is_active') == 'on'
@@ -180,7 +326,6 @@ def add_category_page(request):
             name=name,
             slug=slug,
             description=description,
-            product_type=product_type,
             parent=parent,
             display_order=display_order,
             is_active=is_active,
@@ -197,10 +342,10 @@ def add_category_page(request):
         'parent_categories': parent_categories,
     }
     return render(request, 'adminpanel/categories/add.html', context)
- 
- 
-# @login_required
-# @user_passes_test(is_admin)
+
+
+@login_required
+@user_passes_test(is_admin)
 def category_edit(request, category_id):
     """Edit category"""
     category = get_object_or_404(Category, id=category_id)
@@ -209,7 +354,6 @@ def category_edit(request, category_id):
         category.name = request.POST.get('name')
         category.slug = request.POST.get('slug')
         category.description = request.POST.get('description', '')
-        category.product_type = request.POST.get('product_type')
         
         parent_id = request.POST.get('parent')
         category.parent = Category.objects.get(id=parent_id) if parent_id else None
@@ -217,6 +361,11 @@ def category_edit(request, category_id):
         category.display_order = request.POST.get('display_order', 0)
         category.is_active = request.POST.get('is_active') == 'on'
         
+        # Handle remove image
+        if request.POST.get('remove_image') == '1':
+            category.image = None
+        
+        # Handle new image upload
         if 'image' in request.FILES:
             category.image = request.FILES['image']
         
@@ -234,8 +383,8 @@ def category_edit(request, category_id):
     return render(request, 'adminpanel/categories/edit.html', context)
 
 
-# @login_required
-# @user_passes_test(is_admin)
+@login_required
+@user_passes_test(is_admin)
 def category_delete(request, category_id):
     """Delete category"""
     category = get_object_or_404(Category, id=category_id)
@@ -250,11 +399,10 @@ def category_delete(request, category_id):
     return render(request, 'adminpanel/categories/delete_confirm.html', context)
 
 
-
 # ==================== BRANDS ====================
 
-# @login_required
-# @user_passes_test(is_admin)
+@login_required
+@user_passes_test(is_admin)
 def brand_list(request):
     """List all brands"""
     search = request.GET.get('search', '')
@@ -275,8 +423,8 @@ def brand_list(request):
     return render(request, 'adminpanel/brands/list.html', context)
 
 
-# @login_required
-# @user_passes_test(is_admin)
+@login_required
+@user_passes_test(is_admin)
 def brand_add(request):
     """Add new brand"""
     if request.method == 'POST':
@@ -312,8 +460,8 @@ def brand_add(request):
     return render(request, 'adminpanel/brands/add.html')
 
 
-# @login_required
-# @user_passes_test(is_admin)
+@login_required
+@user_passes_test(is_admin)
 def brand_edit(request, brand_id):
     """Edit brand"""
     brand = get_object_or_404(Brand, id=brand_id)
@@ -343,8 +491,8 @@ def brand_edit(request, brand_id):
     return render(request, 'adminpanel/brands/edit.html', context)
 
 
-# @login_required
-# @user_passes_test(is_admin)
+@login_required
+@user_passes_test(is_admin)
 def brand_delete(request, brand_id):
     """Delete brand"""
     brand = get_object_or_404(Brand, id=brand_id)
