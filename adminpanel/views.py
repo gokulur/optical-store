@@ -12,7 +12,7 @@ from django.db import transaction, IntegrityError
 from catalog.models import (
     Category, Brand, Product, ProductVariant, ProductImage,
     ProductSpecification, ContactLensProduct, ContactLensPowerOption,
-    ProductTag, ProductTagRelation
+    ProductTag, ProductTagRelation,LensType
 )
 from lenses.models import (
     LensCategory, LensOption, LensAddOn, LensOptionAddOn, SunglassLensOption
@@ -942,3 +942,160 @@ def product_delete(request, product_id):
     
     context = {'product': product}
     return render(request, 'adminpanel/products/delete_confirm.html', context)
+
+
+
+# ==================== LENS MANAGEMENT ====================
+
+# @login_required
+# @user_passes_test(is_admin)
+def lens_list(request):
+    """List all Lens options"""
+    lenses = LensType.objects.select_related('category', 'brand').order_by('category', 'price')
+    lenses = "test"
+    context = {
+        'lenses': lenses,
+    }
+    return render(request, 'adminpanel/lenses/list.html', context)
+
+# @login_required
+# @user_passes_test(is_admin)
+def lens_add(request):
+    """Add a new Lens Package"""
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        category_id = request.POST.get('category')
+        brand_id = request.POST.get('brand')
+        index = request.POST.get('index')
+        material = request.POST.get('material')
+        price = request.POST.get('price')
+        
+        # Prescription Limits
+        sph_min = request.POST.get('sph_min')
+        sph_max = request.POST.get('sph_max')
+        cyl_min = request.POST.get('cyl_min')
+        cyl_max = request.POST.get('cyl_max')
+
+        try:
+            LensType.objects.create(
+                name=name,
+                category_id=category_id,
+                brand_id=brand_id if brand_id else None,
+                index=index,
+                material=material,
+                price=price,
+                sph_min=sph_min,
+                sph_max=sph_max,
+                cyl_min=cyl_min,
+                cyl_max=cyl_max
+            )
+            messages.success(request, f'Lens "{name}" added successfully!')
+            return redirect('adminpanel:lens_list')
+        except Exception as e:
+            messages.error(request, f"Error adding lens: {str(e)}")
+
+    # GET Request
+    categories = LensCategory.objects.all()
+    brands = Brand.objects.filter(is_active=True) # Assuming you use same Brand model or separate LensBrand
+    
+    context = {
+        'categories': categories,
+        'brands': brands,
+    }
+    return render(request, 'adminpanel/lenses/add.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def lens_edit(request, lens_id):
+    """Edit existing Lens Package"""
+    lens = get_object_or_404(LensType, id=lens_id)
+
+    if request.method == 'POST':
+        try:
+            # 1. Update Basic Info
+            lens.name = request.POST.get('name')
+            lens.category_id = request.POST.get('category')
+            
+            brand_id = request.POST.get('brand')
+            lens.brand_id = brand_id if brand_id else None
+            
+            # 2. Update Specs
+            lens.index = request.POST.get('index')
+            lens.material = request.POST.get('material')
+            lens.price = request.POST.get('price')
+
+            # 3. Update Power Limits
+            lens.sph_min = request.POST.get('sph_min')
+            lens.sph_max = request.POST.get('sph_max')
+            lens.cyl_min = request.POST.get('cyl_min')
+            lens.cyl_max = request.POST.get('cyl_max')
+
+            lens.save()
+            messages.success(request, f'Lens "{lens.name}" updated successfully!')
+            return redirect('adminpanel:lens_list')
+
+        except Exception as e:
+            messages.error(request, f"Error updating lens: {str(e)}")
+
+    # GET Request
+    categories = LensCategory.objects.all()
+    brands = Brand.objects.filter(is_active=True)
+    
+    context = {
+        'lens': lens,
+        'categories': categories,
+        'brands': brands,
+    }
+    return render(request, 'adminpanel/lenses/edit.html', context)
+
+# @login_required
+# @user_passes_test(is_admin)
+def lens_delete(request, lens_id):
+    lens = get_object_or_404(LensType, id=lens_id)
+    if request.method == 'POST':
+        lens.delete()
+        messages.success(request, 'Lens package deleted successfully.')
+        return redirect('adminpanel:lens_list')
+    
+
+
+
+
+# ==================== LENS CATEGORIES ====================
+
+# @login_required
+# @user_passes_test(is_admin)
+def lens_category_list(request):
+    """List all Lens Categories (Single Vision, Progressive etc.)"""
+    categories = LensCategory.objects.all().order_by('name')
+    return render(request, 'adminpanel/lens-category/list.html', {'categories': categories})
+
+# @login_required
+# @user_passes_test(is_admin)
+def lens_category_add(request):
+    """Add a new Lens Category"""
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        slug = request.POST.get('slug')
+        description = request.POST.get('description')
+
+        try:
+            LensCategory.objects.create(name=name, slug=slug, description=description)
+            messages.success(request, f'Lens Category "{name}" added!')
+            return redirect('adminpanel:lens_category_list')
+        except IntegrityError:
+            messages.error(request, "Category with this slug already exists.")
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+
+    return render(request, 'adminpanel/lens-category/add.html')
+
+# @login_required
+# @user_passes_test(is_admin)
+def lens_category_delete(request, cat_id):
+    cat = get_object_or_404(LensCategory, id=cat_id)
+    if request.method == 'POST':
+        cat.delete()
+        messages.success(request, "Lens Category deleted.")
+    return redirect('adminpanel:lens_category_list')

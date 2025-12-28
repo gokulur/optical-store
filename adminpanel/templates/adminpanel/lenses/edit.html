@@ -1,0 +1,160 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  /* Same Styling */
+  .section-title { font-size: 1.1rem; font-weight: 600; color: #3e4b5b; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid #f2f4f6; }
+  .form-control:focus { border-color: #b66dff; box-shadow: 0 0 0 0.2rem rgba(182, 109, 255, 0.25); }
+  .card { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); border: none; margin-bottom: 20px; }
+  .btn-gradient-primary { background: linear-gradient(to right, #da8cff, #9a55ff); border: 0; color: white; }
+  .btn-gradient-primary:hover { background: linear-gradient(to right, #9a55ff, #da8cff); color: white; }
+  .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+  
+  .power-box { background: #f8f9fa; border: 1px solid #e3e3e3; padding: 15px; border-radius: 8px; }
+  .power-title { font-weight: 700; color: #5e5e5e; margin-bottom: 10px; display: block; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <h3 class="mb-2"><i class="mdi mdi-pencil"></i> Edit Lens Package</h3>
+      <p class="mb-0">Update details for <strong>{{ lens.name }}</strong></p>
+    </div>
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-transparent p-0 mb-4">
+        <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="#">Catalog</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Lens</li>
+      </ol>
+    </nav>
+
+    <form method="POST">
+      {% csrf_token %}
+      
+      <div class="row">
+        <div class="col-lg-8 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              <h4 class="section-title"><i class="mdi mdi-information-outline"></i> Basic Information</h4>
+              
+              <div class="form-group">
+                <label class="font-weight-bold">Lens Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-lg" name="name" value="{{ lens.name }}" required>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Lens Category</label>
+                    <select class="form-control" name="category" required>
+                      <option value="">Select Category</option>
+                      {% for cat in categories %}
+                      <option value="{{ cat.id }}" {% if lens.category.id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Lens Brand</label>
+                    <select class="form-control" name="brand">
+                      <option value="">No Brand</option>
+                      {% for brand in brands %}
+                      <option value="{{ brand.id }}" {% if lens.brand and lens.brand.id == brand.id %}selected{% endif %}>{{ brand.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Refractive Index</label>
+                    <select class="form-control" name="index">
+                      <option value="1.50" {% if lens.index == '1.50' %}selected{% endif %}>1.50 (Standard)</option>
+                      <option value="1.56" {% if lens.index == '1.56' %}selected{% endif %}>1.56 (Thin)</option>
+                      <option value="1.59" {% if lens.index == '1.59' %}selected{% endif %}>1.59 (Polycarbonate)</option>
+                      <option value="1.60" {% if lens.index == '1.60' %}selected{% endif %}>1.60 (High Index)</option>
+                      <option value="1.67" {% if lens.index == '1.67' %}selected{% endif %}>1.67 (Ultra Thin)</option>
+                      <option value="1.74" {% if lens.index == '1.74' %}selected{% endif %}>1.74 (Thinnest)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Material</label>
+                    <input type="text" class="form-control" name="material" value="{{ lens.material }}" placeholder="e.g. Plastic">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group mt-3">
+                <label class="font-weight-bold text-success">Price (QAR)</label>
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text bg-success text-white">QAR</span>
+                  </div>
+                  <input type="number" class="form-control" name="price" step="0.01" min="0" value="{{ lens.price }}" required>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              <h4 class="section-title"><i class="mdi mdi-glasses"></i> Power Limits</h4>
+              <p class="text-muted small">Update validation range.</p>
+
+              <div class="power-box mb-3">
+                <span class="power-title">Sphere (SPH)</span>
+                <div class="row">
+                  <div class="col-6">
+                    <label>Min</label>
+                    <input type="number" class="form-control form-control-sm" name="sph_min" value="{{ lens.sph_min }}" step="0.25">
+                  </div>
+                  <div class="col-6">
+                    <label>Max</label>
+                    <input type="number" class="form-control form-control-sm" name="sph_max" value="{{ lens.sph_max }}" step="0.25">
+                  </div>
+                </div>
+              </div>
+
+              <div class="power-box">
+                <span class="power-title">Cylinder (CYL)</span>
+                <div class="row">
+                  <div class="col-6">
+                    <label>Min</label>
+                    <input type="number" class="form-control form-control-sm" name="cyl_min" value="{{ lens.cyl_min }}" step="0.25">
+                  </div>
+                  <div class="col-6">
+                    <label>Max</label>
+                    <input type="number" class="form-control form-control-sm" name="cyl_max" value="{{ lens.cyl_max }}" step="0.25">
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <button type="submit" class="btn btn-gradient-primary btn-lg btn-block">
+                  <i class="mdi mdi-content-save"></i> Update Lens
+                </button>
+                <a href="{% url 'adminpanel:lens_list' %}" class="btn btn-light btn-lg btn-block mt-2">Cancel</a>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}
