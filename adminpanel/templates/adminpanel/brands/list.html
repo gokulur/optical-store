@@ -38,7 +38,7 @@
           <h3 class="mb-2"><i class="mdi mdi-tag-multiple"></i> Brands List</h3>
           <p class="mb-0">Manage optical brands and their availability</p>
         </div>
-        <a href="{% url 'adminpanel:add_brand_page' %}" class="btn btn-light btn-lg">
+        <a href="{% url 'adminpanel:brand_add' %}" class="btn btn-light btn-lg">
           <i class="mdi mdi-plus"></i> Add New Brand
         </a>
       </div>
@@ -289,7 +289,7 @@
   function confirmDelete(name, id) {
     document.getElementById('brandName').textContent = name;
     // Uses dummy '0' then replaces it with real ID
-    var deleteUrl = "{% url 'adminpanel:delete_brand' 0 %}".replace('0', id);
+    var deleteUrl = "{% url 'adminpanel:brand_delete' 0 %}".replace('0', id);
     document.getElementById('deleteForm').action = deleteUrl;
     $('#deleteModal').modal('show');
   }

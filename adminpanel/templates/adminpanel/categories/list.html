@@ -33,7 +33,7 @@
           <h3 class="mb-2"><i class="mdi mdi-format-list-bulleted"></i> Categories List</h3>
           <p class="mb-0">Manage all product categories</p>
         </div>
-        <a href="{% url 'adminpanel:add_category_page' %}" class="btn btn-light btn-lg">
+        <a href="{% url 'adminpanel:category_add' %}" class="btn btn-light btn-lg">
           <i class="mdi mdi-plus"></i> Add New Category
         </a>
       </div>
@@ -325,7 +325,7 @@
     
     // 2. Construct the Delete URL
     // We use a dummy ID '0' in the Django tag, then replace it with the real ID via JS
-    var deleteUrl = "{% url 'adminpanel:delete_category' 0 %}".replace('0', id);
+    var deleteUrl = "{% url 'adminpanel:category_delete' 0 %}".replace('0', id);
     
     // 3. Set the form action
     document.getElementById('deleteForm').action = deleteUrl;

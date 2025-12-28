@@ -127,158 +127,192 @@
         </a>
       </div>
       <ul class="nav">
-        <li class="nav-item profile">
-          <div class="profile-desc">
-            <div class="profile-pic">
-              <div class="count-indicator">
-                <img class="img-xs rounded-circle" src="{% static 'assets/images/faces/admin2.jpg' %}" alt="">
-                <span class="count bg-success"></span>
-              </div>
-              <div class="profile-name">
-                <h5 class="mb-0 font-weight-normal">{{ request.user.get_full_name|default:'Admin' }}</h5>
-              </div>
-            </div>
-            <a href="#" id="profile-dropdown" data-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></a>
-            <div class="dropdown-menu dropdown-menu-right sidebar-dropdown preview-list"
-              aria-labelledby="profile-dropdown">
-              <a href="#" class="dropdown-item preview-item">
-                <div class="preview-thumbnail">
-                  <div class="preview-icon bg-dark rounded-circle">
-                    <i class="mdi mdi-settings text-primary"></i>
-                  </div>
-                </div>
-                <div class="preview-item-content">
-                  <p class="preview-subject ellipsis mb-1 text-small">Account settings</p>
-                </div>
-              </a>
-              <div class="dropdown-divider"></div>
-              <a href="#" class="dropdown-item preview-item">
-                <div class="preview-thumbnail">
-                  <div class="preview-icon bg-dark rounded-circle">
-                    <i class="mdi mdi-onepassword text-info"></i>
-                  </div>
-                </div>
-                <div class="preview-item-content">
-                  <p class="preview-subject ellipsis mb-1 text-small">Change Password</p>
-                </div>
-              </a>
+         <li class="nav-item profile">
+    <div class="profile-desc">
+      <div class="profile-pic">
+        <div class="count-indicator">
+          <img class="img-xs rounded-circle" src="{% static 'assets/images/faces/admin2.jpg' %}" alt="">
+          <span class="count bg-success"></span>
+        </div>
+        <div class="profile-name">
+          <h5 class="mb-0 font-weight-normal">{{ request.user.get_full_name|default:'Admin' }}</h5>
+        </div>
+      </div>
+      <a href="#" id="profile-dropdown" data-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></a>
+      <div class="dropdown-menu dropdown-menu-right sidebar-dropdown preview-list" aria-labelledby="profile-dropdown">
+        <a href="#" class="dropdown-item preview-item">
+          <div class="preview-thumbnail">
+            <div class="preview-icon bg-dark rounded-circle">
+              <i class="mdi mdi-settings text-primary"></i>
             </div>
           </div>
-        </li>
-
-        <li class="nav-item nav-category">
-          <span class="nav-link">Navigation</span>
-        </li>
-
-        <li class="nav-item menu-items active">
-          <a class="nav-link" href="{% url 'adminpanel:dashboard' %}">
-            <span class="menu-icon"><i class="mdi mdi-speedometer"></i></span>
-            <span class="menu-title">Dashboard</span>
-          </a>
-        </li>
-
-        <li class="nav-item menu-items">
-          <a class="nav-link" data-toggle="collapse" href="#catalogMenu">
-            <span class="menu-icon"><i class="mdi mdi-shape-outline"></i></span>
-            <span class="menu-title">Catalog</span>
-            <i class="menu-arrow"></i>
-          </a>
-          <div class="collapse" id="catalogMenu">
-            <ul class="nav flex-column sub-menu">
-              <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:add_category_page' %}">Add Category</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:category_list' %}">List Categories</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:add_brand_page' %}">Add Brand</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:brand_list' %}">List Brands</a></li>
-            </ul>
+          <div class="preview-item-content">
+            <p class="preview-subject ellipsis mb-1 text-small">Account Settings</p>
           </div>
-        </li>
-
-        <li class="nav-item menu-items">
-          <a class="nav-link" data-toggle="collapse" href="#productMenu">
-            <span class="menu-icon"><i class="mdi mdi-package-variant"></i></span>
-            <span class="menu-title">Products</span>
-            <i class="menu-arrow"></i>
-          </a>
-          <div class="collapse" id="productMenu">
-            <ul class="nav flex-column sub-menu">
-              <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:product_add' %}">Add Product</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:product_list' %}">All Products</a></li>
-            </ul>
+        </a>
+        <div class="dropdown-divider"></div>
+        <a href="#" class="dropdown-item preview-item">
+          <div class="preview-thumbnail">
+            <div class="preview-icon bg-dark rounded-circle">
+              <i class="mdi mdi-onepassword text-info"></i>
+            </div>
           </div>
-        </li>
-
-        <li class="nav-item menu-items">
-          <a class="nav-link" data-toggle="collapse" href="#lensMenu">
-            <span class="menu-icon"><i class="mdi mdi-glasses"></i></span>
-            <span class="menu-title">Lenses</span>
-            <i class="menu-arrow"></i>
-          </a>
-          <div class="collapse" id="lensMenu">
-            <ul class="nav flex-column sub-menu">
-              <li class="nav-item"><a class="nav-link" href="#">Lens Options</a></li>
-              <li class="nav-item"><a class="nav-link" href="#">Lens Categories</a></li>
-            </ul>
+          <div class="preview-item-content">
+            <p class="preview-subject ellipsis mb-1 text-small">Change Password</p>
           </div>
-        </li>
+        </a>
+      </div>
+    </div>
+  </li>
 
-        <li class="nav-item menu-items">
-          <a class="nav-link" data-toggle="collapse" href="#orderMenu">
-            <span class="menu-icon"><i class="mdi mdi-cart-outline"></i></span>
-            <span class="menu-title">Orders</span>
-            <i class="menu-arrow"></i>
-          </a>
-          <div class="collapse" id="orderMenu">
-            <ul class="nav flex-column sub-menu">
-              <li class="nav-item"><a class="nav-link" href="#">All Orders</a></li>
-            </ul>
-          </div>
-        </li>
+  <li class="nav-item nav-category">
+    <span class="nav-link">Navigation</span>
+  </li>
 
-        <li class="nav-item menu-items">
-          <a class="nav-link" data-toggle="collapse" href="#customerMenu">
-            <span class="menu-icon"><i class="mdi mdi-account-group"></i></span>
-            <span class="menu-title">Customers</span>
-            <i class="menu-arrow"></i>
-          </a>
-          <div class="collapse" id="customerMenu">
-            <ul class="nav flex-column sub-menu">
-              <li class="nav-item"><a class="nav-link" href="#">All Customers</a></li>
-            </ul>
-          </div>
-        </li>
+  <!-- Dashboard -->
+  <li class="nav-item menu-items active">
+    <a class="nav-link" href="{% url 'adminpanel:dashboard' %}">
+      <span class="menu-icon"><i class="mdi mdi-speedometer"></i></span>
+      <span class="menu-title">Dashboard</span>
+    </a>
+  </li>
 
-        <li class="nav-item menu-items">
-          <a class="nav-link" data-toggle="collapse" href="#contentMenu">
-            <span class="menu-icon"><i class="mdi mdi-image-multiple"></i></span>
-            <span class="menu-title">Content</span>
-            <i class="menu-arrow"></i>
-          </a>
-          <div class="collapse" id="contentMenu">
-            <ul class="nav flex-column sub-menu">
-              <li class="nav-item"><a class="nav-link" href="#">Banners</a></li>
-            </ul>
-          </div>
-        </li>
+  <!-- Categories & Brands -->
+  <li class="nav-item menu-items">
+    <a class="nav-link" data-toggle="collapse" href="#catalogMenu">
+      <span class="menu-icon"><i class="mdi mdi-shape-outline"></i></span>
+      <span class="menu-title">Categories & Brands</span>
+      <i class="menu-arrow"></i>
+    </a>
+    <div class="collapse" id="catalogMenu">
+      <ul class="nav flex-column sub-menu">
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:category_list' %}">Categories</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:category_add' %}">Add Category</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:brand_list' %}">Brands</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:brand_add' %}">Add Brand</a></li>
+      </ul>
+    </div>
+  </li>
 
-        <li class="nav-item menu-items">
-          <a class="nav-link" data-toggle="collapse" href="#reviewMenu">
-            <span class="menu-icon"><i class="mdi mdi-star"></i></span>
-            <span class="menu-title">Reviews</span>
-            <i class="menu-arrow"></i>
-          </a>
-          <div class="collapse" id="reviewMenu">
-            <ul class="nav flex-column sub-menu">
-              <li class="nav-item"><a class="nav-link" href="#">All Reviews</a></li>
-            </ul>
-          </div>
-        </li>
+  <!-- Products (Sunglasses & Eyeglasses) -->
+  <li class="nav-item menu-items">
+    <a class="nav-link" data-toggle="collapse" href="#productMenu">
+      <span class="menu-icon"><i class="mdi mdi-sunglasses"></i></span>
+      <span class="menu-title">Sun & Eyeglasses</span>
+      <i class="menu-arrow"></i>
+    </a>
+    <div class="collapse" id="productMenu">
+      <ul class="nav flex-column sub-menu">
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:product_list' %}">All Products</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:product_add' %}">Add Product</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:tag_list' %}">Product Tags</a></li>
+      </ul>
+    </div>
+  </li>
 
-        <li class="nav-item menu-items">
-          <a class="nav-link text-danger" href="#">
-            <span class="menu-icon"><i class="mdi mdi-logout"></i></span>
-            <span class="menu-title">Logout</span>
-          </a>
-        </li>
+  <!-- Contact Lenses -->
+  <li class="nav-item menu-items">
+    <a class="nav-link" data-toggle="collapse" href="#contactLensMenu">
+      <span class="menu-icon"><i class="mdi mdi-eye-outline"></i></span>
+      <span class="menu-title">Contact Lenses</span>
+      <i class="menu-arrow"></i>
+    </a>
+    <div class="collapse" id="contactLensMenu">
+      <ul class="nav flex-column sub-menu">
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:contact_lens_list' %}">All Contact Lenses</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:contact_lens_add' %}">Add Contact Lens</a></li>
+      </ul>
+    </div>
+  </li>
+
+  <!-- Prescription Lenses -->
+  <li class="nav-item menu-items">
+    <a class="nav-link" data-toggle="collapse" href="#lensMenu">
+      <span class="menu-icon"><i class="mdi mdi-glasses"></i></span>
+      <span class="menu-title">Prescription Lenses</span>
+      <i class="menu-arrow"></i>
+    </a>
+    <div class="collapse" id="lensMenu">
+      <ul class="nav flex-column sub-menu">
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:lens_category_list' %}">Lens Categories</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:lens_option_list' %}">Lens Options</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:lens_addon_list' %}">Lens Add-ons</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:sunglass_lens_list' %}">Sunglass Lenses</a></li>
+      </ul>
+    </div>
+  </li>
+
+  <!-- Orders -->
+  <li class="nav-item menu-items">
+    <a class="nav-link" data-toggle="collapse" href="#orderMenu">
+      <span class="menu-icon"><i class="mdi mdi-cart-outline"></i></span>
+      <span class="menu-title">Orders</span>
+      <i class="menu-arrow"></i>
+    </a>
+    <div class="collapse" id="orderMenu">
+      <ul class="nav flex-column sub-menu">
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:order_list' %}">All Orders</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:order_list' %}?status=pending">Pending Orders</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:order_list' %}?status=completed">Completed Orders</a></li>
+      </ul>
+    </div>
+  </li>
+
+  <!-- Eye Test Bookings -->
+  <li class="nav-item menu-items">
+    <a class="nav-link" data-toggle="collapse" href="#eyeTestMenu">
+      <span class="menu-icon"><i class="mdi mdi-calendar-check"></i></span>
+      <span class="menu-title">Eye Test Bookings</span>
+      <i class="menu-arrow"></i>
+    </a>
+    <div class="collapse" id="eyeTestMenu">
+      <ul class="nav flex-column sub-menu">
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:eye_test_list' %}">All Bookings</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:eye_test_list' %}?status=pending">Pending Bookings</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:eye_test_list' %}?status=confirmed">Confirmed Bookings</a></li>
+      </ul>
+    </div>
+  </li>
+
+  <!-- Customers -->
+  <li class="nav-item menu-items">
+    <a class="nav-link" data-toggle="collapse" href="#customerMenu">
+      <span class="menu-icon"><i class="mdi mdi-account-group"></i></span>
+      <span class="menu-title">Customers</span>
+      <i class="menu-arrow"></i>
+    </a>
+    <div class="collapse" id="customerMenu">
+      <ul class="nav flex-column sub-menu">
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:user_list' %}">All Customers</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:user_list' %}?user_type=customer">Customer Accounts</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:user_list' %}?user_type=admin">Admin Accounts</a></li>
+      </ul>
+    </div>
+  </li>
+
+  <!-- Reviews -->
+  <li class="nav-item menu-items">
+    <a class="nav-link" data-toggle="collapse" href="#reviewMenu">
+      <span class="menu-icon"><i class="mdi mdi-star"></i></span>
+      <span class="menu-title">Reviews</span>
+      <i class="menu-arrow"></i>
+    </a>
+    <div class="collapse" id="reviewMenu">
+      <ul class="nav flex-column sub-menu">
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:review_list' %}">All Reviews</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:review_list' %}?status=pending">Pending Reviews</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:review_list' %}?status=approved">Approved Reviews</a></li>
+      </ul>
+    </div>
+  </li>
+
+  <!-- Logout -->
+  <li class="nav-item menu-items">
+    <a class="nav-link text-danger" href=" ">
+      <span class="menu-icon"><i class="mdi mdi-logout"></i></span>
+      <span class="menu-title">Logout</span>
+    </a>
+  </li>
 
       </ul>
     </nav>

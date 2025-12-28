@@ -1,31 +1,31 @@
 # adminpanel/views.py
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.db.models import Q, Count, Sum, Avg, F
+from django.db.models import Q, Sum, F, Count
 from django.core.paginator import Paginator
-from django.http import JsonResponse
 from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
 from django.db import transaction, IntegrityError
+
+# Models - Consolidated Imports
 from catalog.models import (
     Category, Brand, Product, ProductVariant, ProductImage,
-    ProductSpecification, ContactLensProduct, ContactLensPowerOption,
-    ProductTag, ProductTagRelation,LensType
+    ProductSpecification, ContactLensProduct, ContactLensColor,
+    ContactLensPowerOption, ProductTag, ProductTagRelation
 )
 from lenses.models import (
-    LensCategory, LensOption, LensAddOn, LensOptionAddOn, SunglassLensOption
+    LensCategory, LensOption, LensAddOn, LensOptionAddOn,
+    SunglassLensOption
 )
-from orders.models import Order, OrderItem, OrderStatusHistory
-from users.models import User, CustomerProfile, Address
-from prescriptions.models import Prescription
-from cart.models import Cart, CartItem
-from content.models import Banner, Page, StoreLocation, EyeTestBooking
-from reviews.models import Review, ReviewImage
-
-
-# Helper function to check if user is admin
+from orders.models import Order, OrderItem
+from users.models import User
+from content.models import EyeTestBooking
+from reviews.models import Review
+from django.db.models import Count
+# Helper: Check if admin
 def is_admin(user):
     return user.is_authenticated and user.user_type in ['admin', 'staff']
 
@@ -35,246 +35,61 @@ def is_admin(user):
 # @login_required
 # @user_passes_test(is_admin)
 def dashboard(request):
-    """Admin dashboard with statistics"""
-    
-    # Date ranges
     today = timezone.now().date()
-    yesterday = today - timedelta(days=1)
-    last_30_days = today - timedelta(days=30)
-    last_7_days = today - timedelta(days=7)
     first_day_of_month = today.replace(day=1)
-    
-    # ============ REVENUE CALCULATIONS ============
-    
-    # Total Revenue (all time)
-    total_revenue = Order.objects.filter(
-        payment_status='paid'
-    ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
-    
-    # Monthly Income (current month)
-    monthly_income = Order.objects.filter(
-        payment_status='paid',
-        created_at__date__gte=first_day_of_month
-    ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
-    
-    # Daily Income (today)
-    daily_income = Order.objects.filter(
-        payment_status='paid',
-        created_at__date=today
-    ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
-    
-    # Yesterday's Income
-    yesterday_income = Order.objects.filter(
-        payment_status='paid',
-        created_at__date=yesterday
-    ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
-    
-    # Week income
-    week_income = Order.objects.filter(
-        payment_status='paid',
-        created_at__date__gte=last_7_days
-    ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
-    
-    # ============ SALES CALCULATIONS ============
-    
-    # Total items sold (all time)
-    total_sales = OrderItem.objects.filter(
-        order__payment_status='paid'
-    ).aggregate(total=Sum('quantity'))['total'] or 0
-    
-    # Monthly sales
-    monthly_sales = OrderItem.objects.filter(
-        order__payment_status='paid',
-        order__created_at__date__gte=first_day_of_month
-    ).aggregate(total=Sum('quantity'))['total'] or 0
-    
-    # Daily sales
-    daily_sales = OrderItem.objects.filter(
-        order__payment_status='paid',
-        order__created_at__date=today
-    ).aggregate(total=Sum('quantity'))['total'] or 0
-    
-    # ============ ORDER STATISTICS ============
-    
-    # Total orders
+
+    total_revenue = (
+        Order.objects
+        .filter(payment_status='paid')
+        .aggregate(total=Sum('total_amount'))['total']
+        or Decimal('0.00')
+    )
+
+    monthly_income = (
+        Order.objects
+        .filter(payment_status='paid', created_at__date__gte=first_day_of_month)
+        .aggregate(total=Sum('total_amount'))['total']
+        or Decimal('0.00')
+    )
+
     total_orders = Order.objects.count()
-    
-    # Orders by status
     pending_orders = Order.objects.filter(status='pending').count()
-    confirmed_orders = Order.objects.filter(status='confirmed').count()
-    processing_orders = Order.objects.filter(status='processing').count()
-    shipped_orders = Order.objects.filter(status='shipped').count()
-    delivered_orders = Order.objects.filter(status='delivered').count()
-    cancelled_orders = Order.objects.filter(status='cancelled').count()
-    
-    # Today's orders
-    today_orders = Order.objects.filter(created_at__date=today).count()
-    
-    # Monthly orders
-    month_orders = Order.objects.filter(created_at__date__gte=first_day_of_month).count()
-    
-    # ============ PRODUCT STATISTICS ============
-    
-    # Total products
+
     total_products = Product.objects.filter(is_active=True).count()
-    
-    # Products by type
-    sunglasses_count = Product.objects.filter(product_type='sunglasses', is_active=True).count()
-    eyeglasses_count = Product.objects.filter(product_type='eyeglasses', is_active=True).count()
-    contact_lenses_count = Product.objects.filter(product_type='contact_lenses', is_active=True).count()
-    accessories_count = Product.objects.filter(product_type='accessories', is_active=True).count()
-    
-    # Low stock products (stock_quantity <= 5)
     low_stock_products = Product.objects.filter(
         track_inventory=True,
         stock_quantity__lte=5,
-        stock_quantity__gt=0,
-        is_active=True
+        stock_quantity__gt=0
     ).count()
-    
-    # Out of stock
     out_of_stock = Product.objects.filter(
         track_inventory=True,
-        stock_quantity=0,
-        is_active=True
+        stock_quantity=0
     ).count()
-    
-    # Featured products
-    featured_products = Product.objects.filter(is_featured=True, is_active=True).count()
-    
-    # ============ CUSTOMER STATISTICS ============
-    
-    # Total customers
-    total_customers = User.objects.filter(user_type='customer').count()
-    
-    # New customers this month
-    new_customers_month = User.objects.filter(
-        user_type='customer',
-        created_at__date__gte=first_day_of_month
-    ).count()
-    
-    # New customers today
-    new_customers_today = User.objects.filter(
-        user_type='customer',
-        created_at__date=today
-    ).count()
-    
-    # ============ RECENT DATA ============
-    
-    # Recent orders (last 10)
-    recent_orders = Order.objects.select_related(
-        'customer'
-    ).prefetch_related('items').order_by('-created_at')[:10]
-    
-    # Top selling products (by stock quantity - as proxy for sales since no sales_count field)
-    top_products = Product.objects.filter(
-        is_active=True
-    ).order_by('-stock_quantity')[:5]
-    
-    # Recent customers
-    recent_customers = User.objects.filter(
-        user_type='customer'
-    ).order_by('-created_at')[:5]
-    
-    # ============ REVIEWS & RATINGS ============
-    
-    # Pending reviews
-    pending_reviews = Review.objects.filter(is_approved=False).count()
-    
-    # Total reviews
-    total_reviews = Review.objects.count()
-    
-    # ============ BOOKINGS & ALERTS ============
-    
-    # Eye test bookings pending
-    pending_bookings = EyeTestBooking.objects.filter(status='pending').count()
-    
-    # Today's bookings
-    today_bookings = EyeTestBooking.objects.filter(booking_date=today).count()
-    
-    # ============ LOW STOCK ITEMS ============
-    
-    low_stock_items = Product.objects.filter(
-        track_inventory=True,
-        stock_quantity__lte=5,
-        stock_quantity__gt=0,
-        is_active=True
-    ).select_related('brand', 'category').order_by('stock_quantity')[:10]
-    
+
  
-    
-    # Previous month
-    previous_month_start = (first_day_of_month - timedelta(days=1)).replace(day=1)
-    previous_month_end = first_day_of_month - timedelta(days=1)
-    
-    previous_month_income = Order.objects.filter(
-        payment_status='paid',
-        created_at__date__gte=previous_month_start,
-        created_at__date__lte=previous_month_end
-    ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
-    
-    # Growth percentage
-    if previous_month_income > 0:
-        income_growth = ((monthly_income - previous_month_income) / previous_month_income) * 100
-    else:
-        income_growth = 100 if monthly_income > 0 else 0
+    recent_orders = (
+        Order.objects
+        .select_related('customer')
+        .annotate(items_count=Count('items'))
+        .order_by('-created_at')[:5]
+    )
+
+    pending_bookings = EyeTestBooking.objects.filter(status='pending').count()
 
     context = {
-        # Revenue
         'revenue': total_revenue,
         'monthly_income': monthly_income,
-        'daily_income': daily_income,
-        'yesterday_income': yesterday_income,
-        'week_income': week_income,
-        'income_growth': round(income_growth, 2),
-        
-        # Sales
-        'sales': total_sales,
-        'monthly_sales': monthly_sales,
-        'daily_sales': daily_sales,
-        
-        # Orders
         'total_orders': total_orders,
         'pending_orders': pending_orders,
-        'confirmed_orders': confirmed_orders,
-        'processing_orders': processing_orders,
-        'shipped_orders': shipped_orders,
-        'delivered_orders': delivered_orders,
-        'cancelled_orders': cancelled_orders,
-        'today_orders': today_orders,
-        'month_orders': month_orders,
-        
-        # Products
         'total_products': total_products,
-        'sunglasses_count': sunglasses_count,
-        'eyeglasses_count': eyeglasses_count,
-        'contact_lenses_count': contact_lenses_count,
-        'accessories_count': accessories_count,
         'low_stock_products': low_stock_products,
         'out_of_stock': out_of_stock,
-        'featured_products': featured_products,
-        
-        # Customers
-        'total_customers': total_customers,
-        'new_customers_month': new_customers_month,
-        'new_customers_today': new_customers_today,
-        
-        # Recent data
         'recent_orders': recent_orders,
-        'top_products': top_products,
-        'recent_customers': recent_customers,
-        'low_stock_items': low_stock_items,
-        
-        # Reviews
-        'pending_reviews': pending_reviews,
-        'total_reviews': total_reviews,
-        
-        # Bookings
         'pending_bookings': pending_bookings,
-        'today_bookings': today_bookings,
     }
-    
+
     return render(request, 'admin-dashboard.html', context)
+
 
 
 # ==================== CATEGORIES ====================
@@ -282,164 +97,89 @@ def dashboard(request):
 # @login_required
 # @user_passes_test(is_admin)
 def category_list(request):
-    """List all categories"""
     search = request.GET.get('search', '')
-    
     categories = Category.objects.all().order_by('display_order', 'name')
     
     if search:
-        categories = categories.filter(
-            Q(name__icontains=search) | Q(description__icontains=search)
-        )
+        categories = categories.filter(Q(name__icontains=search))
     
     paginator = Paginator(categories, 25)
     page = request.GET.get('page', 1)
     categories = paginator.get_page(page)
     
-    context = {
-        'categories': categories,
-        'search': search,
-    }
-    return render(request, 'adminpanel/categories/list.html', context)
-
+    return render(request, 'adminpanel/categories/list.html', {'categories': categories, 'search': search})
 
 # @login_required
 # @user_passes_test(is_admin)
-# adminpanel/views.py
- 
 def category_add(request):
-    """Add new category with Technical Flags"""
     if request.method == 'POST':
-        # 1. Basic Information
-        name = request.POST.get('name')
-        slug = request.POST.get('slug')
-        description = request.POST.get('description', '')
-        display_order = request.POST.get('display_order', 0)
-        
-        # 2. Checkbox & Image
-        is_active = request.POST.get('is_active') == 'on'
-        image = request.FILES.get('image')
-
-        # 3. Handle Parent Category
-        parent_id = request.POST.get('parent')
-        parent = None
-        if parent_id:
-            try:
-                parent = Category.objects.get(id=parent_id)
-            except Category.DoesNotExist:
-                parent = None
-
-        # 4. ✅ NEW: CAPTURE HIDDEN FLAGS (From your Template)
-        # HTML form sends 'True' as a string, so we check if it equals 'True'
-        has_prescription = request.POST.get('has_prescription') == 'True'
-        has_lens_selection = request.POST.get('has_lens_selection') == 'True'
-        has_power = request.POST.get('has_power') == 'True'
-        has_color_variants = request.POST.get('has_color_variants') == 'True'
-        has_size_variants = request.POST.get('has_size_variants') == 'True'
-
         try:
-            # 5. Create the Category with Flags
             Category.objects.create(
-                name=name,
-                slug=slug,
-                description=description,
-                parent=parent,
-                display_order=display_order,
-                is_active=is_active,
-                image=image,
+                name=request.POST.get('name'),
+                slug=request.POST.get('slug'),
+                description=request.POST.get('description', ''),
+                parent=Category.objects.get(id=request.POST.get('parent')) if request.POST.get('parent') else None,
+                display_order=request.POST.get('display_order', 0),
+                is_active=request.POST.get('is_active') == 'on',
+                image=request.FILES.get('image'),
                 
-                # ✅ Saving the Technical Configurations
-                has_prescription=has_prescription,
-                has_lens_selection=has_lens_selection,
-                has_power=has_power,
-                has_color_variants=has_color_variants,
-                has_size_variants=has_size_variants
+                # Technical Flags
+                has_prescription=request.POST.get('has_prescription') == 'True',
+                has_lens_selection=request.POST.get('has_lens_selection') == 'True',
+                has_power=request.POST.get('has_power') == 'True',
+                has_color_variants=request.POST.get('has_color_variants') == 'True',
+                has_size_variants=request.POST.get('has_size_variants') == 'True'
             )
-
-            messages.success(request, f'Category "{name}" created successfully!')
+            messages.success(request, 'Category created successfully!')
             return redirect('adminpanel:category_list')
-
         except IntegrityError:
-            messages.error(request, f'Error: A category with slug "{slug}" already exists.')
+            messages.error(request, 'Category slug already exists.')
         except Exception as e:
-            messages.error(request, f'An error occurred: {str(e)}')
+            messages.error(request, f'Error: {str(e)}')
 
-    # GET Request
-    parent_categories = Category.objects.filter(parent__isnull=True).order_by('name')
-    
-    context = {
-        'parent_categories': parent_categories,
-    }
-    return render(request, 'adminpanel/categories/add.html', context)
-
+    parent_categories = Category.objects.filter(parent__isnull=True)
+    return render(request, 'adminpanel/categories/add.html', {'parent_categories': parent_categories})
 
 # @login_required
 # @user_passes_test(is_admin)
 def category_edit(request, category_id):
-    """Edit category"""
     category = get_object_or_404(Category, id=category_id)
-    
     if request.method == 'POST':
-        # 1. Basic Info
         category.name = request.POST.get('name')
         category.slug = request.POST.get('slug')
         category.description = request.POST.get('description', '')
-        
-        # 2. Parent Category
-        parent_id = request.POST.get('parent')
-        if parent_id:
-            category.parent = Category.objects.get(id=parent_id)
-        else:
-            category.parent = None
-        
-        # 3. Display & Active
+        category.parent = Category.objects.get(id=request.POST.get('parent')) if request.POST.get('parent') else None
         category.display_order = request.POST.get('display_order', 0)
         category.is_active = request.POST.get('is_active') == 'on'
         
-        # 4. Image Handling
-        if request.POST.get('remove_image') == '1':
+        if request.POST.get('remove_image') == '1': 
             category.image = None
-        if 'image' in request.FILES:
+        if 'image' in request.FILES: 
             category.image = request.FILES['image']
-            
-      
+        
+        # Flags
         category.has_prescription = request.POST.get('has_prescription') == 'True'
         category.has_lens_selection = request.POST.get('has_lens_selection') == 'True'
         category.has_power = request.POST.get('has_power') == 'True'
         category.has_color_variants = request.POST.get('has_color_variants') == 'True'
         category.has_size_variants = request.POST.get('has_size_variants') == 'True'
 
-        try:
-            category.save()
-            messages.success(request, f'Category "{category.name}" updated successfully!')
-            return redirect('adminpanel:category_list')
-        except Exception as e:
-            messages.error(request, f"Error updating category: {str(e)}")
-    
-    # GET Request
-    parent_categories = Category.objects.filter(parent__isnull=True).exclude(id=category_id)
-    
-    context = {
-        'category': category,
-        'parent_categories': parent_categories,
-    }
-    return render(request, 'adminpanel/categories/edit.html', context)
+        category.save()
+        messages.success(request, 'Category updated!')
+        return redirect('adminpanel:category_list')
 
+    parent_categories = Category.objects.filter(parent__isnull=True).exclude(id=category_id)
+    return render(request, 'adminpanel/categories/edit.html', {'category': category, 'parent_categories': parent_categories})
 
 # @login_required
 # @user_passes_test(is_admin)
 def category_delete(request, category_id):
-    """Delete category"""
     category = get_object_or_404(Category, id=category_id)
-    
     if request.method == 'POST':
-        name = category.name
         category.delete()
-        messages.success(request, f'Category "{name}" deleted successfully!')
+        messages.success(request, 'Category deleted.')
         return redirect('adminpanel:category_list')
-    
-    context = {'category': category}
-    return render(request, 'adminpanel/categories/delete_confirm.html', context)
+    return render(request, 'adminpanel/categories/delete_confirm.html', {'category': category})
 
 
 # ==================== BRANDS ====================
@@ -447,249 +187,136 @@ def category_delete(request, category_id):
 # @login_required
 # @user_passes_test(is_admin)
 def brand_list(request):
-    """List all brands with stats"""
     search = request.GET.get('search', '')
+    brands = Brand.objects.all().order_by('display_order', 'name')
     
-    # Base Query
-    brands_queryset = Brand.objects.all().order_by('display_order', 'name')
+    active_count = brands.filter(is_active=True).count()
+    inactive_count = brands.filter(is_active=False).count()
     
-    # Calculate Stats (Before filtering for search)
-    active_count = brands_queryset.filter(is_active=True).count()
-    inactive_count = brands_queryset.filter(is_active=False).count()
+    if search: 
+        brands = brands.filter(name__icontains=search)
     
-    # Apply Search Filter
-    if search:
-        brands_queryset = brands_queryset.filter(name__icontains=search)
+    paginator = Paginator(brands, 25)
+    brands = paginator.get_page(request.GET.get('page', 1))
     
-    # Pagination
-    paginator = Paginator(brands_queryset, 25)
-    page = request.GET.get('page', 1)
-    brands = paginator.get_page(page)
-    
-    context = {
-        'brands': brands,
-        'search': search,
-        'active_count': active_count,    
-        'inactive_count': inactive_count,  
-    }
-    return render(request, 'adminpanel/brands/list.html', context)
-
+    return render(request, 'adminpanel/brands/list.html', {
+        'brands': brands, 'search': search, 
+        'active_count': active_count, 'inactive_count': inactive_count
+    })
 
 # @login_required
 # @user_passes_test(is_admin)
 def brand_add(request):
-    """Add new brand with error handling"""
     if request.method == 'POST':
-        # 1. Capture Data
-        name = request.POST.get('name')
-        slug = request.POST.get('slug')
-        description = request.POST.get('description', '')
-        logo = request.FILES.get('logo')
-        
-        # 2. Availability Flags
-        available_for_sunglasses = request.POST.get('available_for_sunglasses') == 'on'
-        available_for_eyeglasses = request.POST.get('available_for_eyeglasses') == 'on'
-        available_for_kids = request.POST.get('available_for_kids') == 'on'
-        available_for_contact_lenses = request.POST.get('available_for_contact_lenses') == 'on'
-        
-        # 3. Settings
-        display_order = request.POST.get('display_order', 0)
-        is_active = request.POST.get('is_active') == 'on'
-        
         try:
-            # 4. Create Brand
             Brand.objects.create(
-                name=name,
-                slug=slug,
-                description=description,
-                logo=logo,
-                available_for_sunglasses=available_for_sunglasses,
-                available_for_eyeglasses=available_for_eyeglasses,
-                available_for_kids=available_for_kids,
-                available_for_contact_lenses=available_for_contact_lenses,
-                display_order=display_order,
-                is_active=is_active
+                name=request.POST.get('name'),
+                slug=request.POST.get('slug'),
+                description=request.POST.get('description', ''),
+                logo=request.FILES.get('logo'),
+                available_for_sunglasses=request.POST.get('available_for_sunglasses') == 'on',
+                available_for_eyeglasses=request.POST.get('available_for_eyeglasses') == 'on',
+                available_for_kids=request.POST.get('available_for_kids') == 'on',
+                available_for_contact_lenses=request.POST.get('available_for_contact_lenses') == 'on',
+                display_order=request.POST.get('display_order', 0),
+                is_active=request.POST.get('is_active') == 'on'
             )
-            
-            messages.success(request, f'Brand "{name}" created successfully!')
+            messages.success(request, 'Brand added!')
             return redirect('adminpanel:brand_list')
-
         except IntegrityError:
-            # This catches duplicate Names or Slugs
-            messages.error(request, f'Error: A brand with the name "{name}" or slug "{slug}" already exists.')
-        except Exception as e:
-            # This catches generic errors (like missing image)
-            messages.error(request, f'An error occurred: {str(e)}')
-    
+            messages.error(request, 'Brand name/slug exists.')
     return render(request, 'adminpanel/brands/add.html')
-
 
 # @login_required
 # @user_passes_test(is_admin)
 def brand_edit(request, brand_id):
-    """Edit brand"""
     brand = get_object_or_404(Brand, id=brand_id)
-    
     if request.method == 'POST':
-        # 1. Basic Info
         brand.name = request.POST.get('name')
         brand.slug = request.POST.get('slug')
         brand.description = request.POST.get('description', '')
-        
-        # 2. Handle Logo (Only update if a new file is uploaded)
-        if 'logo' in request.FILES:
+        if 'logo' in request.FILES: 
             brand.logo = request.FILES['logo']
         
-        # 3. Availability Flags
-        # Checkboxes send 'on' if checked, otherwise nothing
         brand.available_for_sunglasses = request.POST.get('available_for_sunglasses') == 'on'
         brand.available_for_eyeglasses = request.POST.get('available_for_eyeglasses') == 'on'
         brand.available_for_kids = request.POST.get('available_for_kids') == 'on'
         brand.available_for_contact_lenses = request.POST.get('available_for_contact_lenses') == 'on'
-        
-        # 4. Display & Active
         brand.display_order = request.POST.get('display_order', 0)
         brand.is_active = request.POST.get('is_active') == 'on'
         
-        try:
-            brand.save()
-            messages.success(request, f'Brand "{brand.name}" updated successfully!')
-            return redirect('adminpanel:brand_list')
-        except IntegrityError:
-            messages.error(request, f'Error: Brand name or slug already exists.')
-        except Exception as e:
-            messages.error(request, f'Error updating brand: {str(e)}')
-            
+        brand.save()
+        messages.success(request, 'Brand updated!')
+        return redirect('adminpanel:brand_list')
     return render(request, 'adminpanel/brands/edit.html', {'brand': brand})
-
 
 # @login_required
 # @user_passes_test(is_admin)
 def brand_delete(request, brand_id):
-    """Delete brand"""
     brand = get_object_or_404(Brand, id=brand_id)
-    
     if request.method == 'POST':
-        name = brand.name
         brand.delete()
-        messages.success(request, f'Brand "{name}" deleted successfully!')
+        messages.success(request, 'Brand deleted.')
         return redirect('adminpanel:brand_list')
-    
-    context = {'brand': brand}
-    return render(request, 'adminpanel/brands/delete_confirm.html', context)
-
+    return render(request, 'adminpanel/brands/delete_confirm.html', {'brand': brand})
 
 
 # ==================== PRODUCTS ====================
 
 # @login_required
 # @user_passes_test(is_admin)
-# adminpanel/views.py
- 
 def product_list(request):
-    """List all products with advanced filtering and stats"""
-    
-    # 1. Get Filter Parameters
     search = request.GET.get('search', '')
-    product_type = request.GET.get('product_type', '')
-    brand_id = request.GET.get('brand', '')
     category_id = request.GET.get('category', '')
+    brand_id = request.GET.get('brand', '')
     stock_status = request.GET.get('stock_status', '')
 
-    # 2. Base Queryset
-    products_queryset = Product.objects.select_related('brand', 'category').prefetch_related('images').order_by('-created_at')
+    products = Product.objects.select_related('brand', 'category').order_by('-created_at')
 
-    # 3. Calculate Global Stats
-    total_products = Product.objects.count()
-    
-    # ✅ FIX: Used fixed number '5' instead of F('low_stock_threshold')
-    low_stock_count = Product.objects.filter(
-        track_inventory=True,
-        stock_quantity__lte=5, 
-        stock_quantity__gt=0
-    ).count()
-    
-    out_of_stock_count = Product.objects.filter(
-        track_inventory=True, 
-        stock_quantity=0
-    ).count()
+    # Stats
+    total_count = Product.objects.count()
+    low_stock_count = Product.objects.filter(track_inventory=True, stock_quantity__lte=5, stock_quantity__gt=0).count()
+    out_of_stock_count = Product.objects.filter(track_inventory=True, stock_quantity=0).count()
 
-    # 4. Apply Filters
-    if search:
-        products_queryset = products_queryset.filter(
-            Q(name__icontains=search) | 
-            Q(sku__icontains=search) |
-            Q(description__icontains=search)
-        )
+    # Filters
+    if search: 
+        products = products.filter(Q(name__icontains=search) | Q(sku__icontains=search))
+    if category_id: 
+        products = products.filter(category_id=category_id)
+    if brand_id: 
+        products = products.filter(brand_id=brand_id)
     
-    if product_type:
-        products_queryset = products_queryset.filter(product_type=product_type)
-    
-    if brand_id:
-        products_queryset = products_queryset.filter(brand_id=brand_id)
-    
-    if category_id:
-        products_queryset = products_queryset.filter(category_id=category_id)
-    
-    # ✅ FIX: Updated Stock Filter Logic with fixed number '5'
-    if stock_status == 'in_stock':
-        products_queryset = products_queryset.filter(stock_quantity__gt=5)
-    elif stock_status == 'low_stock':
-        products_queryset = products_queryset.filter(
-            track_inventory=True,
-            stock_quantity__lte=5,
-            stock_quantity__gt=0
-        )
-    elif stock_status == 'out_of_stock':
-        products_queryset = products_queryset.filter(track_inventory=True, stock_quantity=0)
+    if stock_status == 'in_stock': 
+        products = products.filter(stock_quantity__gt=5)
+    elif stock_status == 'low_stock': 
+        products = products.filter(stock_quantity__lte=5, stock_quantity__gt=0)
+    elif stock_status == 'out_of_stock': 
+        products = products.filter(stock_quantity=0)
 
-    # 5. Pagination
-    paginator = Paginator(products_queryset, 20)
-    page = request.GET.get('page', 1)
-    products = paginator.get_page(page)
-    
-    # 6. Context Data
-    brands = Brand.objects.filter(is_active=True).order_by('name')
-    categories = Category.objects.filter(is_active=True).order_by('name')
-    
+    paginator = Paginator(products, 20)
+    products = paginator.get_page(request.GET.get('page', 1))
+
     context = {
         'products': products,
-        'brands': brands,
-        'categories': categories,
-        'search': search,
-        'current_category': category_id, # Make sure these match template variables
+        'categories': Category.objects.all(),
+        'brands': Brand.objects.all(),
+        'search': search, 
+        'current_category': category_id, 
         'current_brand': brand_id,
         'stock_status': stock_status,
-        'total_count': total_products,
-        'low_stock_count': low_stock_count,
-        'out_of_stock_count': out_of_stock_count,
+        'total_count': total_count, 
+        'low_stock_count': low_stock_count, 
+        'out_of_stock_count': out_of_stock_count
     }
     return render(request, 'adminpanel/products/list.html', context)
-
-
- 
-
 
 # @login_required
 # @user_passes_test(is_admin)
 def product_add(request):
-    """Add new product with Images, Variants, and Specs"""
     if request.method == 'POST':
         try:
-            with transaction.atomic():  # Start transaction
-                
-                # --- 1. HANDLE NUMERIC FIELDS SAFELY ---
-                # Empty strings cause errors in DecimalFields, convert to None or 0
-                compare_at_price = request.POST.get('compare_at_price')
-                compare_at_price = compare_at_price if compare_at_price else None
-                
-                cost_price = request.POST.get('cost_price')
-                cost_price = cost_price if cost_price else None
-
-                stock_quantity = request.POST.get('stock_quantity')
-                stock_quantity = int(stock_quantity) if stock_quantity else 0
-
-                # --- 2. CREATE BASIC PRODUCT ---
+            with transaction.atomic():
+                # 1. Product
                 product = Product.objects.create(
                     name=request.POST.get('name'),
                     sku=request.POST.get('sku'),
@@ -697,405 +324,964 @@ def product_add(request):
                     product_type=request.POST.get('product_type'),
                     category_id=request.POST.get('category'),
                     brand_id=request.POST.get('brand') or None,
-                    
                     short_description=request.POST.get('short_description', ''),
                     description=request.POST.get('description', ''),
-                    
                     gender=request.POST.get('gender', 'unisex'),
+                    age_group=request.POST.get('age_group', 'adult'),
                     base_price=request.POST.get('base_price'),
-                    compare_at_price=compare_at_price,
-                    # cost_price=cost_price, # Uncomment if you added this field to model
-                    
+                    compare_at_price=request.POST.get('compare_at_price') or None,
                     track_inventory=request.POST.get('track_inventory') == 'on',
-                    stock_quantity=stock_quantity,
-                    
+                    stock_quantity=int(request.POST.get('stock_quantity') or 0),
                     is_active=request.POST.get('is_active') == 'on',
                     is_featured=request.POST.get('is_featured') == 'on',
-                    
-                    # SEO Fields (If added to model)
-                    # meta_title=request.POST.get('meta_title', ''),
-                    # meta_description=request.POST.get('meta_description', ''),
                 )
 
-                # --- 3. HANDLE IMAGES ---
-                images = request.FILES.getlist('images')
-                for index, img in enumerate(images):
-                    ProductImage.objects.create(
-                        product=product,
-                        image=img,
-                        is_primary=(index == 0) # Set first uploaded image as primary
-                    )
+                # 2. Images
+                for idx, img in enumerate(request.FILES.getlist('images')):
+                    ProductImage.objects.create(product=product, image=img, is_primary=(idx==0))
 
-                # --- 4. HANDLE DYNAMIC VARIANTS ---
-                # Get lists from HTML array inputs: name="variant_sku[]"
+                # 3. Variants
                 v_skus = request.POST.getlist('variant_sku[]')
                 v_colors = request.POST.getlist('variant_color[]')
                 v_sizes = request.POST.getlist('variant_size[]')
                 v_prices = request.POST.getlist('variant_price[]')
                 v_stocks = request.POST.getlist('variant_stock[]')
 
-                # Zip them together to iterate row by row
                 for sku, color, size, price, stock in zip(v_skus, v_colors, v_sizes, v_prices, v_stocks):
-                    if sku.strip():  # Only create if SKU exists
+                    if sku.strip():
                         ProductVariant.objects.create(
-                            product=product,
-                            variant_sku=sku,
-                            color_name=color,
-                            size=size,
-                            price_adjustment=price if price else 0,
-                            stock_quantity=stock if stock else 0
+                            product=product, variant_sku=sku, color_name=color, size=size,
+                            price_adjustment=price or 0, stock_quantity=stock or 0
                         )
 
-                # --- 5. HANDLE DYNAMIC SPECIFICATIONS ---
+                # 4. Specs
                 s_keys = request.POST.getlist('spec_key[]')
                 s_values = request.POST.getlist('spec_value[]')
+                for key, val in zip(s_keys, s_values):
+                    if key.strip():
+                        ProductSpecification.objects.create(product=product, spec_key=key, spec_value=val)
 
-                for key, value in zip(s_keys, s_values):
-                    if key.strip() and value.strip():
-                        ProductSpecification.objects.create(
-                            product=product,
-                            spec_key=key,
-                            spec_value=value
-                        )
-
-                messages.success(request, f'Product "{product.name}" added successfully!')
+                messages.success(request, 'Product added!')
                 return redirect('adminpanel:product_list')
-
-        except IntegrityError as e:
-            if 'unique constraint' in str(e).lower():
-                messages.error(request, "Error: Product Name, SKU, or Slug already exists.")
-            else:
-                messages.error(request, f"Database Error: {str(e)}")
+        except IntegrityError:
+            messages.error(request, 'SKU or Slug exists.')
         except Exception as e:
-            messages.error(request, f"Something went wrong: {str(e)}")
+            messages.error(request, str(e))
 
-    # --- GET REQUEST: PREPARE FORM DATA ---
     context = {
-        'brands': Brand.objects.filter(is_active=True).order_by('name'),
-        'categories': Category.objects.filter(is_active=True).order_by('name'),
-        'product_types': Product.PRODUCT_TYPES,
+        'brands': Brand.objects.filter(is_active=True),
+        'categories': Category.objects.filter(is_active=True),
+        'product_types': Product.PRODUCT_TYPES
     }
     return render(request, 'adminpanel/products/add.html', context)
-
 
 # @login_required
 # @user_passes_test(is_admin)
 def product_edit(request, product_id):
-    """Edit existing product with Sync Logic (Create/Update/Delete child rows)"""
     product = get_object_or_404(Product, id=product_id)
-
     if request.method == 'POST':
         try:
             with transaction.atomic():
-                
-                # --- 1. UPDATE BASIC INFO ---
+                # Update Basic
                 product.name = request.POST.get('name')
                 product.sku = request.POST.get('sku')
                 product.slug = request.POST.get('slug')
                 product.product_type = request.POST.get('product_type')
-                
-                # Foreign Keys
-                cat_id = request.POST.get('category')
-                product.category = Category.objects.get(id=cat_id) if cat_id else None
-                
-                brand_id = request.POST.get('brand')
-                product.brand = Brand.objects.get(id=brand_id) if brand_id else None
-
-                # Text Fields
+                product.category_id = request.POST.get('category')
+                product.brand_id = request.POST.get('brand') or None
                 product.short_description = request.POST.get('short_description', '')
                 product.description = request.POST.get('description', '')
                 product.gender = request.POST.get('gender', 'unisex')
-
-                # Numeric Fields (Handle empty strings)
-                product.base_price = request.POST.get('base_price') or 0
+                product.age_group = request.POST.get('age_group', 'adult')
+                product.base_price = request.POST.get('base_price')
                 product.compare_at_price = request.POST.get('compare_at_price') or None
-                # product.cost_price = request.POST.get('cost_price') or None 
-                
-                # Inventory
                 product.track_inventory = request.POST.get('track_inventory') == 'on'
-                stock_qty = request.POST.get('stock_quantity')
-                product.stock_quantity = int(stock_qty) if stock_qty else 0
-                
-                # Status
+                product.stock_quantity = int(request.POST.get('stock_quantity') or 0)
                 product.is_active = request.POST.get('is_active') == 'on'
                 product.is_featured = request.POST.get('is_featured') == 'on'
-                
                 product.save()
 
-                # --- 2. HANDLE IMAGES ---
-                # A. Add New Images
-                new_images = request.FILES.getlist('images')
-                for img in new_images:
+                # Add New Images
+                for img in request.FILES.getlist('images'):
                     ProductImage.objects.create(product=product, image=img)
                 
-                # B. Delete Removed Images
-                # We expect a hidden input "delete_image_ids" containing "1,5,8"
-                delete_img_ids = request.POST.get('delete_image_ids', '')
-                if delete_img_ids:
-                    ids_to_delete = [int(i) for i in delete_img_ids.split(',') if i.isdigit()]
-                    ProductImage.objects.filter(id__in=ids_to_delete, product=product).delete()
+                # Delete Images
+                del_ids = request.POST.get('delete_image_ids', '')
+                if del_ids:
+                    ProductImage.objects.filter(id__in=[int(i) for i in del_ids.split(',') if i.isdigit()]).delete()
 
-                # --- 3. SYNC VARIANTS (Create/Update/Delete) ---
-                # Get lists from form
-                v_ids = request.POST.getlist('variant_id[]') # Hidden ID field
+                # Sync Variants
+                v_ids = request.POST.getlist('variant_id[]')
                 v_skus = request.POST.getlist('variant_sku[]')
                 v_colors = request.POST.getlist('variant_color[]')
                 v_sizes = request.POST.getlist('variant_size[]')
                 v_prices = request.POST.getlist('variant_price[]')
                 v_stocks = request.POST.getlist('variant_stock[]')
 
-                kept_variant_ids = []
-
+                kept_ids = []
                 for i, sku in enumerate(v_skus):
-                    if not sku.strip(): continue # Skip empty rows
-
-                    vid = v_ids[i] if i < len(v_ids) else None # Get ID if exists
+                    if not sku.strip(): continue
+                    vid = v_ids[i] if i < len(v_ids) else None
+                    price = v_prices[i] or 0
+                    stock = v_stocks[i] or 0
                     
-                    price_adj = v_prices[i] if v_prices[i] else 0
-                    stock_qty = v_stocks[i] if v_stocks[i] else 0
-
                     if vid and vid != '0':
-                        # UPDATE Existing
-                        variant = ProductVariant.objects.get(id=vid)
-                        variant.variant_sku = sku
-                        variant.color_name = v_colors[i]
-                        variant.size = v_sizes[i]
-                        variant.price_adjustment = price_adj
-                        variant.stock_quantity = stock_qty
-                        variant.save()
-                        kept_variant_ids.append(variant.id)
+                        v = ProductVariant.objects.get(id=vid)
+                        v.variant_sku=sku; v.color_name=v_colors[i]; v.size=v_sizes[i]; v.price_adjustment=price; v.stock_quantity=stock
+                        v.save()
+                        kept_ids.append(v.id)
                     else:
-                        # CREATE New
-                        new_var = ProductVariant.objects.create(
-                            product=product,
-                            variant_sku=sku,
-                            color_name=v_colors[i],
-                            size=v_sizes[i],
-                            price_adjustment=price_adj,
-                            stock_quantity=stock_qty
-                        )
-                        kept_variant_ids.append(new_var.id)
+                        v = ProductVariant.objects.create(product=product, variant_sku=sku, color_name=v_colors[i], size=v_sizes[i], price_adjustment=price, stock_quantity=stock)
+                        kept_ids.append(v.id)
+                
+                product.variants.exclude(id__in=kept_ids).delete()
 
-                # DELETE Variants not in the form anymore
-                product.variants.exclude(id__in=kept_variant_ids).delete()
-
-                # --- 4. SYNC SPECIFICATIONS ---
-                s_ids = request.POST.getlist('spec_id[]')
-                s_keys = request.POST.getlist('spec_key[]')
-                s_values = request.POST.getlist('spec_value[]')
-
-                kept_spec_ids = []
-
-                for i, key in enumerate(s_keys):
-                    if not key.strip(): continue
-
-                    sid = s_ids[i] if i < len(s_ids) else None
-
-                    if sid and sid != '0':
-                        spec = ProductSpecification.objects.get(id=sid)
-                        spec.spec_key = key
-                        spec.spec_value = s_values[i]
-                        spec.save()
-                        kept_spec_ids.append(spec.id)
-                    else:
-                        new_spec = ProductSpecification.objects.create(
-                            product=product,
-                            spec_key=key,
-                            spec_value=s_values[i]
-                        )
-                        kept_spec_ids.append(new_spec.id)
-
-                product.specifications.exclude(id__in=kept_spec_ids).delete()
-
-                messages.success(request, f'Product "{product.name}" updated successfully!')
+                messages.success(request, 'Product updated!')
                 return redirect('adminpanel:product_list')
-
         except Exception as e:
-            messages.error(request, f"Error updating product: {str(e)}")
+            messages.error(request, str(e))
 
-    # --- GET REQUEST ---
     context = {
         'product': product,
-        'brands': Brand.objects.filter(is_active=True).order_by('name'),
-        'categories': Category.objects.filter(is_active=True).order_by('name'),
+        'brands': Brand.objects.filter(is_active=True),
+        'categories': Category.objects.filter(is_active=True),
         'product_types': Product.PRODUCT_TYPES,
-        
-        # We pass related objects directly in template using product.variants.all
-        # But images need distinct handling if you want to show primary first
-        'images': product.images.all().order_by('-is_primary', 'id'),
+        'images': product.images.all(),
         'variants': product.variants.all(),
-        'specifications': product.specifications.all(),
+        'specifications': product.specifications.all()
     }
     return render(request, 'adminpanel/products/edit.html', context)
 
 # @login_required
 # @user_passes_test(is_admin)
 def product_delete(request, product_id):
-    """Delete product"""
     product = get_object_or_404(Product, id=product_id)
-    
     if request.method == 'POST':
-        name = product.name
         product.delete()
-        messages.success(request, f'Product "{name}" deleted successfully!')
+        messages.success(request, 'Product deleted.')
         return redirect('adminpanel:product_list')
-    
-    context = {'product': product}
-    return render(request, 'adminpanel/products/delete_confirm.html', context)
+    return render(request, 'adminpanel/products/delete_confirm.html', {'product': product})
 
 
-
-# ==================== LENS MANAGEMENT ====================
-
-# @login_required
-# @user_passes_test(is_admin)
-def lens_list(request):
-    """List all Lens options"""
-    lenses = LensType.objects.select_related('category', 'brand').order_by('category', 'price')
-    lenses = "test"
-    context = {
-        'lenses': lenses,
-    }
-    return render(request, 'adminpanel/lenses/list.html', context)
-
-# @login_required
-# @user_passes_test(is_admin)
-def lens_add(request):
-    """Add a new Lens Package"""
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        category_id = request.POST.get('category')
-        brand_id = request.POST.get('brand')
-        index = request.POST.get('index')
-        material = request.POST.get('material')
-        price = request.POST.get('price')
-        
-        # Prescription Limits
-        sph_min = request.POST.get('sph_min')
-        sph_max = request.POST.get('sph_max')
-        cyl_min = request.POST.get('cyl_min')
-        cyl_max = request.POST.get('cyl_max')
-
-        try:
-            LensType.objects.create(
-                name=name,
-                category_id=category_id,
-                brand_id=brand_id if brand_id else None,
-                index=index,
-                material=material,
-                price=price,
-                sph_min=sph_min,
-                sph_max=sph_max,
-                cyl_min=cyl_min,
-                cyl_max=cyl_max
-            )
-            messages.success(request, f'Lens "{name}" added successfully!')
-            return redirect('adminpanel:lens_list')
-        except Exception as e:
-            messages.error(request, f"Error adding lens: {str(e)}")
-
-    # GET Request
-    categories = LensCategory.objects.all()
-    brands = Brand.objects.filter(is_active=True) # Assuming you use same Brand model or separate LensBrand
-    
-    context = {
-        'categories': categories,
-        'brands': brands,
-    }
-    return render(request, 'adminpanel/lenses/add.html', context)
-
+# ==================== CONTACT LENSES ====================
 
 @login_required
 @user_passes_test(is_admin)
-def lens_edit(request, lens_id):
-    """Edit existing Lens Package"""
-    lens = get_object_or_404(LensType, id=lens_id)
+def contact_lens_list(request):
+    search = request.GET.get('search', '')
+    lens_type = request.GET.get('lens_type', '')
+    
+    lenses = ContactLensProduct.objects.select_related('product', 'product__brand').order_by('-product__created_at')
+    
+    if search:
+        lenses = lenses.filter(
+            Q(product__name__icontains=search) | 
+            Q(product__sku__icontains=search)
+        )
+    if lens_type:
+        lenses = lenses.filter(lens_type=lens_type)
+    
+    paginator = Paginator(lenses, 20)
+    lenses = paginator.get_page(request.GET.get('page', 1))
+    
+    return render(request, 'adminpanel/contact_lenses/list.html', {
+        'lenses': lenses,
+        'search': search,
+        'lens_type': lens_type
+    })
 
+@login_required
+@user_passes_test(is_admin)
+def contact_lens_add(request):
     if request.method == 'POST':
         try:
-            # 1. Update Basic Info
-            lens.name = request.POST.get('name')
-            lens.category_id = request.POST.get('category')
-            
-            brand_id = request.POST.get('brand')
-            lens.brand_id = brand_id if brand_id else None
-            
-            # 2. Update Specs
-            lens.index = request.POST.get('index')
-            lens.material = request.POST.get('material')
-            lens.price = request.POST.get('price')
-
-            # 3. Update Power Limits
-            lens.sph_min = request.POST.get('sph_min')
-            lens.sph_max = request.POST.get('sph_max')
-            lens.cyl_min = request.POST.get('cyl_min')
-            lens.cyl_max = request.POST.get('cyl_max')
-
-            lens.save()
-            messages.success(request, f'Lens "{lens.name}" updated successfully!')
-            return redirect('adminpanel:lens_list')
-
+            with transaction.atomic():
+                # 1. Create Product first
+                product = Product.objects.create(
+                    name=request.POST.get('name'),
+                    sku=request.POST.get('sku'),
+                    slug=request.POST.get('slug'),
+                    product_type='contact_lenses',
+                    category_id=request.POST.get('category'),
+                    brand_id=request.POST.get('brand') or None,
+                    description=request.POST.get('description', ''),
+                    base_price=request.POST.get('base_price'),
+                    track_inventory=True,
+                    stock_quantity=int(request.POST.get('stock_quantity') or 0),
+                    is_active=request.POST.get('is_active') == 'on',
+                )
+                
+                # 2. Create ContactLensProduct
+                contact_lens = ContactLensProduct.objects.create(
+                    product=product,
+                    lens_type=request.POST.get('lens_type'),
+                    replacement_schedule=request.POST.get('replacement_schedule'),
+                    package_size=request.POST.get('package_size'),
+                    diameter=request.POST.get('diameter'),
+                    base_curve=request.POST.get('base_curve'),
+                    water_content=request.POST.get('water_content'),
+                    intended_use=request.POST.get('intended_use', 'Vision / Cosmetic'),
+                )
+                
+                # 3. Add images
+                for idx, img in enumerate(request.FILES.getlist('images')):
+                    ProductImage.objects.create(product=product, image=img, is_primary=(idx==0))
+                
+                messages.success(request, 'Contact Lens added!')
+                return redirect('adminpanel:contact_lens_list')
+        except IntegrityError:
+            messages.error(request, 'SKU or Slug exists.')
         except Exception as e:
-            messages.error(request, f"Error updating lens: {str(e)}")
+            messages.error(request, str(e))
+    
+    context = {
+        'brands': Brand.objects.filter(available_for_contact_lenses=True, is_active=True)
+    }
+    return render(request, 'adminpanel/contact_lenses/add.html', context)
 
-    # GET Request
-    categories = LensCategory.objects.all()
-    brands = Brand.objects.filter(is_active=True)
+@login_required
+@user_passes_test(is_admin)
+def contact_lens_edit(request, lens_id):
+    lens = get_object_or_404(ContactLensProduct.objects.select_related('product'), id=lens_id)
+    product = lens.product
+    
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                # Update Product
+                product.name = request.POST.get('name')
+                product.sku = request.POST.get('sku')
+                product.slug = request.POST.get('slug')
+                product.brand_id = request.POST.get('brand') or None
+                product.description = request.POST.get('description', '')
+                product.base_price = request.POST.get('base_price')
+                product.stock_quantity = int(request.POST.get('stock_quantity') or 0)
+                product.is_active = request.POST.get('is_active') == 'on'
+                product.save()
+                
+                # Update ContactLensProduct
+                lens.lens_type = request.POST.get('lens_type')
+                lens.replacement_schedule = request.POST.get('replacement_schedule')
+                lens.package_size = request.POST.get('package_size')
+                lens.diameter = request.POST.get('diameter')
+                lens.base_curve = request.POST.get('base_curve')
+                lens.water_content = request.POST.get('water_content')
+                lens.intended_use = request.POST.get('intended_use', 'Vision / Cosmetic')
+                lens.save()
+                
+                # Handle images
+                for img in request.FILES.getlist('images'):
+                    ProductImage.objects.create(product=product, image=img)
+                
+                del_ids = request.POST.get('delete_image_ids', '')
+                if del_ids:
+                    ProductImage.objects.filter(id__in=[int(i) for i in del_ids.split(',') if i.isdigit()]).delete()
+                
+                messages.success(request, 'Contact Lens updated!')
+                return redirect('adminpanel:contact_lens_list')
+        except Exception as e:
+            messages.error(request, str(e))
     
     context = {
         'lens': lens,
-        'categories': categories,
-        'brands': brands,
+        'product': product,
+        'brands': Brand.objects.filter(available_for_contact_lenses=True, is_active=True),
+        'images': product.images.all()
     }
-    return render(request, 'adminpanel/lenses/edit.html', context)
+    return render(request, 'adminpanel/contact_lenses/edit.html', context)
 
-# @login_required
-# @user_passes_test(is_admin)
-def lens_delete(request, lens_id):
-    lens = get_object_or_404(LensType, id=lens_id)
+@login_required
+@user_passes_test(is_admin)
+def contact_lens_delete(request, lens_id):
+    lens = get_object_or_404(ContactLensProduct, id=lens_id)
     if request.method == 'POST':
-        lens.delete()
-        messages.success(request, 'Lens package deleted successfully.')
-        return redirect('adminpanel:lens_list')
-    
+        lens.product.delete()  # This will cascade delete ContactLensProduct
+        messages.success(request, 'Contact Lens deleted.')
+        return redirect('adminpanel:contact_lens_list')
+    return render(request, 'adminpanel/contact_lenses/delete_confirm.html', {'lens': lens})
 
 
+# ==================== CONTACT LENS COLORS ====================
+
+@login_required
+@user_passes_test(is_admin)
+def contact_lens_color_list(request, lens_id):
+    lens = get_object_or_404(ContactLensProduct, id=lens_id)
+    colors = lens.colors.all().order_by('name')
+    return render(request, 'adminpanel/contact_lenses/colors/list.html', {'lens': lens, 'colors': colors})
+
+@login_required
+@user_passes_test(is_admin)
+def contact_lens_color_add(request, lens_id):
+    lens = get_object_or_404(ContactLensProduct, id=lens_id)
+    if request.method == 'POST':
+        try:
+            ContactLensColor.objects.create(
+                contact_lens=lens,
+                name=request.POST.get('name'),
+                image=request.FILES.get('image'),
+                power_enabled=request.POST.get('power_enabled') == 'on',
+                is_active=request.POST.get('is_active') == 'on'
+            )
+            messages.success(request, 'Color added!')
+            return redirect('adminpanel:contact_lens_color_list', lens_id=lens.id)
+        except Exception as e:
+            messages.error(request, str(e))
+    return render(request, 'adminpanel/contact_lenses/colors/add.html', {'lens': lens})
+
+@login_required
+@user_passes_test(is_admin)
+def contact_lens_color_edit(request, color_id):
+    color = get_object_or_404(ContactLensColor, id=color_id)
+    if request.method == 'POST':
+        color.name = request.POST.get('name')
+        if 'image' in request.FILES:
+            color.image = request.FILES['image']
+        color.power_enabled = request.POST.get('power_enabled') == 'on'
+        color.is_active = request.POST.get('is_active') == 'on'
+        color.save()
+        messages.success(request, 'Color updated!')
+        return redirect('adminpanel:contact_lens_color_list', lens_id=color.contact_lens.id)
+    return render(request, 'adminpanel/contact_lenses/colors/edit.html', {'color': color})
+
+@login_required
+@user_passes_test(is_admin)
+def contact_lens_color_delete(request, color_id):
+    color = get_object_or_404(ContactLensColor, id=color_id)
+    lens_id = color.contact_lens.id
+    if request.method == 'POST':
+        color.delete()
+        messages.success(request, 'Color deleted.')
+    return redirect('adminpanel:contact_lens_color_list', lens_id=lens_id)
 
 
 # ==================== LENS CATEGORIES ====================
 
-# @login_required
-# @user_passes_test(is_admin)
+@login_required
+@user_passes_test(is_admin)
 def lens_category_list(request):
-    """List all Lens Categories (Single Vision, Progressive etc.)"""
-    categories = LensCategory.objects.all().order_by('name')
-    return render(request, 'adminpanel/lens-category/list.html', {'categories': categories})
+    categories = LensCategory.objects.all().order_by('display_order')
+    return render(request, 'adminpanel/lenses/categories/list.html', {'categories': categories})
 
-# @login_required
-# @user_passes_test(is_admin)
+@login_required
+@user_passes_test(is_admin)
 def lens_category_add(request):
-    """Add a new Lens Category"""
     if request.method == 'POST':
-        name = request.POST.get('name')
-        slug = request.POST.get('slug')
-        description = request.POST.get('description')
-
         try:
-            LensCategory.objects.create(name=name, slug=slug, description=description)
-            messages.success(request, f'Lens Category "{name}" added!')
+            LensCategory.objects.create(
+                name=request.POST.get('name'),
+                category_type=request.POST.get('category_type'),
+                description=request.POST.get('description', ''),
+                display_order=request.POST.get('display_order', 0),
+                is_active=request.POST.get('is_active') == 'on'
+            )
+            messages.success(request, 'Lens Category added!')
             return redirect('adminpanel:lens_category_list')
         except IntegrityError:
-            messages.error(request, "Category with this slug already exists.")
+            messages.error(request, 'Category type already exists.')
         except Exception as e:
-            messages.error(request, f"Error: {str(e)}")
+            messages.error(request, str(e))
+    return render(request, 'adminpanel/lenses/categories/add.html', {
+        'category_types': LensCategory.CATEGORY_TYPES
+    })
 
-    return render(request, 'adminpanel/lens-category/add.html')
+@login_required
+@user_passes_test(is_admin)
+def lens_category_edit(request, cat_id):
+    category = get_object_or_404(LensCategory, id=cat_id)
+    if request.method == 'POST':
+        category.name = request.POST.get('name')
+        category.category_type = request.POST.get('category_type')
+        category.description = request.POST.get('description', '')
+        category.display_order = request.POST.get('display_order', 0)
+        category.is_active = request.POST.get('is_active') == 'on'
+        category.save()
+        messages.success(request, 'Lens Category updated!')
+        return redirect('adminpanel:lens_category_list')
+    return render(request, 'adminpanel/lenses/categories/edit.html', {
+        'category': category,
+        'category_types': LensCategory.CATEGORY_TYPES
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def lens_category_delete(request, cat_id):
+    category = get_object_or_404(LensCategory, id=cat_id)
+    if request.method == 'POST':
+        category.delete()
+        messages.success(request, 'Lens Category deleted.')
+        return redirect('adminpanel:lens_category_list')
+    return render(request, 'adminpanel/lenses/categories/delete_confirm.html', {'category': category})
+
+
+# ==================== LENS OPTIONS ====================
+
+@login_required
+@user_passes_test(is_admin)
+def lens_option_list(request):
+    category_id = request.GET.get('category', '')
+    search = request.GET.get('search', '')
+    
+    options = LensOption.objects.select_related('category').order_by('category__display_order', 'display_order')
+    
+    if category_id:
+        options = options.filter(category_id=category_id)
+    if search:
+        options = options.filter(Q(name__icontains=search) | Q(code__icontains=search))
+    
+    paginator = Paginator(options, 20)
+    options = paginator.get_page(request.GET.get('page', 1))
+    
+    return render(request, 'adminpanel/lenses/options/list.html', {
+        'options': options,
+        'categories': LensCategory.objects.all(),
+        'current_category': category_id,
+        'search': search
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def lens_option_add(request):
+    if request.method == 'POST':
+        try:
+            features = request.POST.getlist('features[]')
+            reading_powers = request.POST.getlist('reading_powers[]')
+            
+            LensOption.objects.create(
+                category_id=request.POST.get('category'),
+                name=request.POST.get('name'),
+                code=request.POST.get('code'),
+                description=request.POST.get('description', ''),
+                base_price=request.POST.get('base_price'),
+                lens_index=request.POST.get('lens_index'),
+                material=request.POST.get('material', ''),
+                features=features,
+                min_sphere_power=request.POST.get('min_sphere_power') or None,
+                max_sphere_power=request.POST.get('max_sphere_power') or None,
+                min_cylinder_power=request.POST.get('min_cylinder_power') or None,
+                max_cylinder_power=request.POST.get('max_cylinder_power') or None,
+                available_reading_powers=reading_powers,
+                display_order=request.POST.get('display_order', 0),
+                is_active=request.POST.get('is_active') == 'on',
+                is_premium=request.POST.get('is_premium') == 'on'
+            )
+            messages.success(request, 'Lens Option added!')
+            return redirect('adminpanel:lens_option_list')
+        except IntegrityError:
+            messages.error(request, 'Code already exists.')
+        except Exception as e:
+            messages.error(request, str(e))
+    
+    return render(request, 'adminpanel/lenses/options/add.html', {
+        'categories': LensCategory.objects.filter(is_active=True)
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def lens_option_edit(request, option_id):
+    option = get_object_or_404(LensOption, id=option_id)
+    if request.method == 'POST':
+        try:
+            features = request.POST.getlist('features[]')
+            reading_powers = request.POST.getlist('reading_powers[]')
+            
+            option.category_id = request.POST.get('category')
+            option.name = request.POST.get('name')
+            option.code = request.POST.get('code')
+            option.description = request.POST.get('description', '')
+            option.base_price = request.POST.get('base_price')
+            option.lens_index = request.POST.get('lens_index')
+            option.material = request.POST.get('material', '')
+            option.features = features
+            option.min_sphere_power = request.POST.get('min_sphere_power') or None
+            option.max_sphere_power = request.POST.get('max_sphere_power') or None
+            option.min_cylinder_power = request.POST.get('min_cylinder_power') or None
+            option.max_cylinder_power = request.POST.get('max_cylinder_power') or None
+            option.available_reading_powers = reading_powers
+            option.display_order = request.POST.get('display_order', 0)
+            option.is_active = request.POST.get('is_active') == 'on'
+            option.is_premium = request.POST.get('is_premium') == 'on'
+            option.save()
+            
+            messages.success(request, 'Lens Option updated!')
+            return redirect('adminpanel:lens_option_list')
+        except Exception as e:
+            messages.error(request, str(e))
+    
+    return render(request, 'adminpanel/lenses/options/edit.html', {
+        'option': option,
+        'categories': LensCategory.objects.filter(is_active=True)
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def lens_option_delete(request, option_id):
+    option = get_object_or_404(LensOption, id=option_id)
+    if request.method == 'POST':
+        option.delete()
+        messages.success(request, 'Lens Option deleted.')
+        return redirect('adminpanel:lens_option_list')
+    return render(request, 'adminpanel/lenses/options/delete_confirm.html', {'option': option})
+
+
+# ==================== LENS ADD-ONS ====================
+
+@login_required
+@user_passes_test(is_admin)
+def lens_addon_list(request):
+    addons = LensAddOn.objects.all().order_by('name')
+    return render(request, 'adminpanel/lenses/addons/list.html', {'addons': addons})
+
+@login_required
+@user_passes_test(is_admin)
+def lens_addon_add(request):
+    if request.method == 'POST':
+        try:
+            LensAddOn.objects.create(
+                name=request.POST.get('name'),
+                addon_type=request.POST.get('addon_type'),
+                code=request.POST.get('code'),
+                description=request.POST.get('description', ''),
+                is_active=request.POST.get('is_active') == 'on'
+            )
+            messages.success(request, 'Add-on created!')
+            return redirect('adminpanel:lens_addon_list')
+        except IntegrityError:
+            messages.error(request, 'Code already exists.')
+        except Exception as e:
+            messages.error(request, str(e))
+    
+    return render(request, 'adminpanel/lenses/addons/add.html', {
+        'addon_types': LensAddOn.ADDON_TYPES
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def lens_addon_edit(request, addon_id):
+    addon = get_object_or_404(LensAddOn, id=addon_id)
+    if request.method == 'POST':
+        addon.name = request.POST.get('name')
+        addon.addon_type = request.POST.get('addon_type')
+        addon.code = request.POST.get('code')
+        addon.description = request.POST.get('description', '')
+        addon.is_active = request.POST.get('is_active') == 'on'
+        addon.save()
+        messages.success(request, 'Add-on updated!')
+        return redirect('adminpanel:lens_addon_list')
+    
+    return render(request, 'adminpanel/lenses/addons/edit.html', {
+        'addon': addon,
+        'addon_types': LensAddOn.ADDON_TYPES
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def lens_addon_delete(request, addon_id):
+    addon = get_object_or_404(LensAddOn, id=addon_id)
+    if request.method == 'POST':
+        addon.delete()
+        messages.success(request, 'Add-on deleted.')
+        return redirect('adminpanel:lens_addon_list')
+    return render(request, 'adminpanel/lenses/addons/delete_confirm.html', {'addon': addon})
+
+
+# ==================== LENS OPTION ADD-ONS (Pricing) ====================
+
+@login_required
+@user_passes_test(is_admin)
+def lens_option_addon_manage(request, option_id):
+    lens_option = get_object_or_404(LensOption, id=option_id)
+    existing_addons = lens_option.available_addons.all()
+    all_addons = LensAddOn.objects.filter(is_active=True)
+    
+    if request.method == 'POST':
+        try:
+            # Clear existing
+            lens_option.available_addons.all().delete()
+            
+            # Add new
+            addon_ids = request.POST.getlist('addon_id[]')
+            prices = request.POST.getlist('price[]')
+            display_orders = request.POST.getlist('display_order[]')
+            
+            for addon_id, price, order in zip(addon_ids, prices, display_orders):
+                if addon_id and price:
+                    LensOptionAddOn.objects.create(
+                        lens_option=lens_option,
+                        addon_id=addon_id,
+                        price=price,
+                        display_order=order or 0
+                    )
+            
+            messages.success(request, 'Add-ons updated!')
+            return redirect('adminpanel:lens_option_list')
+        except Exception as e:
+            messages.error(request, str(e))
+    
+    return render(request, 'adminpanel/lenses/option_addons/manage.html', {
+        'lens_option': lens_option,
+        'existing_addons': existing_addons,
+        'all_addons': all_addons
+    })
+
+
+# ==================== SUNGLASS LENS OPTIONS ====================
+
+@login_required
+@user_passes_test(is_admin)
+def sunglass_lens_list(request):
+    options = SunglassLensOption.objects.all().order_by('display_order')
+    return render(request, 'adminpanel/lenses/sunglass/list.html', {'options': options})
+
+@login_required
+@user_passes_test(is_admin)
+def sunglass_lens_add(request):
+    if request.method == 'POST':
+        try:
+            features = request.POST.getlist('features[]')
+            SunglassLensOption.objects.create(
+                lens_type=request.POST.get('lens_type'),
+                name=request.POST.get('name'),
+                base_price=request.POST.get('base_price'),
+                lens_index=request.POST.get('lens_index', 1.56),
+                features=features,
+                display_order=request.POST.get('display_order', 0),
+                is_active=request.POST.get('is_active') == 'on'
+            )
+            messages.success(request, 'Sunglass lens option added!')
+            return redirect('adminpanel:sunglass_lens_list')
+        except Exception as e:
+            messages.error(request, str(e))
+    
+    return render(request, 'adminpanel/lenses/sunglass/add.html', {
+        'lens_types': SunglassLensOption.LENS_TYPES
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def sunglass_lens_edit(request, option_id):
+    option = get_object_or_404(SunglassLensOption, id=option_id)
+    if request.method == 'POST':
+        try:
+            features = request.POST.getlist('features[]')
+            option.lens_type = request.POST.get('lens_type')
+            option.name = request.POST.get('name')
+            option.base_price = request.POST.get('base_price')
+            option.lens_index = request.POST.get('lens_index', 1.56)
+            option.features = features
+            option.display_order = request.POST.get('display_order', 0)
+            option.is_active = request.POST.get('is_active') == 'on'
+            option.save()
+            messages.success(request, 'Sunglass lens option updated!')
+            return redirect('adminpanel:sunglass_lens_list')
+        except Exception as e:
+            messages.error(request, str(e))
+    
+    return render(request, 'adminpanel/lenses/sunglass/edit.html', {
+        'option': option,
+        'lens_types': SunglassLensOption.LENS_TYPES
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def sunglass_lens_delete(request, option_id):
+    option = get_object_or_404(SunglassLensOption, id=option_id)
+    if request.method == 'POST':
+        option.delete()
+        messages.success(request, 'Sunglass lens option deleted.')
+        return redirect('adminpanel:sunglass_lens_list')
+    return render(request, 'adminpanel/lenses/sunglass/delete_confirm.html', {'option': option})
+
+
+# ==================== ORDERS ====================
+
+@login_required
+@user_passes_test(is_admin)
+def order_list(request):
+    search = request.GET.get('search', '')
+    status = request.GET.get('status', '')
+    payment_status = request.GET.get('payment_status', '')
+    
+    orders = Order.objects.select_related('user').prefetch_related('items').order_by('-created_at')
+    
+    if search:
+        orders = orders.filter(
+            Q(order_number__icontains=search) | 
+            Q(user__email__icontains=search) |
+            Q(user__first_name__icontains=search)
+        )
+    if status:
+        orders = orders.filter(status=status)
+    if payment_status:
+        orders = orders.filter(payment_status=payment_status)
+    
+    paginator = Paginator(orders, 20)
+    orders = paginator.get_page(request.GET.get('page', 1))
+    
+    # Stats
+    total_orders = Order.objects.count()
+    pending_count = Order.objects.filter(status='pending').count()
+    completed_count = Order.objects.filter(status='completed').count()
+    
+    return render(request, 'adminpanel/orders/list.html', {
+        'orders': orders,
+        'search': search,
+        'status': status,
+        'payment_status': payment_status,
+        'total_orders': total_orders,
+        'pending_count': pending_count,
+        'completed_count': completed_count
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def order_detail(request, order_id):
+    order = get_object_or_404(
+        Order.objects.prefetch_related('items__product', 'items__variant'), 
+        id=order_id
+    )
+    return render(request, 'adminpanel/orders/detail.html', {'order': order})
+
+@login_required
+@user_passes_test(is_admin)
+def order_update_status(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    if request.method == 'POST':
+        order.status = request.POST.get('status')
+        order.save()
+        messages.success(request, f'Order status updated to {order.get_status_display()}!')
+        return redirect('adminpanel:order_detail', order_id=order.id)
+    return redirect('adminpanel:order_detail', order_id=order.id)
+
+@login_required
+@user_passes_test(is_admin)
+def order_update_payment_status(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    if request.method == 'POST':
+        order.payment_status = request.POST.get('payment_status')
+        order.save()
+        messages.success(request, f'Payment status updated!')
+        return redirect('adminpanel:order_detail', order_id=order.id)
+    return redirect('adminpanel:order_detail', order_id=order.id)
+
+
+# ==================== EYE TEST BOOKINGS ====================
+
+@login_required
+@user_passes_test(is_admin)
+def eye_test_list(request):
+    status = request.GET.get('status', '')
+    search = request.GET.get('search', '')
+    
+    bookings = EyeTestBooking.objects.select_related('user').order_by('-booking_date', '-booking_time')
+    
+    if status:
+        bookings = bookings.filter(status=status)
+    if search:
+        bookings = bookings.filter(
+            Q(user__email__icontains=search) |
+            Q(user__first_name__icontains=search) |
+            Q(phone__icontains=search)
+        )
+    
+    paginator = Paginator(bookings, 20)
+    bookings = paginator.get_page(request.GET.get('page', 1))
+    
+    # Stats
+    pending_count = EyeTestBooking.objects.filter(status='pending').count()
+    confirmed_count = EyeTestBooking.objects.filter(status='confirmed').count()
+    
+    return render(request, 'adminpanel/eye_tests/list.html', {
+        'bookings': bookings,
+        'status': status,
+        'search': search,
+        'pending_count': pending_count,
+        'confirmed_count': confirmed_count
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def eye_test_detail(request, booking_id):
+    booking = get_object_or_404(EyeTestBooking, id=booking_id)
+    if request.method == 'POST':
+        booking.status = request.POST.get('status')
+        booking.admin_notes = request.POST.get('admin_notes', '')
+        booking.save()
+        messages.success(request, 'Booking updated!')
+        return redirect('adminpanel:eye_test_list')
+    return render(request, 'adminpanel/eye_tests/detail.html', {'booking': booking})
+
+@login_required
+@user_passes_test(is_admin)
+def eye_test_delete(request, booking_id):
+    booking = get_object_or_404(EyeTestBooking, id=booking_id)
+    if request.method == 'POST':
+        booking.delete()
+        messages.success(request, 'Booking deleted.')
+        return redirect('adminpanel:eye_test_list')
+    return render(request, 'adminpanel/eye_tests/delete_confirm.html', {'booking': booking})
+
+
+# ==================== REVIEWS ====================
+
+@login_required
+@user_passes_test(is_admin)
+def review_list(request):
+    status = request.GET.get('status', '')
+    
+    reviews = Review.objects.select_related('user', 'product').order_by('-created_at')
+    
+    if status == 'approved':
+        reviews = reviews.filter(is_approved=True)
+    elif status == 'pending':
+        reviews = reviews.filter(is_approved=False)
+    
+    paginator = Paginator(reviews, 20)
+    reviews = paginator.get_page(request.GET.get('page', 1))
+    
+    # Stats
+    total_count = Review.objects.count()
+    pending_count = Review.objects.filter(is_approved=False).count()
+    approved_count = Review.objects.filter(is_approved=True).count()
+    
+    return render(request, 'adminpanel/reviews/list.html', {
+        'reviews': reviews,
+        'status': status,
+        'total_count': total_count,
+        'pending_count': pending_count,
+        'approved_count': approved_count
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def review_approve(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    review.is_approved = True
+    review.save()
+    messages.success(request, 'Review approved!')
+    return redirect('adminpanel:review_list')
+
+@login_required
+@user_passes_test(is_admin)
+def review_reject(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    review.is_approved = False
+    review.save()
+    messages.success(request, 'Review rejected!')
+    return redirect('adminpanel:review_list')
+
+@login_required
+@user_passes_test(is_admin)
+def review_delete(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    if request.method == 'POST':
+        review.delete()
+        messages.success(request, 'Review deleted.')
+        return redirect('adminpanel:review_list')
+    return render(request, 'adminpanel/reviews/delete_confirm.html', {'review': review})
+
+
+# ==================== USERS ====================
+
+@login_required
+@user_passes_test(is_admin)
+def user_list(request):
+    search = request.GET.get('search', '')
+    user_type = request.GET.get('user_type', '')
+    
+    users = User.objects.all().order_by('-date_joined')
+    
+    if search:
+        users = users.filter(
+            Q(email__icontains=search) | 
+            Q(first_name__icontains=search) | 
+            Q(last_name__icontains=search)
+        )
+    if user_type:
+        users = users.filter(user_type=user_type)
+    
+    paginator = Paginator(users, 20)
+    users = paginator.get_page(request.GET.get('page', 1))
+    
+    # Stats
+    total_users = User.objects.count()
+    customer_count = User.objects.filter(user_type='customer').count()
+    admin_count = User.objects.filter(user_type__in=['admin', 'staff']).count()
+    
+    return render(request, 'adminpanel/users/list.html', {
+        'users': users,
+        'search': search,
+        'user_type': user_type,
+        'total_users': total_users,
+        'customer_count': customer_count,
+        'admin_count': admin_count
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def user_detail(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    orders = Order.objects.filter(user=user).order_by('-created_at')[:10]
+    reviews = Review.objects.filter(user=user).order_by('-created_at')[:5]
+    
+    return render(request, 'adminpanel/users/detail.html', {
+        'user_obj': user,
+        'orders': orders,
+        'reviews': reviews
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def user_toggle_active(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    user.is_active = not user.is_active
+    user.save()
+    status = 'activated' if user.is_active else 'deactivated'
+    messages.success(request, f'User {status}!')
+    return redirect('adminpanel:user_detail', user_id=user.id)
+
+
+# ==================== PRODUCT TAGS ====================
 
 # @login_required
 # @user_passes_test(is_admin)
-def lens_category_delete(request, cat_id):
-    cat = get_object_or_404(LensCategory, id=cat_id)
+def tag_list(request):
+    tags = ProductTag.objects.annotate(product_count=Count('tagged_products')).order_by('name')
+    return render(request, 'adminpanel/tags/list.html', {'tags': tags})
+
+# @login_required
+# @user_passes_test(is_admin)
+def tag_add(request):
     if request.method == 'POST':
-        cat.delete()
-        messages.success(request, "Lens Category deleted.")
-    return redirect('adminpanel:lens_category_list')
+        try:
+            ProductTag.objects.create(
+                name=request.POST.get('name'),
+                slug=request.POST.get('slug')
+            )
+            messages.success(request, 'Tag created!')
+            return redirect('adminpanel:tag_list')
+        except IntegrityError:
+            messages.error(request, 'Tag name/slug already exists.')
+    return render(request, 'adminpanel/tags/add.html')
+
+# @login_required
+# @user_passes_test(is_admin)
+def tag_edit(request, tag_id):
+    tag = get_object_or_404(ProductTag, id=tag_id)
+    if request.method == 'POST':
+        tag.name = request.POST.get('name')
+        tag.slug = request.POST.get('slug')
+        tag.save()
+        messages.success(request, 'Tag updated!')
+        return redirect('adminpanel:tag_list')
+    return render(request, 'adminpanel/tags/edit.html', {'tag': tag})
+
+# @login_required
+# @user_passes_test(is_admin)
+def tag_delete(request, tag_id):
+    tag = get_object_or_404(ProductTag, id=tag_id)
+    if request.method == 'POST':
+        tag.delete()
+        messages.success(request, 'Tag deleted.')
+        return redirect('adminpanel:tag_list')
+    return render(request, 'adminpanel/tags/delete_confirm.html', {'tag': tag})
