@@ -1276,8 +1276,8 @@ def tag_edit(request, tag_id):
         return redirect('adminpanel:tag_list')
     return render(request, 'adminpanel/tags/edit.html', {'tag': tag})
 
-# @login_required
-# @user_passes_test(is_admin)
+@login_required
+@user_passes_test(is_admin)
 def tag_delete(request, tag_id):
     tag = get_object_or_404(ProductTag, id=tag_id)
     if request.method == 'POST':
