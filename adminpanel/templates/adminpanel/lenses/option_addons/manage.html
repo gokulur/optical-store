@@ -1,0 +1,167 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+  .card { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); border: none; }
+  
+  .addon-select-container { background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef; margin-bottom: 20px; }
+  .btn-remove { cursor: pointer; color: #dc3545; transition: 0.2s; }
+  .btn-remove:hover { color: #a71d2a; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+          <h3 class="mb-2"><i class="mdi mdi-link-variant"></i> Manage Add-ons</h3>
+          <p class="mb-0">Lens: <strong>{{ lens_option.name }}</strong> ({{ lens_option.category.name }})</p>
+        </div>
+        <a href="{% url 'adminpanel:lens_option_list' %}" class="btn btn-light">Back to Options</a>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            
+            <div class="addon-select-container">
+                <h5 class="card-title text-muted">Add New Add-on</h5>
+                <div class="row align-items-end">
+                    <div class="col-md-8">
+                        <label>Select Add-on Feature</label>
+                        <select id="addonSelect" class="form-control form-control-lg">
+                            <option value="">-- Choose Add-on --</option>
+                            {% for addon in all_addons %}
+                                <option value="{{ addon.id }}" data-name="{{ addon.name }}" data-code="{{ addon.code }}">
+                                    {{ addon.name }} ({{ addon.code }}) - {{ addon.get_addon_type_display }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-gradient-info btn-block btn-lg" onclick="addAddonRow()">
+                            <i class="mdi mdi-plus"></i> Add to List
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <form method="POST" id="configForm">
+                {% csrf_token %}
+                
+                <h4 class="card-title mb-3">Active Configuration</h4>
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="addonTable">
+                        <thead class="bg-light">
+                            <tr>
+                                <th width="40%">Add-on Name</th>
+                                <th width="30%">Extra Price (QAR)</th>
+                                <th width="20%">Display Order</th>
+                                <th width="10%" class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            {% for item in existing_addons %}
+                            <tr>
+                                <td>
+                                    <strong>{{ item.addon.name }}</strong><br>
+                                    <small class="text-muted">{{ item.addon.code }}</small>
+                                    <input type="hidden" name="addon_id[]" value="{{ item.addon.id }}">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm" name="price[]" value="{{ item.price }}" step="0.01" required>
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm" name="display_order[]" value="{{ item.display_order }}">
+                                </td>
+                                <td class="text-center">
+                                    <i class="mdi mdi-close-circle btn-remove" style="font-size: 24px;" onclick="removeRow(this)"></i>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4">
+                    {% if existing_addons|length == 0 %}
+                        <p class="text-muted text-center" id="emptyMsg">No add-ons linked yet.</p>
+                    {% endif %}
+                    
+                    <button type="submit" class="btn btn-gradient-primary btn-lg float-right">
+                        <i class="mdi mdi-content-save"></i> Save Changes
+                    </button>
+                </div>
+
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+    function addAddonRow() {
+        const select = document.getElementById('addonSelect');
+        const id = select.value;
+        
+        if (!id) {
+            alert("Please select an add-on first.");
+            return;
+        }
+
+        // Check if already exists in table to prevent duplicates
+        const existingInputs = document.getElementsByName('addon_id[]');
+        for (let input of existingInputs) {
+            if (input.value === id) {
+                alert("This add-on is already added to the list.");
+                return;
+            }
+        }
+
+        const name = select.options[select.selectedIndex].getAttribute('data-name');
+        const code = select.options[select.selectedIndex].getAttribute('data-code');
+        const tbody = document.getElementById('tableBody');
+        
+        // Remove empty message if exists
+        const emptyMsg = document.getElementById('emptyMsg');
+        if (emptyMsg) emptyMsg.style.display = 'none';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>
+                <strong>${name}</strong><br>
+                <small class="text-muted">${code}</small>
+                <input type="hidden" name="addon_id[]" value="${id}">
+            </td>
+            <td>
+                <input type="number" class="form-control form-control-sm" name="price[]" placeholder="0.00" step="0.01" required>
+            </td>
+            <td>
+                <input type="number" class="form-control form-control-sm" name="display_order[]" value="0">
+            </td>
+            <td class="text-center">
+                <i class="mdi mdi-close-circle btn-remove" style="font-size: 24px;" onclick="removeRow(this)"></i>
+            </td>
+        `;
+        tbody.appendChild(row);
+        
+        // Reset dropdown
+        select.value = "";
+    }
+
+    function removeRow(btn) {
+        const row = btn.closest('tr');
+        row.remove();
+    }
+</script>
+
+{% endblock %}

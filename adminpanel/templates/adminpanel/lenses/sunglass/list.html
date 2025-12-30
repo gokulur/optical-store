@@ -1,0 +1,115 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+  .card { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); border: none; }
+  
+  .badge-feature { font-size: 0.7rem; padding: 3px 6px; background: #eee; color: #555; border-radius: 3px; margin-right: 2px; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+          <h3 class="mb-2"><i class="mdi mdi-sunglasses"></i> Sunglass Lenses</h3>
+          <p class="mb-0">Manage Polarized, Tinted, and Mirror options</p>
+        </div>
+        <a href="{% url 'adminpanel:sunglass_lens_add' %}" class="btn btn-gradient-primary">
+          <i class="mdi mdi-plus"></i> Add New Option
+        </a>
+      </div>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="row">
+      <div class="col-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title mb-4">Available Options</h4>
+            
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Option Name</th>
+                    <th>Type</th>
+                    <th>Price</th>
+                    <th>Features</th>
+                    <th>Status</th>
+                    <th class="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for opt in options %}
+                  <tr>
+                    <td>
+                        <span class="font-weight-bold">{{ opt.name }}</span><br>
+                        <small class="text-muted">Index: {{ opt.lens_index }}</small>
+                    </td>
+                    <td>
+                        {% if opt.lens_type == 'polarized' %}
+                            <label class="badge badge-gradient-info">Polarized</label>
+                        {% elif opt.lens_type == 'mirror' %}
+                            <label class="badge badge-gradient-secondary">Mirror</label>
+                        {% elif opt.lens_type == 'gradient' %}
+                            <label class="badge badge-gradient-primary">Gradient</label>
+                        {% else %}
+                            <label class="badge badge-gradient-success">Tinted</label>
+                        {% endif %}
+                    </td>
+                    <td class="font-weight-bold text-success">QAR {{ opt.base_price }}</td>
+                    <td>
+                        {% for feature in opt.features %}
+                            <span class="badge-feature">{{ feature }}</span>
+                        {% empty %}
+                            <span class="text-muted small">-</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% if opt.is_active %}
+                            <label class="badge badge-success">Active</label>
+                        {% else %}
+                            <label class="badge badge-secondary">Inactive</label>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        <a href="{% url 'adminpanel:sunglass_lens_edit' opt.id %}" class="btn btn-inverse-warning btn-sm btn-icon" title="Edit">
+                            <i class="mdi mdi-pencil"></i>
+                        </a>
+                        <a href="{% url 'adminpanel:sunglass_lens_delete' opt.id %}" class="btn btn-inverse-danger btn-sm btn-icon" title="Delete">
+                            <i class="mdi mdi-delete"></i>
+                        </a>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                      <td colspan="6" class="text-center py-5">
+                          <i class="mdi mdi-sunglasses text-muted" style="font-size: 3rem;"></i>
+                          <p class="mt-2 text-muted">No sunglass options created yet.</p>
+                      </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

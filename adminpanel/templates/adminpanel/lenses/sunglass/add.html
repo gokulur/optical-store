@@ -1,0 +1,126 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <h3 class="mb-2">Add Sunglass Option</h3>
+    </div>
+
+    <div class="row">
+      <div class="col-md-8 grid-margin stretch-card mx-auto">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title text-muted mb-4">Lens Configuration</h4>
+            
+            <form method="POST">
+              {% csrf_token %}
+              
+              <div class="form-group">
+                <label class="font-weight-bold">Option Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-lg" name="name" placeholder="e.g. Brown Gradient Polarized" required>
+              </div>
+
+              <div class="row">
+                  <div class="col-md-6">
+                      <div class="form-group">
+                        <label class="font-weight-bold">Lens Type</label>
+                        <select class="form-control" name="lens_type" required>
+                            {% for code, label in lens_types %}
+                                <option value="{{ code }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                  </div>
+                  <div class="col-md-6">
+                      <div class="form-group">
+                        <label class="font-weight-bold">Index</label>
+                        <select class="form-control" name="lens_index">
+                            <option value="1.50">1.50 (Standard)</option>
+                            <option value="1.56" selected>1.56 (Thin)</option>
+                            <option value="1.60">1.60 (High Index)</option>
+                            <option value="1.67">1.67 (Ultra Thin)</option>
+                        </select>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Extra Price (QAR)</label>
+                <input type="number" class="form-control" name="base_price" step="0.01" value="0.00" required>
+                <small class="text-muted">Set to 0 if included with frame.</small>
+              </div>
+
+              <div class="form-group">
+                  <label class="font-weight-bold mb-3">Key Features</label>
+                  <div class="row">
+                      <div class="col-md-6">
+                          <div class="form-check">
+                              <label class="form-check-label">
+                                  <input type="checkbox" class="form-check-input" name="features[]" value="UV400 Protection" checked> UV400 Protection
+                              </label>
+                          </div>
+                          <div class="form-check">
+                              <label class="form-check-label">
+                                  <input type="checkbox" class="form-check-input" name="features[]" value="Polarized"> Polarized
+                              </label>
+                          </div>
+                          <div class="form-check">
+                              <label class="form-check-label">
+                                  <input type="checkbox" class="form-check-input" name="features[]" value="Anti-Glare"> Anti-Glare (Backside)
+                              </label>
+                          </div>
+                      </div>
+                      <div class="col-md-6">
+                          <div class="form-check">
+                              <label class="form-check-label">
+                                  <input type="checkbox" class="form-check-input" name="features[]" value="Scratch Resistant"> Scratch Resistant
+                              </label>
+                          </div>
+                          <div class="form-check">
+                              <label class="form-check-label">
+                                  <input type="checkbox" class="form-check-input" name="features[]" value="Mirror Coating"> Mirror Coating
+                              </label>
+                          </div>
+                          <div class="form-check">
+                              <label class="form-check-label">
+                                  <input type="checkbox" class="form-check-input" name="features[]" value="Hydrophobic"> Hydrophobic
+                              </label>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="row">
+                  <div class="col-md-6">
+                      <div class="form-group">
+                          <label>Display Order</label>
+                          <input type="number" class="form-control" name="display_order" value="0">
+                      </div>
+                  </div>
+                  <div class="col-md-6 pt-4">
+                      <div class="form-check form-check-flat form-check-primary">
+                        <label class="form-check-label">
+                          <input type="checkbox" class="form-check-input" name="is_active" checked>
+                          Active
+                        </label>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="mt-4 d-flex justify-content-between">
+                  <a href="{% url 'adminpanel:sunglass_lens_list' %}" class="btn btn-light">Cancel</a>
+                  <button type="submit" class="btn btn-gradient-primary">Save Option</button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

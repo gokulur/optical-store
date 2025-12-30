@@ -1,0 +1,109 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <h3 class="mb-2">Edit Sunglass Option</h3>
+    </div>
+
+    <div class="row">
+      <div class="col-md-8 grid-margin stretch-card mx-auto">
+        <div class="card">
+          <div class="card-body">
+            
+            <form method="POST">
+              {% csrf_token %}
+              
+              <div class="form-group">
+                <label class="font-weight-bold">Option Name</label>
+                <input type="text" class="form-control form-control-lg" name="name" value="{{ option.name }}" required>
+              </div>
+
+              <div class="row">
+                  <div class="col-md-6">
+                      <div class="form-group">
+                        <label>Lens Type</label>
+                        <select class="form-control" name="lens_type" required>
+                            {% for code, label in lens_types %}
+                                <option value="{{ code }}" {% if option.lens_type == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                  </div>
+                  <div class="col-md-6">
+                      <div class="form-group">
+                        <label>Index</label>
+                        <select class="form-control" name="lens_index">
+                            <option value="1.50" {% if option.lens_index == 1.50 %}selected{% endif %}>1.50</option>
+                            <option value="1.56" {% if option.lens_index == 1.56 %}selected{% endif %}>1.56</option>
+                            <option value="1.60" {% if option.lens_index == 1.60 %}selected{% endif %}>1.60</option>
+                            <option value="1.67" {% if option.lens_index == 1.67 %}selected{% endif %}>1.67</option>
+                        </select>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="form-group">
+                <label>Extra Price (QAR)</label>
+                <input type="number" class="form-control" name="base_price" step="0.01" value="{{ option.base_price }}" required>
+              </div>
+
+              <div class="form-group">
+                  <label class="font-weight-bold mb-3">Key Features</label>
+                  <div class="row">
+                      <div class="col-md-6">
+                          <div class="form-check">
+                              <label class="form-check-label"><input type="checkbox" class="form-check-input" name="features[]" value="UV400 Protection" {% if "UV400 Protection" in option.features %}checked{% endif %}> UV400 Protection</label>
+                          </div>
+                          <div class="form-check">
+                              <label class="form-check-label"><input type="checkbox" class="form-check-input" name="features[]" value="Polarized" {% if "Polarized" in option.features %}checked{% endif %}> Polarized</label>
+                          </div>
+                          <div class="form-check">
+                              <label class="form-check-label"><input type="checkbox" class="form-check-input" name="features[]" value="Anti-Glare" {% if "Anti-Glare" in option.features %}checked{% endif %}> Anti-Glare</label>
+                          </div>
+                      </div>
+                      <div class="col-md-6">
+                          <div class="form-check">
+                              <label class="form-check-label"><input type="checkbox" class="form-check-input" name="features[]" value="Scratch Resistant" {% if "Scratch Resistant" in option.features %}checked{% endif %}> Scratch Resistant</label>
+                          </div>
+                          <div class="form-check">
+                              <label class="form-check-label"><input type="checkbox" class="form-check-input" name="features[]" value="Mirror Coating" {% if "Mirror Coating" in option.features %}checked{% endif %}> Mirror Coating</label>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="row">
+                  <div class="col-md-6">
+                      <div class="form-group">
+                          <label>Display Order</label>
+                          <input type="number" class="form-control" name="display_order" value="{{ option.display_order }}">
+                      </div>
+                  </div>
+                  <div class="col-md-6 pt-4">
+                      <div class="form-check form-check-flat form-check-primary">
+                        <label class="form-check-label">
+                          <input type="checkbox" class="form-check-input" name="is_active" {% if option.is_active %}checked{% endif %}>
+                          Active
+                        </label>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="mt-4 d-flex justify-content-between">
+                  <a href="{% url 'adminpanel:sunglass_lens_list' %}" class="btn btn-light">Cancel</a>
+                  <button type="submit" class="btn btn-gradient-warning">Update Option</button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
