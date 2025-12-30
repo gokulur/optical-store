@@ -1,0 +1,170 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  .user-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  .role-badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  .role-admin { background-color: #e6e6ff; color: #5e50f9; border: 1px solid #5e50f9; }
+  .role-customer { background-color: #e0fcf6; color: #009973; border: 1px solid #009973; }
+  
+  .status-dot {
+    height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 5px;
+  }
+  .online { background-color: #1bcfb4; }
+  .offline { background-color: #ff4747; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <h3 class="mb-2"><i class="mdi mdi-account-group"></i> User Management</h3>
+      <p class="mb-0">Manage customers and staff members</p>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-4 stretch-card grid-margin">
+        <div class="card bg-gradient-info card-img-holder text-white">
+          <div class="card-body">
+            <h4 class="font-weight-normal mb-3">Total Users <i class="mdi mdi-account mdi-24px float-right"></i></h4>
+            <h2 class="mb-5">{{ total_users }}</h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 stretch-card grid-margin">
+        <div class="card bg-gradient-success card-img-holder text-white">
+          <div class="card-body">
+            <h4 class="font-weight-normal mb-3">Customers <i class="mdi mdi-cart-outline mdi-24px float-right"></i></h4>
+            <h2 class="mb-5">{{ customer_count }}</h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 stretch-card grid-margin">
+        <div class="card bg-gradient-warning card-img-holder text-white">
+          <div class="card-body">
+            <h4 class="font-weight-normal mb-3">Staff / Admin <i class="mdi mdi-security mdi-24px float-right"></i></h4>
+            <h2 class="mb-5">{{ admin_count }}</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            
+            <form method="GET" class="row align-items-center mb-4">
+              <div class="col-md-4">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text bg-transparent border-right-0"><i class="mdi mdi-magnify text-primary"></i></span>
+                  </div>
+                  <input type="text" class="form-control border-left-0" name="search" placeholder="Search Name or Email..." value="{{ search }}">
+                </div>
+              </div>
+              <div class="col-md-3">
+                <select class="form-control" name="user_type" onchange="this.form.submit()">
+                  <option value="">All Roles</option>
+                  <option value="customer" {% if user_type == 'customer' %}selected{% endif %}>Customers</option>
+                  <option value="admin" {% if user_type == 'admin' %}selected{% endif %}>Admins</option>
+                  <option value="staff" {% if user_type == 'staff' %}selected{% endif %}>Staff</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                 <a href="{% url 'adminpanel:user_list' %}" class="btn btn-light btn-block">Reset</a>
+              </div>
+            </form>
+
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Contact Info</th>
+                    <th>Role</th>
+                    <th>Joined Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for user in users %}
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="user-avatar bg-secondary d-flex align-items-center justify-content-center text-white font-weight-bold mr-3">
+                            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                        </div>
+                        <div>
+                            <div class="font-weight-bold">{{ user.first_name }} {{ user.last_name }}</div>
+                            <small class="text-muted">@{{ user.username }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                        <div><i class="mdi mdi-email-outline mr-1"></i> {{ user.email }}</div>
+                        <small class="text-muted"><i class="mdi mdi-phone mr-1"></i> {{ user.phone_number|default:"--" }}</small>
+                    </td>
+                    <td>
+                        {% if user.user_type == 'admin' or user.is_superuser %}
+                            <span class="role-badge role-admin">Admin</span>
+                        {% else %}
+                            <span class="role-badge role-customer">Customer</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.date_joined|date:"d M Y" }}</td>
+                    <td>
+                        {% if user.is_active %}
+                            <label class="badge badge-success">Active</label>
+                        {% else %}
+                            <label class="badge badge-danger">Blocked</label>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'adminpanel:user_detail' user.id %}" class="btn btn-sm btn-outline-info btn-icon-text">
+                            <i class="mdi mdi-eye btn-icon-prepend"></i> View
+                        </a>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr><td colspan="6" class="text-center py-5">No users found.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            {% if users.has_other_pages %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if users.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ users.previous_page_number }}{% if search %}&search={{ search }}{% endif %}"><</a></li>
+                    {% endif %}
+                    <li class="page-item active"><a class="page-link" href="#">{{ users.number }}</a></li>
+                    {% if users.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ users.next_page_number }}{% if search %}&search={{ search }}{% endif %}">></a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

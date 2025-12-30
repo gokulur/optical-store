@@ -1,0 +1,144 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <h3 class="mb-2">User Profile</h3>
+      <a href="{% url 'adminpanel:user_list' %}" class="btn btn-light">Back to List</a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="row">
+      <div class="col-md-4 grid-margin stretch-card">
+        <div class="card text-center">
+          <div class="card-body">
+            <div class="mb-4">
+                <div style="width: 100px; height: 100px; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 2.5rem; color: #555;">
+                    {{ user_obj.first_name|first|upper }}{{ user_obj.last_name|first|upper }}
+                </div>
+            </div>
+            
+            <h4>{{ user_obj.first_name }} {{ user_obj.last_name }}</h4>
+            <p class="text-muted">@{{ user_obj.username }}</p>
+            
+            {% if user_obj.is_active %}
+                <span class="badge badge-success mb-4">Active Account</span>
+            {% else %}
+                <span class="badge badge-danger mb-4">Blocked Account</span>
+            {% endif %}
+
+            <div class="border-top pt-3 text-left">
+                <p class="clearfix">
+                    <span class="float-left font-weight-bold">Email:</span>
+                    <span class="float-right text-muted">{{ user_obj.email }}</span>
+                </p>
+                <p class="clearfix">
+                    <span class="float-left font-weight-bold">Phone:</span>
+                    <span class="float-right text-muted">{{ user_obj.phone_number|default:"Not Provided" }}</span>
+                </p>
+                <p class="clearfix">
+                    <span class="float-left font-weight-bold">Joined:</span>
+                    <span class="float-right text-muted">{{ user_obj.date_joined|date:"d M Y" }}</span>
+                </p>
+                <p class="clearfix">
+                    <span class="float-left font-weight-bold">Type:</span>
+                    <span class="float-right text-muted">{{ user_obj.get_user_type_display }}</span>
+                </p>
+            </div>
+
+            <div class="mt-4">
+                <form method="POST" action="{% url 'adminpanel:user_toggle_active' user_obj.id %}">
+                    {% csrf_token %}
+                    {% if user_obj.is_active %}
+                        <button class="btn btn-outline-danger btn-block" onclick="return confirm('Are you sure you want to block this user?')">
+                            <i class="mdi mdi-block-helper"></i> Block User
+                        </button>
+                    {% else %}
+                        <button class="btn btn-outline-success btn-block" onclick="return confirm('Activate this user?')">
+                            <i class="mdi mdi-check-circle-outline"></i> Activate User
+                        </button>
+                    {% endif %}
+                </form>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-8">
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4 class="card-title mb-3"><i class="mdi mdi-cart"></i> Recent Orders</h4>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.created_at|date:"d M, Y" }}</td>
+                                <td>QAR {{ order.total_amount }}</td>
+                                <td><label class="badge badge-outline-primary">{{ order.status|title }}</label></td>
+                                <td><a href="{% url 'adminpanel:order_detail' order.id %}" class="btn btn-sm btn-light">View</a></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted">No orders yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-3"><i class="mdi mdi-star"></i> Recent Reviews</h4>
+                {% for review in reviews %}
+                <div class="d-flex align-items-start border-bottom pb-3 mb-3">
+                    <div class="mr-3">
+                        <i class="mdi mdi-comment-quote-outline text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <h6 class="font-weight-bold mb-1">{{ review.product.name }}</h6>
+                        <div class="mb-1 text-warning">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}
+                                    <i class="mdi mdi-star"></i>
+                                {% else %}
+                                    <i class="mdi mdi-star-outline"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <p class="text-muted small mb-0">{{ review.comment }}</p>
+                        <small class="text-secondary">{{ review.created_at|date:"d M Y" }}</small>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">No reviews submitted yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
