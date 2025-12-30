@@ -1124,8 +1124,8 @@ def eye_test_delete(request, booking_id):
 
 # ==================== REVIEWS ====================
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def review_list(request):
     status = request.GET.get('status', '')
     
@@ -1152,8 +1152,8 @@ def review_list(request):
         'approved_count': approved_count
     })
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def review_approve(request, review_id):
     review = get_object_or_404(Review, id=review_id)
     review.is_approved = True
@@ -1161,8 +1161,8 @@ def review_approve(request, review_id):
     messages.success(request, 'Review approved!')
     return redirect('adminpanel:review_list')
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def review_reject(request, review_id):
     review = get_object_or_404(Review, id=review_id)
     review.is_approved = False
@@ -1170,8 +1170,8 @@ def review_reject(request, review_id):
     messages.success(request, 'Review rejected!')
     return redirect('adminpanel:review_list')
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def review_delete(request, review_id):
     review = get_object_or_404(Review, id=review_id)
     if request.method == 'POST':
