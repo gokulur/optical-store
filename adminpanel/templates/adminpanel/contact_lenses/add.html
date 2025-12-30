@@ -1,0 +1,177 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  .section-title { font-size: 1.1rem; font-weight: 600; color: #3e4b5b; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid #f2f4f6; }
+  .form-control:focus { border-color: #b66dff; box-shadow: 0 0 0 0.2rem rgba(182, 109, 255, 0.25); }
+  .card { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); border: none; margin-bottom: 20px; }
+  
+  .spec-box { background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <h3 class="mb-2">Add Contact Lens</h3>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="card">
+            <div class="card-body">
+              <h4 class="section-title"><i class="mdi mdi-information-outline"></i> Product Information</h4>
+              
+              <div class="form-group">
+                <label class="font-weight-bold">Product Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-lg" name="name" placeholder="e.g. Acuvue Oasys 1-Day" required>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Slug <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="slug" name="slug" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">SKU <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="sku" required>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Description</label>
+                <textarea class="form-control" name="description" rows="4"></textarea>
+              </div>
+
+              <div class="row">
+                  <div class="col-md-6">
+                      <div class="form-group">
+                        <label class="font-weight-bold">Brand</label>
+                        <select class="form-control" name="brand">
+                            <option value="">Select Brand</option>
+                            {% for brand in brands %}
+                            <option value="{{ brand.id }}">{{ brand.name }}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                  </div>
+                  <div class="col-md-6">
+                      <div class="form-group">
+                        <label class="font-weight-bold">Base Price (QAR)</label>
+                        <input type="number" class="form-control" name="base_price" step="0.01" required>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="form-group mt-3">
+                <label class="font-weight-bold">Product Images</label>
+                <input type="file" class="form-control-file" name="images" multiple accept="image/*">
+                <small class="text-muted">Upload box cover and lens images.</small>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card">
+            <div class="card-body">
+              <h4 class="section-title"><i class="mdi mdi-cogs"></i> Lens Specifications</h4>
+              
+              <div class="spec-box">
+                  <div class="form-group">
+                    <label>Lens Type</label>
+                    <select class="form-control" name="lens_type">
+                        <option value="clear">Clear (Prescription)</option>
+                        <option value="color">Color (Cosmetic)</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Replacement Schedule</label>
+                    <select class="form-control" name="replacement_schedule">
+                        <option value="daily">Daily Disposable</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="3_months">3 Months (Quarterly)</option>
+                    </select>
+                  </div>
+
+                  <div class="row">
+                      <div class="col-6">
+                          <div class="form-group">
+                            <label>Base Curve</label>
+                            <input type="number" class="form-control" name="base_curve" step="0.1" placeholder="8.6" required>
+                          </div>
+                      </div>
+                      <div class="col-6">
+                          <div class="form-group">
+                            <label>Diameter</label>
+                            <input type="number" class="form-control" name="diameter" step="0.1" placeholder="14.2" required>
+                          </div>
+                      </div>
+                  </div>
+
+                  <div class="row">
+                      <div class="col-6">
+                          <div class="form-group">
+                            <label>Water %</label>
+                            <input type="number" class="form-control" name="water_content" step="1" placeholder="58" required>
+                          </div>
+                      </div>
+                      <div class="col-6">
+                          <div class="form-group">
+                            <label>Pack Size</label>
+                            <input type="number" class="form-control" name="package_size" value="30" required>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="mt-4">
+                  <div class="form-check">
+                    <label class="form-check-label">
+                      <input type="checkbox" class="form-check-input" name="is_active" checked> Active Product
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <label class="form-check-label">
+                      <input type="checkbox" class="form-check-input" name="track_inventory" checked> Track Stock
+                    </label>
+                  </div>
+                  <div class="form-group mt-2">
+                      <input type="number" class="form-control" name="stock_quantity" placeholder="Initial Stock Qty" value="0">
+                  </div>
+              </div>
+
+              <button type="submit" class="btn btn-gradient-primary btn-block btn-lg mt-4">
+                  <i class="mdi mdi-content-save"></i> Save Product
+              </button>
+              <a href="{% url 'adminpanel:contact_lens_list' %}" class="btn btn-light btn-block mt-2">Cancel</a>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<script>
+  // Auto-generate slug
+  document.getElementsByName('name')[0].addEventListener('input', function(e) {
+    const slug = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    document.getElementById('slug').value = slug;
+  });
+</script>
+
+{% endblock %}

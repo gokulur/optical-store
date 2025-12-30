@@ -1,0 +1,155 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <h3 class="mb-2">Edit Lens: {{ product.name }}</h3>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Product Information</h4>
+              
+              <div class="form-group">
+                <label>Product Name</label>
+                <input type="text" class="form-control" name="name" value="{{ product.name }}" required>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Slug</label>
+                    <input type="text" class="form-control" name="slug" value="{{ product.slug }}" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>SKU</label>
+                    <input type="text" class="form-control" name="sku" value="{{ product.sku }}" required>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Description</label>
+                <textarea class="form-control" name="description" rows="4">{{ product.description }}</textarea>
+              </div>
+
+              <div class="row">
+                  <div class="col-md-6">
+                      <div class="form-group">
+                        <label>Brand</label>
+                        <select class="form-control" name="brand">
+                            <option value="">Select Brand</option>
+                            {% for brand in brands %}
+                            <option value="{{ brand.id }}" {% if product.brand.id == brand.id %}selected{% endif %}>{{ brand.name }}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                  </div>
+                  <div class="col-md-6">
+                      <div class="form-group">
+                        <label>Base Price</label>
+                        <input type="number" class="form-control" name="base_price" step="0.01" value="{{ product.base_price }}" required>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="form-group mt-3">
+                <label>Images</label>
+                <div class="d-flex mb-2">
+                    {% for img in images %}
+                        <img src="{{ img.image.url }}" style="width: 50px; height: 50px; margin-right: 5px; border-radius: 4px;">
+                    {% endfor %}
+                </div>
+                <input type="file" class="form-control-file" name="images" multiple>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Lens Specs</h4>
+              
+              <div class="form-group">
+                <label>Lens Type</label>
+                <select class="form-control" name="lens_type">
+                    <option value="clear" {% if lens.lens_type == 'clear' %}selected{% endif %}>Clear</option>
+                    <option value="color" {% if lens.lens_type == 'color' %}selected{% endif %}>Color</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Schedule</label>
+                <select class="form-control" name="replacement_schedule">
+                    <option value="daily" {% if lens.replacement_schedule == 'daily' %}selected{% endif %}>Daily</option>
+                    <option value="monthly" {% if lens.replacement_schedule == 'monthly' %}selected{% endif %}>Monthly</option>
+                    <option value="3_months" {% if lens.replacement_schedule == '3_months' %}selected{% endif %}>3 Months</option>
+                </select>
+              </div>
+
+              <div class="row">
+                  <div class="col-6">
+                      <div class="form-group">
+                        <label>Base Curve</label>
+                        <input type="number" class="form-control" name="base_curve" step="0.1" value="{{ lens.base_curve }}" required>
+                      </div>
+                  </div>
+                  <div class="col-6">
+                      <div class="form-group">
+                        <label>Diameter</label>
+                        <input type="number" class="form-control" name="diameter" step="0.1" value="{{ lens.diameter }}" required>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="row">
+                  <div class="col-6">
+                      <div class="form-group">
+                        <label>Water %</label>
+                        <input type="number" class="form-control" name="water_content" step="1" value="{{ lens.water_content }}" required>
+                      </div>
+                  </div>
+                  <div class="col-6">
+                      <div class="form-group">
+                        <label>Pack Size</label>
+                        <input type="number" class="form-control" name="package_size" value="{{ lens.package_size }}" required>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="form-group mt-2">
+                  <label>Stock Qty</label>
+                  <input type="number" class="form-control" name="stock_quantity" value="{{ product.stock_quantity }}">
+              </div>
+
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="is_active" {% if product.is_active %}checked{% endif %}> Active
+                </label>
+              </div>
+
+              <button type="submit" class="btn btn-gradient-warning btn-block btn-lg mt-4">Update Product</button>
+              <a href="{% url 'adminpanel:contact_lens_list' %}" class="btn btn-light btn-block mt-2">Cancel</a>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

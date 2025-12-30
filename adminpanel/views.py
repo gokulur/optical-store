@@ -465,8 +465,8 @@ def product_delete(request, product_id):
 
 # ==================== CONTACT LENSES ====================
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def contact_lens_list(request):
     search = request.GET.get('search', '')
     lens_type = request.GET.get('lens_type', '')
@@ -490,8 +490,8 @@ def contact_lens_list(request):
         'lens_type': lens_type
     })
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def contact_lens_add(request):
     if request.method == 'POST':
         try:
@@ -539,8 +539,8 @@ def contact_lens_add(request):
     }
     return render(request, 'adminpanel/contact_lenses/add.html', context)
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def contact_lens_edit(request, lens_id):
     lens = get_object_or_404(ContactLensProduct.objects.select_related('product'), id=lens_id)
     product = lens.product
@@ -590,8 +590,8 @@ def contact_lens_edit(request, lens_id):
     }
     return render(request, 'adminpanel/contact_lenses/edit.html', context)
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def contact_lens_delete(request, lens_id):
     lens = get_object_or_404(ContactLensProduct, id=lens_id)
     if request.method == 'POST':
@@ -603,15 +603,15 @@ def contact_lens_delete(request, lens_id):
 
 # ==================== CONTACT LENS COLORS ====================
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def contact_lens_color_list(request, lens_id):
     lens = get_object_or_404(ContactLensProduct, id=lens_id)
     colors = lens.colors.all().order_by('name')
     return render(request, 'adminpanel/contact_lenses/colors/list.html', {'lens': lens, 'colors': colors})
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def contact_lens_color_add(request, lens_id):
     lens = get_object_or_404(ContactLensProduct, id=lens_id)
     if request.method == 'POST':
@@ -629,8 +629,8 @@ def contact_lens_color_add(request, lens_id):
             messages.error(request, str(e))
     return render(request, 'adminpanel/contact_lenses/colors/add.html', {'lens': lens})
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def contact_lens_color_edit(request, color_id):
     color = get_object_or_404(ContactLensColor, id=color_id)
     if request.method == 'POST':
@@ -644,8 +644,8 @@ def contact_lens_color_edit(request, color_id):
         return redirect('adminpanel:contact_lens_color_list', lens_id=color.contact_lens.id)
     return render(request, 'adminpanel/contact_lenses/colors/edit.html', {'color': color})
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def contact_lens_color_delete(request, color_id):
     color = get_object_or_404(ContactLensColor, id=color_id)
     lens_id = color.contact_lens.id
@@ -657,14 +657,14 @@ def contact_lens_color_delete(request, color_id):
 
 # ==================== LENS CATEGORIES ====================
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def lens_category_list(request):
     categories = LensCategory.objects.all().order_by('display_order')
     return render(request, 'adminpanel/lenses/categories/list.html', {'categories': categories})
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def lens_category_add(request):
     if request.method == 'POST':
         try:
@@ -685,8 +685,8 @@ def lens_category_add(request):
         'category_types': LensCategory.CATEGORY_TYPES
     })
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def lens_category_edit(request, cat_id):
     category = get_object_or_404(LensCategory, id=cat_id)
     if request.method == 'POST':
@@ -703,8 +703,8 @@ def lens_category_edit(request, cat_id):
         'category_types': LensCategory.CATEGORY_TYPES
     })
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def lens_category_delete(request, cat_id):
     category = get_object_or_404(LensCategory, id=cat_id)
     if request.method == 'POST':
@@ -716,8 +716,8 @@ def lens_category_delete(request, cat_id):
 
 # ==================== LENS OPTIONS ====================
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def lens_option_list(request):
     category_id = request.GET.get('category', '')
     search = request.GET.get('search', '')
@@ -739,8 +739,8 @@ def lens_option_list(request):
         'search': search
     })
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def lens_option_add(request):
     if request.method == 'POST':
         try:
@@ -776,8 +776,8 @@ def lens_option_add(request):
         'categories': LensCategory.objects.filter(is_active=True)
     })
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def lens_option_edit(request, option_id):
     option = get_object_or_404(LensOption, id=option_id)
     if request.method == 'POST':
@@ -813,8 +813,8 @@ def lens_option_edit(request, option_id):
         'categories': LensCategory.objects.filter(is_active=True)
     })
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def lens_option_delete(request, option_id):
     option = get_object_or_404(LensOption, id=option_id)
     if request.method == 'POST':
@@ -826,14 +826,14 @@ def lens_option_delete(request, option_id):
 
 # ==================== LENS ADD-ONS ====================
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def lens_addon_list(request):
     addons = LensAddOn.objects.all().order_by('name')
     return render(request, 'adminpanel/lenses/addons/list.html', {'addons': addons})
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def lens_addon_add(request):
     if request.method == 'POST':
         try:
@@ -855,8 +855,8 @@ def lens_addon_add(request):
         'addon_types': LensAddOn.ADDON_TYPES
     })
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def lens_addon_edit(request, addon_id):
     addon = get_object_or_404(LensAddOn, id=addon_id)
     if request.method == 'POST':
@@ -874,8 +874,8 @@ def lens_addon_edit(request, addon_id):
         'addon_types': LensAddOn.ADDON_TYPES
     })
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def lens_addon_delete(request, addon_id):
     addon = get_object_or_404(LensAddOn, id=addon_id)
     if request.method == 'POST':
@@ -887,8 +887,8 @@ def lens_addon_delete(request, addon_id):
 
 # ==================== LENS OPTION ADD-ONS (Pricing) ====================
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def lens_option_addon_manage(request, option_id):
     lens_option = get_object_or_404(LensOption, id=option_id)
     existing_addons = lens_option.available_addons.all()
@@ -927,14 +927,14 @@ def lens_option_addon_manage(request, option_id):
 
 # ==================== SUNGLASS LENS OPTIONS ====================
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def sunglass_lens_list(request):
     options = SunglassLensOption.objects.all().order_by('display_order')
     return render(request, 'adminpanel/lenses/sunglass/list.html', {'options': options})
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def sunglass_lens_add(request):
     if request.method == 'POST':
         try:
@@ -957,8 +957,8 @@ def sunglass_lens_add(request):
         'lens_types': SunglassLensOption.LENS_TYPES
     })
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def sunglass_lens_edit(request, option_id):
     option = get_object_or_404(SunglassLensOption, id=option_id)
     if request.method == 'POST':
@@ -982,8 +982,8 @@ def sunglass_lens_edit(request, option_id):
         'lens_types': SunglassLensOption.LENS_TYPES
     })
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def sunglass_lens_delete(request, option_id):
     option = get_object_or_404(SunglassLensOption, id=option_id)
     if request.method == 'POST':

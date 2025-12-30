@@ -1,0 +1,134 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  /* Theme Styles */
+  .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+  .card { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); border: none; }
+  
+  .lens-thumb { width: 50px; height: 50px; object-fit: contain; border-radius: 4px; border: 1px solid #eee; margin-right: 10px; background: #fff; }
+  
+  .spec-badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; background: #f3f3f3; color: #666; margin-right: 5px; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+          <h3 class="mb-2"><i class="mdi mdi-eye-outline"></i> Contact Lenses</h3>
+          <p class="mb-0">Manage inventory for Clear & Color Lenses</p>
+        </div>
+        <a href="{% url 'adminpanel:contact_lens_add' %}" class="btn btn-gradient-primary">
+          <i class="mdi mdi-plus"></i> Add New Lens
+        </a>
+      </div>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="row">
+      <div class="col-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            
+            <form method="GET" class="row align-items-center mb-4">
+              <div class="col-md-4">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text bg-transparent border-right-0"><i class="mdi mdi-magnify text-primary"></i></span>
+                  </div>
+                  <input type="text" class="form-control border-left-0" name="search" placeholder="Search Lens Name or SKU..." value="{{ search }}">
+                </div>
+              </div>
+              <div class="col-md-3">
+                <select class="form-control" name="lens_type" onchange="this.form.submit()">
+                  <option value="">All Types</option>
+                  <option value="clear" {% if lens_type == 'clear' %}selected{% endif %}>Clear Lenses</option>
+                  <option value="color" {% if lens_type == 'color' %}selected{% endif %}>Color Lenses</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                 <a href="{% url 'adminpanel:contact_lens_list' %}" class="btn btn-light btn-block">Reset</a>
+              </div>
+            </form>
+
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Product Details</th>
+                    <th>Type</th>
+                    <th>Specs (BC/Dia)</th>
+                    <th>Duration</th>
+                    <th>Price</th>
+                    <th class="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for lens in lenses %}
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        {% if lens.product.images.first %}
+                            <img src="{{ lens.product.images.first.image.url }}" class="lens-thumb">
+                        {% else %}
+                            <div class="lens-thumb d-flex align-items-center justify-content-center text-muted"><i class="mdi mdi-image-off"></i></div>
+                        {% endif %}
+                        <div>
+                            <div class="font-weight-bold">{{ lens.product.name }}</div>
+                            <small class="text-muted">{{ lens.product.brand.name }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                        {% if lens.lens_type == 'color' %}
+                            <label class="badge badge-gradient-warning">Color</label>
+                        {% else %}
+                            <label class="badge badge-gradient-info">Clear</label>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="spec-badge">BC: {{ lens.base_curve }}</span>
+                        <span class="spec-badge">DIA: {{ lens.diameter }}</span>
+                    </td>
+                    <td>{{ lens.get_replacement_schedule_display }}</td>
+                    <td class="text-success font-weight-bold">QAR {{ lens.product.base_price }}</td>
+                    <td class="text-right">
+                        <a href="{% url 'adminpanel:contact_lens_edit' lens.id %}" class="btn btn-inverse-warning btn-sm btn-icon" title="Edit">
+                            <i class="mdi mdi-pencil"></i>
+                        </a>
+                        <a href="{% url 'adminpanel:contact_lens_delete' lens.id %}" class="btn btn-inverse-danger btn-sm btn-icon" title="Delete">
+                            <i class="mdi mdi-delete"></i>
+                        </a>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                      <td colspan="6" class="text-center py-5 text-muted">
+                          <i class="mdi mdi-eye-off-outline" style="font-size: 3rem;"></i>
+                          <p class="mt-2">No contact lenses found.</p>
+                      </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
