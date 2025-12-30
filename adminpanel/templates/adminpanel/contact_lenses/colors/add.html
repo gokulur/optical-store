@@ -1,0 +1,63 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <h3 class="mb-2">Add Color Variant</h3>
+      <p class="mb-0">For: <strong>{{ lens.product.name }}</strong></p>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 grid-margin stretch-card mx-auto">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title text-muted mb-4">Color Details</h4>
+            
+            <form method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              
+              <div class="form-group">
+                <label class="font-weight-bold">Color Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-lg" name="name" placeholder="e.g. Pure Hazel" required>
+              </div>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Color Image</label>
+                <input type="file" class="form-control-file" name="image" accept="image/*" required>
+                <small class="text-muted">Upload a clear image of the lens color.</small>
+              </div>
+
+              <div class="form-check form-check-flat form-check-primary">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="power_enabled" checked>
+                  Enable Power Selection
+                  <i class="input-helper"></i>
+                </label>
+                <small class="d-block text-muted ml-4">Uncheck if this color is strictly cosmetic (Plano/0.00 only).</small>
+              </div>
+
+              <div class="form-check form-check-flat form-check-success">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="is_active" checked>
+                  Active / Visible
+                  <i class="input-helper"></i>
+                </label>
+              </div>
+
+              <div class="mt-4 d-flex justify-content-between">
+                  <a href="{% url 'adminpanel:contact_lens_color_list' lens.id %}" class="btn btn-light">Cancel</a>
+                  <button type="submit" class="btn btn-gradient-primary">Save Color</button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

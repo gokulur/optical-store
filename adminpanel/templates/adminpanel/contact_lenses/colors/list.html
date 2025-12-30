@@ -1,0 +1,153 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  .color-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+          <h3 class="mb-2"><i class="mdi mdi-palette"></i> Manage Colors</h3>
+          <p class="mb-0">Product: <strong>{{ lens.product.name }}</strong></p>
+        </div>
+        <div>
+            <a href="{% url 'adminpanel:contact_lens_list' %}" class="btn btn-light mr-2">Back to Lenses</a>
+            <a href="{% url 'adminpanel:contact_lens_color_add' lens.id %}" class="btn btn-gradient-primary">
+                <i class="mdi mdi-plus"></i> Add Color
+            </a>
+        </div>
+      </div>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="row">
+      <div class="col-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title mb-4">Available Colors</h4>
+            
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>Preview</th>
+                    <th>Color Name</th>
+                    <th>Power Availability</th>
+                    <th>Status</th>
+                    <th class="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for color in colors %}
+                  <tr>
+                    <td>
+                        {% if color.image %}
+                            <img src="{{ color.image.url }}" class="color-thumb" alt="{{ color.name }}">
+                        {% else %}
+                            <div class="color-thumb bg-secondary d-flex align-items-center justify-content-center text-white small">No Img</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="font-weight-bold" style="font-size: 1rem;">{{ color.name }}</span>
+                    </td>
+                    <td>
+                        {% if color.power_enabled %}
+                            <label class="badge badge-inverse-success">
+                                <i class="mdi mdi-check"></i> Power Enabled
+                            </label>
+                        {% else %}
+                            <label class="badge badge-inverse-secondary">
+                                <i class="mdi mdi-minus"></i> Plano Only (0.00)
+                            </label>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if color.is_active %}
+                            <label class="badge badge-success">Active</label>
+                        {% else %}
+                            <label class="badge badge-danger">Hidden</label>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        <a href="{% url 'adminpanel:contact_lens_color_edit' color.id %}" class="btn btn-sm btn-inverse-warning btn-icon" title="Edit">
+                            <i class="mdi mdi-pencil"></i>
+                        </a>
+                        <button class="btn btn-sm btn-inverse-danger btn-icon" onclick="confirmDelete('{{ color.name }}', '{{ color.id }}')" title="Delete">
+                            <i class="mdi mdi-delete"></i>
+                        </button>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                      <td colspan="5" class="text-center py-5">
+                          <i class="mdi mdi-palette-advanced text-muted" style="font-size: 3rem;"></i>
+                          <p class="mt-2 text-muted">No colors added yet.</p>
+                      </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Confirm Delete</h5>
+        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete the color <strong id="deleteItemName"></strong>?</p>
+        <p class="text-danger small">This will verify stock associated with this color.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+        <form id="deleteForm" method="POST">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function confirmDelete(name, id) {
+    document.getElementById('deleteItemName').textContent = name;
+    // URL construction
+    var url = "{% url 'adminpanel:contact_lens_color_delete' 0 %}".replace('0', id);
+    document.getElementById('deleteForm').action = url;
+    $('#deleteModal').modal('show');
+  }
+</script>
+
+{% endblock %}
