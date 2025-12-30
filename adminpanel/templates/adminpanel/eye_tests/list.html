@@ -1,0 +1,156 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  /* Theme Styles */
+  .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+  .card { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); border: none; }
+  
+  .booking-time { font-weight: bold; color: #5e50f9; }
+  .user-avatar { width: 35px; height: 35px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right: 10px; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <h3 class="mb-2"><i class="mdi mdi-calendar-clock"></i> Eye Test Appointments</h3>
+      <p class="mb-0">Manage customer bookings for vision tests</p>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-6 stretch-card grid-margin">
+        <div class="card bg-gradient-warning card-img-holder text-white">
+          <div class="card-body">
+            <h4 class="font-weight-normal mb-3">Pending Requests <i class="mdi mdi-clock-alert-outline mdi-24px float-right"></i></h4>
+            <h2 class="mb-5">{{ pending_count }}</h2>
+            <h6 class="card-text">Requires Confirmation</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 stretch-card grid-margin">
+        <div class="card bg-gradient-success card-img-holder text-white">
+          <div class="card-body">
+            <h4 class="font-weight-normal mb-3">Confirmed Appointments <i class="mdi mdi-calendar-check mdi-24px float-right"></i></h4>
+            <h2 class="mb-5">{{ confirmed_count }}</h2>
+            <h6 class="card-text">Upcoming Tests</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            
+            <form method="GET" class="row align-items-center mb-4">
+              <div class="col-md-4">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text bg-transparent border-right-0"><i class="mdi mdi-magnify text-primary"></i></span>
+                  </div>
+                  <input type="text" class="form-control border-left-0" name="search" placeholder="Customer Name or Phone..." value="{{ search }}">
+                </div>
+              </div>
+              <div class="col-md-3">
+                <select class="form-control" name="status" onchange="this.form.submit()">
+                  <option value="">All Status</option>
+                  <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending</option>
+                  <option value="confirmed" {% if status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                  <option value="completed" {% if status == 'completed' %}selected{% endif %}>Completed</option>
+                  <option value="cancelled" {% if status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                 <a href="{% url 'adminpanel:eye_test_list' %}" class="btn btn-light btn-block">Reset</a>
+              </div>
+            </form>
+
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Customer</th>
+                    <th>Date & Time</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th class="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for booking in bookings %}
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="user-avatar">
+                            {{ booking.user.first_name|first|upper }}
+                        </div>
+                        <div>
+                            <div class="font-weight-bold">{{ booking.user.first_name }} {{ booking.user.last_name }}</div>
+                            <small class="text-muted">#{{ booking.id }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                        <div>{{ booking.booking_date|date:"d M, Y" }}</div>
+                        <div class="booking-time"><i class="mdi mdi-clock-outline"></i> {{ booking.booking_time|time:"h:i A" }}</div>
+                    </td>
+                    <td>
+                        <div><i class="mdi mdi-phone-outline text-muted"></i> {{ booking.phone|default:booking.user.phone_number }}</div>
+                    </td>
+                    <td>
+                        {% if booking.status == 'pending' %}
+                            <label class="badge badge-warning">Pending</label>
+                        {% elif booking.status == 'confirmed' %}
+                            <label class="badge badge-success">Confirmed</label>
+                        {% elif booking.status == 'completed' %}
+                            <label class="badge badge-info">Completed</label>
+                        {% else %}
+                            <label class="badge badge-danger">Cancelled</label>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        <a href="{% url 'adminpanel:eye_test_detail' booking.id %}" class="btn btn-sm btn-inverse-info btn-icon" title="View Details">
+                            <i class="mdi mdi-eye"></i>
+                        </a>
+                        <a href="{% url 'adminpanel:eye_test_delete' booking.id %}" class="btn btn-sm btn-inverse-danger btn-icon" title="Delete">
+                            <i class="mdi mdi-delete"></i>
+                        </a>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                      <td colspan="5" class="text-center py-5">
+                          <i class="mdi mdi-calendar-blank text-muted" style="font-size: 3rem;"></i>
+                          <p class="mt-2 text-muted">No bookings found.</p>
+                      </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            {% if bookings.has_other_pages %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if bookings.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ bookings.previous_page_number }}{% if status %}&status={{ status }}{% endif %}"><</a></li>
+                    {% endif %}
+                    <li class="page-item active"><a class="page-link" href="#">{{ bookings.number }}</a></li>
+                    {% if bookings.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ bookings.next_page_number }}{% if status %}&status={{ status }}{% endif %}">></a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

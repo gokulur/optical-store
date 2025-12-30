@@ -1,0 +1,108 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  .info-label { font-weight: 600; color: #6c757d; font-size: 0.9rem; }
+  .info-value { font-size: 1rem; color: #333; margin-bottom: 1rem; }
+  .card-header-custom { background: #f8f9fa; border-bottom: 1px solid #e3e3e3; padding: 15px 20px; font-weight: bold; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <h3 class="mb-2">Booking Details #{{ booking.id }}</h3>
+      <a href="{% url 'adminpanel:eye_test_list' %}" class="btn btn-light">Back to List</a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="row">
+      
+      <div class="col-md-7 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title mb-4"><i class="mdi mdi-account-card-details text-primary"></i> Customer Information</h4>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="info-label">Full Name</p>
+                    <p class="info-value">{{ booking.user.first_name }} {{ booking.user.last_name }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="info-label">Phone Number</p>
+                    <p class="info-value">{{ booking.phone|default:booking.user.phone_number }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="info-label">Email Address</p>
+                    <p class="info-value">{{ booking.user.email }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="info-label">Booking Date</p>
+                    <p class="info-value text-primary font-weight-bold">{{ booking.booking_date|date:"l, d F Y" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="info-label">Time Slot</p>
+                    <p class="info-value font-weight-bold">{{ booking.booking_time|time:"h:i A" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="info-label">Current Status</p>
+                    <p>
+                        {% if booking.status == 'pending' %}
+                            <span class="badge badge-warning">Pending Approval</span>
+                        {% elif booking.status == 'confirmed' %}
+                            <span class="badge badge-success">Confirmed</span>
+                        {% elif booking.status == 'cancelled' %}
+                            <span class="badge badge-danger">Cancelled</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-5 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title mb-4"><i class="mdi mdi-settings text-success"></i> Update Booking</h4>
+            
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="font-weight-bold">Change Status</label>
+                    <select class="form-control form-control-lg" name="status">
+                        <option value="pending" {% if booking.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="confirmed" {% if booking.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                        <option value="completed" {% if booking.status == 'completed' %}selected{% endif %}>Completed (Test Done)</option>
+                        <option value="cancelled" {% if booking.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="font-weight-bold">Admin Notes</label>
+                    <textarea class="form-control" name="admin_notes" rows="6" placeholder="Internal notes (e.g., Called customer, confirmed availability...)">{{ booking.admin_notes }}</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-gradient-primary btn-block btn-lg">
+                    <i class="mdi mdi-content-save"></i> Save Changes
+                </button>
+
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
