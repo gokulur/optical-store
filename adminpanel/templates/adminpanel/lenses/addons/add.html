@@ -1,0 +1,83 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <h3 class="mb-2">Create New Add-on</h3>
+    </div>
+
+    <div class="row">
+      <div class="col-md-7 grid-margin stretch-card mx-auto">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title text-muted mb-4">Add-on Details</h4>
+            
+            <form method="POST">
+              {% csrf_token %}
+              
+              <div class="form-group">
+                <label class="font-weight-bold">Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-lg" id="name" name="name" placeholder="e.g. Blue Cut Protection" required>
+              </div>
+
+              <div class="row">
+                  <div class="col-md-6">
+                      <div class="form-group">
+                        <label class="font-weight-bold">Internal Code <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="code" name="code" placeholder="BLUE-CUT" required>
+                        <small class="text-muted">Unique identifier</small>
+                      </div>
+                  </div>
+                  <div class="col-md-6">
+                      <div class="form-group">
+                        <label class="font-weight-bold">Type <span class="text-danger">*</span></label>
+                        <select class="form-control" name="addon_type" required>
+                            <option value="">Select Type</option>
+                            {% for code, label in addon_types %}
+                                <option value="{{ code }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Description</label>
+                <textarea class="form-control" name="description" rows="3" placeholder="Explain benefits to customer..."></textarea>
+              </div>
+
+              <div class="form-check form-check-flat form-check-primary mt-3">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="is_active" checked>
+                  Active & Available
+                </label>
+              </div>
+
+              <div class="mt-4 d-flex justify-content-between">
+                  <a href="{% url 'adminpanel:lens_addon_list' %}" class="btn btn-light">Cancel</a>
+                  <button type="submit" class="btn btn-gradient-primary">Save Add-on</button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Auto-generate code
+  document.getElementById('name').addEventListener('input', function(e) {
+    const code = e.target.value.toUpperCase()
+        .replace(/[^A-Z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    document.getElementById('code').value = code;
+  });
+</script>
+
+{% endblock %}
