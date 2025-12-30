@@ -1,0 +1,174 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  /* Status Badges */
+  .badge-pending { background-color: #ffaf00; color: white; }
+  .badge-confirmed { background-color: #4b49ac; color: white; }
+  .badge-shipped { background-color: #248afd; color: white; }
+  .badge-delivered { background-color: #1bcfb4; color: white; }
+  .badge-cancelled { background-color: #ff4747; color: white; }
+  
+  /* Payment Badges */
+  .badge-paid { border: 1px solid #1bcfb4; color: #1bcfb4; background: transparent; }
+  .badge-unpaid { border: 1px solid #ffaf00; color: #ffaf00; background: transparent; }
+  .badge-failed { border: 1px solid #ff4747; color: #ff4747; background: transparent; }
+
+  .order-id { font-family: monospace; font-weight: bold; color: #5e50f9; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <h3 class="mb-2"><i class="mdi mdi-cart-outline"></i> Order Management</h3>
+      <p class="mb-0">Track and manage customer orders</p>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-4 stretch-card grid-margin">
+        <div class="card bg-gradient-danger card-img-holder text-white">
+          <div class="card-body">
+            <h4 class="font-weight-normal mb-3">Pending Orders <i class="mdi mdi-clock-alert-outline mdi-24px float-right"></i></h4>
+            <h2 class="mb-5">{{ pending_count }}</h2>
+            <h6 class="card-text">Needs Processing</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 stretch-card grid-margin">
+        <div class="card bg-gradient-success card-img-holder text-white">
+          <div class="card-body">
+            <h4 class="font-weight-normal mb-3">Completed Orders <i class="mdi mdi-check-circle-outline mdi-24px float-right"></i></h4>
+            <h2 class="mb-5">{{ completed_count }}</h2>
+            <h6 class="card-text">Successfully Delivered</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 stretch-card grid-margin">
+        <div class="card bg-gradient-info card-img-holder text-white">
+          <div class="card-body">
+            <h4 class="font-weight-normal mb-3">Total Orders <i class="mdi mdi-chart-line mdi-24px float-right"></i></h4>
+            <h2 class="mb-5">{{ total_orders }}</h2>
+            <h6 class="card-text">Lifetime Orders</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            
+            <form method="GET" class="row align-items-end mb-4">
+              <div class="col-md-3">
+                <label class="font-weight-bold">Search</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text bg-transparent border-right-0"><i class="mdi mdi-magnify text-primary"></i></span>
+                    </div>
+                    <input type="text" class="form-control border-left-0" name="search" placeholder="Order ID, Email, Name..." value="{{ search }}">
+                </div>
+              </div>
+              <div class="col-md-3">
+                <label class="font-weight-bold">Order Status</label>
+                <select class="form-control" name="status">
+                  <option value="">All Status</option>
+                  <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending</option>
+                  <option value="confirmed" {% if status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                  <option value="processing" {% if status == 'processing' %}selected{% endif %}>Processing</option>
+                  <option value="shipped" {% if status == 'shipped' %}selected{% endif %}>Shipped</option>
+                  <option value="delivered" {% if status == 'delivered' %}selected{% endif %}>Delivered</option>
+                  <option value="cancelled" {% if status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="font-weight-bold">Payment Status</label>
+                <select class="form-control" name="payment_status">
+                  <option value="">All Payments</option>
+                  <option value="paid" {% if payment_status == 'paid' %}selected{% endif %}>Paid</option>
+                  <option value="pending" {% if payment_status == 'pending' %}selected{% endif %}>Unpaid</option>
+                  <option value="failed" {% if payment_status == 'failed' %}selected{% endif %}>Failed</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="mdi mdi-filter"></i> Apply Filters
+                </button>
+              </div>
+            </form>
+
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Order #</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for order in orders %}
+                  <tr>
+                    <td><span class="order-id">#{{ order.id }}</span></td>
+                    <td>
+                        {{ order.created_at|date:"d M Y" }}<br>
+                        <small class="text-muted">{{ order.created_at|time:"h:i A" }}</small>
+                    </td>
+                    <td>
+                        <div class="font-weight-bold">{{ order.user.first_name }} {{ order.user.last_name }}</div>
+                        <small class="text-muted">{{ order.user.email }}</small>
+                    </td>
+                    <td class="font-weight-bold">QAR {{ order.total_amount }}</td>
+                    <td>
+                        {% if order.payment_status == 'paid' %}
+                            <label class="badge badge-paid">Paid</label>
+                        {% elif order.payment_status == 'failed' %}
+                            <label class="badge badge-failed">Failed</label>
+                        {% else %}
+                            <label class="badge badge-unpaid">Pending</label>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <label class="badge badge-{{ order.status }}">{{ order.get_status_display }}</label>
+                    </td>
+                    <td>
+                        <a href="{% url 'adminpanel:order_detail' order.id %}" class="btn btn-sm btn-outline-info btn-icon-text">
+                            View <i class="mdi mdi-arrow-right btn-icon-append"></i>
+                        </a>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr><td colspan="7" class="text-center py-5 text-muted">No orders found matching your criteria.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            {% if orders.has_other_pages %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if orders.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ orders.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}"><</a></li>
+                    {% endif %}
+                    <li class="page-item active"><a class="page-link" href="#">{{ orders.number }}</a></li>
+                    {% if orders.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ orders.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">></a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
