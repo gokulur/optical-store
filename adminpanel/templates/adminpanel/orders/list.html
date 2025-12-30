@@ -15,7 +15,9 @@
   .badge-unpaid { border: 1px solid #ffaf00; color: #ffaf00; background: transparent; }
   .badge-failed { border: 1px solid #ff4747; color: #ff4747; background: transparent; }
 
-  .order-id { font-family: monospace; font-weight: bold; color: #5e50f9; }
+  .order-link { color: #5e50f9; font-weight: bold; text-decoration: none; }
+  .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+  .card { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); border: none; }
 </style>
 
 <div class="main-panel">
@@ -23,7 +25,7 @@
 
     <div class="page-header">
       <h3 class="mb-2"><i class="mdi mdi-cart-outline"></i> Order Management</h3>
-      <p class="mb-0">Track and manage customer orders</p>
+      <p class="mb-0">Track shipments and manage order statuses</p>
     </div>
 
     <div class="row mb-4">
@@ -32,16 +34,16 @@
           <div class="card-body">
             <h4 class="font-weight-normal mb-3">Pending Orders <i class="mdi mdi-clock-alert-outline mdi-24px float-right"></i></h4>
             <h2 class="mb-5">{{ pending_count }}</h2>
-            <h6 class="card-text">Needs Processing</h6>
+            <h6 class="card-text">Action Required</h6>
           </div>
         </div>
       </div>
       <div class="col-md-4 stretch-card grid-margin">
         <div class="card bg-gradient-success card-img-holder text-white">
           <div class="card-body">
-            <h4 class="font-weight-normal mb-3">Completed Orders <i class="mdi mdi-check-circle-outline mdi-24px float-right"></i></h4>
+            <h4 class="font-weight-normal mb-3">Completed <i class="mdi mdi-check-circle-outline mdi-24px float-right"></i></h4>
             <h2 class="mb-5">{{ completed_count }}</h2>
-            <h6 class="card-text">Successfully Delivered</h6>
+            <h6 class="card-text">Delivered Orders</h6>
           </div>
         </div>
       </div>
@@ -50,7 +52,7 @@
           <div class="card-body">
             <h4 class="font-weight-normal mb-3">Total Orders <i class="mdi mdi-chart-line mdi-24px float-right"></i></h4>
             <h2 class="mb-5">{{ total_orders }}</h2>
-            <h6 class="card-text">Lifetime Orders</h6>
+            <h6 class="card-text">All Time</h6>
           </div>
         </div>
       </div>
@@ -68,7 +70,7 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text bg-transparent border-right-0"><i class="mdi mdi-magnify text-primary"></i></span>
                     </div>
-                    <input type="text" class="form-control border-left-0" name="search" placeholder="Order ID, Email, Name..." value="{{ search }}">
+                    <input type="text" class="form-control border-left-0" name="search" placeholder="Order ID, Name, Email..." value="{{ search }}">
                 </div>
               </div>
               <div class="col-md-3">
@@ -84,7 +86,7 @@
                 </select>
               </div>
               <div class="col-md-3">
-                <label class="font-weight-bold">Payment Status</label>
+                <label class="font-weight-bold">Payment</label>
                 <select class="form-control" name="payment_status">
                   <option value="">All Payments</option>
                   <option value="paid" {% if payment_status == 'paid' %}selected{% endif %}>Paid</option>
@@ -93,7 +95,7 @@
                 </select>
               </div>
               <div class="col-md-3">
-                <button type="submit" class="btn btn-primary btn-block">
+                <button type="submit" class="btn btn-gradient-primary btn-block">
                     <i class="mdi mdi-filter"></i> Apply Filters
                 </button>
               </div>
@@ -103,10 +105,10 @@
               <table class="table table-hover">
                 <thead>
                   <tr>
-                    <th>Order #</th>
+                    <th>Order ID</th>
                     <th>Date</th>
                     <th>Customer</th>
-                    <th>Amount</th>
+                    <th>Total</th>
                     <th>Payment</th>
                     <th>Status</th>
                     <th>Action</th>
@@ -115,7 +117,9 @@
                 <tbody>
                   {% for order in orders %}
                   <tr>
-                    <td><span class="order-id">#{{ order.id }}</span></td>
+                    <td>
+                        <a href="{% url 'adminpanel:order_detail' order.id %}" class="order-link">#{{ order.id }}</a>
+                    </td>
                     <td>
                         {{ order.created_at|date:"d M Y" }}<br>
                         <small class="text-muted">{{ order.created_at|time:"h:i A" }}</small>
@@ -124,7 +128,7 @@
                         <div class="font-weight-bold">{{ order.user.first_name }} {{ order.user.last_name }}</div>
                         <small class="text-muted">{{ order.user.email }}</small>
                     </td>
-                    <td class="font-weight-bold">QAR {{ order.total_amount }}</td>
+                    <td class="font-weight-bold text-success">QAR {{ order.total_amount }}</td>
                     <td>
                         {% if order.payment_status == 'paid' %}
                             <label class="badge badge-paid">Paid</label>
@@ -139,12 +143,12 @@
                     </td>
                     <td>
                         <a href="{% url 'adminpanel:order_detail' order.id %}" class="btn btn-sm btn-outline-info btn-icon-text">
-                            View <i class="mdi mdi-arrow-right btn-icon-append"></i>
+                            Details <i class="mdi mdi-arrow-right btn-icon-append"></i>
                         </a>
                     </td>
                   </tr>
                   {% empty %}
-                  <tr><td colspan="7" class="text-center py-5 text-muted">No orders found matching your criteria.</td></tr>
+                  <tr><td colspan="7" class="text-center py-5 text-muted">No orders found matching criteria.</td></tr>
                   {% endfor %}
                 </tbody>
               </table>
@@ -154,11 +158,11 @@
             <nav class="mt-4">
                 <ul class="pagination justify-content-center">
                     {% if orders.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ orders.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}"><</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ orders.previous_page_number }}{% if search %}&search={{ search }}{% endif %}"><</a></li>
                     {% endif %}
                     <li class="page-item active"><a class="page-link" href="#">{{ orders.number }}</a></li>
                     {% if orders.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ orders.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">></a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ orders.next_page_number }}{% if search %}&search={{ search }}{% endif %}">></a></li>
                     {% endif %}
                 </ul>
             </nav>

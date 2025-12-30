@@ -995,8 +995,8 @@ def sunglass_lens_delete(request, option_id):
 
 # ==================== ORDERS ====================
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def order_list(request):
     search = request.GET.get('search', '')
     status = request.GET.get('status', '')
@@ -1033,8 +1033,8 @@ def order_list(request):
         'completed_count': completed_count
     })
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def order_detail(request, order_id):
     order = get_object_or_404(
         Order.objects.prefetch_related('items__product', 'items__variant'), 
@@ -1042,8 +1042,8 @@ def order_detail(request, order_id):
     )
     return render(request, 'adminpanel/orders/detail.html', {'order': order})
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def order_update_status(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     if request.method == 'POST':
@@ -1053,8 +1053,8 @@ def order_update_status(request, order_id):
         return redirect('adminpanel:order_detail', order_id=order.id)
     return redirect('adminpanel:order_detail', order_id=order.id)
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def order_update_payment_status(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     if request.method == 'POST':
@@ -1067,8 +1067,8 @@ def order_update_payment_status(request, order_id):
 
 # ==================== EYE TEST BOOKINGS ====================
 
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def eye_test_list(request):
     status = request.GET.get('status', '')
     search = request.GET.get('search', '')

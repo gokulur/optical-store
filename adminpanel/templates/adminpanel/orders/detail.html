@@ -7,14 +7,20 @@
     
     <div class="page-header">
       <div class="d-flex justify-content-between align-items-center w-100">
-          <h3 class="mb-0">Order Details <span class="text-primary">#{{ order.id }}</span></h3>
+          <div>
+            <h3 class="mb-0">Order Details <span class="text-primary">#{{ order.id }}</span></h3>
+            <p class="mb-0 text-muted">Placed on {{ order.created_at|date:"d F Y, h:i A" }}</p>
+          </div>
           <a href="{% url 'adminpanel:order_list' %}" class="btn btn-light"><i class="mdi mdi-arrow-left"></i> Back to List</a>
       </div>
     </div>
 
     {% if messages %}
     {% for message in messages %}
-    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
     {% endfor %}
     {% endif %}
 
@@ -24,12 +30,12 @@
         <div class="card">
           <div class="card-body">
             
-            <h4 class="card-title mb-4"><i class="mdi mdi-shopping"></i> Order Items</h4>
+            <h4 class="card-title mb-4"><i class="mdi mdi-shopping text-primary"></i> Ordered Items</h4>
             <div class="table-responsive mb-5">
               <table class="table">
                 <thead>
                   <tr>
-                    <th>Product Details</th>
+                    <th width="50%">Product</th>
                     <th class="text-center">Price</th>
                     <th class="text-center">Qty</th>
                     <th class="text-right">Total</th>
@@ -41,7 +47,7 @@
                     <td>
                         <div class="d-flex align-items-start">
                             {% if item.product.images.first %}
-                            <img src="{{ item.product.images.first.image.url }}" style="width: 60px; height: 60px; border-radius: 6px; object-fit: cover;" class="mr-3">
+                            <img src="{{ item.product.images.first.image.url }}" style="width: 60px; height: 60px; border-radius: 6px; object-fit: cover;" class="mr-3 border">
                             {% else %}
                             <div style="width: 60px; height: 60px; background: #eee; border-radius: 6px; display:flex; align-items:center; justify-content:center;" class="mr-3">
                                 <i class="mdi mdi-image-off text-muted"></i>
@@ -51,7 +57,7 @@
                                 <h6 class="font-weight-bold mb-1">{{ item.product.name }}</h6>
                                 <p class="text-muted small mb-0">SKU: {{ item.product.sku }}</p>
                                 {% if item.variant %}
-                                    <span class="badge badge-outline-secondary badge-pill mt-1" style="font-size: 0.7rem;">
+                                    <span class="badge badge-outline-secondary badge-pill mt-1" style="font-size: 0.75rem;">
                                         {{ item.variant.color_name }} / {{ item.variant.size }}
                                     </span>
                                 {% endif %}
@@ -67,20 +73,20 @@
               </table>
             </div>
 
-            <div class="d-flex justify-content-end mb-5">
-                <div style="min-width: 250px;">
+            <div class="d-flex justify-content-end mb-4">
+                <div style="min-width: 250px; background: #f9f9f9; padding: 20px; border-radius: 8px;">
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">Subtotal:</span>
                         <span class="font-weight-bold">QAR {{ order.total_amount }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">Shipping:</span>
-                        <span>Free</span>
+                        <span class="text-success">Free</span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between">
-                        <h4 class="font-weight-bold text-success">Total:</h4>
-                        <h4 class="font-weight-bold text-success">QAR {{ order.total_amount }}</h4>
+                        <h4 class="font-weight-bold text-success mb-0">Total:</h4>
+                        <h4 class="font-weight-bold text-success mb-0">QAR {{ order.total_amount }}</h4>
                     </div>
                 </div>
             </div>
@@ -89,18 +95,22 @@
 
             <div class="row mt-4">
                 <div class="col-md-6">
-                    <h5 class="font-weight-bold mb-3"><i class="mdi mdi-account"></i> Customer Details</h5>
-                    <p class="mb-1"><strong>Name:</strong> {{ order.user.first_name }} {{ order.user.last_name }}</p>
-                    <p class="mb-1"><strong>Email:</strong> {{ order.user.email }}</p>
-                    <p class="mb-1"><strong>Phone:</strong> {{ order.user.phone_number|default:"--" }}</p>
+                    <div class="bg-light p-3 rounded">
+                        <h5 class="font-weight-bold mb-3"><i class="mdi mdi-account"></i> Customer Details</h5>
+                        <p class="mb-1"><strong>Name:</strong> {{ order.user.first_name }} {{ order.user.last_name }}</p>
+                        <p class="mb-1"><strong>Email:</strong> {{ order.user.email }}</p>
+                        <p class="mb-1"><strong>Phone:</strong> {{ order.user.phone_number|default:"--" }}</p>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <h5 class="font-weight-bold mb-3"><i class="mdi mdi-truck-delivery"></i> Shipping Address</h5>
-                    <address class="text-muted">
-                        {{ order.shipping_address.street_address }}<br>
-                        {{ order.shipping_address.city }}, {{ order.shipping_address.state }}<br>
-                        {{ order.shipping_address.country }} - {{ order.shipping_address.zip_code }}
-                    </address>
+                    <div class="bg-light p-3 rounded">
+                        <h5 class="font-weight-bold mb-3"><i class="mdi mdi-truck-delivery"></i> Shipping Address</h5>
+                        <address class="text-muted mb-0">
+                            {{ order.shipping_address.street_address }}<br>
+                            {{ order.shipping_address.city }}, {{ order.shipping_address.state }}<br>
+                            {{ order.shipping_address.country }} - {{ order.shipping_address.zip_code }}
+                        </address>
+                    </div>
                 </div>
             </div>
 
@@ -113,7 +123,7 @@
         <div class="card mb-4">
             <div class="card-body">
                 <h4 class="card-title text-primary"><i class="mdi mdi-list-status"></i> Order Status</h4>
-                <p class="text-muted small">Current: <strong>{{ order.get_status_display }}</strong></p>
+                <p class="text-muted small mb-3">Current Status: <span class="badge badge-{{ order.status }}">{{ order.get_status_display }}</span></p>
                 
                 <form method="POST" action="{% url 'adminpanel:order_update_status' order.id %}">
                     {% csrf_token %}
@@ -135,7 +145,7 @@
         <div class="card">
             <div class="card-body">
                 <h4 class="card-title text-success"><i class="mdi mdi-cash-multiple"></i> Payment Info</h4>
-                <p class="text-muted small">Method: <strong>{{ order.payment_method|upper }}</strong></p>
+                <p class="text-muted small mb-3">Method: <strong>{{ order.payment_method|upper }}</strong></p>
                 
                 <form method="POST" action="{% url 'adminpanel:order_update_payment_status' order.id %}">
                     {% csrf_token %}
