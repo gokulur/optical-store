@@ -27,7 +27,16 @@ from reviews.models import Review
 from django.db.models import Count
 # Helper: Check if admin
 def is_admin(user):
-    return user.is_authenticated and user.user_type in ['admin', 'staff']
+    return (
+        user.is_authenticated and
+        (
+            user.is_superuser or
+            user.is_staff or
+            user.user_type in ['admin', 'staff']
+        )
+    )
+
+
 
 
 # ==================== DASHBOARD ====================

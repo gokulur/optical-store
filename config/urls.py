@@ -4,7 +4,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
- 
+    path('admin/', admin.site.urls),   
+
     path('adminpanel/', include('adminpanel.urls')),
     path('catalog/', include('catalog.urls')),
     path('cart/', include('cart.urls')),
@@ -15,7 +16,6 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('content/', include('content.urls')),
     path('reviews/', include('reviews.urls')),
-    
 ]
 
 if settings.DEBUG:

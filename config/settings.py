@@ -379,4 +379,8 @@ REST_FRAMEWORK = {
 # }
 
 AUTH_USER_MODEL = 'users.User'
-LOGIN_URL = '/login/'
+# settings.py
+
+LOGIN_URL = '/users/login/'
+LOGIN_REDIRECT_URL = '/users/dashboard/'
+LOGOUT_REDIRECT_URL = '/users/login/'
