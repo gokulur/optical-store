@@ -59,15 +59,24 @@ def user_login(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
 
-        user = authenticate(request, username=email, password=password)
+        try:
+            user_obj = User.objects.get(email=email)
+            user = authenticate(
+                request,
+                username=user_obj.username,
+                password=password
+            )
+        except User.DoesNotExist:
+            user = None
 
-        if user is not None:
+        if user:
             login(request, user)
             return redirect_after_login(user)
-        else:
-            messages.error(request, 'Invalid email or password')
+
+        messages.error(request, 'Invalid email or password')
 
     return render(request, 'login.html')
+
 
 
 # ==================== REDIRECT LOGIC ====================
@@ -78,7 +87,7 @@ def redirect_after_login(user):
     Normal user → user dashboard
     """
     if user.is_superuser or user.user_type == 'admin':
-        return redirect('/admin/')
+        return redirect('/adminpanel/')
     elif user.is_staff or user.user_type == 'staff':
         return redirect('/adminpanel/')
     else:
