@@ -16,7 +16,7 @@ urlpatterns = [
     path('accounts/', include('users.urls')),
     path('content/', include('content.urls')),
     path('reviews/', include('reviews.urls')),
-    path('core/', include('core.urls')),
+    path('', include('core.urls')),
 ]
 
 if settings.DEBUG:
