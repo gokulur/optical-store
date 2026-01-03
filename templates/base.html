@@ -1,5 +1,5 @@
 {% load static %}
- <!DOCTYPE html>
+<!DOCTYPE html>
 
 <html class="no-js" dir="ltr" lang="en">
 <head>
@@ -18,14 +18,7 @@
   };
 </script>
 <link href="{% static 'cdn/shop/files/favicon.png' %}" rel="icon" type="image/png"/>
-  
-<meta content="Eyese - Optical &amp; Eyeglasses Shopify 2.0 Theme" property="og:site_name"/>
-<meta content="https://eyese-store-newdemo.myshopify.com/" property="og:url"/>
-<meta content="Eyese - Optical &amp; Eyeglasses Shopify 2.0 Theme" property="og:title"/>
-<meta content="website" property="og:type"/>
-<meta content="Eyese - Optical &amp; Eyeglasses Shopify 2.0 Theme" property="og:description"/><meta content="@#" name="twitter:site"/><meta content="summary_large_image" name="twitter:card"/>
-<meta content="Eyese - Optical &amp; Eyeglasses Shopify 2.0 Theme" name="twitter:title"/>
-<meta content="Eyese - Optical &amp; Eyeglasses Shopify 2.0 Theme" name="twitter:description"/>
+ <title>{% block title %}Home{% endblock %}</title>
 <script>window.performance && window.performance.mark && window.performance.mark('shopify.content_for_header.start');</script><meta content="/88301797696/digital_wallets/dialog" id="shopify-digital-wallet" name="shopify-digital-wallet"/>
 <link href="index.html" hreflang="x-default" rel="alternate"/>
 <link href="ja.html" hreflang="ja" rel="alternate"/>
@@ -1273,6 +1266,7 @@ Scheme 2: Scheme 4`
 </xo-modal>
  
 <!-- END sections: header-group -->
+{% block content %}
 <main class="content-for-layout focus-none" id="xo-main-content" role="main" tabindex="-1">
 <section class="shopify-section section" id="shopify-section-template--23023424995648__slideshow-v4"><link href="{% static 'cdn/shop/t/4/assets/section-slideshow-v4.css' %}" media="all" rel="stylesheet" type="text/css">
 <section class="slideshow-v41" style="--pt: 0;--pb: 0;">
@@ -12387,6 +12381,7 @@ z-index:98">
 </section>
 </section>
 </main>
+{% endblock %}
 <!-- BEGIN sections: footer-group -->
 <div class="shopify-section shopify-section-group-footer-group section-footer" id="shopify-section-sections--23023330492736__footer"><link href="{% static 'cdn/shop/t/4/assets/section-footer-v1.css' %}" media="all" rel="stylesheet" type="text/css"/>
 <footer class="xo-section xo-section--sections--23023330492736__footer color-background-1" style="--bg-color: #f3f3f3;--pt: 0;--pb: 0;
