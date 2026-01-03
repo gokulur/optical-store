@@ -1,0 +1,16 @@
+.xo-recipient {
+  padding-bottom: 2rem;
+}
+.xo-recipient[xo-active]:not([xo-active=false]) .xo-recipient__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+}
+.xo-recipient[xo-error]:not([xo-error=false]) .xo-recipient__error {
+  display: block;
+}
+
+.xo-recipient__error,
+.xo-recipient__fields {
+  display: none;
+}

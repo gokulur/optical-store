@@ -1,0 +1,16 @@
+.banner-v262__heading {
+  font-weight: 600;
+  font-size: clamp(5rem, calc(6.25vw + 2.5rem), 10rem);
+  color: rgb(var(--color-background));
+  line-height: calc(1 + 0.2 / var(--font-heading-scale));
+}
+
+.banner-v262 {
+  text-align: center;
+  margin: 0 auto;
+}
+
+.banner-v262__description {
+  color: rgb(var(--color-background));
+  font-size: clamp(2.4rem, calc(0.75vw + 2.1rem), 3rem);
+}

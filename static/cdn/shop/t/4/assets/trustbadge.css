@@ -1,0 +1,23 @@
+.trustbadge {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--text-boxes-radius);
+  gap: 1.5rem;
+  background-color: var(--bg-color);
+  padding: 2rem;
+}
+
+.trustbadge--reverse {
+  flex-direction: column-reverse;
+}
+
+.trustbadge__image {
+  width: var(--width);
+}
+
+.trustbadge__text {
+  color: rgba(var(--color-foreground));
+  font-weight: 500;
+}

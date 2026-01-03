@@ -1,0 +1,18 @@
+.xo-product-variant, .xo-product-variant__inner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.xo-product-variant__inner--style7,
+.xo-product-variant__inner--style5,
+.xo-product-variant__inner--style4,
+.xo-product-variant__inner--style3,
+.xo-product-variant__inner--style2 {
+  flex-direction: column;
+}
+
+.xo-product-variant__inner--style1 {
+  justify-content: var(--justify_variant);
+  width: 100%;
+}

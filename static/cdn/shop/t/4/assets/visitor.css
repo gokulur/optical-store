@@ -1,0 +1,23 @@
+.visitor {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.visitor__icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--buttons-radius);
+  background-color: rgba(var(--color-foreground));
+  width: 2.2rem;
+  height: 2.2rem;
+}
+.visitor__icon svg {
+  color: rgba(var(--color-background));
+}
+
+.visitor__text {
+  line-height: 0;
+  font-size: calc(var(--font-body-scale) * 1.4rem);
+}

@@ -1,0 +1,23 @@
+.meta {
+  margin-top: 2rem;
+  margin-bottom: 1.6rem;
+}
+
+.meta__info {
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: rgb(var(--color-foreground));
+  padding-right: 0.5rem;
+  font-weight: 500;
+}
+.meta__info span {
+  color: rgb(var(--color-foreground), 0.5);
+}
+
+.meta__info--sku {
+  letter-spacing: 0.1em;
+}
+
+.meta__info--disable {
+  display: none;
+}

@@ -1,0 +1,6 @@
+.product-description-style19 h3 {
+  font-size: calc(var(--font-heading-scale) * 4.2rem);
+}
+.product-description-style19 img {
+  width: 100%;
+}

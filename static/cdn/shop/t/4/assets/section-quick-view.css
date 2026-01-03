@@ -1,0 +1,6 @@
+xo-product-quick-view {
+  --xo-container-gap: 0;
+}
+xo-product-quick-view .sticky-addcart-desktop {
+  display: none;
+}

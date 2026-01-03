@@ -1,0 +1,11 @@
+.product-description-style17 img {
+  width: 100%;
+  transition: 0.3s;
+}
+.product-description-style17 .product-description__img-wrap {
+  overflow: hidden;
+  height: fit-content;
+}
+.product-description-style17 .product-description__img-wrap:hover img {
+  transform: scale(1.1);
+}

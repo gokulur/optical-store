@@ -1,0 +1,27 @@
+.xo-share {
+  display: flex;
+  gap: 1rem;
+}
+
+.xo-share__link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.1);
+  border-radius: var(--buttons-radius);
+  cursor: pointer;
+  transition: 0.3s;
+}
+.xo-share__link svg {
+  color: rgba(var(--color-foreground));
+  transition: 0.3s;
+}
+
+.xo-share__link:hover {
+  background-color: rgba(var(--color-foreground));
+}
+.xo-share__link:hover svg {
+  color: rgba(var(--color-background));
+}

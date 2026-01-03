@@ -1,0 +1,38 @@
+.contact-v5__title {
+  font-size: clamp(3.4rem, calc(0.75vw + 3.1rem), 4rem);
+  text-align: center;
+  color: rgba(var(--color-foreground));
+}
+@media (min-width: 768px) {
+  .contact-v5__title {
+    margin-bottom: 6rem;
+  }
+}
+
+.contact-v5__wrap {
+  width: 100%;
+}
+
+.contact-v5__input .xo-field-input__input {
+  height: 6rem;
+}
+.contact-v5__input .xo-field-input__placeholder {
+  display: none;
+}
+
+.contact-v5__textarea .xo-field-textarea__textarea {
+  height: 26rem;
+}
+.contact-v5__textarea .xo-field-textarea__placeholder {
+  display: none;
+}
+
+.contact-v5__btn {
+  text-align: center;
+}
+.contact-v5__btn button {
+  width: 18rem;
+}
+.contact-v5__btn .xo-btn__text {
+  font-size: calc(var(--font-body-scale) * 1.6rem);
+}

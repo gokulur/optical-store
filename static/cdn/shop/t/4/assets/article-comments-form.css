@@ -1,0 +1,26 @@
+.xo-article-comments-form {
+  padding: 1rem 0;
+}
+
+.xo-article-comments-form__title {
+  padding-bottom: 1rem;
+}
+
+.xo-article-comments-form__inputs {
+  padding-bottom: 2.5rem;
+}
+.xo-article-comments-form__inputs .xo-field-input__placeholder {
+  display: none;
+}
+
+.xo-article-comments-form__text-area textarea {
+  height: 24rem;
+}
+.xo-article-comments-form__text-area .xo-field-textarea__placeholder {
+  display: none;
+}
+
+.xo-article-comments-form__submit {
+  display: flex;
+  justify-content: center;
+}

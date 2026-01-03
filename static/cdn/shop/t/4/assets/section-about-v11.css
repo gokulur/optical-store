@@ -1,0 +1,27 @@
+.about-v11 {
+  text-align: center;
+}
+
+.about-v11__svg {
+  margin-bottom: 2rem;
+}
+.about-v11__svg svg {
+  width: 11rem;
+  height: 11rem;
+}
+.about-v11__svg svg path {
+  fill: rgba(var(--color-foreground));
+}
+
+.about-v11__title {
+  color: rgba(var(--color-foreground));
+  font-size: clamp(3rem, calc(1.25vw + 2.5rem), 4rem);
+  line-height: calc(1 + 0.35 / var(--font-heading-scale));
+  text-transform: unset;
+  margin-bottom: 1.5rem;
+}
+@media (min-width: 992px) {
+  .about-v11__title {
+    font-weight: 600;
+  }
+}
