@@ -1,0 +1,128 @@
+<!-- brand_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Brands - Eyewear Store{% endblock %}
+
+{% block content %}
+<div class="brands-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>Our Brands</h1>
+        <p>Discover premium eyewear from world-renowned brands</p>
+    </div>
+    
+    <!-- Brands Grid -->
+    <div class="brands-grid-large">
+        {% for brand in brands %}
+        <div class="brand-card-large">
+            <a href="{% url 'catalog:brand_detail' brand.slug %}">
+                <div class="brand-logo">
+                    {% if brand.logo %}
+                    <img src="{{ brand.logo.url }}" alt="{{ brand.name }}">
+                    {% else %}
+                    <h2>{{ brand.name }}</h2>
+                    {% endif %}
+                </div>
+                <div class="brand-info">
+                    <h3>{{ brand.name }}</h3>
+                    {% if brand.description %}
+                    <p>{{ brand.description|truncatewords:20 }}</p>
+                    {% endif %}
+                    <div class="brand-categories">
+                        {% if brand.available_for_sunglasses %}
+                        <span class="category-tag">Sunglasses</span>
+                        {% endif %}
+                        {% if brand.available_for_eyeglasses %}
+                        <span class="category-tag">Eyeglasses</span>
+                        {% endif %}
+                        {% if brand.available_for_kids %}
+                        <span class="category-tag">Kids</span>
+                        {% endif %}
+                        {% if brand.available_for_contact_lenses %}
+                        <span class="category-tag">Contact Lenses</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+
+<!-- brand_detail.html -->
+{% extends 'catalog/base.html' %}
+
+{% block title %}{{ brand.name }} - Eyewear Store{% endblock %}
+
+{% block content %}
+<div class="brand-detail-page">
+    <!-- Brand Header -->
+    <div class="brand-header">
+        <div class="brand-logo-large">
+            {% if brand.logo %}
+            <img src="{{ brand.logo.url }}" alt="{{ brand.name }}">
+            {% endif %}
+        </div>
+        <div class="brand-header-info">
+            <h1>{{ brand.name }}</h1>
+            {% if brand.description %}
+            <p>{{ brand.description }}</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Product Type Filter -->
+    <div class="product-type-filter">
+        <a href="?" class="{% if not request.GET.type %}active{% endif %}">All Products</a>
+        {% if brand.available_for_sunglasses %}
+        <a href="?type=sunglasses" class="{% if request.GET.type == 'sunglasses' %}active{% endif %}">Sunglasses</a>
+        {% endif %}
+        {% if brand.available_for_eyeglasses %}
+        <a href="?type=eyeglasses" class="{% if request.GET.type == 'eyeglasses' %}active{% endif %}">Eyeglasses</a>
+        {% endif %}
+        {% if brand.available_for_contact_lenses %}
+        <a href="?type=contact_lenses" class="{% if request.GET.type == 'contact_lenses' %}active{% endif %}">Contact Lenses</a>
+        {% endif %}
+    </div>
+    
+    <!-- Products Grid -->
+    <div class="brand-products">
+        <h2>{{ brand.name }} Products</h2>
+        
+        {% if products %}
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card">
+                <a href="{% url 'catalog:product_detail' product.slug %}">
+                    <div class="product-image">
+                        {% if product.images.first %}
+                        <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <h3>{{ product.name }}</h3>
+                        <p class="product-type">{{ product.get_product_type_display }}</p>
+                        <p class="gender">{{ product.get_gender_display }}</p>
+                        <div class="price-section">
+                            <span class="price">{{ product.base_price }} QAR</span>
+                            {% if product.compare_at_price %}
+                            <span class="compare-price">{{ product.compare_at_price }} QAR</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+                <div class="product-actions">
+                    <button class="add-to-cart">Add to Cart</button>
+                    <button class="wishlist">♡</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="no-products">No products found for this brand.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
