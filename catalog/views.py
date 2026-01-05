@@ -119,7 +119,7 @@ def sunglasses_list(request):
         'brands': Brand.objects.filter(available_for_sunglasses=True, is_active=True),
         'selected_gender': gender,
     }
-    return render(request, 'catalog/sunglasses_list.html', context)
+    return render(request, 'sunglasses_list.html', context)
 
 
 # Eyeglasses
@@ -144,7 +144,7 @@ def eyeglasses_list(request):
         'brands': Brand.objects.filter(available_for_eyeglasses=True, is_active=True),
         'selected_gender': gender,
     }
-    return render(request, 'catalog/eyeglasses_list.html', context)
+    return render(request, 'eyeglasses_list.html', context)
 
 
 # Contact Lenses
@@ -175,14 +175,14 @@ def contact_lenses_list(request):
         'selected_lens_type': lens_type,
         'selected_schedule': schedule,
     }
-    return render(request, 'catalog/contact_lenses_list.html', context)
+    return render(request, 'contact_lenses_list.html', context)
 
 
 # Product Detail Views
 class ProductDetailView(DetailView):
     """Product detail page"""
     model = Product
-    template_name = 'catalog/product_detail.html'
+    template_name = 'product_detail.html'
     context_object_name = 'product'
     slug_field = 'slug'
 
@@ -250,7 +250,7 @@ def sunglass_detail(request, slug):
             is_active=True
         ).exclude(id=product.id)[:4]
     }
-    return render(request, 'catalog/sunglass_detail.html', context)
+    return render(request, 'sunglass_detail.html', context)
 
 
 # Eyeglass Detail
@@ -280,7 +280,7 @@ def eyeglass_detail(request, slug):
             is_active=True
         ).exclude(id=product.id)[:4]
     }
-    return render(request, 'catalog/eyeglass_detail.html', context)
+    return render(request, 'eyeglass_detail.html', context)
 
 
 # Contact Lens Detail
@@ -313,7 +313,7 @@ def contact_lens_detail(request, slug):
             is_active=True
         ).exclude(id=product.id)[:4]
     }
-    return render(request, 'catalog/contact_lens_detail.html', context)
+    return render(request, 'contact_lens_detail.html', context)
 
 
 # Brand Pages
@@ -324,7 +324,7 @@ def brand_list(request):
     context = {
         'brands': brands,
     }
-    return render(request, 'catalog/brand_list.html', context)
+    return render(request, 'brand_list.html', context)
 
 
 def brand_detail(request, slug):
@@ -341,7 +341,7 @@ def brand_detail(request, slug):
         'brand': brand,
         'products': products,
     }
-    return render(request, 'catalog/brand_detail.html', context)
+    return render(request, 'brand_detail.html', context)
 
 
 # Category Pages
@@ -360,7 +360,7 @@ def category_detail(request, slug):
         'products': products,
         'selected_gender': gender,
     }
-    return render(request, 'catalog/category_detail.html', context)
+    return render(request, 'category_detail.html', context)
 
 
 # Search
@@ -383,7 +383,7 @@ def search_view(request):
         'products': products,
         'count': products.count(),
     }
-    return render(request, 'catalog/search_results.html', context)
+    return render(request, 'search_results.html', context)
 
 
 # API-like views for AJAX requests
