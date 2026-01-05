@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart - Eyewear Store{% endblock %}
+
+{% block content %}
+<div class="cart-page">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="cart-header">
+            <h1>Shopping Cart</h1>
+            <p class="item-count">{{ item_count }} item(s) in your cart</p>
+        </div>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if cart_items %}
+        <div class="cart-content">
+            <!-- Cart Items -->
+            <div class="cart-items-section">
+                <div class="cart-items-header">
+                    <span class="col-product">Product</span>
+                    <span class="col-price">Price</span>
+                    <span class="col-quantity">Quantity</span>
+                    <span class="col-total">Total</span>
+                    <span class="col-action">Action</span>
+                </div>
+                
+                {% for item in cart_items %}
+                <div class="cart-item" data-item-id="{{ item.id }}">
+                    <!-- Product Info -->
+                    <div class="item-product">
+                        <div class="product-image">
+                            {% if item.product.images.first %}
+                            <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}">
+                            {% endif %}
+                        </div>
+                        <div class="product-details">
+                            <h3>{{ item.product.name }}</h3>
+                            <p class="brand">{{ item.product.brand.name }}</p>
+                            
+                            {% if item.variant %}
+                            <p class="variant">
+                                Color: {{ item.variant.color_name }}
+                                {% if item.variant.size %}
+                                | Size: {{ item.variant.size }}
+                                {% endif %}
+                            </p>
+                            {% endif %}
+                            
+                            <!-- Lens Information -->
+                            {% if item.lens_option %}
+                            <div class="lens-info">
+                                <p><strong>Lens:</strong> {{ item.lens_option.lens_brand.name }} {{ item.lens_option.lens_type.name }}</p>
+                                <p>Index: {{ item.lens_option.index }} | Price: {{ item.lens_price }} QAR</p>
+                                
+                                {% if item.lens_addons.all %}
+                                <p><strong>Add-ons:</strong></p>
+                                <ul>
+                                    {% for addon_item in item.lens_addons.all %}
+                                    <li>{{ addon_item.addon.name }} - {{ addon_item.price }} QAR</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            {% if item.sunglass_lens_option %}
+                            <div class="lens-info">
+                                <p><strong>Sunglass Lens:</strong> {{ item.sunglass_lens_option.name }}</p>
+                                <p>Price: {{ item.lens_price }} QAR</p>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Prescription Info -->
+                            {% if item.requires_prescription and item.prescription_data %}
+                            <div class="prescription-info">
+                                <p><strong>Prescription:</strong></p>
+                                <div class="prescription-details">
+                                    <div class="eye-prescription">
+                                        <strong>Right Eye:</strong>
+                                        SPH: {{ item.prescription_data.right_eye.sph }},
+                                        CYL: {{ item.prescription_data.right_eye.cyl }},
+                                        AXIS: {{ item.prescription_data.right_eye.axis }}
+                                    </div>
+                                    <div class="eye-prescription">
+                                        <strong>Left Eye:</strong>
+                                        SPH: {{ item.prescription_data.left_eye.sph }},
+                                        CYL: {{ item.prescription_data.left_eye.cyl }},
+                                        AXIS: {{ item.prescription_data.left_eye.axis }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Contact Lens Power -->
+                            {% if item.contact_lens_left_power or item.contact_lens_right_power %}
+                            <div class="contact-lens-power">
+                                <p><strong>Power:</strong></p>
+                                <p>Left: {{ item.contact_lens_left_power|default:"Plano" }}</p>
+                                <p>Right: {{ item.contact_lens_right_power|default:"Plano" }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if item.special_instructions %}
+                            <div class="special-instructions">
+                                <p><strong>Special Instructions:</strong></p>
+                                <p>{{ item.special_instructions }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Price -->
+                    <div class="item-price">
+                        <span class="price">{{ item.unit_price }} QAR</span>
+                        {% if item.lens_price %}
+                        <span class="lens-price-note">+ {{ item.lens_price }} QAR (lens)</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Quantity -->
+                    <div class="item-quantity">
+                        <form method="post" action="{% url 'cart:update_cart_item' item.id %}" class="quantity-form">
+                            {% csrf_token %}
+                            <button type="button" class="qty-btn minus" onclick="decreaseQuantity({{ item.id }})">-</button>
+                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" id="qty-{{ item.id }}" class="qty-input">
+                            <button type="button" class="qty-btn plus" onclick="increaseQuantity({{ item.id }})">+</button>
+                            <button type="submit" class="btn-update-qty">Update</button>
+                        </form>
+                    </div>
+                    
+                    <!-- Total -->
+                    <div class="item-total">
+                        <span class="total-price">{{ item.item_total }} QAR</span>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="item-actions">
+                        <form method="post" action="{% url 'cart:remove_from_cart' item.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-remove" onclick="return confirm('Remove this item from cart?')">
+                                Remove
+                            </button>
+                        </form>
+                        <a href="{% url 'cart:move_to_wishlist' item.id %}" class="btn-wishlist">
+                            Move to Wishlist
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Cart Summary -->
+            <div class="cart-summary-section">
+                <div class="cart-summary">
+                    <h2>Order Summary</h2>
+                    
+                    <div class="summary-row">
+                        <span>Subtotal ({{ item_count }} items):</span>
+                        <span>{{ subtotal }} QAR</span>
+                    </div>
+                    
+                    {% if shipping > 0 %}
+                    <div class="summary-row">
+                        <span>Shipping:</span>
+                        <span>{{ shipping }} QAR</span>
+                    </div>
+                    {% else %}
+                    <div class="summary-row free-shipping">
+                        <span>Shipping:</span>
+                        <span>FREE</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if tax > 0 %}
+                    <div class="summary-row">
+                        <span>Tax:</span>
+                        <span>{{ tax }} QAR</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="summary-row total">
+                        <span><strong>Total:</strong></span>
+                        <span><strong>{{ total }} QAR</strong></span>
+                    </div>
+                    
+                    <!-- Promo Code -->
+                    <div class="promo-code">
+                        <h3>Have a promo code?</h3>
+                        <form method="post" action="#">
+                            {% csrf_token %}
+                            <input type="text" name="promo_code" placeholder="Enter code">
+                            <button type="submit" class="btn-apply">Apply</button>
+                        </form>
+                    </div>
+                    
+                    <!-- Checkout Button -->
+                    <div class="checkout-section">
+                        <a href="#" class="btn btn-checkout">Proceed to Checkout</a>
+                        <p class="secure-checkout">🔒 Secure Checkout</p>
+                    </div>
+                    
+                    <!-- Payment Methods -->
+                    <div class="payment-methods">
+                        <p>We accept:</p>
+                        <div class="payment-icons">
+                            <span>💳 Credit Card</span>
+                            <span>💳 Debit Card</span>
+                            <span>💵 Cash on Delivery</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Shopping Benefits -->
+                <div class="shopping-benefits">
+                    <h3>Shopping Benefits</h3>
+                    <ul>
+                        <li>✓ Free shipping on orders over 200 QAR</li>
+                        <li>✓ 14-day return policy</li>
+                        <li>✓ Secure payment processing</li>
+                        <li>✓ Free eye test at our stores</li>
+                        <li>✓ 1-year warranty on frames</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="cart-actions">
+            <a href="{% url 'catalog:home' %}" class="btn btn-outline">Continue Shopping</a>
+            <form method="post" action="{% url 'cart:clear_cart' %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to clear your cart?')">
+                    Clear Cart
+                </button>
+            </form>
+        </div>
+        
+        {% else %}
+        <!-- Empty Cart -->
+        <div class="empty-cart">
+            <div class="empty-cart-icon">🛒</div>
+            <h2>Your cart is empty</h2>
+            <p>Looks like you haven't added anything to your cart yet.</p>
+            <a href="{% url 'catalog:home' %}" class="btn btn-primary">Start Shopping</a>
+        </div>
+        {% endif %}
+        
+        <!-- Recently Viewed / Recommendations -->
+        <div class="recommendations-section">
+            <h2>You May Also Like</h2>
+            <div class="products-grid">
+                <!-- This would be populated with recommended products -->
+                <p>Product recommendations will appear here</p>
+            </div>
+        </div>
+        
+        <!-- Trust Badges -->
+        <div class="trust-badges">
+            <div class="badge-item">
+                <h3>🚚 Free Shipping</h3>
+                <p>On orders over 200 QAR</p>
+            </div>
+            <div class="badge-item">
+                <h3>🔄 Easy Returns</h3>
+                <p>14-day return policy</p>
+            </div>
+            <div class="badge-item">
+                <h3>🔒 Secure Payment</h3>
+                <p>Your data is protected</p>
+            </div>
+            <div class="badge-item">
+                <h3>💬 24/7 Support</h3>
+                <p>We're here to help</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function decreaseQuantity(itemId) {
+    const input = document.getElementById('qty-' + itemId);
+    if (input.value > 1) {
+        input.value = parseInt(input.value) - 1;
+    }
+}
+
+function increaseQuantity(itemId) {
+    const input = document.getElementById('qty-' + itemId);
+    input.value = parseInt(input.value) + 1;
+}
+
+// Auto-submit quantity form on enter key
+document.querySelectorAll('.quantity-form').forEach(form => {
+    form.querySelector('.qty-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            form.submit();
+        }
+    });
+});
+
+// Optional: AJAX cart updates
+function updateCartAjax(itemId, quantity) {
+    const formData = new FormData();
+    formData.append('quantity', quantity);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    
+    fetch(`/cart/update/${itemId}/`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
+{% endblock %}
