@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - Sunglasses{% endblock %}
+
+{% block content %}
+<div class="product-detail-page">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="{% url 'catalog:home' %}">Home</a> / 
+        <a href="{% url 'catalog:sunglasses_list' %}">Sunglasses</a> / 
+        <span>{{ product.name }}</span>
+    </div>
+    
+    <div class="product-detail-container">
+        <!-- Product Images -->
+        <div class="product-images">
+            <div class="main-image">
+                {% if images.first %}
+                <img src="{{ images.first.image.url }}" alt="{{ product.name }}" id="mainImage">
+                {% endif %}
+            </div>
+            <div class="thumbnail-images">
+                {% for image in images %}
+                <img src="{{ image.image.url }}" alt="{{ product.name }}" 
+                     onclick="changeMainImage('{{ image.image.url }}')">
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Product Info -->
+        <div class="product-info">
+            <p class="brand">{{ product.brand.name }}</p>
+            <h1 class="product-name">{{ product.name }}</h1>
+            <p class="sku">SKU: {{ product.sku }}</p>
+            
+            <div class="price-section">
+                <span class="current-price">{{ product.base_price }} QAR</span>
+                {% if product.compare_at_price %}
+                <span class="original-price">{{ product.compare_at_price }} QAR</span>
+                <span class="discount">Save {{ product.compare_at_price|floatformat:0 - product.base_price|floatformat:0 }} QAR</span>
+                {% endif %}
+            </div>
+            
+            <div class="short-description">
+                <p>{{ product.short_description }}</p>
+            </div>
+            
+            <!-- Color Variants -->
+            {% if variants %}
+            <div class="color-selection">
+                <h3>Select Color:</h3>
+                <div class="color-options">
+                    {% for variant in variants %}
+                    <div class="color-option" data-variant-id="{{ variant.id }}">
+                        {% if variant.color_code %}
+                        <span style="background-color: {{ variant.color_code }};" title="{{ variant.color_name }}"></span>
+                        {% endif %}
+                        <span>{{ variant.color_name }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Size Selection -->
+            <div class="size-selection">
+                <h3>Select Size:</h3>
+                <select name="size" id="sizeSelect">
+                    <option value="">Select Size</option>
+                    {% for variant in variants %}
+                    {% if variant.size %}
+                    <option value="{{ variant.size }}">{{ variant.size }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Power Selection -->
+            <div class="power-selection">
+                <h3>Add Prescription?</h3>
+                <div class="power-options">
+                    <button class="power-option without-power" onclick="selectPowerOption('without')">
+                        Without Power
+                    </button>
+                    <button class="power-option with-power" onclick="selectPowerOption('with')">
+                        With Power
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Add to Cart Section -->
+            <div class="cart-section">
+                <button class="btn-add-to-cart" onclick="addToCart()">Add to Cart</button>
+                <button class="btn-select-lenses" onclick="openLensSelection()">Select Lenses</button>
+            </div>
+            
+            <div class="wishlist-section">
+                <button class="add-to-wishlist">Add to Wishlist ♡</button>
+            </div>
+            
+            <!-- Product Specifications -->
+            <div class="specifications">
+                <h3>Specifications:</h3>
+                <table>
+                    {% for spec in specifications %}
+                    <tr>
+                        <td>{{ spec.spec_key }}</td>
+                        <td>{{ spec.spec_value }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Product Description -->
+    <div class="product-description">
+        <h2>About this Product</h2>
+        <div>{{ product.description|safe }}</div>
+    </div>
+    
+    <!-- Lens Selection Modal (Hidden by default) -->
+    <div id="lensModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeLensModal()">&times;</span>
+            <h2>Select Lens Options</h2>
+            
+            <!-- Lens Color Selection -->
+            <div class="lens-color-section">
+                <h3>Select Lens Color:</h3>
+                <div class="lens-colors">
+                    <div class="lens-color-option">
+                        <label>
+                            <input type="radio" name="lens_color" value="grey">
+                            <span>Grey</span>
+                        </label>
+                    </div>
+                    <div class="lens-color-option">
+                        <label>
+                            <input type="radio" name="lens_color" value="brown">
+                            <span>Brown</span>
+                        </label>
+                    </div>
+                    <div class="lens-color-option">
+                        <label>
+                            <input type="radio" name="lens_color" value="green">
+                            <span>Green</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Lens Options -->
+            <div class="lens-options-section">
+                <h3>Select Lens Type:</h3>
+                
+                <div class="lens-option">
+                    <input type="radio" name="lens_option" value="regular" id="regular">
+                    <label for="regular">
+                        <h4>Regular 1.56 - 250 QAR</h4>
+                        <p>Basic lens with anti-reflection coating</p>
+                    </label>
+                </div>
+                
+                <div class="lens-option">
+                    <input type="radio" name="lens_option" value="premium" id="premium">
+                    <label for="premium">
+                        <h4>Premium Essilor 1.5 Crizal Easy Pro - 350 QAR</h4>
+                        <p>Advanced lens with superior clarity and protection</p>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Power Input (if with power selected) -->
+            <div id="powerInput" style="display:none;">
+                <h3>Enter Prescription:</h3>
+                <div class="power-form">
+                    <div class="power-eye">
+                        <h4>Right Eye (OD)</h4>
+                        <label>SPH: <input type="number" step="0.25" name="right_sph"></label>
+                        <label>CYL: <input type="number" step="0.25" name="right_cyl"></label>
+                        <label>AXIS: <input type="number" name="right_axis"></label>
+                    </div>
+                    <div class="power-eye">
+                        <h4>Left Eye (OS)</h4>
+                        <label>SPH: <input type="number" step="0.25" name="left_sph"></label>
+                        <label>CYL: <input type="number" step="0.25" name="left_cyl"></label>
+                        <label>AXIS: <input type="number" name="left_axis"></label>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn-confirm-lens" onclick="confirmLensSelection()">Add to Cart</button>
+        </div>
+    </div>
+    
+    <!-- Related Products -->
+    <div class="related-products">
+        <h2>You May Also Like</h2>
+        <div class="products-grid">
+            {% for related in related_products %}
+            <div class="product-card">
+                <a href="{% url 'catalog:sunglass_detail' related.slug %}">
+                    {% if related.images.first %}
+                    <img src="{{ related.images.first.image.url }}" alt="{{ related.name }}">
+                    {% endif %}
+                    <p class="brand">{{ related.brand.name }}</p>
+                    <h3>{{ related.name }}</h3>
+                    <p class="price">{{ related.base_price }} QAR</p>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+function changeMainImage(url) {
+    document.getElementById('mainImage').src = url;
+}
+
+let selectedPower = 'without';
+
+function selectPowerOption(type) {
+    selectedPower = type;
+    document.querySelectorAll('.power-option').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    if (type === 'with') {
+        document.getElementById('powerInput').style.display = 'block';
+    } else {
+        document.getElementById('powerInput').style.display = 'none';
+    }
+}
+
+function addToCart() {
+    if (selectedPower === 'without') {
+        // Direct add to cart
+        alert('Product added to cart!');
+    } else {
+        openLensSelection();
+    }
+}
+
+function openLensSelection() {
+    document.getElementById('lensModal').style.display = 'block';
+}
+
+function closeLensModal() {
+    document.getElementById('lensModal').style.display = 'none';
+}
+
+function confirmLensSelection() {
+    alert('Product with lens options added to cart!');
+    closeLensModal();
+}
+</script>
+{% endblock %}
