@@ -27,7 +27,7 @@ def home_view(request):
 class ProductListView(ListView):
     """Generic product listing view"""
     model = Product
-    template_name = 'catalog/product_list.html'
+    template_name = 'product_list.html'
     context_object_name = 'products'
     paginate_by = 24
 
