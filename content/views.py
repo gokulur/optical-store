@@ -12,7 +12,7 @@ from django.db import models
 class StoreLocationListView(ListView):
     """List all store locations"""
     model = StoreLocation
-    template_name = 'content/store_locations.html'
+    template_name = 'store_locations.html'
     context_object_name = 'locations'
     
     def get_queryset(self):
@@ -40,7 +40,7 @@ def store_location_detail(request, pk):
     context = {
         'location': location,
     }
-    return render(request, 'content/store_location_detail.html', context)
+    return render(request, 'store_location_detail.html', context)
 
 
 # Eye Test Booking
@@ -89,7 +89,7 @@ def eye_test_booking(request):
     context = {
         'locations': locations,
     }
-    return render(request, 'content/eye_test_booking.html', context)
+    return render(request, 'eye_test_booking.html', context)
 
 
 def booking_confirmation(request, booking_id):
@@ -105,7 +105,7 @@ def booking_confirmation(request, booking_id):
     context = {
         'booking': booking,
     }
-    return render(request, 'content/booking_confirmation.html', context)
+    return render(request, 'booking_confirmation.html', context)
 
 
 def cancel_booking(request, booking_id):
@@ -128,7 +128,7 @@ def cancel_booking(request, booking_id):
     context = {
         'booking': booking,
     }
-    return render(request, 'content/cancel_booking.html', context)
+    return render(request, 'cancel_booking.html', context)
 
 
 # User Bookings
@@ -151,7 +151,7 @@ def my_bookings(request):
         'upcoming_bookings': upcoming_bookings,
         'past_bookings': past_bookings,
     }
-    return render(request, 'content/my_bookings.html', context)
+    return render(request, 'my_bookings.html', context)
 
 
 # AJAX Endpoints
@@ -268,41 +268,41 @@ def newsletter_subscribe(request):
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
 
 
-# Terms & Privacy
-def terms_and_conditions(request):
-    """Terms and Conditions page"""
-    try:
-        page = Page.objects.get(slug='terms-and-conditions', is_active=True)
-    except Page.DoesNotExist:
-        page = None
+# # Terms & Privacy
+# def terms_and_conditions(request):
+#     """Terms and Conditions page"""
+#     try:
+#         page = Page.objects.get(slug='terms-and-conditions', is_active=True)
+#     except Page.DoesNotExist:
+#         page = None
     
-    context = {
-        'page': page,
-    }
-    return render(request, 'content/terms_and_conditions.html', context)
+#     context = {
+#         'page': page,
+#     }
+#     return render(request, 'terms_and_conditions.html', context)
 
 
-def privacy_policy(request):
-    """Privacy Policy page"""
-    try:
-        page = Page.objects.get(slug='privacy-policy', is_active=True)
-    except Page.DoesNotExist:
-        page = None
+# def privacy_policy(request):
+#     """Privacy Policy page"""
+#     try:
+#         page = Page.objects.get(slug='privacy-policy', is_active=True)
+#     except Page.DoesNotExist:
+#         page = None
     
-    context = {
-        'page': page,
-    }
-    return render(request, 'content/privacy_policy.html', context)
+#     context = {
+#         'page': page,
+#     }
+#     return render(request, 'content/privacy_policy.html', context)
 
 
-def faq(request):
-    """FAQ page"""
-    try:
-        page = Page.objects.get(slug='faq', is_active=True)
-    except Page.DoesNotExist:
-        page = None
+# def faq(request):
+#     """FAQ page"""
+#     try:
+#         page = Page.objects.get(slug='faq', is_active=True)
+#     except Page.DoesNotExist:
+#         page = None
     
-    context = {
-        'page': page,
-    }
-    return render(request, 'content/faq.html', context)
+#     context = {
+#         'page': page,
+#     }
+#     return render(request, 'content/faq.html', context)

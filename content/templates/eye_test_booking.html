@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Eye Test - Eyewear Store{% endblock %}
+
+{% block content %}
+<div class="eye-test-booking-page">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1>Book Your Free Eye Test</h1>
+        <p>Schedule a comprehensive eye examination with our expert optometrists</p>
+    </div>
+    
+    <div class="booking-content">
+        <div class="container">
+            <!-- Benefits Section -->
+            <div class="benefits-section">
+                <h2>Why Get an Eye Test?</h2>
+                <div class="benefits-grid">
+                    <div class="benefit-item">
+                        <h3>Professional Care</h3>
+                        <p>Experienced optometrists using state-of-the-art equipment</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h3>Comprehensive Exam</h3>
+                        <p>Complete vision and eye health assessment</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h3>Free Service</h3>
+                        <p>Complimentary eye test with no obligations</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h3>Expert Advice</h3>
+                        <p>Personalized recommendations for your vision needs</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Booking Form -->
+            <div class="booking-form-section">
+                <h2>Schedule Your Appointment</h2>
+                
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <form method="post" action="{% url 'content:eye_test_booking' %}" id="bookingForm">
+                    {% csrf_token %}
+                    
+                    <!-- Step 1: Select Location -->
+                    <div class="form-step" id="step1">
+                        <h3>Step 1: Select Location</h3>
+                        
+                        <div class="form-group">
+                            <label for="location">Choose Store Location *</label>
+                            <select name="location" id="location" required onchange="loadLocationDetails()">
+                                <option value="">-- Select a location --</option>
+                                {% for location in locations %}
+                                <option value="{{ location.id }}">{{ location.name }} - {{ location.city }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div id="locationDetails" class="location-details" style="display:none;">
+                            <h4>Location Details</h4>
+                            <p id="locationAddress"></p>
+                            <p id="locationPhone"></p>
+                            <div id="locationHours"></div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-next" onclick="nextStep(2)">Next</button>
+                    </div>
+                    
+                    <!-- Step 2: Select Date & Time -->
+                    <div class="form-step" id="step2" style="display:none;">
+                        <h3>Step 2: Select Date & Time</h3>
+                        
+                        <div class="form-group">
+                            <label for="booking_date">Preferred Date *</label>
+                            <input type="date" name="booking_date" id="booking_date" required 
+                                   min="{{ today|date:'Y-m-d' }}" onchange="loadAvailableTimes()">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="booking_time">Preferred Time *</label>
+                            <select name="booking_time" id="booking_time" required>
+                                <option value="">-- Select date first --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-back" onclick="prevStep(1)">Back</button>
+                            <button type="button" class="btn btn-next" onclick="nextStep(3)">Next</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Personal Information -->
+                    <div class="form-step" id="step3" style="display:none;">
+                        <h3>Step 3: Your Information</h3>
+                        
+                        <div class="form-group">
+                            <label for="customer_name">Full Name *</label>
+                            <input type="text" name="customer_name" id="customer_name" required
+                                   {% if user.is_authenticated %}value="{{ user.get_full_name }}"{% endif %}>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="customer_phone">Phone Number *</label>
+                            <input type="tel" name="customer_phone" id="customer_phone" required
+                                   {% if user.is_authenticated and user.phone %}value="{{ user.phone }}"{% endif %}>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="customer_email">Email Address *</label>
+                            <input type="email" name="customer_email" id="customer_email" required
+                                   {% if user.is_authenticated %}value="{{ user.email }}"{% endif %}>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="notes">Additional Notes (Optional)</label>
+                            <textarea name="notes" id="notes" rows="4" 
+                                      placeholder="Any special requirements or concerns?"></textarea>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-back" onclick="prevStep(2)">Back</button>
+                            <button type="submit" class="btn btn-primary">Confirm Booking</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- What to Expect -->
+            <div class="what-to-expect">
+                <h2>What to Expect</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <h3>1. Arrival</h3>
+                        <p>Check in at the reception and complete a brief questionnaire about your vision history</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h3>2. Examination</h3>
+                        <p>Our optometrist will conduct a comprehensive eye test, including vision acuity and eye health checks</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h3>3. Consultation</h3>
+                        <p>Discuss your results and receive personalized recommendations for eyewear or treatment</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h3>4. Selection</h3>
+                        <p>Browse our collection and get expert help choosing the perfect frames (optional)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FAQ -->
+            <div class="faq-section">
+                <h2>Frequently Asked Questions</h2>
+                
+                <div class="faq-item">
+                    <h3>How long does an eye test take?</h3>
+                    <p>A comprehensive eye test typically takes 30-45 minutes.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>Is the eye test really free?</h3>
+                    <p>Yes! We offer complimentary eye tests with no obligation to purchase.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>What should I bring?</h3>
+                    <p>Please bring your current eyewear (if any) and any previous prescriptions.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>Can I cancel or reschedule?</h3>
+                    <p>Yes, you can cancel or reschedule your appointment up to 24 hours in advance.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentStep = 1;
+
+function nextStep(step) {
+    // Validate current step
+    const currentStepElement = document.getElementById('step' + currentStep);
+    const inputs = currentStepElement.querySelectorAll('input[required], select[required]');
+    let valid = true;
+    
+    inputs.forEach(input => {
+        if (!input.value) {
+            valid = false;
+            input.style.borderColor = 'red';
+        } else {
+            input.style.borderColor = '';
+        }
+    });
+    
+    if (!valid) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    // Hide current step
+    document.getElementById('step' + currentStep).style.display = 'none';
+    
+    // Show next step
+    document.getElementById('step' + step).style.display = 'block';
+    currentStep = step;
+    
+    // Scroll to top
+    window.scrollTo(0, 0);
+}
+
+function prevStep(step) {
+    document.getElementById('step' + currentStep).style.display = 'none';
+    document.getElementById('step' + step).style.display = 'block';
+    currentStep = step;
+    window.scrollTo(0, 0);
+}
+
+function loadLocationDetails() {
+    const locationId = document.getElementById('location').value;
+    
+    if (!locationId) {
+        document.getElementById('locationDetails').style.display = 'none';
+        return;
+    }
+    
+    fetch(`/api/location-details/?location_id=${locationId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('locationAddress').textContent = data.address;
+            document.getElementById('locationPhone').textContent = 'Phone: ' + data.phone;
+            
+            // Display operating hours
+            let hoursHtml = '<h5>Operating Hours:</h5>';
+            for (const [day, hours] of Object.entries(data.operating_hours)) {
+                hoursHtml += `<p>${day.charAt(0).toUpperCase() + day.slice(1)}: ${hours}</p>`;
+            }
+            document.getElementById('locationHours').innerHTML = hoursHtml;
+            
+            document.getElementById('locationDetails').style.display = 'block';
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function loadAvailableTimes() {
+    const locationId = document.getElementById('location').value;
+    const date = document.getElementById('booking_date').value;
+    
+    if (!locationId || !date) return;
+    
+    fetch(`/api/available-times/?location_id=${locationId}&date=${date}`)
+        .then(response => response.json())
+        .then(data => {
+            const timeSelect = document.getElementById('booking_time');
+            timeSelect.innerHTML = '<option value="">-- Select a time --</option>';
+            
+            if (data.available_times.length === 0) {
+                timeSelect.innerHTML = '<option value="">No available times for this date</option>';
+            } else {
+                data.available_times.forEach(time => {
+                    const option = document.createElement('option');
+                    option.value = time;
+                    option.textContent = time;
+                    timeSelect.appendChild(option);
+                });
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+// Set minimum date to today
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('booking_date').setAttribute('min', today);
+});
+</script>
+{% endblock %}

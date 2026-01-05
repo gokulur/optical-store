@@ -1,0 +1,115 @@
+<!-- booking_confirmation.html -->
+{% extends 'base.html' %}
+
+{% block title %}Booking Confirmation - Eyewear Store{% endblock %}
+
+{% block content %}
+<div class="booking-confirmation-page">
+    <div class="container">
+        <!-- Success Message -->
+        <div class="success-header">
+            <div class="success-icon">✓</div>
+            <h1>Booking Confirmed!</h1>
+            <p>Your eye test appointment has been successfully scheduled</p>
+        </div>
+        
+        <!-- Booking Details -->
+        <div class="booking-details-card">
+            <h2>Appointment Details</h2>
+            
+            <div class="detail-row">
+                <span class="label">Booking ID:</span>
+                <span class="value">#{{ booking.id }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="label">Status:</span>
+                <span class="value status-{{ booking.status }}">{{ booking.get_status_display }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="label">Date:</span>
+                <span class="value">{{ booking.booking_date|date:"l, F j, Y" }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="label">Time:</span>
+                <span class="value">{{ booking.booking_time }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="label">Location:</span>
+                <span class="value">{{ booking.location.name }}</span>
+            </div>
+            
+            <div class="detail-address">
+                <p>{{ booking.location.address_line1 }}</p>
+                {% if booking.location.address_line2 %}
+                <p>{{ booking.location.address_line2 }}</p>
+                {% endif %}
+                <p>{{ booking.location.city }}, {{ booking.location.country }}</p>
+            </div>
+            
+            <div class="detail-row">
+                <span class="label">Contact Phone:</span>
+                <span class="value">{{ booking.location.phone }}</span>
+            </div>
+            
+            <div class="customer-info">
+                <h3>Your Information</h3>
+                <p>Name: {{ booking.customer_name }}</p>
+                <p>Phone: {{ booking.customer_phone }}</p>
+                <p>Email: {{ booking.customer_email }}</p>
+            </div>
+            
+            {% if booking.notes %}
+            <div class="booking-notes">
+                <h3>Your Notes</h3>
+                <p>{{ booking.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Next Steps -->
+        <div class="next-steps">
+            <h2>What's Next?</h2>
+            <ul>
+                <li>You will receive a confirmation email at {{ booking.customer_email }}</li>
+                <li>We will send you a reminder 24 hours before your appointment</li>
+                <li>Please arrive 10 minutes early to complete any necessary paperwork</li>
+                <li>Bring your current eyewear and any previous prescriptions</li>
+            </ul>
+        </div>
+        
+        <!-- Actions -->
+        <div class="booking-actions">
+            {% if booking.location.google_maps_url %}
+            <a href="{{ booking.location.google_maps_url }}" target="_blank" class="btn btn-outline">
+                Get Directions
+            </a>
+            {% endif %}
+            
+            <a href="{% url 'content:my_bookings' %}" class="btn btn-outline">
+                View All Bookings
+            </a>
+            
+            <a href="{% url 'catalog:home' %}" class="btn btn-primary">
+                Continue Shopping
+            </a>
+        </div>
+        
+        <!-- Cancel Booking -->
+        <div class="cancel-section">
+            <p>Need to cancel or reschedule?</p>
+            <a href="{% url 'content:cancel_booking' booking.id %}" class="btn-text-danger">
+                Cancel This Booking
+            </a>
+        </div>
+        
+        <!-- Contact Support -->
+        <div class="support-section">
+            <p>Have questions? <a href="{% url 'content:contact_us' %}">Contact our support team</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

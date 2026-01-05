@@ -1,0 +1,168 @@
+<!-- my_bookings.html -->
+{% extends 'base.html' %}
+
+{% block title %}My Bookings - Eyewear Store{% endblock %}
+
+{% block content %}
+<div class="my-bookings-page">
+    <div class="container">
+        <h1>My Eye Test Bookings</h1>
+        
+        <!-- Upcoming Bookings -->
+        <div class="bookings-section">
+            <h2>Upcoming Appointments</h2>
+            
+            {% if upcoming_bookings %}
+            <div class="bookings-list">
+                {% for booking in upcoming_bookings %}
+                <div class="booking-card">
+                    <div class="booking-header">
+                        <h3>{{ booking.location.name }}</h3>
+                        <span class="booking-status status-{{ booking.status }}">
+                            {{ booking.get_status_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="booking-info">
+                        <div class="info-item">
+                            <strong>Date:</strong>
+                            <span>{{ booking.booking_date|date:"l, F j, Y" }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <strong>Time:</strong>
+                            <span>{{ booking.booking_time }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <strong>Location:</strong>
+                            <span>{{ booking.location.address_line1 }}, {{ booking.location.city }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <strong>Phone:</strong>
+                            <span>{{ booking.location.phone }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <strong>Booking ID:</strong>
+                            <span>#{{ booking.id }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="booking-actions">
+                        <a href="{% url 'content:booking_confirmation' booking.id %}" class="btn btn-outline">
+                            View Details
+                        </a>
+                        
+                        {% if booking.location.google_maps_url %}
+                        <a href="{{ booking.location.google_maps_url }}" target="_blank" class="btn btn-outline">
+                            Get Directions
+                        </a>
+                        {% endif %}
+                        
+                        {% if booking.status == 'pending' or booking.status == 'confirmed' %}
+                        <a href="{% url 'content:cancel_booking' booking.id %}" class="btn btn-danger-outline">
+                            Cancel
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-bookings">
+                <p>You don't have any upcoming appointments.</p>
+                <a href="{% url 'content:eye_test_booking' %}" class="btn btn-primary">
+                    Book an Eye Test
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Past Bookings -->
+        <div class="bookings-section">
+            <h2>Past Appointments</h2>
+            
+            {% if past_bookings %}
+            <div class="bookings-list">
+                {% for booking in past_bookings %}
+                <div class="booking-card past">
+                    <div class="booking-header">
+                        <h3>{{ booking.location.name }}</h3>
+                        <span class="booking-status status-{{ booking.status }}">
+                            {{ booking.get_status_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="booking-info">
+                        <div class="info-item">
+                            <strong>Date:</strong>
+                            <span>{{ booking.booking_date|date:"l, F j, Y" }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <strong>Time:</strong>
+                            <span>{{ booking.booking_time }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <strong>Location:</strong>
+                            <span>{{ booking.location.name }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <strong>Booking ID:</strong>
+                            <span>#{{ booking.id }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="booking-actions">
+                        <a href="{% url 'content:booking_confirmation' booking.id %}" class="btn btn-outline">
+                            View Details
+                        </a>
+                        
+                        {% if booking.status == 'completed' %}
+                        <a href="{% url 'content:eye_test_booking' %}" class="btn btn-primary-outline">
+                            Book Again
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-bookings">
+                <p>No past appointments found.</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h2>Quick Actions</h2>
+            <div class="actions-grid">
+                <a href="{% url 'content:eye_test_booking' %}" class="action-card">
+                    <h3>Book New Eye Test</h3>
+                    <p>Schedule your next appointment</p>
+                </a>
+                
+                <a href="{% url 'content:store_locations' %}" class="action-card">
+                    <h3>Find a Store</h3>
+                    <p>View all our locations</p>
+                </a>
+                
+                <a href="{% url 'catalog:eyeglasses_list' %}" class="action-card">
+                    <h3>Shop Eyeglasses</h3>
+                    <p>Browse our collection</p>
+                </a>
+                
+                <a href="{% url 'content:contact_us' %}" class="action-card">
+                    <h3>Contact Us</h3>
+                    <p>Get help and support</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
