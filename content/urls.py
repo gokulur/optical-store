@@ -4,7 +4,13 @@ from . import views
 app_name = 'content'
 
 urlpatterns = [
- 
+    # # Static Pages
+    # path('about-us/', views.about_us, name='about_us'),
+    # path('contact-us/', views.contact_us, name='contact_us'),
+    # path('terms-and-conditions/', views.terms_and_conditions, name='terms_and_conditions'),
+    # path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+    # path('faq/', views.faq, name='faq'),
+    # path('page/<slug:slug>/', views.page_detail, name='page_detail'),
     
     # Store Locations
     path('locations/', views.StoreLocationListView.as_view(), name='store_locations'),

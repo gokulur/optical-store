@@ -8,6 +8,60 @@ from .models import Banner, Page, StoreLocation, EyeTestBooking
 from django.db import models
 
 
+# # Static Pages
+# def about_us(request):
+#     """About Us page"""
+#     try:
+#         page = Page.objects.get(slug='about-us', is_active=True)
+#     except Page.DoesNotExist:
+#         page = None
+    
+#     context = {
+#         'page': page,
+#     }
+#     return render(request, 'content/about_us.html', context)
+
+
+# def contact_us(request):
+#     """Contact Us page"""
+#     try:
+#         page = Page.objects.get(slug='contact-us', is_active=True)
+#     except Page.DoesNotExist:
+#         page = None
+    
+#     # Get all active store locations for display
+#     locations = StoreLocation.objects.filter(is_active=True)
+    
+#     if request.method == 'POST':
+#         # Handle contact form submission
+#         name = request.POST.get('name')
+#         email = request.POST.get('email')
+#         phone = request.POST.get('phone')
+#         subject = request.POST.get('subject')
+#         message_text = request.POST.get('message')
+        
+#         # TODO: Send email or save to database
+#         messages.success(request, 'Thank you for contacting us! We will get back to you soon.')
+#         return redirect('content:contact_us')
+    
+#     context = {
+#         'page': page,
+#         'locations': locations,
+#     }
+#     return render(request, 'content/contact_us.html', context)
+
+
+# def page_detail(request, slug):
+#     """Generic page detail view"""
+#     page = get_object_or_404(Page, slug=slug, is_active=True)
+    
+#     context = {
+#         'page': page,
+#     }
+#     return render(request, 'content/page_detail.html', context)
+
+
+
 # Store Locations
 class StoreLocationListView(ListView):
     """List all store locations"""
