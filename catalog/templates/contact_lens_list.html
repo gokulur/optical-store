@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact Lenses - Eyewear Store{% endblock %}
+
+{% block content %}
+<div class="product-listing-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>Contact Lenses</h1>
+        <p>Browse our collection of contact lenses</p>
+    </div>
+    
+    <!-- Lens Type Filter -->
+    <div class="lens-type-filter">
+        <a href="?" class="{% if not selected_lens_type %}active{% endif %}">All</a>
+        <a href="?lens_type=clear" class="{% if selected_lens_type == 'clear' %}active{% endif %}">Clear Lenses</a>
+        <a href="?lens_type=color" class="{% if selected_lens_type == 'color' %}active{% endif %}">Color Lenses</a>
+    </div>
+    
+    <div class="listing-container">
+        <!-- Sidebar Filters -->
+        <aside class="filters-sidebar">
+            <h3>Filters</h3>
+            
+            <!-- Brand Filter -->
+            <div class="filter-group">
+                <h4>Brand</h4>
+                <ul>
+                    {% for brand in brands %}
+                    <li>
+                        <label>
+                            <input type="checkbox" name="brand" value="{{ brand.slug }}">
+                            {{ brand.name }}
+                        </label>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- Replacement Schedule -->
+            <div class="filter-group">
+                <h4>Replacement Schedule</h4>
+                <ul>
+                    <li><label><input type="checkbox" name="schedule" value="daily"> Daily</label></li>
+                    <li><label><input type="checkbox" name="schedule" value="monthly"> Monthly</label></li>
+                    <li><label><input type="checkbox" name="schedule" value="3_months"> Up to 3 Months</label></li>
+                </ul>
+            </div>
+            
+            <!-- Price Filter -->
+            <div class="filter-group">
+                <h4>Price Range</h4>
+                <input type="range" name="min_price" min="0" max="500">
+                <input type="range" name="max_price" min="0" max="500">
+                <div class="price-display">
+                    <span>0 QAR</span> - <span>500 QAR</span>
+                </div>
+            </div>
+            
+            <button class="clear-filters">Clear All Filters</button>
+        </aside>
+        
+        <!-- Products Grid -->
+        <div class="products-area">
+            <!-- Toolbar -->
+            <div class="products-toolbar">
+                <div class="showing-count">
+                    Showing {{ products.count }} products
+                </div>
+                <div class="sort-by">
+                    <label>Sort by:</label>
+                    <select name="sort">
+                        <option value="-created_at">Newest</option>
+                        <option value="base_price">Price: Low to High</option>
+                        <option value="-base_price">Price: High to Low</option>
+                        <option value="name">Name: A-Z</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Products Grid -->
+            <div class="products-grid">
+                {% for product in products %}
+                <div class="product-card">
+                    <a href="{% url 'catalog:contact_lens_detail' product.slug %}">
+                        <div class="product-image">
+                            {% if product.images.first %}
+                            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                            {% endif %}
+                            {% if product.contact_lens.lens_type == 'color' %}
+                            <span class="badge color">Color</span>
+                            {% endif %}
+                        </div>
+                        <div class="product-info">
+                            <p class="brand">{{ product.brand.name }}</p>
+                            <h3 class="product-name">{{ product.name }}</h3>
+                            <p class="lens-type">{{ product.contact_lens.get_lens_type_display }} - {{ product.contact_lens.get_replacement_schedule_display }}</p>
+                            <p class="package-size">Pack of {{ product.contact_lens.package_size }}</p>
+                            <div class="price-section">
+                                <span class="price">{{ product.base_price }} QAR</span>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="product-actions">
+                        <button class="add-to-cart">Add to Cart</button>
+                        <button class="wishlist">♡</button>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="no-products">No contact lenses found matching your criteria.</p>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination">
+                <a href="#" class="prev">Previous</a>
+                <a href="#" class="page active">1</a>
+                <a href="#" class="page">2</a>
+                <a href="#" class="page">3</a>
+                <a href="#" class="next">Next</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
