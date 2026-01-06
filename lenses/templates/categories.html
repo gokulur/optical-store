@@ -1,0 +1,149 @@
+<!-- categories.html -->
+{% extends 'catalog/base.html' %}
+
+{% block title %}Lens Options - Eyewear Store{% endblock %}
+
+{% block content %}
+<div class="lens-categories-page">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>Choose Your Perfect Lenses</h1>
+            <p>Select from our range of premium lens options to match your vision needs</p>
+        </div>
+        
+        <!-- Lens Categories -->
+        {% for category in categories %}
+        <div class="lens-category-section">
+            <div class="category-header">
+                <h2>{{ category.name }}</h2>
+                {% if category.description %}
+                <p>{{ category.description }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Lens Options in Category -->
+            <div class="lens-options-grid">
+                {% for option in category.lens_options.all %}
+                {% if option.is_active %}
+                <div class="lens-option-card">
+                    <div class="option-header">
+                        <h3>{{ option.name }}</h3>
+                        {% if option.is_premium %}
+                        <span class="badge premium">Premium</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="option-price">
+                        <span class="price">{{ option.base_price }} QAR</span>
+                    </div>
+                    
+                    <div class="option-specs">
+                        <p><strong>Index:</strong> {{ option.lens_index }}</p>
+                        {% if option.material %}
+                        <p><strong>Material:</strong> {{ option.material }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    {% if option.features %}
+                    <div class="option-features">
+                        <h4>Features:</h4>
+                        <ul>
+                            {% for feature in option.features %}
+                            <li>{{ feature }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    {% if option.description %}
+                    <div class="option-description">
+                        <p>{{ option.description }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Power Range -->
+                    {% if option.min_sphere_power and option.max_sphere_power %}
+                    <div class="power-range">
+                        <p><strong>Power Range:</strong></p>
+                        <p>SPH: {{ option.min_sphere_power }} to {{ option.max_sphere_power }}</p>
+                        {% if option.min_cylinder_power and option.max_cylinder_power %}
+                        <p>CYL: {{ option.min_cylinder_power }} to {{ option.max_cylinder_power }}</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Reading Powers -->
+                    {% if option.available_reading_powers %}
+                    <div class="reading-powers">
+                        <p><strong>Available Powers:</strong></p>
+                        <p>{{ option.available_reading_powers|join:", " }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Available Add-ons -->
+                    {% if option.available_addons.all %}
+                    <div class="available-addons">
+                        <h4>Available Add-ons:</h4>
+                        <ul>
+                            {% for addon_link in option.available_addons.all %}
+                            <li>
+                                {{ addon_link.addon.name }} 
+                                <span class="addon-price">(+{{ addon_link.price }} QAR)</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <button class="btn btn-primary" onclick="viewDetails({{ option.id }})">
+                        View Details
+                    </button>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        
+        <!-- Help Section -->
+        <div class="help-section">
+            <h2>Need Help Choosing?</h2>
+            <div class="help-options">
+                <a href="{% url 'lenses:guide' %}" class="help-card">
+                    <h3>Lens Guide</h3>
+                    <p>Learn about different lens types and features</p>
+                </a>
+                <a href="{% url 'lenses:comparison' %}" class="help-card">
+                    <h3>Compare Lenses</h3>
+                    <p>Compare different lens options side by side</p>
+                </a>
+                <a href="{% url 'content:eye_test_booking' %}" class="help-card">
+                    <h3>Book Eye Test</h3>
+                    <p>Get your prescription from our experts</p>
+                </a>
+                <a href="{% url 'content:contact_us' %}" class="help-card">
+                    <h3>Contact Us</h3>
+                    <p>Talk to our lens specialists</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewDetails(optionId) {
+    // Fetch and display detailed information
+    fetch(`/lenses/api/option-details/?option_id=${optionId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Display modal or redirect to details page
+                console.log(data.lens_option);
+                alert('Lens details: ' + data.lens_option.name);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+</script>
+{% endblock %}

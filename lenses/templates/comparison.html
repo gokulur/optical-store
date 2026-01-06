@@ -1,0 +1,270 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Compare Lenses - Eyewear Store{% endblock %}
+
+{% block content %}
+<div class="lens-comparison-page">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>Compare Lens Options</h1>
+            <p>Compare features, prices, and specifications side by side</p>
+        </div>
+        
+        {% if options %}
+        <!-- Comparison Table -->
+        <div class="comparison-table-container">
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th class="feature-column">Feature</th>
+                        {% for option in options %}
+                        <th class="option-column">
+                            <div class="option-header">
+                                <h3>{{ option.name }}</h3>
+                                {% if option.is_premium %}
+                                <span class="badge premium">Premium</span>
+                                {% endif %}
+                            </div>
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Price -->
+                    <tr>
+                        <td class="feature-label"><strong>Price</strong></td>
+                        {% for option in options %}
+                        <td class="option-value">
+                            <span class="price">{{ option.base_price }} QAR</span>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    
+                    <!-- Category -->
+                    <tr>
+                        <td class="feature-label">Category</td>
+                        {% for option in options %}
+                        <td class="option-value">{{ option.category.name }}</td>
+                        {% endfor %}
+                    </tr>
+                    
+                    <!-- Lens Index -->
+                    <tr>
+                        <td class="feature-label">Lens Index</td>
+                        {% for option in options %}
+                        <td class="option-value">{{ option.lens_index }}</td>
+                        {% endfor %}
+                    </tr>
+                    
+                    <!-- Material -->
+                    <tr>
+                        <td class="feature-label">Material</td>
+                        {% for option in options %}
+                        <td class="option-value">{{ option.material|default:"Standard" }}</td>
+                        {% endfor %}
+                    </tr>
+                    
+                    <!-- Sphere Power Range -->
+                    <tr>
+                        <td class="feature-label">Sphere Power Range</td>
+                        {% for option in options %}
+                        <td class="option-value">
+                            {% if option.min_sphere_power and option.max_sphere_power %}
+                            {{ option.min_sphere_power }} to {{ option.max_sphere_power }}
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    
+                    <!-- Cylinder Power Range -->
+                    <tr>
+                        <td class="feature-label">Cylinder Power Range</td>
+                        {% for option in options %}
+                        <td class="option-value">
+                            {% if option.min_cylinder_power and option.max_cylinder_power %}
+                            {{ option.min_cylinder_power }} to {{ option.max_cylinder_power }}
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    
+                    <!-- Features -->
+                    <tr>
+                        <td class="feature-label">Features</td>
+                        {% for option in options %}
+                        <td class="option-value">
+                            {% if option.features %}
+                            <ul class="feature-list">
+                                {% for feature in option.features %}
+                                <li>✓ {{ feature }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    
+                    <!-- Available Add-ons -->
+                    <tr>
+                        <td class="feature-label">Available Add-ons</td>
+                        {% for option in options %}
+                        <td class="option-value">
+                            {% if option.available_addons.all %}
+                            <ul class="addon-list">
+                                {% for addon_link in option.available_addons.all %}
+                                <li>{{ addon_link.addon.name }} (+{{ addon_link.price }} QAR)</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            No add-ons available
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    
+                    <!-- Best For -->
+                    <tr>
+                        <td class="feature-label">Best For</td>
+                        {% for option in options %}
+                        <td class="option-value">
+                            {% if 'computer' in option.description|lower or 'blue' in option.name|lower %}
+                            Computer users, Screen protection
+                            {% elif 'outdoor' in option.description|lower or 'photo' in option.name|lower %}
+                            Outdoor activities, Sun protection
+                            {% elif 'progressive' in option.category.name|lower %}
+                            All-distance vision, Ages 40+
+                            {% elif 'reading' in option.category.name|lower %}
+                            Reading, Close-up work
+                            {% else %}
+                            General use, Daily wear
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    
+                    <!-- Action Buttons -->
+                    <tr>
+                        <td class="feature-label"></td>
+                        {% for option in options %}
+                        <td class="option-value">
+                            <a href="{% url 'catalog:eyeglasses_list' %}?lens={{ option.id }}" class="btn btn-primary">
+                                Select Lens
+                            </a>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Add More Options -->
+        <div class="add-options-section">
+            <h2>Compare More Options</h2>
+            <p>Select additional lens options to compare</p>
+            <a href="{% url 'lenses:comparison' %}" class="btn btn-outline">Change Selection</a>
+        </div>
+        
+        {% else %}
+        <!-- Selection View -->
+        <div class="comparison-select">
+            <h2>Select Lens Options to Compare</h2>
+            <p>Choose 2-4 lens options to compare side by side</p>
+            
+            <form method="get" action="{% url 'lenses:comparison' %}" id="comparisonForm">
+                {% for category in categories %}
+                <div class="category-section">
+                    <h3>{{ category.name }}</h3>
+                    <div class="options-grid">
+                        {% for option in category.lens_options.all %}
+                        {% if option.is_active %}
+                        <label class="option-checkbox">
+                            <input type="checkbox" name="option_ids" value="{{ option.id }}" onchange="validateSelection()">
+                            <div class="option-card">
+                                <h4>{{ option.name }}</h4>
+                                <p class="price">{{ option.base_price }} QAR</p>
+                                <p class="index">Index: {{ option.lens_index }}</p>
+                            </div>
+                        </label>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="compareButton" disabled>
+                        Compare Selected Options
+                    </button>
+                    <p class="selection-hint">Please select 2-4 options to compare</p>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+        
+        <!-- Help Section -->
+        <div class="help-section">
+            <h2>Need Help Deciding?</h2>
+            <div class="help-options">
+                <a href="{% url 'lenses:guide' %}" class="help-card">
+                    <h3>📖 Lens Guide</h3>
+                    <p>Learn about lens types and features</p>
+                </a>
+                <a href="{% url 'content:eye_test_booking' %}" class="help-card">
+                    <h3>👁️ Book Eye Test</h3>
+                    <p>Get professional advice</p>
+                </a>
+                <a href="{% url 'content:contact_us' %}" class="help-card">
+                    <h3>💬 Contact Us</h3>
+                    <p>Talk to our lens specialists</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function validateSelection() {
+    const checkboxes = document.querySelectorAll('input[name="option_ids"]:checked');
+    const compareButton = document.getElementById('compareButton');
+    const count = checkboxes.length;
+    
+    if (count >= 2 && count <= 4) {
+        compareButton.disabled = false;
+        compareButton.textContent = `Compare ${count} Options`;
+    } else {
+        compareButton.disabled = true;
+        compareButton.textContent = 'Compare Selected Options';
+    }
+}
+
+// Limit selection to 4 options
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('input[name="option_ids"]');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const checked = document.querySelectorAll('input[name="option_ids"]:checked');
+            
+            if (checked.length >= 4) {
+                checkboxes.forEach(cb => {
+                    if (!cb.checked) {
+                        cb.disabled = true;
+                    }
+                });
+            } else {
+                checkboxes.forEach(cb => {
+                    cb.disabled = false;
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
