@@ -1,0 +1,352 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} Prescription - Eyewear Store{% endblock %}
+
+{% block content %}
+<div class="prescription-form-page">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>{% if is_edit %}Edit{% else %}Add New{% endif %} Prescription</h1>
+            <p>Enter your prescription details carefully</p>
+        </div>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Instructions -->
+        <div class="instructions">
+            <h3>Before You Start:</h3>
+            <ul>
+                <li>Have your prescription handy</li>
+                <li>Prescriptions are typically valid for 1-2 years</li>
+                <li>If you don't have a prescription, <a href="{% url 'content:eye_test_booking' %}">book a free eye test</a></li>
+                <li>You can also <a href="{% url 'prescriptions:prescription_upload' %}">upload a photo</a> of your prescription</li>
+            </ul>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" class="prescription-form">
+            {% csrf_token %}
+            
+            <!-- Basic Info -->
+            <section class="form-section">
+                <h2>Basic Information</h2>
+                
+                <div class="form-group">
+                    <label for="prescription_type">Prescription Type *</label>
+                    <select name="prescription_type" id="prescription_type" required onchange="toggleFields()">
+                        <option value="">-- Select Type --</option>
+                        {% for value, label in prescription_types %}
+                        <option value="{{ value }}" {% if prescription and prescription.prescription_type == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="prescription_name">Prescription Name (Optional)</label>
+                    <input type="text" name="prescription_name" id="prescription_name" 
+                           placeholder="e.g., 'My Daily Glasses' or 'Work Computer Glasses'"
+                           value="{{ prescription.prescription_name|default:'' }}">
+                    <small>Give this prescription a memorable name</small>
+                </div>
+                
+                <div class="form-group checkbox">
+                    <label>
+                        <input type="checkbox" name="is_default" {% if prescription and prescription.is_default %}checked{% endif %}>
+                        Set as default prescription
+                    </label>
+                </div>
+            </section>
+            
+            <!-- Right Eye (OD) -->
+            <section class="form-section">
+                <h2>Right Eye (OD)</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="od_sphere">Sphere (SPH)</label>
+                        <input type="number" name="od_sphere" id="od_sphere" step="0.25" 
+                               placeholder="e.g., -2.00"
+                               value="{{ prescription.od_sphere|default:'' }}">
+                        <small>Power for nearsightedness (-) or farsightedness (+)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="od_cylinder">Cylinder (CYL)</label>
+                        <input type="number" name="od_cylinder" id="od_cylinder" step="0.25"
+                               placeholder="e.g., -0.75"
+                               value="{{ prescription.od_cylinder|default:'' }}">
+                        <small>Astigmatism correction</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="od_axis">Axis</label>
+                        <input type="number" name="od_axis" id="od_axis" min="0" max="180"
+                               placeholder="e.g., 90"
+                               value="{{ prescription.od_axis|default:'' }}">
+                        <small>Angle (0-180°)</small>
+                    </div>
+                    
+                    <div class="form-group" id="od_add_group">
+                        <label for="od_add">Add (Near Vision)</label>
+                        <input type="number" name="od_add" id="od_add" step="0.25"
+                               placeholder="e.g., +2.00"
+                               value="{{ prescription.od_add|default:'' }}">
+                        <small>For progressive/bifocal lenses</small>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Left Eye (OS) -->
+            <section class="form-section">
+                <h2>Left Eye (OS)</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="os_sphere">Sphere (SPH)</label>
+                        <input type="number" name="os_sphere" id="os_sphere" step="0.25"
+                               placeholder="e.g., -2.00"
+                               value="{{ prescription.os_sphere|default:'' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="os_cylinder">Cylinder (CYL)</label>
+                        <input type="number" name="os_cylinder" id="os_cylinder" step="0.25"
+                               placeholder="e.g., -0.75"
+                               value="{{ prescription.os_cylinder|default:'' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="os_axis">Axis</label>
+                        <input type="number" name="os_axis" id="os_axis" min="0" max="180"
+                               placeholder="e.g., 90"
+                               value="{{ prescription.os_axis|default:'' }}">
+                    </div>
+                    
+                    <div class="form-group" id="os_add_group">
+                        <label for="os_add">Add (Near Vision)</label>
+                        <input type="number" name="os_add" id="os_add" step="0.25"
+                               placeholder="e.g., +2.00"
+                               value="{{ prescription.os_add|default:'' }}">
+                    </div>
+                </div>
+                
+                <div class="form-group checkbox">
+                    <label>
+                        <input type="checkbox" id="sameAsRight" onchange="copySphereValues()">
+                        Same as right eye
+                    </label>
+                </div>
+            </section>
+            
+            <!-- Pupillary Distance -->
+            <section class="form-section">
+                <h2>Pupillary Distance (PD)</h2>
+                
+                <div class="pd-options">
+                    <div class="form-group">
+                        <label for="pd">Single PD (Both Eyes)</label>
+                        <input type="number" name="pd" id="pd" step="0.5" min="50" max="80"
+                               placeholder="e.g., 63.0"
+                               value="{{ prescription.pd|default:'' }}">
+                        <small>Total distance between pupils (typical: 54-74mm)</small>
+                    </div>
+                    
+                    <p class="or-divider">OR</p>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pd_right">Right PD</label>
+                            <input type="number" name="pd_right" id="pd_right" step="0.5"
+                                   placeholder="e.g., 31.5"
+                                   value="{{ prescription.pd_right|default:'' }}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pd_left">Left PD</label>
+                            <input type="number" name="pd_left" id="pd_left" step="0.5"
+                                   placeholder="e.g., 31.5"
+                                   value="{{ prescription.pd_left|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Contact Lens Specific -->
+            <section class="form-section" id="contact_lens_section" style="display:none;">
+                <h2>Contact Lens Specifications</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="od_base_curve">Right Base Curve</label>
+                        <input type="number" name="od_base_curve" id="od_base_curve" step="0.1"
+                               placeholder="e.g., 8.6"
+                               value="{{ prescription.od_base_curve|default:'' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="os_base_curve">Left Base Curve</label>
+                        <input type="number" name="os_base_curve" id="os_base_curve" step="0.1"
+                               placeholder="e.g., 8.6"
+                               value="{{ prescription.os_base_curve|default:'' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="od_diameter">Right Diameter</label>
+                        <input type="number" name="od_diameter" id="od_diameter" step="0.1"
+                               placeholder="e.g., 14.0"
+                               value="{{ prescription.od_diameter|default:'' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="os_diameter">Left Diameter</label>
+                        <input type="number" name="os_diameter" id="os_diameter" step="0.1"
+                               placeholder="e.g., 14.0"
+                               value="{{ prescription.os_diameter|default:'' }}">
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Additional Information -->
+            <section class="form-section">
+                <h2>Additional Information</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="doctor_name">Doctor/Optometrist Name</label>
+                        <input type="text" name="doctor_name" id="doctor_name"
+                               placeholder="Dr. John Smith"
+                               value="{{ prescription.doctor_name|default:'' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="clinic_name">Clinic/Store Name</label>
+                        <input type="text" name="clinic_name" id="clinic_name"
+                               placeholder="Vision Care Center"
+                               value="{{ prescription.clinic_name|default:'' }}">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="prescription_date">Prescription Date</label>
+                        <input type="date" name="prescription_date" id="prescription_date"
+                               value="{{ prescription.prescription_date|date:'Y-m-d'|default:'' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expiry_date">Expiry Date</label>
+                        <input type="date" name="expiry_date" id="expiry_date"
+                               value="{{ prescription.expiry_date|date:'Y-m-d'|default:'' }}">
+                        <small>Prescriptions typically valid for 1-2 years</small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="prescription_file">Upload Prescription (Optional)</label>
+                    <input type="file" name="prescription_file" id="prescription_file" accept="image/*,.pdf">
+                    <small>Upload a photo or scan of your prescription</small>
+                    {% if prescription and prescription.prescription_file %}
+                    <p class="current-file">Current file: <a href="{{ prescription.prescription_file.url }}" target="_blank">View</a></p>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea name="notes" id="notes" rows="3"
+                              placeholder="Any additional notes about this prescription...">{{ prescription.notes|default:'' }}</textarea>
+                </div>
+            </section>
+            
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    {% if is_edit %}Update{% else %}Save{% endif %} Prescription
+                </button>
+                <a href="{% url 'prescriptions:prescription_list' %}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+        
+        <!-- Help Information -->
+        <div class="prescription-help">
+            <h3>Need Help?</h3>
+            <div class="help-grid">
+                <div class="help-item">
+                    <h4>Where to find your prescription?</h4>
+                    <p>Your prescription should be on a paper or card given to you by your eye doctor after your eye exam.</p>
+                </div>
+                <div class="help-item">
+                    <h4>Don't have a prescription?</h4>
+                    <p><a href="{% url 'content:eye_test_booking' %}">Book a free eye test</a> at one of our stores.</p>
+                </div>
+                <div class="help-item">
+                    <h4>Unsure about values?</h4>
+                    <p><a href="{% url 'prescriptions:prescription_upload' %}">Upload a photo</a> and we'll enter it for you.</p>
+                </div>
+                <div class="help-item">
+                    <h4>Questions?</h4>
+                    <p><a href="{% url 'content:contact_us' %}">Contact our team</a> for assistance.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleFields() {
+    const type = document.getElementById('prescription_type').value;
+    const contactSection = document.getElementById('contact_lens_section');
+    const addGroups = document.querySelectorAll('#od_add_group, #os_add_group');
+    
+    if (type === 'contact_lenses') {
+        contactSection.style.display = 'block';
+        addGroups.forEach(group => group.style.display = 'none');
+    } else {
+        contactSection.style.display = 'none';
+        addGroups.forEach(group => group.style.display = 'block');
+    }
+    
+    if (type === 'reading') {
+        // For reading glasses, we mainly use the ADD field
+        document.getElementById('od_cylinder').value = '';
+        document.getElementById('od_axis').value = '';
+        document.getElementById('os_cylinder').value = '';
+        document.getElementById('os_axis').value = '';
+    }
+}
+
+function copySphereValues() {
+    const sameAsRight = document.getElementById('sameAsRight').checked;
+    
+    if (sameAsRight) {
+        document.getElementById('os_sphere').value = document.getElementById('od_sphere').value;
+        document.getElementById('os_cylinder').value = document.getElementById('od_cylinder').value;
+        document.getElementById('os_axis').value = document.getElementById('od_axis').value;
+        document.getElementById('os_add').value = document.getElementById('od_add').value;
+    }
+}
+
+// Auto-calculate expiry date (2 years from prescription date)
+document.getElementById('prescription_date').addEventListener('change', function() {
+    if (this.value && !document.getElementById('expiry_date').value) {
+        const prescDate = new Date(this.value);
+        prescDate.setFullYear(prescDate.getFullYear() + 2);
+        document.getElementById('expiry_date').value = prescDate.toISOString().split('T')[0];
+    }
+});
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleFields();
+});
+</script>
+{% endblock %}

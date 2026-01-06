@@ -1,0 +1,249 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}My Prescriptions - Eyewear Store{% endblock %}
+
+{% block content %}
+<div class="prescriptions-page">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>My Prescriptions</h1>
+            <p>Manage your eyewear prescriptions</p>
+        </div>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="{% url 'prescriptions:prescription_create' %}" class="btn btn-primary">
+                ➕ Add New Prescription
+            </a>
+            <a href="{% url 'prescriptions:prescription_upload' %}" class="btn btn-outline">
+                📤 Upload Prescription
+            </a>
+            <a href="{% url 'content:eye_test_booking' %}" class="btn btn-outline">
+                👁️ Book Eye Test
+            </a>
+        </div>
+        
+        <!-- Eyeglasses Prescriptions -->
+        <section class="prescription-section">
+            <h2>Eyeglasses Prescriptions</h2>
+            
+            {% if eyeglass_prescriptions %}
+            <div class="prescriptions-grid">
+                {% for prescription in eyeglass_prescriptions %}
+                <div class="prescription-card {% if prescription.is_default %}default{% endif %}">
+                    <div class="card-header">
+                        <h3>{{ prescription.prescription_name|default:"Prescription" }}</h3>
+                        {% if prescription.is_default %}
+                        <span class="badge default">Default</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="prescription-summary">
+                            <div class="eye-data">
+                                <strong>Right Eye (OD):</strong>
+                                <span>SPH: {{ prescription.od_sphere|default:"-" }}</span>
+                                <span>CYL: {{ prescription.od_cylinder|default:"-" }}</span>
+                                <span>AXIS: {{ prescription.od_axis|default:"-" }}</span>
+                            </div>
+                            <div class="eye-data">
+                                <strong>Left Eye (OS):</strong>
+                                <span>SPH: {{ prescription.os_sphere|default:"-" }}</span>
+                                <span>CYL: {{ prescription.os_cylinder|default:"-" }}</span>
+                                <span>AXIS: {{ prescription.os_axis|default:"-" }}</span>
+                            </div>
+                            {% if prescription.pd %}
+                            <div class="pd-data">
+                                <strong>PD:</strong> {{ prescription.pd }} mm
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if prescription.doctor_name %}
+                        <p class="doctor-info">Dr. {{ prescription.doctor_name }}</p>
+                        {% endif %}
+                        
+                        {% if prescription.prescription_date %}
+                        <p class="date-info">Date: {{ prescription.prescription_date }}</p>
+                        {% endif %}
+                        
+                        {% if prescription.expiry_date %}
+                        <p class="expiry-info">Expires: {{ prescription.expiry_date }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-actions">
+                        <a href="{% url 'prescriptions:prescription_detail' prescription.id %}" class="btn btn-sm">
+                            View Details
+                        </a>
+                        <a href="{% url 'prescriptions:prescription_edit' prescription.id %}" class="btn btn-sm btn-outline">
+                            Edit
+                        </a>
+                        {% if not prescription.is_default %}
+                        <form method="post" action="{% url 'prescriptions:set_default' prescription.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline">Set Default</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-prescriptions">
+                <p>You don't have any eyeglasses prescriptions saved.</p>
+                <a href="{% url 'prescriptions:prescription_create' %}" class="btn btn-primary">Add Your First Prescription</a>
+            </div>
+            {% endif %}
+        </section>
+        
+        <!-- Contact Lenses Prescriptions -->
+        <section class="prescription-section">
+            <h2>Contact Lenses Prescriptions</h2>
+            
+            {% if contact_prescriptions %}
+            <div class="prescriptions-grid">
+                {% for prescription in contact_prescriptions %}
+                <div class="prescription-card {% if prescription.is_default %}default{% endif %}">
+                    <div class="card-header">
+                        <h3>{{ prescription.prescription_name|default:"Contact Lens Prescription" }}</h3>
+                        {% if prescription.is_default %}
+                        <span class="badge default">Default</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="prescription-summary">
+                            <div class="eye-data">
+                                <strong>Right Eye:</strong>
+                                <span>Power: {{ prescription.od_sphere|default:"-" }}</span>
+                                {% if prescription.od_base_curve %}
+                                <span>BC: {{ prescription.od_base_curve }}</span>
+                                {% endif %}
+                                {% if prescription.od_diameter %}
+                                <span>DIA: {{ prescription.od_diameter }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="eye-data">
+                                <strong>Left Eye:</strong>
+                                <span>Power: {{ prescription.os_sphere|default:"-" }}</span>
+                                {% if prescription.os_base_curve %}
+                                <span>BC: {{ prescription.os_base_curve }}</span>
+                                {% endif %}
+                                {% if prescription.os_diameter %}
+                                <span>DIA: {{ prescription.os_diameter }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if prescription.prescription_date %}
+                        <p class="date-info">Date: {{ prescription.prescription_date }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-actions">
+                        <a href="{% url 'prescriptions:prescription_detail' prescription.id %}" class="btn btn-sm">
+                            View Details
+                        </a>
+                        <a href="{% url 'prescriptions:prescription_edit' prescription.id %}" class="btn btn-sm btn-outline">
+                            Edit
+                        </a>
+                        {% if not prescription.is_default %}
+                        <form method="post" action="{% url 'prescriptions:set_default' prescription.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline">Set Default</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-prescriptions">
+                <p>You don't have any contact lens prescriptions saved.</p>
+                <a href="{% url 'prescriptions:prescription_create' %}" class="btn btn-primary">Add Prescription</a>
+            </div>
+            {% endif %}
+        </section>
+        
+        <!-- Reading Glasses Prescriptions -->
+        <section class="prescription-section">
+            <h2>Reading Glasses Prescriptions</h2>
+            
+            {% if reading_prescriptions %}
+            <div class="prescriptions-grid">
+                {% for prescription in reading_prescriptions %}
+                <div class="prescription-card {% if prescription.is_default %}default{% endif %}">
+                    <div class="card-header">
+                        <h3>{{ prescription.prescription_name|default:"Reading Prescription" }}</h3>
+                        {% if prescription.is_default %}
+                        <span class="badge default">Default</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="prescription-summary">
+                            <div class="reading-power">
+                                <strong>Reading Power:</strong>
+                                <span>{{ prescription.od_add|default:prescription.od_sphere }}</span>
+                            </div>
+                        </div>
+                        
+                        {% if prescription.prescription_date %}
+                        <p class="date-info">Date: {{ prescription.prescription_date }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-actions">
+                        <a href="{% url 'prescriptions:prescription_detail' prescription.id %}" class="btn btn-sm">
+                            View Details
+                        </a>
+                        <a href="{% url 'prescriptions:prescription_edit' prescription.id %}" class="btn btn-sm btn-outline">
+                            Edit
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-prescriptions">
+                <p>You don't have any reading prescriptions saved.</p>
+            </div>
+            {% endif %}
+        </section>
+        
+        <!-- Help Section -->
+        <div class="help-section">
+            <h2>Need Help?</h2>
+            <div class="help-grid">
+                <div class="help-card">
+                    <h3>📖 Understanding Your Prescription</h3>
+                    <p>Learn what the numbers on your prescription mean</p>
+                    <a href="#">Read Guide</a>
+                </div>
+                <div class="help-card">
+                    <h3>👁️ Get New Prescription</h3>
+                    <p>Book a free eye test at our stores</p>
+                    <a href="{% url 'content:eye_test_booking' %}">Book Now</a>
+                </div>
+                <div class="help-card">
+                    <h3>💬 Contact Support</h3>
+                    <p>Questions about your prescription?</p>
+                    <a href="{% url 'content:contact_us' %}">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

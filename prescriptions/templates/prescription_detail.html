@@ -1,0 +1,267 @@
+<!-- prescription_detail.html -->
+{% extends 'catalog/base.html' %}
+
+{% block title %}{{ prescription.prescription_name|default:"Prescription" }} - Eyewear Store{% endblock %}
+
+{% block content %}
+<div class="prescription-detail-page">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="{% url 'prescriptions:prescription_list' %}">My Prescriptions</a> / 
+            <span>{{ prescription.prescription_name|default:"Prescription Details" }}</span>
+        </div>
+        
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>{{ prescription.prescription_name|default:"Prescription Details" }}</h1>
+            {% if prescription.is_default %}
+            <span class="badge default">Default</span>
+            {% endif %}
+            {% if prescription.is_verified %}
+            <span class="badge verified">Verified ✓</span>
+            {% endif %}
+        </div>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if expiring_soon %}
+        <div class="alert alert-warning">
+            ⚠️ This prescription is expiring soon! Consider booking an eye test to update your prescription.
+            <a href="{% url 'content:eye_test_booking' %}">Book Now</a>
+        </div>
+        {% endif %}
+        
+        <!-- Prescription Details -->
+        <div class="prescription-content">
+            <!-- Main Details -->
+            <div class="details-card">
+                <h2>Prescription Details</h2>
+                
+                <div class="detail-section">
+                    <h3>Type</h3>
+                    <p>{{ prescription.get_prescription_type_display }}</p>
+                </div>
+                
+                <!-- Right Eye -->
+                <div class="detail-section eye-section">
+                    <h3>Right Eye (OD)</h3>
+                    <table class="prescription-table">
+                        <tr>
+                            <th>Sphere (SPH)</th>
+                            <td>{{ prescription.od_sphere|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Cylinder (CYL)</th>
+                            <td>{{ prescription.od_cylinder|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Axis</th>
+                            <td>{{ prescription.od_axis|default:"-" }}°</td>
+                        </tr>
+                        {% if prescription.od_add %}
+                        <tr>
+                            <th>Add (Near)</th>
+                            <td>{{ prescription.od_add }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if prescription.od_base_curve %}
+                        <tr>
+                            <th>Base Curve</th>
+                            <td>{{ prescription.od_base_curve }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if prescription.od_diameter %}
+                        <tr>
+                            <th>Diameter</th>
+                            <td>{{ prescription.od_diameter }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+                
+                <!-- Left Eye -->
+                <div class="detail-section eye-section">
+                    <h3>Left Eye (OS)</h3>
+                    <table class="prescription-table">
+                        <tr>
+                            <th>Sphere (SPH)</th>
+                            <td>{{ prescription.os_sphere|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Cylinder (CYL)</th>
+                            <td>{{ prescription.os_cylinder|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Axis</th>
+                            <td>{{ prescription.os_axis|default:"-" }}°</td>
+                        </tr>
+                        {% if prescription.os_add %}
+                        <tr>
+                            <th>Add (Near)</th>
+                            <td>{{ prescription.os_add }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if prescription.os_base_curve %}
+                        <tr>
+                            <th>Base Curve</th>
+                            <td>{{ prescription.os_base_curve }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if prescription.os_diameter %}
+                        <tr>
+                            <th>Diameter</th>
+                            <td>{{ prescription.os_diameter }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+                
+                <!-- Pupillary Distance -->
+                {% if prescription.pd or prescription.pd_left or prescription.pd_right %}
+                <div class="detail-section">
+                    <h3>Pupillary Distance (PD)</h3>
+                    {% if prescription.pd %}
+                    <p><strong>Total PD:</strong> {{ prescription.pd }} mm</p>
+                    {% endif %}
+                    {% if prescription.pd_left and prescription.pd_right %}
+                    <p><strong>Right PD:</strong> {{ prescription.pd_right }} mm</p>
+                    <p><strong>Left PD:</strong> {{ prescription.pd_left }} mm</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Additional Information -->
+            <div class="details-card">
+                <h2>Additional Information</h2>
+                
+                {% if prescription.doctor_name %}
+                <div class="detail-row">
+                    <span class="label">Doctor/Optometrist:</span>
+                    <span class="value">{{ prescription.doctor_name }}</span>
+                </div>
+                {% endif %}
+                
+                {% if prescription.clinic_name %}
+                <div class="detail-row">
+                    <span class="label">Clinic/Store:</span>
+                    <span class="value">{{ prescription.clinic_name }}</span>
+                </div>
+                {% endif %}
+                
+                {% if prescription.prescription_date %}
+                <div class="detail-row">
+                    <span class="label">Prescription Date:</span>
+                    <span class="value">{{ prescription.prescription_date }}</span>
+                </div>
+                {% endif %}
+                
+                {% if prescription.expiry_date %}
+                <div class="detail-row">
+                    <span class="label">Expiry Date:</span>
+                    <span class="value">{{ prescription.expiry_date }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="detail-row">
+                    <span class="label">Created:</span>
+                    <span class="value">{{ prescription.created_at|date:"F j, Y" }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="label">Last Updated:</span>
+                    <span class="value">{{ prescription.updated_at|date:"F j, Y" }}</span>
+                </div>
+                
+                {% if prescription.notes %}
+                <div class="detail-section">
+                    <h3>Notes</h3>
+                    <p>{{ prescription.notes }}</p>
+                </div>
+                {% endif %}
+                
+                {% if prescription.prescription_file %}
+                <div class="detail-section">
+                    <h3>Prescription File</h3>
+                    <a href="{{ prescription.prescription_file.url }}" target="_blank" class="btn btn-outline">
+                        📄 View Uploaded Prescription
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="prescription-actions">
+            <a href="{% url 'prescriptions:prescription_edit' prescription.id %}" class="btn btn-primary">
+                Edit Prescription
+            </a>
+            
+            {% if not prescription.is_default %}
+            <form method="post" action="{% url 'prescriptions:set_default' prescription.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline">Set as Default</button>
+            </form>
+            {% endif %}
+            
+            <button class="btn btn-outline" onclick="usePrescription()">
+                Use for Shopping
+            </button>
+            
+            <form method="post" action="{% url 'prescriptions:prescription_delete' prescription.id %}" 
+                  style="display:inline;"
+                  onsubmit="return confirm('Are you sure you want to delete this prescription?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+            
+            <a href="{% url 'prescriptions:prescription_list' %}" class="btn btn-text">
+                Back to All Prescriptions
+            </a>
+        </div>
+        
+        <!-- Shop with This Prescription -->
+        <div class="shop-section">
+            <h2>Shop with This Prescription</h2>
+            <div class="shop-cards">
+                {% if prescription.prescription_type == 'eyeglasses' %}
+                <a href="{% url 'catalog:eyeglasses_list' %}" class="shop-card">
+                    <h3>Shop Eyeglasses</h3>
+                    <p>Browse our eyeglass collection</p>
+                </a>
+                {% elif prescription.prescription_type == 'contact_lenses' %}
+                <a href="{% url 'catalog:contact_lenses_list' %}" class="shop-card">
+                    <h3>Shop Contact Lenses</h3>
+                    <p>Browse our contact lens collection</p>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function usePrescription() {
+    // Store prescription ID in session/localStorage for use during shopping
+    localStorage.setItem('selectedPrescriptionId', {{ prescription.id }});
+    alert('Prescription selected! It will be used when adding items to cart.');
+    
+    {% if prescription.prescription_type == 'eyeglasses' %}
+    window.location.href = '{% url "catalog:eyeglasses_list" %}';
+    {% elif prescription.prescription_type == 'contact_lenses' %}
+    window.location.href = '{% url "catalog:contact_lenses_list" %}';
+    {% endif %}
+}
+</script>
+{% endblock %}
+
+
