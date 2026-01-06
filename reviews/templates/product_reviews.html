@@ -1,0 +1,262 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Reviews for {{ product.name }} - Eyewear Store{% endblock %}
+
+{% block content %}
+<div class="product-reviews-page">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="{% url 'catalog:home' %}">Home</a> / 
+            <a href="{% url 'catalog:product_detail' product.slug %}">{{ product.name }}</a> / 
+            <span>Reviews</span>
+        </div>
+        
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>Customer Reviews</h1>
+            <p>{{ product.name }}</p>
+        </div>
+        
+        <!-- Rating Summary -->
+        <div class="rating-summary-section">
+            <div class="overall-rating">
+                <div class="rating-number">
+                    <span class="big-rating">{{ rating_stats.average_rating|floatformat:1|default:"0.0" }}</span>
+                    <span class="out-of">out of 5</span>
+                </div>
+                <div class="stars">
+                    {% with rating=rating_stats.average_rating|floatformat:0|default:"0" %}
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= rating|add:"0" %}
+                        <span class="star filled">★</span>
+                        {% else %}
+                        <span class="star">☆</span>
+                        {% endif %}
+                    {% endfor %}
+                    {% endwith %}
+                </div>
+                <p class="total-reviews">{{ rating_stats.total_reviews }} reviews</p>
+            </div>
+            
+            <div class="rating-breakdown">
+                <h3>Rating Breakdown</h3>
+                {% for rating in "54321" %}
+                <div class="rating-bar-row">
+                    <span class="rating-label">{{ rating }} stars</span>
+                    <div class="rating-bar">
+                        <div class="rating-fill" style="width: {{ rating_percentages|get_item:rating|floatformat:0 }}%"></div>
+                    </div>
+                    <span class="rating-count">
+                        {% if rating == "5" %}{{ rating_stats.five_star }}{% endif %}
+                        {% if rating == "4" %}{{ rating_stats.four_star }}{% endif %}
+                        {% if rating == "3" %}{{ rating_stats.three_star }}{% endif %}
+                        {% if rating == "2" %}{{ rating_stats.two_star }}{% endif %}
+                        {% if rating == "1" %}{{ rating_stats.one_star }}{% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Write Review Button -->
+        {% if user.is_authenticated %}
+            {% if can_review %}
+            <div class="write-review-cta">
+                <a href="{% url 'reviews:write_review' product.slug %}" class="btn btn-primary">
+                    ✍️ Write a Review
+                </a>
+            </div>
+            {% elif user_review %}
+            <div class="user-review-notice">
+                <p>You have already reviewed this product.</p>
+                <a href="{% url 'reviews:edit_review' user_review.id %}" class="btn btn-outline">
+                    Edit Your Review
+                </a>
+            </div>
+            {% endif %}
+        {% else %}
+        <div class="login-to-review">
+            <p><a href="{% url 'users:login' %}?next={{ request.path }}">Login</a> to write a review</p>
+        </div>
+        {% endif %}
+        
+        <!-- Filters and Sorting -->
+        <div class="reviews-controls">
+            <div class="filters">
+                <h3>Filter by:</h3>
+                <select name="rating" onchange="filterReviews(this.value)">
+                    <option value="all" {% if current_rating_filter == 'all' %}selected{% endif %}>All Ratings</option>
+                    <option value="5" {% if current_rating_filter == '5' %}selected{% endif %}>5 Stars</option>
+                    <option value="4" {% if current_rating_filter == '4' %}selected{% endif %}>4 Stars</option>
+                    <option value="3" {% if current_rating_filter == '3' %}selected{% endif %}>3 Stars</option>
+                    <option value="2" {% if current_rating_filter == '2' %}selected{% endif %}>2 Stars</option>
+                    <option value="1" {% if current_rating_filter == '1' %}selected{% endif %}>1 Star</option>
+                </select>
+                
+                <label class="checkbox">
+                    <input type="checkbox" {% if verified_only %}checked{% endif %} onchange="toggleVerified(this.checked)">
+                    Verified Purchases Only
+                </label>
+            </div>
+            
+            <div class="sorting">
+                <label>Sort by:</label>
+                <select name="sort" onchange="sortReviews(this.value)">
+                    <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Most Recent</option>
+                    <option value="helpful" {% if sort_by == 'helpful' %}selected{% endif %}>Most Helpful</option>
+                    <option value="rating_high" {% if sort_by == 'rating_high' %}selected{% endif %}>Highest Rating</option>
+                    <option value="rating_low" {% if sort_by == 'rating_low' %}selected{% endif %}>Lowest Rating</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Reviews List -->
+        <div class="reviews-list">
+            {% if reviews %}
+                {% for review in reviews %}
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <span class="reviewer-name">{{ review.customer.get_full_name|default:review.customer.username }}</span>
+                            {% if review.is_verified_purchase %}
+                            <span class="badge verified">✓ Verified Purchase</span>
+                            {% endif %}
+                        </div>
+                        <div class="review-meta">
+                            <div class="rating-stars">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                    <span class="star filled">★</span>
+                                    {% else %}
+                                    <span class="star">☆</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="review-date">{{ review.created_at|date:"F j, Y" }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if review.title %}
+                    <h3 class="review-title">{{ review.title }}</h3>
+                    {% endif %}
+                    
+                    <div class="review-content">
+                        <p>{{ review.comment }}</p>
+                    </div>
+                    
+                    {% if review.images.all %}
+                    <div class="review-images">
+                        {% for image in review.images.all %}
+                        <img src="{{ image.image.url }}" alt="Review image" onclick="openImageModal('{{ image.image.url }}')">
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="review-actions">
+                        <div class="helpfulness">
+                            <span>Was this review helpful?</span>
+                            {% if user.is_authenticated %}
+                            <form method="post" action="{% url 'reviews:mark_helpful' review.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="is_helpful" value="true">
+                                <button type="submit" class="btn-helpful">
+                                    👍 Yes ({{ review.helpful_count }})
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'reviews:mark_helpful' review.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="is_helpful" value="false">
+                                <button type="submit" class="btn-not-helpful">
+                                    👎 No ({{ review.not_helpful_count }})
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="login-prompt">
+                                <a href="{% url 'users:login' %}">Login</a> to vote
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if user == review.customer %}
+                        <div class="owner-actions">
+                            <a href="{% url 'reviews:edit_review' review.id %}" class="btn-edit">Edit</a>
+                            <form method="post" action="{% url 'reviews:delete_review' review.id %}" 
+                                  style="display:inline;"
+                                  onsubmit="return confirm('Are you sure you want to delete this review?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-delete">Delete</button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <!-- Pagination -->
+                {% if reviews.has_other_pages %}
+                <div class="pagination">
+                    {% if reviews.has_previous %}
+                    <a href="?page={{ reviews.previous_page_number }}" class="page-link">Previous</a>
+                    {% endif %}
+                    
+                    <span class="page-info">Page {{ reviews.number }} of {{ reviews.paginator.num_pages }}</span>
+                    
+                    {% if reviews.has_next %}
+                    <a href="?page={{ reviews.next_page_number }}" class="page-link">Next</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% else %}
+            <div class="no-reviews">
+                <p>No reviews yet. Be the first to review this product!</p>
+                {% if user.is_authenticated and can_review %}
+                <a href="{% url 'reviews:write_review' product.slug %}" class="btn btn-primary">
+                    Write the First Review
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" class="modal" style="display:none;">
+    <span class="close" onclick="closeImageModal()">&times;</span>
+    <img class="modal-content" id="modalImage">
+</div>
+
+<script>
+function filterReviews(rating) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('rating', rating);
+    window.location.href = url.toString();
+}
+
+function toggleVerified(checked) {
+    const url = new URL(window.location.href);
+    if (checked) {
+        url.searchParams.set('verified', 'true');
+    } else {
+        url.searchParams.delete('verified');
+    }
+    window.location.href = url.toString();
+}
+
+function sortReviews(sort) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sort', sort);
+    window.location.href = url.toString();
+}
+
+function openImageModal(imageUrl) {
+    document.getElementById('imageModal').style.display = 'block';
+    document.getElementById('modalImage').src = imageUrl;
+}
+
+function closeImageModal() {
+    document.getElementById('imageModal').style.display = 'none';
+}
+</script>
+{% endblock %}

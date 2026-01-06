@@ -1,0 +1,134 @@
+<!-- my_reviews.html -->
+{% extends 'catalog/base.html' %}
+
+{% block title %}My Reviews - Eyewear Store{% endblock %}
+
+{% block content %}
+<div class="my-reviews-page">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>My Reviews</h1>
+            <p>Manage all your product reviews</p>
+        </div>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Reviews List -->
+        {% if reviews %}
+        <div class="my-reviews-list">
+            {% for review in reviews %}
+            <div class="my-review-card">
+                <div class="review-product-info">
+                    <div class="product-image">
+                        {% if review.product.images.first %}
+                        <img src="{{ review.product.images.first.image.url }}" alt="{{ review.product.name }}">
+                        {% endif %}
+                    </div>
+                    <div class="product-details">
+                        <h3>
+                            <a href="{% url 'catalog:product_detail' review.product.slug %}">
+                                {{ review.product.name }}
+                            </a>
+                        </h3>
+                        <p class="brand">{{ review.product.brand.name }}</p>
+                    </div>
+                </div>
+                
+                <div class="review-content-section">
+                    <div class="review-header">
+                        <div class="rating-stars">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}
+                                <span class="star filled">★</span>
+                                {% else %}
+                                <span class="star">☆</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="review-status">
+                            {% if review.is_approved %}
+                            <span class="badge approved">✓ Published</span>
+                            {% else %}
+                            <span class="badge pending">⏳ Pending Approval</span>
+                            {% endif %}
+                            {% if review.is_verified_purchase %}
+                            <span class="badge verified">✓ Verified Purchase</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if review.title %}
+                    <h4 class="review-title">{{ review.title }}</h4>
+                    {% endif %}
+                    
+                    <p class="review-comment">{{ review.comment }}</p>
+                    
+                    {% if review.images.all %}
+                    <div class="review-images">
+                        {% for image in review.images.all %}
+                        <img src="{{ image.image.url }}" alt="Review image">
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="review-meta">
+                        <span class="date">Posted on {{ review.created_at|date:"F j, Y" }}</span>
+                        <span class="helpful">{{ review.helpful_count }} people found this helpful</span>
+                    </div>
+                    
+                    <div class="review-actions">
+                        <a href="{% url 'reviews:edit_review' review.id %}" class="btn btn-sm btn-outline">
+                            Edit Review
+                        </a>
+                        <form method="post" action="{% url 'reviews:delete_review' review.id %}" 
+                              style="display:inline;"
+                              onsubmit="return confirm('Are you sure you want to delete this review?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                        <a href="{% url 'reviews:product_reviews' review.product.slug %}" class="btn btn-sm btn-text">
+                            View All Reviews
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if reviews.has_other_pages %}
+        <div class="pagination">
+            {% if reviews.has_previous %}
+            <a href="?page={{ reviews.previous_page_number }}" class="page-link">Previous</a>
+            {% endif %}
+            
+            <span class="page-info">Page {{ reviews.number }} of {{ reviews.paginator.num_pages }}</span>
+            
+            {% if reviews.has_next %}
+            <a href="?page={{ reviews.next_page_number }}" class="page-link">Next</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <!-- No Reviews -->
+        <div class="no-reviews">
+            <div class="empty-state">
+                <h2>You haven't written any reviews yet</h2>
+                <p>Share your experience with products you've purchased to help other customers make informed decisions.</p>
+                <a href="{% url 'catalog:home' %}" class="btn btn-primary">Start Shopping</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

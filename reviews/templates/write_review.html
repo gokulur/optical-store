@@ -1,0 +1,191 @@
+<!-- write_review.html -->
+{% extends 'catalog/base.html' %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Write{% endif %} Review - {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="write-review-page">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="{% url 'catalog:home' %}">Home</a> / 
+            <a href="{% url 'catalog:product_detail' product.slug %}">{{ product.name }}</a> / 
+            <span>{% if is_edit %}Edit{% else %}Write{% endif %} Review</span>
+        </div>
+        
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>{% if is_edit %}Edit Your{% else %}Write a{% endif %} Review</h1>
+        </div>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Product Info -->
+        <div class="product-info-card">
+            <div class="product-image">
+                {% if product.images.first %}
+                <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                {% endif %}
+            </div>
+            <div class="product-details">
+                <h2>{{ product.name }}</h2>
+                <p class="brand">{{ product.brand.name }}</p>
+            </div>
+        </div>
+        
+        <!-- Review Form -->
+        <form method="post" enctype="multipart/form-data" class="review-form">
+            {% csrf_token %}
+            
+            <!-- Rating -->
+            <div class="form-group rating-input">
+                <label>Your Rating *</label>
+                <div class="star-rating-input">
+                    <input type="radio" name="rating" value="5" id="star5" {% if review and review.rating == 5 %}checked{% endif %} required>
+                    <label for="star5" title="5 stars">★</label>
+                    
+                    <input type="radio" name="rating" value="4" id="star4" {% if review and review.rating == 4 %}checked{% endif %}>
+                    <label for="star4" title="4 stars">★</label>
+                    
+                    <input type="radio" name="rating" value="3" id="star3" {% if review and review.rating == 3 %}checked{% endif %}>
+                    <label for="star3" title="3 stars">★</label>
+                    
+                    <input type="radio" name="rating" value="2" id="star2" {% if review and review.rating == 2 %}checked{% endif %}>
+                    <label for="star2" title="2 stars">★</label>
+                    
+                    <input type="radio" name="rating" value="1" id="star1" {% if review and review.rating == 1 %}checked{% endif %}>
+                    <label for="star1" title="1 star">★</label>
+                </div>
+                <p class="rating-description" id="ratingDescription">Select a rating</p>
+            </div>
+            
+            <!-- Title -->
+            <div class="form-group">
+                <label for="title">Review Title (Optional)</label>
+                <input type="text" name="title" id="title" 
+                       placeholder="e.g., Great quality and style!"
+                       maxlength="200"
+                       value="{% if review %}{{ review.title }}{% endif %}">
+            </div>
+            
+            <!-- Comment -->
+            <div class="form-group">
+                <label for="comment">Your Review *</label>
+                <textarea name="comment" id="comment" rows="6" required
+                          placeholder="Share your thoughts about this product. What did you like or dislike? How does it fit? What would you recommend to others?"
+                          minlength="10">{% if review %}{{ review.comment }}{% endif %}</textarea>
+                <p class="char-count"><span id="charCount">0</span> characters (minimum 10)</p>
+            </div>
+            
+            <!-- Images -->
+            <div class="form-group">
+                <label for="images">Add Photos (Optional)</label>
+                <input type="file" name="images" id="images" accept="image/*" multiple>
+                <p class="file-help">You can upload up to 5 images (JPG, PNG, max 5MB each)</p>
+                
+                <div id="imagePreview" class="image-preview"></div>
+                
+                {% if review and review.images.all %}
+                <div class="existing-images">
+                    <h4>Current Images:</h4>
+                    {% for image in review.images.all %}
+                    <div class="existing-image">
+                        <img src="{{ image.image.url }}" alt="Review image">
+                        <label>
+                            <input type="checkbox" name="delete_images" value="{{ image.id }}">
+                            Delete
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Guidelines -->
+            <div class="review-guidelines">
+                <h3>Review Guidelines:</h3>
+                <ul>
+                    <li>Focus on the product and your experience with it</li>
+                    <li>Be honest and constructive in your feedback</li>
+                    <li>Avoid profanity and personal attacks</li>
+                    <li>Don't include personal information (email, phone, address)</li>
+                    <li>Reviews are moderated and will be published after approval</li>
+                </ul>
+            </div>
+            
+            <!-- Submit -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    {% if is_edit %}Update{% else %}Submit{% endif %} Review
+                </button>
+                <a href="{% url 'catalog:product_detail' product.slug %}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Star rating interaction
+const stars = document.querySelectorAll('.star-rating-input label');
+const ratingDesc = document.getElementById('ratingDescription');
+const descriptions = {
+    5: '5 stars - Excellent!',
+    4: '4 stars - Very Good',
+    3: '3 stars - Good',
+    2: '2 stars - Fair',
+    1: '1 star - Poor'
+};
+
+document.querySelectorAll('.star-rating-input input').forEach(input => {
+    input.addEventListener('change', function() {
+        ratingDesc.textContent = descriptions[this.value];
+    });
+});
+
+// Character count
+const commentTextarea = document.getElementById('comment');
+const charCount = document.getElementById('charCount');
+
+commentTextarea.addEventListener('input', function() {
+    charCount.textContent = this.value.length;
+});
+
+// Initialize character count
+charCount.textContent = commentTextarea.value.length;
+
+// Image preview
+document.getElementById('images').addEventListener('change', function(e) {
+    const preview = document.getElementById('imagePreview');
+    preview.innerHTML = '';
+    
+    const files = Array.from(e.target.files).slice(0, 5);
+    
+    files.forEach(file => {
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                preview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+});
+
+// Initialize rating description if editing
+{% if review %}
+ratingDesc.textContent = descriptions[{{ review.rating }}];
+{% endif %}
+</script>
+{% endblock %}
+
+
