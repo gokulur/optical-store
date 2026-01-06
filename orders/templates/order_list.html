@@ -1,0 +1,27 @@
+<!-- order_list.html -->
+{% extends 'catalog/base.html' %}
+{% block title %}My Orders{% endblock %}
+{% block content %}
+<div class="orders-page">
+    <div class="container">
+        <h1>My Orders</h1>
+        <div class="filter-bar"><a href="?status=all"
+                class="{% if not status_filter or status_filter == 'all' %}active{% endif %}">All</a>{% for status_code,
+            status_name in order_statuses %}<a href="?status={{ status_code }}"
+                class="{% if status_filter == status_code %}active{% endif %}">{{ status_name }}</a>{% endfor %}</div>{%
+        if orders %}<div class="orders-list">{% for order in orders %}<div class="order-card">
+                <div class="order-header"><span class="order-number">#{{ order.order_number }}</span><span
+                        class="order-status status-{{ order.status }}">{{ order.get_status_display }}</span></div>
+                <div class="order-body">
+                    <p>{{ order.items.count }} item(s) • {{ order.total_amount }} QAR</p>
+                    <p class="order-date">{{ order.created_at|date:"F j, Y" }}</p>
+                </div>
+                <div class="order-actions"><a href="{% url 'orders:order_detail' order.order_number %}"
+                        class="btn btn-sm">View Details</a><a href="{% url 'orders:track_order' order.order_number %}"
+                        class="btn btn-sm btn-outline">Track Order</a></div>
+            </div>{% endfor %}</div>{% else %}<div class="empty-state">
+            <p>No orders found</p><a href="{% url 'catalog:home' %}" class="btn btn-primary">Start Shopping</a>
+        </div>{% endif %}
+    </div>
+</div>
+{% endblock %}

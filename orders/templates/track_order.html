@@ -1,0 +1,27 @@
+{% extends 'catalog/base.html' %}
+{% block title %}Track Order #{{ order.order_number }}{% endblock %}
+{% block content %}
+<div class="track-order-page">
+    <div class="container">
+        <h1>Track Order</h1>
+        <p class="order-number">Order #{{ order.order_number }}</p>
+        <div class="tracking-timeline">{% for status in status_progression %}<div
+                class="timeline-step {% if forloop.counter0 <= current_status_index %}completed{% endif %} {% if status == order.status %}current{% endif %}">
+                <div class="step-icon">{% if forloop.counter0 <= current_status_index %}✓{% else %}○{% endif %}</div>
+                        <div class="step-info">
+                            <h3>{{ status|title }}</h3>
+                        </div>
+                </div>{% endfor %}
+            </div>{% if order.tracking_number %}<div class="tracking-info">
+                <h2>Tracking Information</h2>
+                <p><strong>Tracking Number:</strong> {{ order.tracking_number }}</p>
+                <p><strong>Carrier:</strong> {{ order.carrier }}</p>
+            </div>{% endif %}<div class="status-history">
+                <h2>Status History</h2>{% for history in status_history %}<div class="history-item"><span
+                        class="history-date">{{ history.created_at|date:"M j, Y H:i" }}</span><span
+                        class="history-status">{{ history.to_status|title }}</span>{% if history.notes %}<p>{{
+                        history.notes }}</p>{% endif %}</div>{% endfor %}
+            </div><a href="{% url 'orders:order_detail' order.order_number %}" class="btn btn-primary">Back to Order
+                Details</a></div>
+    </div>
+    {% endblock %}

@@ -1,0 +1,95 @@
+<!-- checkout.html -->
+{% extends 'catalog/base.html' %}
+{% block title %}Checkout - Eyewear Store{% endblock %}
+{% block content %}
+<div class="checkout-page">
+    <div class="container">
+        <h1>Checkout</h1>
+        {% if messages %}{% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{%
+        endfor %}{% endif %}
+        <form method="post" action="{% url 'orders:place_order' %}" class="checkout-form">
+            {% csrf_token %}
+            <div class="checkout-grid">
+                <div class="checkout-main">
+                    <section class="checkout-section">
+                        <h2>1. Shipping Address</h2>
+                        {% if shipping_addresses %}
+                        <div class="address-select">
+                            {% for address in shipping_addresses %}
+                            <label class="address-option {% if address == default_shipping %}selected{% endif %}">
+                                <input type="radio" name="shipping_address_id" value="{{ address.id }}" {% if
+                                    address==default_shipping %}checked{% endif %} required>
+                                <div class="address-card"><strong>{{ address.full_name }}</strong>
+                                    <p>{{ address.address_line1 }}, {{ address.city }}</p>
+                                    <p>{{ address.phone }}</p>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <a href="{% url 'users:address_create' %}?next={{ request.path }}"
+                            class="btn btn-outline btn-sm">Add New Address</a>
+                        {% else %}
+                        <p>No saved addresses. <a href="{% url 'users:address_create' %}">Add an address</a></p>
+                        {% endif %}
+                    </section>
+                    <section class="checkout-section">
+                        <h2>2. Billing Address</h2>
+                        <label class="checkbox"><input type="checkbox" id="sameas
+
+Shipping" checked onchange="toggleBilling()"> Same as shipping address</label>
+                        <div id="billingSection" style="display:none;">
+                            <div class="address-select">
+                                {% for address in shipping_addresses %}
+                                <label class="address-option"><input type="radio" name="billing_address_id"
+                                        value="{{ address.id }}">
+                                    <div class="address-card"><strong>{{ address.full_name }}</strong>
+                                        <p>{{ address.address_line1 }}</p>
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </section>
+                    <section class="checkout-section">
+                        <h2>3. Payment Method</h2>
+                        <div class="payment-methods">
+                            <label class="payment-option"><input type="radio" name="payment_method"
+                                    value="cash_on_delivery" checked required><span>💵 Cash on Delivery</span></label>
+                            <label class="payment-option"><input type="radio" name="payment_method"
+                                    value="credit_card"><span>💳 Credit/Debit Card</span></label>
+                        </div>
+                    </section>
+                    <section class="checkout-section">
+                        <h2>4. Order Notes</h2>
+                        <textarea name="customer_notes" placeholder="Special instructions..." rows="3"></textarea>
+                    </section>
+                </div>
+                <div class="checkout-sidebar">
+                    <div class="order-summary">
+                        <h2>Order Summary</h2>
+                        <div class="summary-items">
+                            {% for item in cart_items %}
+                            <div class="summary-item"><img src="{{ item.product.images.first.image.url }}"
+                                    alt="{{ item.product.name }}">
+                                <div>
+                                    <h4>{{ item.product.name }}</h4>
+                                    <p>Qty: {{ item.quantity }}</p>
+                                </div><span>{{ item.unit_price }} QAR</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="summary-totals">
+                            <div class="total-row"><span>Subtotal:</span><span>{{ subtotal }} QAR</span></div>
+                            <div class="total-row"><span>Shipping:</span><span>{{ shipping }} QAR</span></div>
+                            <div class="total-row"><span>Tax:</span><span>{{ tax }} QAR</span></div>
+                            <div class="total-row total"><strong>Total:</strong><strong>{{ total }} QAR</strong></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Place Order</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>function toggleBilling() { document.getElementById('billingSection').style.display = document.getElementById('sameAsShipping').checked ? 'none' : 'block'; }</script>
+{% endblock %}

@@ -1,0 +1,5 @@
+{% extends 'catalog/base.html' %}
+{% block title %}Order Confirmation{% endblock %}
+{% block content %}
+<div class="confirmation-page"><div class="container"><div class="success-icon">✓</div><h1>Order Confirmed!</h1><p>Thank you for your order. We'll send you updates via email.</p><div class="order-info-card"><h2>Order Details</h2><p><strong>Order Number:</strong> {{ order.order_number }}</p><p><strong>Total:</strong> {{ order.total_amount }} QAR</p><p><strong>Payment:</strong> {{ order.get_payment_method_display }}</p><p><strong>Estimated Delivery:</strong> 3-5 business days</p></div><div class="actions"><a href="{% url 'orders:order_detail' order.order_number %}" class="btn btn-primary">View Order Details</a><a href="{% url 'catalog:home' %}" class="btn btn-outline">Continue Shopping</a></div></div></div>
+{% endblock %}
