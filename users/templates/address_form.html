@@ -1,0 +1,156 @@
+<!-- address_form.html -->
+{% extends 'catalog/base.html' %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} Address - Eyewear Store{% endblock %}
+
+{% block content %}
+<div class="address-form-page">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>{% if is_edit %}Edit{% else %}Add New{% endif %} Address</h1>
+            <p>{% if is_edit %}Update{% else %}Enter{% endif %} your delivery or billing address</p>
+        </div>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form method="post" class="address-form">
+            {% csrf_token %}
+            
+            <section class="form-section">
+                <h2>Address Type</h2>
+                
+                <div class="form-group">
+                    <label>This address is for:</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="address_type" value="both" 
+                                   {% if not is_edit or address.address_type == 'both' %}checked{% endif %}>
+                            <span>Both Shipping & Billing</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="address_type" value="shipping"
+                                   {% if is_edit and address.address_type == 'shipping' %}checked{% endif %}>
+                            <span>Shipping Only</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="address_type" value="billing"
+                                   {% if is_edit and address.address_type == 'billing' %}checked{% endif %}>
+                            <span>Billing Only</span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="form-section">
+                <h2>Contact Information</h2>
+                
+                <div class="form-group">
+                    <label for="full_name">Full Name *</label>
+                    <input type="text" name="full_name" id="full_name" required
+                           value="{% if is_edit %}{{ address.full_name }}{% else %}{{ user.get_full_name }}{% endif %}"
+                           placeholder="John Doe">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number *</label>
+                    <input type="tel" name="phone" id="phone" required
+                           value="{% if is_edit %}{{ address.phone }}{% else %}{{ user.phone }}{% endif %}"
+                           placeholder="+974 XXXX XXXX">
+                    <small>For delivery notifications</small>
+                </div>
+            </section>
+            
+            <section class="form-section">
+                <h2>Address Details</h2>
+                
+                <div class="form-group">
+                    <label for="address_line1">Address Line 1 *</label>
+                    <input type="text" name="address_line1" id="address_line1" required
+                           value="{% if is_edit %}{{ address.address_line1 }}{% endif %}"
+                           placeholder="Street address, P.O. box, company name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="address_line2">Address Line 2</label>
+                    <input type="text" name="address_line2" id="address_line2"
+                           value="{% if is_edit %}{{ address.address_line2 }}{% endif %}"
+                           placeholder="Apartment, suite, unit, building, floor, etc.">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="city">City *</label>
+                        <input type="text" name="city" id="city" required
+                               value="{% if is_edit %}{{ address.city }}{% else %}{{ user.city }}{% endif %}"
+                               placeholder="Doha">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="state">State/Province</label>
+                        <input type="text" name="state" id="state"
+                               value="{% if is_edit %}{{ address.state }}{% endif %}"
+                               placeholder="Optional">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="country">Country *</label>
+                        <select name="country" id="country" required>
+                            <option value="Qatar" {% if not is_edit or address.country == 'Qatar' %}selected{% endif %}>Qatar</option>
+                            <option value="UAE" {% if is_edit and address.country == 'UAE' %}selected{% endif %}>United Arab Emirates</option>
+                            <option value="Saudi Arabia" {% if is_edit and address.country == 'Saudi Arabia' %}selected{% endif %}>Saudi Arabia</option>
+                            <option value="Kuwait" {% if is_edit and address.country == 'Kuwait' %}selected{% endif %}>Kuwait</option>
+                            <option value="Bahrain" {% if is_edit and address.country == 'Bahrain' %}selected{% endif %}>Bahrain</option>
+                            <option value="Oman" {% if is_edit and address.country == 'Oman' %}selected{% endif %}>Oman</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="postal_code">Postal Code</label>
+                        <input type="text" name="postal_code" id="postal_code"
+                               value="{% if is_edit %}{{ address.postal_code }}{% endif %}"
+                               placeholder="Optional">
+                    </div>
+                </div>
+            </section>
+            
+            <section class="form-section">
+                <h2>Default Settings</h2>
+                
+                <div class="form-group checkbox">
+                    <label>
+                        <input type="checkbox" name="is_default_shipping"
+                               {% if is_edit and address.is_default_shipping %}checked{% endif %}>
+                        Set as default shipping address
+                    </label>
+                </div>
+                
+                <div class="form-group checkbox">
+                    <label>
+                        <input type="checkbox" name="is_default_billing"
+                               {% if is_edit and address.is_default_billing %}checked{% endif %}>
+                        Set as default billing address
+                    </label>
+                </div>
+            </section>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    {% if is_edit %}Update{% else %}Save{% endif %} Address
+                </button>
+                <a href="{% url 'users:address_list' %}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

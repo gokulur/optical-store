@@ -1,20 +1,153 @@
- 
-<h2>Create Account</h2>
+<!-- register.html -->
+{% extends 'catalog/base.html' %}
 
-<form method="post">
-    {% csrf_token %}
-    <input type="text" name="first_name" placeholder="First name">
-    <input type="text" name="last_name" placeholder="Last name">
-    <input type="email" name="email" placeholder="Email" required>
-    <input type="text" name="phone" placeholder="Phone">
-    <input type="password" name="password" placeholder="Password" required>
-    <input type="password" name="password_confirm" placeholder="Confirm password" required>
+{% block title %}Register - Eyewear Store{% endblock %}
 
-    <button type="submit">Register</button>
-</form>
+{% block content %}
+<div class="auth-page register-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1>Create Account</h1>
+            <p class="subtitle">Join us today and start shopping</p>
+            
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="post" action="{% url 'users:register' %}" class="auth-form">
+                {% csrf_token %}
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="first_name">First Name *</label>
+                        <input type="text" name="first_name" id="first_name" required
+                               placeholder="John">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="last_name">Last Name *</label>
+                        <input type="text" name="last_name" id="last_name" required
+                               placeholder="Doe">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" name="email" id="email" required
+                           placeholder="your@email.com">
+                    <small>We'll send order confirmations to this email</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" name="phone" id="phone"
+                           placeholder="+974 XXXX XXXX">
+                    <small>Optional - for order updates</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password *</label>
+                    <input type="password" name="password" id="password" required
+                           placeholder="Create a strong password">
+                    <small>At least 8 characters with letters and numbers</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password_confirm">Confirm Password *</label>
+                    <input type="password" name="password_confirm" id="password_confirm" required
+                           placeholder="Re-enter your password">
+                </div>
+                
+                <div class="form-group checkbox">
+                    <label>
+                        <input type="checkbox" name="terms" required>
+                        I agree to the <a href="{% url 'content:terms_and_conditions' %}" target="_blank">Terms & Conditions</a> and <a href="{% url 'content:privacy_policy' %}" target="_blank">Privacy Policy</a>
+                    </label>
+                </div>
+                
+                <div class="form-group checkbox">
+                    <label>
+                        <input type="checkbox" name="newsletter" checked>
+                        Send me exclusive offers and updates
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">
+                    Create Account
+                </button>
+            </form>
+            
+            <div class="auth-divider">
+                <span>OR</span>
+            </div>
+            
+            <div class="social-login">
+                <button class="btn btn-social btn-google">
+                    Sign up with Google
+                </button>
+                <button class="btn btn-social btn-facebook">
+                    Sign up with Facebook
+                </button>
+            </div>
+            
+            <div class="auth-footer">
+                <p>Already have an account? <a href="{% url 'users:login' %}">Login</a></p>
+            </div>
+        </div>
+        
+        <div class="auth-benefits">
+            <h2>Member Benefits</h2>
+            <ul>
+                <li>
+                    <strong>Free Shipping</strong>
+                    <p>On orders over 200 QAR</p>
+                </li>
+                <li>
+                    <strong>Easy Returns</strong>
+                    <p>14-day return policy</p>
+                </li>
+                <li>
+                    <strong>Loyalty Rewards</strong>
+                    <p>Earn points on every purchase</p>
+                </li>
+                <li>
+                    <strong>Exclusive Access</strong>
+                    <p>Member-only sales and offers</p>
+                </li>
+                <li>
+                    <strong>Save Prescriptions</strong>
+                    <p>Store and manage your prescriptions</p>
+                </li>
+                <li>
+                    <strong>Order Tracking</strong>
+                    <p>Real-time updates on your orders</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
 
-<p style="margin-top:15px;">
-    Already have an account?
-    <a href="{% url 'users:login' %}">Login</a>
-</p>
- 
+<script>
+// Password strength indicator
+const passwordInput = document.getElementById('password');
+const confirmInput = document.getElementById('password_confirm');
+
+passwordInput.addEventListener('input', function() {
+    // Add password strength indicator logic here
+});
+
+confirmInput.addEventListener('input', function() {
+    if (this.value !== passwordInput.value) {
+        this.setCustomValidity('Passwords do not match');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+</script>
+{% endblock %}
