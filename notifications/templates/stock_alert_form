@@ -1,0 +1,11 @@
+<div class="stock-alert-form">
+    <h3>Get Notified</h3>
+    <p>We'll email you when this product is back in stock</p>
+    <form method="post" action="{% url 'notifications:create_stock_alert' %}">{% csrf_token %}<input type="hidden"
+            name="product_id" value="{{ product.id }}">{% if variant %}<input type="hidden" name="variant_id"
+            value="{{ variant.id }}">{% endif %}<div class="form-group"><input type="email" name="email"
+                placeholder="Your email" {% if user.is_authenticated %}value="{{ user.email }}" {% endif %} required>
+        </div>{% if show_power_fields %}<div class="form-row"><input type="number" step="0.25" name="power_left"
+                placeholder="Left Power"><input type="number" step="0.25" name="power_right" placeholder="Right Power">
+        </div>{% endif %}<button type="submit" class="btn btn-primary">Notify Me</button></form>
+</div>

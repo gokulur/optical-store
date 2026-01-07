@@ -1,0 +1,42 @@
+{% extends 'catalog/base.html' %}{% block title %}Notification Preferences{% endblock %}{% block content %}
+<div class="notification-prefs-page">
+    <div class="container">
+        <h1>Notification Preferences</h1>
+        <p>Choose how you want to receive notifications</p>{% if messages %}{% for message in messages %}<div
+            class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}{% endif %}<form method="post"
+            class="prefs-form">{% csrf_token %}<div class="form-section">
+                <h2>Email Notifications</h2>
+                <div class="form-group checkbox"><label><input type="checkbox" name="email_notifications" {% if
+                            user.email_notifications %}checked{% endif %}> Send me email notifications about:<ul>
+                            <li>Order confirmations and updates</li>
+                            <li>Shipping notifications</li>
+                            <li>Eye test reminders</li>
+                            <li>Prescription expiry alerts</li>
+                            <li>Special offers and promotions</li>
+                        </ul></label></div>
+            </div>
+            <div class="form-section">
+                <h2>SMS Notifications</h2>
+                <div class="form-group checkbox"><label><input type="checkbox" name="sms_notifications" {% if
+                            user.sms_notifications %}checked{% endif %}> Send me SMS notifications about:<ul>
+                            <li>Order confirmations</li>
+                            <li>Shipping updates</li>
+                            <li>Eye test reminders</li>
+                        </ul></label></div>
+                <p class="note">Phone number: {{ user.phone|default:"Not provided" }}</p>{% if not user.phone %}<a
+                    href="{% url 'users:profile' %}" class="btn btn-sm btn-outline">Add Phone Number</a>{% endif %}
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">Save Preferences</button><a
+                    href="{% url 'users:dashboard' %}" class="btn btn-outline">Cancel</a></div>
+        </form>
+        <div class="help-section">
+            <h2>About Notifications</h2>
+            <ul>
+                <li>You can unsubscribe from marketing emails at any time</li>
+                <li>Transactional emails (orders, shipping) cannot be disabled</li>
+                <li>SMS notifications are free but carrier charges may apply</li>
+                <li>Stock alerts are sent regardless of these settings</li>
+            </ul>
+        </div>
+    </div>
+</div>{% endblock %}

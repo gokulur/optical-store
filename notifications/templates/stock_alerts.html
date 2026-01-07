@@ -1,0 +1,26 @@
+{% extends 'base.html' %}{% block title %}Stock Alerts{% endblock %}{% block content %}
+<div class="stock-alerts-page">
+    <div class="container">
+        <h1>Stock Alerts</h1>
+        <p>We'll notify you when these products are back in stock</p>{% if alerts %}<div class="alerts-list">{% for
+            alert in alerts %}<div class="alert-card">
+                <div class="alert-product"><img src="{{ alert.product.images.first.image.url }}"
+                        alt="{{ alert.product.name }}">
+                    <div>
+                        <h3>{{ alert.product.name }}</h3>{% if alert.variant %}<p>{{ alert.variant.color_name }}</p>{%
+                        endif %}{% if alert.required_power_left %}<p>Power: L {{ alert.required_power_left }}, R {{
+                            alert.required_power_right }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="alert-info">{% if alert.is_notified %}<span class="badge notified">✓ Notified {{
+                        alert.notified_at|date:"M j" }}</span>{% else %}<span class="badge active">Active</span>{% endif
+                    %}<span class="alert-date">Created {{ alert.created_at|date:"M j, Y" }}</span></div>
+                <div class="alert-actions">{% if not alert.is_notified %}<form method="post"
+                        action="{% url 'notifications:cancel_stock_alert' alert.id %}" style="display:inline;">{%
+                        csrf_token %}<button type="submit" class="btn btn-sm btn-danger">Cancel Alert</button></form>{%
+                    endif %}</div>
+            </div>{% endfor %}</div>{% else %}<div class="empty-state">
+            <p>No active stock alerts</p><a href="{% url 'catalog:home' %}" class="btn btn-primary">Start Shopping</a>
+        </div>{% endif %}
+    </div>
+</div>{% endblock %}

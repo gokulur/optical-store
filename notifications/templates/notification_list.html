@@ -1,0 +1,20 @@
+{% extends 'base.html' %}{% block title %}Notifications{% endblock %}{% block content %}
+<div class="notifications-page">
+    <div class="container">
+        <h1>Notifications</h1>{% if notifications %}<div class="notifications-list">{% for notif in notifications %}<div
+                class="notification-card {% if notif.status == 'sent' %}sent{% endif %}">
+                <div class="notif-header"><span class="notif-channel">{{ notif.get_channel_display }}</span><span
+                        class="notif-date">{{ notif.created_at|date:"M j, Y H:i" }}</span></div>
+                <div class="notif-body">
+                    <h3>{{ notif.subject }}</h3>
+                    <p>{{ notif.body|truncatewords:30 }}</p>
+                </div>
+                <div class="notif-footer"><a href="{% url 'notifications:notification_detail' notif.id %}"
+                        class="btn btn-sm">View</a><span class="notif-status status-{{ notif.status }}">{{
+                        notif.get_status_display }}</span></div>
+            </div>{% endfor %}</div>{% else %}<div class="empty-state">
+            <p>No notifications yet</p>
+        </div>{% endif %}
+    </div>
+</div>
+{% endblock %}

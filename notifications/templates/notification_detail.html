@@ -1,0 +1,21 @@
+<!-- notification_detail.html -->
+{% extends 'base.html' %}{% block title %}Notification Details{% endblock %}{% block content %}
+<div class="notification-detail-page">
+    <div class="container">
+        <div class="notif-detail-card">
+            <div class="notif-meta"><span class="channel-badge">{{ notification.get_channel_display }}</span><span
+                    class="date">{{ notification.created_at|date:"F j, Y H:i" }}</span><span
+                    class="status-badge status-{{ notification.status }}">{{ notification.get_status_display }}</span>
+            </div>
+            <h1>{{ notification.subject }}</h1>
+            <div class="notif-content">{{ notification.body|linebreaks }}</div>
+            <div class="notif-info">
+                <p><strong>Sent to:</strong> {{ notification.recipient }}</p>{% if notification.sent_at %}<p>
+                    <strong>Sent at:</strong> {{ notification.sent_at|date:"F j, Y H:i" }}</p>{% endif %}{% if
+                notification.error_message %}<p class="error"><strong>Error:</strong> {{ notification.error_message }}
+                </p>{% endif %}
+            </div>
+        </div><a href="{% url 'notifications:notification_list' %}" class="btn btn-outline">Back to Notifications</a>
+    </div>
+</div>
+{% endblock %}
