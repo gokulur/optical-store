@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'reviews',
     'core',
     'notifications',
+    'promotions',
 ]
 
 
