@@ -1,0 +1,63 @@
+{% extends 'catalog/base.html' %}{% block title %}Search: {{ query }}{% endblock %}{% block content %}
+<div class="search-page">
+    <div class="container">
+        <div class="search-header">
+            <h1>Search Results{% if query %} for "{{ query }}"{% endif %}</h1>{% if total_results %}<p
+                class="results-count">{{ total_results }} result{{ total_results|pluralize }} found</p>{% endif %}
+        </div>{% if query %}<div class="search-content">
+            <aside class="search-filters">
+                <h3>Filters</h3>
+                <div class="filter-group">
+                    <h4>Brand</h4>{% for brand in available_brands %}<label><input type="checkbox" name="brand"
+                            value="{{ brand.slug }}" {% if filters_applied.brand==brand.slug %}checked{% endif %}
+                            onchange="applyFilter()"> {{ brand.name }}</label>{% endfor %}
+                </div>
+                <div class="filter-group">
+                    <h4>Category</h4>{% for category in available_categories %}<label><input type="checkbox"
+                            name="category" value="{{ category.slug }}" {% if filters_applied.category==category.slug
+                            %}checked{% endif %} onchange="applyFilter()"> {{ category.name }}</label>{% endfor %}
+                </div>
+                <div class="filter-group">
+                    <h4>Price Range</h4><input type="number" name="min_price" placeholder="Min"
+                        value="{{ filters_applied.min_price }}"><input type="number" name="max_price" placeholder="Max"
+                        value="{{ filters_applied.max_price }}"><button onclick="applyFilter()">Apply</button>
+                </div>
+            </aside>
+            <div class="search-results">
+                <div class="results-toolbar">
+                    <div class="sort-by"><label>Sort:</label><select name="sort"
+                            onchange="location.href='?q={{ query }}&sort='+this.value">
+                            <option value="relevance" {% if sort_by=='relevance' %}selected{% endif %}>Relevance
+                            </option>
+                            <option value="price_low" {% if sort_by=='price_low' %}selected{% endif %}>Price: Low to
+                                High</option>
+                            <option value="price_high" {% if sort_by=='price_high' %}selected{% endif %}>Price: High to
+                                Low</option>
+                            <option value="name" {% if sort_by=='name' %}selected{% endif %}>Name</option>
+                        </select></div>
+                </div>{% if products %}<div class="products-grid">{% for product in products %}<div
+                        class="product-card"><a href="{% url 'catalog:product_detail' product.slug %}"><img
+                                src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                            <h3>{{ product.name }}</h3>
+                            <p class="brand">{{ product.brand.name }}</p>
+                            <p class="price">{{ product.base_price }} QAR</p>
+                        </a></div>{% endfor %}</div>{% if products.has_other_pages %}<div class="pagination"><a
+                        href="?q={{ query }}&page={{ products.previous_page_number }}">Previous</a><span>Page {{
+                        products.number }}</span><a href="?q={{ query }}&page={{ products.next_page_number }}">Next</a>
+                </div>{% endif %}{% else %}<div class="no-results">
+                    <h2>No results found</h2>
+                    <p>Try different keywords or check spelling</p><a href="{% url 'catalog:home' %}">Browse All
+                        Products</a>
+                </div>{% endif %}
+            </div>
+        </div>{% else %}<div class="search-empty">
+            <h2>Start Your Search</h2>
+            <div class="popular-searches">
+                <h3>Popular Searches:</h3>{% for search in popular_searches %}<a href="?q={{ search.keyword }}"
+                    class="search-tag">{{ search.keyword }}</a>{% endfor %}
+            </div>
+        </div>{% endif %}
+    </div>
+</div>
+<script>function applyFilter() { const form = new FormData(); form.append('q', '{{ query }}'); document.querySelectorAll('input[name="brand"]:checked').forEach(e => form.append('brand', e.value)); document.querySelectorAll('input[name="category"]:checked').forEach(e => form.append('category', e.value)); const min = document.querySelector('input[name="min_price"]').value; const max = document.querySelector('input[name="max_price"]').value; if (min) form.append('min_price', min); if (max) form.append('max_price', max); location.href = '?' + new URLSearchParams(form).toString(); }</script>
+{% endblock %}

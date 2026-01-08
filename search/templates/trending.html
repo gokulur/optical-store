@@ -1,0 +1,11 @@
+{% extends 'catalog/base.html' %}{% block title %}Trending Searches{% endblock %}{% block content %}
+<div class="trending-page">
+    <div class="container">
+        <h1>Trending Searches</h1>
+        <p>Popular searches in the last 30 days</p>
+        <div class="trending-grid">{% for item in trending %}<a href="{% url 'search:search' %}?q={{ item.query }}"
+                class="trending-card"><span class="query">{{ item.query }}</span><span class="count">{{
+                    item.search_count }} searches</span></a>{% endfor %}</div>
+    </div>
+</div>
+{% endblock %}

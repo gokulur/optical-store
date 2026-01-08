@@ -1,0 +1,17 @@
+{% extends 'catalog/base.html' %}{% block title %}Search History{% endblock %}{% block content %}
+<div class="search-history-page">
+    <div class="container">
+        <div class="page-header">
+            <h1>Search History</h1><button onclick="clearHistory()" class="btn btn-danger">Clear History</button>
+        </div>{% if searches %}<div class="history-list">{% for search in searches %}<div class="history-item"><a
+                    href="{% url 'search:search' %}?q={{ search.query }}" class="search-query">{{ search.query }}</a>
+                <div class="search-meta"><span class="date">{{ search.created_at|date:"M j, Y H:i" }}</span><span
+                        class="results">{{ search.results_count }} result{{ search.results_count|pluralize }}</span>
+                </div>
+            </div>{% endfor %}</div>{% else %}<div class="empty-state">
+            <p>No search history</p>
+        </div>{% endif %}
+    </div>
+</div>
+<script>function clearHistory() { if (confirm('Clear all search history?')) { fetch('{% url "search:clear_history" %}').then(() => location.reload()); } }</script>
+{% endblock %}

@@ -1,0 +1,15 @@
+<div class="search-bar-component">
+    <form action="{% url 'search:search' %}" method="get" class="search-form"><input type="text" name="q"
+            id="searchInput" placeholder="Search products, brands..." value="{{ request.GET.q }}"
+            autocomplete="off"><button type="submit">Search</button>
+        <div id="searchSuggestions" class="suggestions-dropdown" style="display:none;"></div>
+    </form>
+</div>
+<script>
+    const searchInput = document.getElementById('searchInput'); const suggestions = document.getElementById('searchSuggestions'); let timeout;
+    searchInput.addEventListener('input', function () {
+        clearTimeout(timeout); const q = this.value; if (q.length < 2) { suggestions.style.display = 'none'; return; }
+        timeout = setTimeout(() => { fetch(`{% url 'search:autocomplete' %}?q=${encodeURIComponent(q)}`).then(r => r.json()).then(data => { if (data.suggestions.length) { suggestions.innerHTML = data.suggestions.map(s => `<a href="${s.url}" class="suggestion-item"><span class="type">${s.type}</span><span class="name">${s.name}</span>${s.brand ? `<span class="brand">${s.brand}</span>` : ''}</a>`).join(''); suggestions.style.display = 'block'; } else { suggestions.style.display = 'none'; } }); }, 300);
+    });
+    document.addEventListener('click', e => { if (!searchInput.contains(e.target)) suggestions.style.display = 'none'; });
+</script>
