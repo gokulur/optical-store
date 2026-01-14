@@ -7,7 +7,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),   
 
     path('adminpanel/', include('adminpanel.urls')),
-    path('catalog/', include('catalog.urls')),
+    path('', include('catalog.urls')),
     path('cart/', include('cart.urls')),
     path('lenses/', include('lenses.urls')),
     path('orders/', include('orders.urls')),
@@ -19,7 +19,7 @@ urlpatterns = [
     path('notifications/', include('notifications.urls')),
     path('promotions/', include('promotions.urls')),
     path('search/', include('search.urls')),
-    path('', include('core.urls')),
+    path('core/', include('core.urls')),
 ]
 
 if settings.DEBUG:

@@ -1,116 +1,321 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Home - Eyewear Store{% endblock %}
+{% block title %}Home - Eyese Optical & Eyeglasses{% endblock %}
 
 {% block content %}
-<!-- Banner Section -->
-<section class="banner-section">
-    <div class="banner-slider">
-        <div class="banner-slide">
-            <img src="/static/images/banner1.jpg" alt="Banner 1">
-            <div class="banner-text">
-                <h1>New Arrivals</h1>
-                <p>Discover the latest eyewear trends</p>
-                <a href="{% url 'catalog:product_list' 'sunglasses' %}" class="btn">Shop Now</a>
+
+<!-- Hero Carousel -->
+<section class="hero-carousel">
+    <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+        </div>
+        
+        <div class="carousel-inner">
+            <!-- Slide 1 -->
+            <div class="carousel-item active">
+                <div class="hero-slide" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 600px;">
+                    <div class="container h-100">
+                        <div class="row h-100 align-items-center">
+                            <div class="col-lg-6 text-white">
+                                <h1 class="display-3 fw-bold mb-3" style="font-family: var(--font-heading);">
+                                    Discover Your Perfect Look
+                                </h1>
+                                <p class="lead mb-4">
+                                    Premium eyewear collection crafted for style and comfort
+                                </p>
+                                <a href="{% url 'catalog:sunglasses_list' %}" class="btn btn-primary-custom btn-lg">
+                                    Shop Collection
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="carousel-item">
+                <div class="hero-slide" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); min-height: 600px;">
+                    <div class="container h-100">
+                        <div class="row h-100 align-items-center">
+                            <div class="col-lg-6 text-white">
+                                <h1 class="display-3 fw-bold mb-3" style="font-family: var(--font-heading);">
+                                    Summer Collection
+                                </h1>
+                                <p class="lead mb-4">
+                                    Up to 50% off on selected designer frames
+                                </p>
+                                <a href="{% url 'catalog:eyeglasses_list' %}" class="btn btn-primary-custom btn-lg">
+                                    Shop Sale
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="banner-slide">
-            <img src="/static/images/banner2.jpg" alt="Banner 2">
-            <div class="banner-text">
-                <h1>Summer Sale</h1>
-                <p>Up to 50% off on selected items</p>
-                <a href="#" class="btn">Shop Sale</a>
-            </div>
-        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
     </div>
-    <button class="prev-slide">←</button>
-    <button class="next-slide">→</button>
 </section>
 
-<!-- Categories Section -->
-<section class="categories-section">
-    <h2>Shop by Category</h2>
-    <div class="categories-grid">
-        <div class="category-card">
-            <a href="{% url 'catalog:sunglasses_list' %}">
-                <img src="/static/images/sunglasses-category.jpg" alt="Sunglasses">
-                <h3>Sunglasses</h3>
-            </a>
+<!-- Category Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold" style="font-family: var(--font-heading);">
+                Shop by Category
+            </h2>
+            <p class="text-muted">Find the perfect eyewear for every occasion</p>
         </div>
-        <div class="category-card">
-            <a href="{% url 'catalog:eyeglasses_list' %}">
-                <img src="/static/images/eyeglasses-category.jpg" alt="Eyeglasses">
-                <h3>Eyeglasses</h3>
-            </a>
-        </div>
-        <div class="category-card">
-            <a href="{% url 'catalog:contact_lenses_list' %}">
-                <img src="/static/images/contacts-category.jpg" alt="Contact Lenses">
-                <h3>Contact Lenses</h3>
-            </a>
-        </div>
-        <div class="category-card">
-            <a href="#">
-                <img src="/static/images/accessories-category.jpg" alt="Accessories">
-                <h3>Accessories</h3>
-            </a>
+
+        <div class="row g-4">
+            <!-- Sunglasses -->
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'catalog:sunglasses_list' %}" class="category-card">
+                    <div class="card border-0 overflow-hidden h-100" style="border-radius: 0;">
+                        <div class="position-relative" style="height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="position-absolute bottom-0 start-0 p-4 text-white w-100" style="background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);">
+                                <h3 class="h4 fw-bold mb-2">Sunglasses</h3>
+                                <p class="mb-0 small">Protect your eyes in style</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Eyeglasses -->
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'catalog:eyeglasses_list' %}" class="category-card">
+                    <div class="card border-0 overflow-hidden h-100" style="border-radius: 0;">
+                        <div class="position-relative" style="height: 400px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="position-absolute bottom-0 start-0 p-4 text-white w-100" style="background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);">
+                                <h3 class="h4 fw-bold mb-2">Eyeglasses</h3>
+                                <p class="mb-0 small">See the world clearly</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Contact Lenses -->
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'catalog:contact_lenses_list' %}" class="category-card">
+                    <div class="card border-0 overflow-hidden h-100" style="border-radius: 0;">
+                        <div class="position-relative" style="height: 400px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="position-absolute bottom-0 start-0 p-4 text-white w-100" style="background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);">
+                                <h3 class="h4 fw-bold mb-2">Contact Lenses</h3>
+                                <p class="mb-0 small">Comfort meets clarity</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
     </div>
 </section>
 
 <!-- Featured Products -->
-<section class="featured-products">
-    <h2>Featured Products</h2>
-    <div class="products-grid">
-        {% for product in featured_products %}
-        <div class="product-card">
-            <a href="{% url 'catalog:product_detail' product.slug %}">
-                {% if product.images.first %}
-                <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
-                {% endif %}
-                <h3>{{ product.name }}</h3>
-                <p class="brand">{{ product.brand.name }}</p>
-                <p class="price">{{ product.base_price }} QAR</p>
-                {% if product.compare_at_price %}
-                <p class="compare-price">{{ product.compare_at_price }} QAR</p>
-                {% endif %}
-            </a>
-            <button class="add-to-cart">Add to Cart</button>
-        </div>
-        {% endfor %}
-    </div>
-</section>
-
-<!-- Brands Section -->
-<section class="brands-section">
-    <h2>Shop by Brand</h2>
-    <div class="brands-grid">
-        {% for brand in brands %}
-        <div class="brand-card">
-            <a href="{% url 'catalog:brand_detail' brand.slug %}">
-                {% if brand.logo %}
-                <img src="{{ brand.logo.url }}" alt="{{ brand.name }}">
-                {% else %}
-                <h3>{{ brand.name }}</h3>
-                {% endif %}
-            </a>
-        </div>
-        {% endfor %}
-    </div>
-    <a href="{% url 'catalog:brand_list' %}" class="view-all">View All Brands</a>
-</section>
-
-<!-- Book Eye Test Section -->
-<section class="eye-test-section">
+<section class="py-5 bg-light">
     <div class="container">
-        <h2>Book Your Free Eye Test</h2>
-        <p>Visit our store for a comprehensive eye examination</p>
-        <a href="#" class="btn">Book Appointment</a>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h3 fw-bold mb-0" style="font-family: var(--font-heading);">Featured Products</h2>
+            <a href="{% url 'catalog:sunglasses_list' %}" class="text-decoration-none text-dark fw-bold">
+                View All <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
+            {% for product in featured_products %}
+            <div class="col">
+                <div class="card h-100 border-0 shadow-sm product-card" style="border-radius: 0;">
+                    <!-- Product Image -->
+                    <div class="position-relative bg-white p-3" style="aspect-ratio: 1/1;">
+                        <a href="{% url 'catalog:product_detail' product.slug %}" class="d-flex align-items-center justify-content-center h-100">
+                            {% if product.images.first %}
+                            <img src="{{ product.images.first.image.url }}" 
+                                 alt="{{ product.name }}" 
+                                 class="img-fluid"
+                                 style="max-height: 100%; object-fit: contain;">
+                            {% else %}
+                            <div class="text-center text-muted">
+                                <i class="fas fa-glasses fa-3x mb-2"></i>
+                                <p class="mb-0 small">No Image</p>
+                            </div>
+                            {% endif %}
+                        </a>
+                        
+                        <!-- Wishlist Button -->
+                        <button class="btn btn-light rounded-circle position-absolute top-0 end-0 m-2 shadow-sm" 
+                                style="width: 40px; height: 40px; padding: 0;">
+                            <i class="far fa-heart"></i>
+                        </button>
+
+                        {% if product.compare_at_price %}
+                        <span class="badge bg-danger position-absolute top-0 start-0 m-2">
+                            Sale
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Product Info -->
+                    <div class="card-body">
+                        <p class="text-muted small text-uppercase mb-1">{{ product.brand.name }}</p>
+                        <h6 class="card-title mb-2">
+                            <a href="{% url 'catalog:product_detail' product.slug %}" 
+                               class="text-dark text-decoration-none text-truncate d-block">
+                                {{ product.name }}
+                            </a>
+                        </h6>
+                        
+                        <!-- Price -->
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="fw-bold text-dark">{{ product.base_price }} QAR</span>
+                            {% if product.compare_at_price %}
+                            <span class="text-muted small text-decoration-line-through">
+                                {{ product.compare_at_price }} QAR
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Add to Cart Button -->
+                        <button class="btn btn-outline-custom w-100">
+                            <i class="fas fa-shopping-bag me-2"></i>Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </section>
 
-<!-- Chat Support -->
-<div class="chat-support">
-    <button class="chat-button">Chat with us</button>
-</div>
+<!-- Brand Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h3 fw-bold" style="font-family: var(--font-heading);">Shop by Brand</h2>
+            <p class="text-muted">Discover our premium eyewear brands</p>
+        </div>
+
+        <div class="row row-cols-3 row-cols-md-4 row-cols-lg-6 g-4">
+            {% for brand in brands %}
+            <div class="col">
+                <a href="{% url 'catalog:brand_detail' brand.slug %}" 
+                   class="d-flex align-items-center justify-content-center p-3 text-decoration-none border rounded"
+                   style="height: 100px; transition: all 0.3s;">
+                    {% if brand.logo %}
+                    <img src="{{ brand.logo.url }}" 
+                         alt="{{ brand.name }}"
+                         class="img-fluid"
+                         style="max-height: 50px; filter: grayscale(100%); opacity: 0.7; transition: all 0.3s;">
+                    {% else %}
+                    <span class="fw-bold text-uppercase text-muted">{{ brand.name }}</span>
+                    {% endif %}
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="{% url 'catalog:brand_list' %}" class="btn btn-outline-custom">
+                View All Brands
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Eye Test Banner -->
+<section class="py-5 text-white text-center" 
+         style="background: linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 100%), url('https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=1920') center/cover;">
+    <div class="container py-5">
+        <h2 class="display-5 fw-bold mb-3" style="font-family: var(--font-heading);">
+            Book Your Free Eye Test
+        </h2>
+        <p class="lead mb-4" style="max-width: 600px; margin: 0 auto;">
+            Visit our clinics for a comprehensive eye examination by certified optometrists
+        </p>
+        <a href="#" class="btn btn-primary-custom btn-lg">
+            <i class="fas fa-calendar-check me-2"></i>Book Appointment
+        </a>
+    </div>
+</section>
+
+<!-- Newsletter -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 text-center">
+                <h2 class="h3 fw-bold mb-3" style="font-family: var(--font-heading);">
+                    Stay Updated
+                </h2>
+                <p class="text-muted mb-4">
+                    Subscribe to get exclusive offers and latest updates
+                </p>
+                <form class="d-flex gap-2">
+                    <input type="email" 
+                           class="form-control form-control-lg" 
+                           placeholder="Enter your email"
+                           style="border-radius: 0;">
+                    <button type="submit" class="btn btn-primary-custom">
+                        Subscribe
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .category-card {
+        text-decoration: none;
+        display: block;
+        transition: transform 0.3s;
+    }
+
+    .category-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .product-card {
+        transition: all 0.3s;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+    }
+
+    .product-card img {
+        transition: transform 0.3s;
+    }
+
+    .product-card:hover img {
+        transform: scale(1.05);
+    }
+
+    .hero-slide {
+        display: flex;
+        align-items: center;
+    }
+
+    @media (max-width: 991px) {
+        .hero-slide {
+            min-height: 400px !important;
+            text-align: center;
+        }
+
+        .hero-slide h1 {
+            font-size: 2rem !important;
+        }
+    }
+</style>
+
 {% endblock %}

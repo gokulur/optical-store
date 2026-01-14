@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView
 from django.db.models import Q, Min, Max
+from django.contrib.auth.decorators import login_required
 from .models import (
     Product, Category, Brand, ProductVariant, 
     ContactLensProduct, ContactLensColor, LensBrand, 
@@ -96,28 +97,58 @@ class ProductListView(ListView):
         
         return context
 
-
 # Sunglasses
+from django.core.paginator import Paginator
+
 def sunglasses_list(request):
-    """Sunglasses listing page"""
-    products = Product.objects.filter(
+    """Sunglasses listing page with advanced filtering"""
+    queryset = Product.objects.filter(
         product_type='sunglasses', 
         is_active=True
     ).select_related('brand', 'category')
     
-    # Filters
+    # 1. Gender Filter
     gender = request.GET.get('gender', 'all')
     if gender != 'all':
-        products = products.filter(gender=gender)
+        queryset = queryset.filter(gender=gender)
     
-    brand_slug = request.GET.get('brand')
-    if brand_slug:
-        products = products.filter(brand__slug=brand_slug)
+    # 2. Brand Filter (Handle Multiple Checkboxes)
+    # request.GET.getlist('brand') captures ?brand=ray-ban&brand=gucci
+    selected_brands = request.GET.getlist('brand')
+    if selected_brands:
+        queryset = queryset.filter(brand__slug__in=selected_brands)
+    
+    # 3. Price Filter
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        queryset = queryset.filter(base_price__gte=min_price)
+    if max_price:
+        queryset = queryset.filter(base_price__lte=max_price)
+        
+    # 4. Sorting
+    sort_option = request.GET.get('sort', '-created_at')
+    # Validate sort option to prevent errors
+    valid_sorts = ['-created_at', 'base_price', '-base_price', 'name']
+    if sort_option in valid_sorts:
+        queryset = queryset.order_by(sort_option)
+    else:
+        queryset = queryset.order_by('-created_at')
+
+    # 5. Pagination
+    paginator = Paginator(queryset, 24) # Show 24 per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     
     context = {
-        'products': products,
+        'products': page_obj, # Pass page_obj, not full queryset
+        'is_paginated': page_obj.has_other_pages(),
+        'page_obj': page_obj,
         'brands': Brand.objects.filter(available_for_sunglasses=True, is_active=True),
+        # Pass selections back to template to keep boxes checked
         'selected_gender': gender,
+        'selected_brands': selected_brands,
+        'current_sort': sort_option,
     }
     return render(request, 'sunglasses_list.html', context)
 

@@ -1,115 +1,531 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Eyewear Store{% endblock %}</title>
+    <title>{% block title %}Eyese - Optical & Eyeglasses{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=Marcellus&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --color-primary: #000000;
+            --color-accent: #ECBA78;
+            --color-text: #000000;
+            --color-text-light: #555555;
+            --color-bg: #FFFFFF;
+            --color-bg-light: #F3F3F3;
+            --font-body: 'Jost', sans-serif;
+            --font-heading: 'Marcellus', serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--color-text);
+            font-size: 16px;
+            line-height: 1.6;
+            background: var(--color-bg);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-heading);
+            font-weight: 500;
+            line-height: 1.2;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: var(--color-primary);
+            color: #fff;
+            font-size: 13px;
+            padding: 8px 0;
+        }
+
+        .top-bar select {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .top-bar select:focus {
+            outline: none;
+        }
+
+        /* Header */
+        .main-header {
+            background: #F3F3F3;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--color-primary);
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+
+        .main-nav {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-nav a {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.3s;
+        }
+
+        .main-nav a:hover {
+            color: var(--color-accent);
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .header-icons a {
+            color: var(--color-primary);
+            font-size: 18px;
+            text-decoration: none;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .header-icons a:hover {
+            color: var(--color-accent);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--color-accent);
+            color: var(--color-primary);
+            font-size: 10px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .search-form {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .search-form input {
+            width: 100%;
+            padding: 8px 40px 8px 15px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 0;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        .search-form button {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            padding: 0 15px;
+            border: none;
+            background: transparent;
+            color: var(--color-text-light);
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--color-primary);
+            cursor: pointer;
+        }
+
+        /* Footer */
+        .main-footer {
+            background: var(--color-bg-light);
+            padding: 50px 0 20px;
+            margin-top: 80px;
+        }
+
+        .footer-section h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: var(--color-text-light);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--color-primary);
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-icons a {
+            color: var(--color-text-light);
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .social-icons a:hover {
+            color: var(--color-primary);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(0,0,0,0.1);
+            padding-top: 20px;
+            margin-top: 40px;
+            text-align: center;
+            color: var(--color-text-light);
+            font-size: 14px;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            background: transparent;
+            padding: 15px 0;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "›";
+            padding: 0 8px;
+        }
+
+        /* Buttons */
+        .btn-primary-custom {
+            background: var(--color-primary);
+            color: #fff;
+            border: 2px solid var(--color-primary);
+            padding: 12px 30px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+            border-radius: 8px;
+        }
+
+        .btn-primary-custom:hover {
+            background: transparent;
+            color: var(--color-primary);
+        }
+
+        .btn-outline-custom {
+            background: transparent;
+            color: var(--color-primary);
+            border: 2px solid var(--color-primary);
+            padding: 12px 30px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+            border-radius: 8px;
+        }
+
+        .btn-outline-custom:hover {
+            background: var(--color-primary);
+            color: #fff;
+        }
+
+        /* Responsive */
+        @media (max-width: 991px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .main-nav {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: #F3F3F3;
+                padding: 20px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+
+            .main-nav.active {
+                display: flex;
+            }
+
+            .header-icons {
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                max-width: 200px;
+            }
+        }
+
+        /* Scroll to Top */
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--color-primary);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 1000;
+            text-decoration: none;
+        }
+
+        .scroll-top.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scroll-top:hover {
+            background: var(--color-accent);
+            color: var(--color-primary);
+        }
+    </style>
+
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Header -->
-    <header>
+    <!-- Top Bar -->
+    <div class="top-bar">
         <div class="container">
-            <!-- Logo -->
-            <div class="logo">
-                <a href=" ">Eyewear Store</a>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-none d-md-block">
+                    <span>Free Shipping on orders over 200 QAR</span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <select>
+                        <option value="en">English</option>
+                        <option value="ar">العربية</option>
+                    </select>
+                    <span>|</span>
+                    <select>
+                        <option value="QAR">QAR</option>
+                        <option value="USD">USD</option>
+                    </select>
+                </div>
             </div>
-            
-            <!-- Navigation -->
-            <nav>
-                <ul>
-                    <li><a href=" ">Home</a></li>
-                    <li><a href="{% url 'catalog:sunglasses_list' %}">Sunglasses</a></li>
-                    <li><a href="{% url 'catalog:eyeglasses_list' %}">Eyeglasses</a></li>
-                    <li><a href="{% url 'catalog:contact_lenses_list' %}">Contact Lenses</a></li>
-                    <li><a href="{% url 'catalog:brand_list' %}">Brands</a></li>
-                    <li><a href="#">Accessories</a></li>
-                </ul>
-            </nav>
-            
-            <!-- Search Bar -->
-            <div class="search-bar">
-                <form action="{% url 'catalog:search' %}" method="get">
-                    <input type="text" name="q" placeholder="Search products, brands..." value="{{ request.GET.q }}">
-                    <button type="submit">Search</button>
-                </form>
-            </div>
-            
-            <!-- User Actions -->
-            <div class="user-actions">
-                <a href="#">Account</a>
-                <a href="#">Cart (0)</a>
-                <a href="#">Wishlist</a>
-            </div>
-            
-            <!-- Language & Currency -->
-            <div class="language-currency">
-                <select name="language">
-                    <option value="en">English</option>
-                    <option value="ar">العربية</option>
-                </select>
-                <select name="currency">
-                    <option value="QAR">QAR</option>
-                    <option value="AED">AED</option>
-                    <option value="SAR">SAR</option>
-                    <option value="USD">USD</option>
-                </select>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header sticky-top">
+        <div class="container">
+            <div class="header-content d-flex justify-content-between align-items-center">
+                <!-- Logo -->
+                <a href="{% url 'catalog:home' %}" class="logo">EYESE</a>
+
+                <!-- Mobile Menu Toggle -->
+                <button class="mobile-menu-toggle d-lg-none" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <!-- Main Navigation -->
+                <nav>
+                    <ul class="main-nav" id="mainNav">
+                        <li><a href="{% url 'catalog:home' %}">Home</a></li>
+                        <li><a href="{% url 'catalog:sunglasses_list' %}">Sunglasses</a></li>
+                        <li><a href="{% url 'catalog:eyeglasses_list' %}">Eyeglasses</a></li>
+                        <li><a href="{% url 'catalog:contact_lenses_list' %}">Contact Lenses</a></li>
+                        <li><a href="{% url 'catalog:brand_list' %}">Brands</a></li>
+                    </ul>
+                </nav>
+
+                <!-- Search & Icons -->
+                <div class="d-flex align-items-center gap-3">
+                    <form class="search-form d-none d-md-block" action="{% url 'catalog:search' %}" method="get">
+                        <input type="search" name="q" placeholder="Search..." value="{{ request.GET.q }}">
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+
+                    <div class="header-icons">
+                        <a href="#"><i class="far fa-heart"></i></a>
+                        <a href="#"><i class="far fa-user"></i></a>
+                        <a href="{% url 'cart:cart_view' %}">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span class="cart-badge">{{ request.session.cart_count|default:"0" }}</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
-    
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- Main Content -->
     <main>
         {% block content %}{% endblock %}
     </main>
-    
+
     <!-- Footer -->
-    <footer>
+    <footer class="main-footer">
         <div class="container">
-            <div class="footer-section">
-                <h3>About Us</h3>
-                <ul>
-                    <li><a href="#">Our Story</a></li>
-                    <li><a href="#">Our Locations</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                </ul>
-            </div>
-            
-            <div class="footer-section">
-                <h3>Customer Service</h3>
-                <ul>
-                    <li><a href="#">Book Eye Test</a></li>
-                    <li><a href="#">Shipping Info</a></li>
-                    <li><a href="#">Returns</a></li>
-                    <li><a href="#">FAQs</a></li>
-                </ul>
-            </div>
-            
-            <div class="footer-section">
-                <h3>Shop</h3>
-                <ul>
-                    <li><a href="{% url 'catalog:sunglasses_list' %}">Sunglasses</a></li>
-                    <li><a href="{% url 'catalog:eyeglasses_list' %}">Eyeglasses</a></li>
-                    <li><a href="{% url 'catalog:contact_lenses_list' %}">Contact Lenses</a></li>
-                    <li><a href="{% url 'catalog:brand_list' %}">Brands</a></li>
-                </ul>
-            </div>
-            
-            <div class="footer-section">
-                <h3>Follow Us</h3>
-                <div class="social-links">
-                    <a href="#">Facebook</a>
-                    <a href="#">Instagram</a>
-                    <a href="#">Twitter</a>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="footer-section">
+                        <h3>Info</h3>
+                        <ul class="footer-links">
+                            <li><a href="#">Customer Service</a></li>
+                            <li><a href="#">FAQs</a></li>
+                            <li><a href="#">Order Tracking</a></li>
+                            <li><a href="#">Contact Us</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="footer-section">
+                        <h3>Services</h3>
+                        <ul class="footer-links">
+                            <li><a href="#">Privacy Policy</a></li>
+                            <li><a href="#">Terms & Conditions</a></li>
+                            <li><a href="#">Your Account</a></li>
+                            <li><a href="#">Advanced Search</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="footer-section">
+                        <h3>Quick Links</h3>
+                        <ul class="footer-links">
+                            <li><a href="#">About Us</a></li>
+                            <li><a href="#">Store Locations</a></li>
+                            <li><a href="#">Shipping Info</a></li>
+                            <li><a href="#">Returns</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="footer-section">
+                        <h3>Follow Us</h3>
+                        <div class="social-icons">
+                            <a href="#"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fab fa-pinterest"></i></a>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="copyright">
-            <p>&copy; 2025 Eyewear Store. All rights reserved.</p>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Eyese. All rights reserved. Powered by Django</p>
+            </div>
         </div>
     </footer>
+
+    <!-- Scroll to Top -->
+    <a href="#" class="scroll-top" id="scrollTop">
+        <i class="fas fa-chevron-up"></i>
+    </a>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
+    <script>
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            document.getElementById('mainNav').classList.toggle('active');
+        }
+
+        // Scroll to Top
+        window.addEventListener('scroll', function() {
+            const scrollTop = document.getElementById('scrollTop');
+            if (window.pageYOffset > 300) {
+                scrollTop.classList.add('active');
+            } else {
+                scrollTop.classList.remove('active');
+            }
+        });
+
+        document.getElementById('scrollTop').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>

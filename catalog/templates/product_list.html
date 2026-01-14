@@ -1,0 +1,116 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Products</title>
+    <style>
+        body { font-family: Arial; }
+        .container { display: flex; gap: 20px; }
+        .sidebar { width: 250px; border-right: 1px solid #eee; padding: 10px; }
+        .products { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .card { border: 1px solid #eee; padding: 10px; }
+        .card img { width: 100%; height: 200px; object-fit: cover; }
+        .filters h4 { margin-top: 20px; }
+        .pagination { margin-top: 30px; }
+        a { text-decoration: none; color: black; }
+    </style>
+</head>
+<body>
+
+<h2>{{ product_type|title }}</h2>
+
+<div class="container">
+
+    <!-- ================= SIDEBAR FILTERS ================= -->
+    <div class="sidebar">
+        <form method="get" class="filters">
+
+            <!-- Search -->
+            <input type="text" name="search" placeholder="Search..." value="{{ request.GET.search }}">
+
+            <!-- Gender -->
+            <h4>Gender</h4>
+            <select name="gender">
+                <option value="all">All</option>
+                <option value="men" {% if selected_gender == 'men' %}selected{% endif %}>Men</option>
+                <option value="women" {% if selected_gender == 'women' %}selected{% endif %}>Women</option>
+                <option value="kids" {% if selected_gender == 'kids' %}selected{% endif %}>Kids</option>
+            </select>
+
+            <!-- Brand -->
+            <h4>Brands</h4>
+            {% for brand in brands %}
+                <div>
+                    <input type="radio" name="brand" value="{{ brand.slug }}"
+                        {% if request.GET.brand == brand.slug %}checked{% endif %}>
+                    {{ brand.name }}
+                </div>
+            {% endfor %}
+
+            <!-- Category -->
+            <h4>Categories</h4>
+            {% for cat in categories %}
+                <div>
+                    <input type="radio" name="category" value="{{ cat.slug }}"
+                        {% if request.GET.category == cat.slug %}checked{% endif %}>
+                    {{ cat.name }}
+                </div>
+            {% endfor %}
+
+            <!-- Price -->
+            <h4>Price</h4>
+            <input type="number" name="min_price" placeholder="Min" value="{{ request.GET.min_price }}">
+            <input type="number" name="max_price" placeholder="Max" value="{{ request.GET.max_price }}">
+
+            <!-- Sort -->
+            <h4>Sort</h4>
+            <select name="sort">
+                <option value="-created_at">Newest</option>
+                <option value="base_price">Price Low → High</option>
+                <option value="-base_price">Price High → Low</option>
+                <option value="name">A → Z</option>
+            </select>
+
+            <br><br>
+            <button type="submit">Apply Filters</button>
+        </form>
+    </div>
+
+    <!-- ================= PRODUCTS GRID ================= -->
+    <div class="products">
+        {% for product in products %}
+            <div class="card">
+                <a href="{% url 'product_detail' product.slug %}">
+                    {% if product.images.first %}
+                        <img src="{{ product.images.first.image.url }}">
+                    {% else %}
+                        <img src="{% static 'no-image.png' %}">
+                    {% endif %}
+
+                    <h4>{{ product.brand.name }}</h4>
+                    <p>{{ product.name }}</p>
+                    <strong>QAR {{ product.base_price }}</strong>
+                </a>
+            </div>
+        {% empty %}
+            <p>No products found.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ================= PAGINATION ================= -->
+<div class="pagination">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+    {% endif %}
+
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Next</a>
+    {% endif %}
+</div>
+
+</body>
+</html>
