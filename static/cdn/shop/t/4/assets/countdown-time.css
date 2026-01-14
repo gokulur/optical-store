@@ -1,2 +1,65 @@
-.countdown-time{display:flex;flex-direction:column;gap:1rem;align-items:center;padding:1rem 1.5rem;border:solid .1rem rgba(var(--color-accent),.3);border-radius:var(--text-boxes-radius)}@media (min-width: 1200px){.countdown-time{flex-direction:row;justify-content:space-between;flex-wrap:wrap}}.countdown-time__text{display:flex;align-items:center;gap:.5rem}.countdown-time__text span{color:rgba(var(--color-accent));font-size:calc(var(--font-body-scale) * 1.7rem);font-weight:500;line-height:1}.countdown-time__time{display:flex;align-items:center;gap:3rem;line-height:0}.countdown-time__box{position:relative;width:4rem;height:4rem;border-radius:var(--text-boxes-radius);display:flex;justify-content:center;align-items:center;color:rgba(var(--color-accent));background-color:rgba(var(--color-accent),.1);font-weight:500}.countdown-time__box:after{content:":";position:absolute;color:rgba(var(--color-accent));top:1.9rem;right:-1.75rem;font-weight:600}.countdown-time__box:last-child:after{content:none}
+.countdown-time {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border: solid .1rem rgba(var(--color-accent), .3);
+    border-radius: var(--text-boxes-radius)
+}
+
+@media (min-width: 1200px) {
+    .countdown-time {
+        flex-direction: row;
+        justify-content: space-between;
+        flex-wrap: wrap
+    }
+}
+
+.countdown-time__text {
+    display: flex;
+    align-items: center;
+    gap: .5rem
+}
+
+.countdown-time__text span {
+    color: rgba(var(--color-accent));
+    font-size: calc(var(--font-body-scale) * 1.7rem);
+    font-weight: 500;
+    line-height: 1
+}
+
+.countdown-time__time {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    line-height: 0
+}
+
+.countdown-time__box {
+    position: relative;
+    width: 4rem;
+    height: 4rem;
+    border-radius: var(--text-boxes-radius);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgba(var(--color-accent));
+    background-color: rgba(var(--color-accent), .1);
+    font-weight: 500
+}
+
+.countdown-time__box:after {
+    content: ":";
+    position: absolute;
+    color: rgba(var(--color-accent));
+    top: 1.9rem;
+    right: -1.75rem;
+    font-weight: 600
+}
+
+.countdown-time__box:last-child:after {
+    content: none
+}
+
 /*# sourceMappingURL=/cdn/shop/t/4/assets/countdown-time.css.map?v=112086107609973870671723521709 */

@@ -1,2 +1,51 @@
-.countdown-stock__title{display:flex;align-items:center;gap:1rem;padding-bottom:.7rem}.countdown-stock__title p{font-size:calc(var(--font-body-scale) * 1.3rem)}.countdown-stock__text{font-size:calc(var(--font-body-scale) * 1.5rem);letter-spacing:.1em;font-weight:500}.countdown-stock__text span{color:rgb(var(--color-foreground));font-weight:600}.countdown-stock__progress{display:-ms-flexbox;display:flex;height:.5rem;overflow:hidden;font-size:.75rem;background-color:#e9ecef;border-radius:.25rem}.countdown-stock__bar{background-color:rgba(var(--color-foreground));transition:.5s;animation:progress-bar 1s linear infinite;background-image:linear-gradient(45deg,rgba(255,255,255,.3) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.3) 50%,rgba(255,255,255,.3) 75%,transparent 75%,transparent);background-size:2rem 2rem}@keyframes progress-bar{0%{background-position:2rem 0}to{background-position:0 0}}
+.countdown-stock__title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: .7rem
+}
+
+.countdown-stock__title p {
+    font-size: calc(var(--font-body-scale) * 1.3rem)
+}
+
+.countdown-stock__text {
+    font-size: calc(var(--font-body-scale) * 1.5rem);
+    letter-spacing: .1em;
+    font-weight: 500
+}
+
+.countdown-stock__text span {
+    color: rgb(var(--color-foreground));
+    font-weight: 600
+}
+
+.countdown-stock__progress {
+    display: -ms-flexbox;
+    display: flex;
+    height: .5rem;
+    overflow: hidden;
+    font-size: .75rem;
+    background-color: #e9ecef;
+    border-radius: .25rem
+}
+
+.countdown-stock__bar {
+    background-color: rgba(var(--color-foreground));
+    transition: .5s;
+    animation: progress-bar 1s linear infinite;
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .3) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .3) 50%, rgba(255, 255, 255, .3) 75%, transparent 75%, transparent);
+    background-size: 2rem 2rem
+}
+
+@keyframes progress-bar {
+    0% {
+        background-position: 2rem 0
+    }
+
+    to {
+        background-position: 0 0
+    }
+}
+
 /*# sourceMappingURL=/cdn/shop/t/4/assets/countdown-stock.css.map?v=91723711857859924321723521712 */
