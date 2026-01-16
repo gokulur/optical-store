@@ -1,299 +1,763 @@
 {% extends 'base.html' %}
 {% block content %}
-<title>{% block title %}{{ product.name }} | {{ product.brand.name }}{% endblock %}</title>
+<title>{% block title %}{{ product.name }}{% endblock %}</title>
 {% load static %}
 
 <style>
-    /* CUSTOM STYLES FOR OPTICAL E-COMMERCE */
-    .brand-name {
-        text-transform: uppercase;
-        font-size: 0.9rem;
-        letter-spacing: 1px;
-        color: #666;
-        margin-bottom: 5px;
+    .shopify-payment-button__button {
+        height: clamp(25px, var(--shopify-accelerated-checkout-button-block-size, 44px), 55px);
+        min-height: clamp(25px, var(--shopify-accelerated-checkout-button-block-size, 44px), 55px);
+        border-radius: var(--shopify-accelerated-checkout-button-border-radius, 0px);
+        width: 100%;
+        border: none;
+        box-shadow: 0 0 0 0 transparent;
+        color: #fff;
+        cursor: pointer;
         display: block;
+        font-size: 1em;
+        font-weight: 500;
+        line-height: 1;
+        text-align: center;
+        transition: background .2s ease-in-out;
     }
     
-    /* Variant/Color Swatches */
-    .variant-swatch-container {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-    }
-    .variant-swatch {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        border: 1px solid #ddd;
+    /* Color Lens Swatches */
+    .color-swatch {
+        display: inline-block;
+        margin: 8px;
         cursor: pointer;
-        position: relative;
-        overflow: hidden;
+        text-align: center;
+        transition: transform 0.2s;
     }
-    .variant-swatch.active {
-        border: 2px solid #000;
-        transform: scale(1.1);
+    
+    .color-swatch:hover {
+        transform: scale(1.05);
     }
-    .variant-swatch img {
-        width: 100%;
-        height: 100%;
+    
+    .color-swatch.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+    
+    .color-swatch img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 2px solid #ddd;
         object-fit: cover;
     }
-
-    /* Contact Lens Power Grid */
-    .lens-power-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        margin-bottom: 20px;
+    
+    .color-swatch.selected img {
+        border-color: #000;
+        border-width: 3px;
+    }
+    
+    .color-swatch-name {
+        font-size: 12px;
+        margin-top: 4px;
+    }
+    
+    .power-badge {
+        font-size: 10px;
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 2px 6px;
+        border-radius: 3px;
+        margin-top: 2px;
+        display: inline-block;
+    }
+    
+    /* Lens Selection Modal */
+    .lens-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.5);
+    }
+    
+    .lens-modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 30px;
+        border: 1px solid #888;
+        width: 90%;
+        max-width: 900px;
+        border-radius: 8px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    
+    .lens-option {
+        border: 2px solid #e0e0e0;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .lens-option:hover {
+        border-color: #000;
+        background-color: #f9f9f9;
+    }
+    
+    .lens-option.selected {
+        border-color: #000;
+        background-color: #f0f0f0;
+    }
+    
+    .lens-price {
+        font-size: 24px;
+        font-weight: bold;
+        color: #000;
+    }
+    
+    .addon-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        margin: 8px 0;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    .addon-item input[type="radio"] {
+        margin-right: 10px;
+    }
+    
+    /* Power Selection */
+    .power-selection {
+        display: none;
+        margin-top: 20px;
+        padding: 20px;
         background: #f9f9f9;
-        padding: 15px;
         border-radius: 8px;
     }
-    .power-select label {
-        display: block;
-        font-size: 0.8rem;
-        margin-bottom: 5px;
-        font-weight: 600;
+    
+    .power-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
     }
-    .power-select select {
+    
+    .eye-section {
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 5px;
+    }
+    
+    .power-select {
         width: 100%;
         padding: 8px;
-        border: 1px solid #ccc;
+        margin: 5px 0;
+        border: 1px solid #ddd;
         border-radius: 4px;
     }
-
-    /* Dual Button Layout (Magrabi/Eyewa Style) */
-    .action-buttons-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-top: 20px;
+    
+    /* Stock notification */
+    .stock-notification {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 99999;
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+        max-width: 400px;
     }
-    .btn-outline {
-        background: transparent;
-        border: 1px solid currentColor;
-        color: var(--color-foreground);
+    
+    .stock-notification.show {
+        transform: translateX(0);
+    }
+    
+    .custom-notification {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 99999;
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+    }
+    
+    .custom-notification.show {
+        transform: translateX(0);
+    }
+    
+    @media (max-width: 768px) {
+        .lens-modal-content {
+            width: 95%;
+            margin: 10% auto;
+            padding: 20px;
+        }
+        
+        .power-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 
 <main class="content-for-layout focus-none" id="xo-main-content" role="main" tabindex="-1">
-    
-    <section class="shopify-section section" id="shopify-section-template--breadcrumb">
-        <div class="xo-section xo-section--breadcrumb color-background-1" style="--margin: 0;--pt: 15;--pb: 15;">
-            <xo-animate class="xo-section-bg" xo-disabled="" xo-duration="1000">
-                <xo-parallax class="xo-section-bg-image__item" xo-lerp-ease="0.4">
-                    <xo-parallax-scroll class="xo-section-bg-image__url xo-background-lazyload"></xo-parallax-scroll>
-                </xo-parallax>
-            </xo-animate>
-            <xo-animate xo-strength="5" xo-type="fade-down">
-                <xo-container class="xo-container--box">
-                    <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
-                        <ol class="breadcrumb__list">
-                            <li class="breadcrumb__item"><a class="breadcrumb__link" href="/">Home</a></li>
-                            {% if product.category %}
-                            <li class="breadcrumb__item">
-                                <span class="breadcrumb__separator">/</span>
-                                <a class="breadcrumb__link" href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a>
-                            </li>
-                            {% endif %}
-                            <li class="breadcrumb__item breadcrumb__item--current">
-                                <span class="breadcrumb__separator">/</span>
-                                <span class="breadcrumb__link" aria-current="page">{{ product.name }}</span>
-                            </li>
-                        </ol>
-                    </nav>
-                </xo-container>
-            </xo-animate>
+    <!-- Breadcrumb -->
+    <section class="shopify-section section">
+        <div class="xo-section color-background-1" style="--margin: 0;--pt: 15;--pb: 15;">
+            <xo-container class="xo-container--box">
+                <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+                    <ol class="breadcrumb__list" style="--justify:flex-start">
+                        <li class="breadcrumb__item">
+                            <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                            <span class="breadcrumb__separator">/</span>
+                        </li>
+                        <li class="breadcrumb__item">
+                            <a class="breadcrumb__link" href=" ">{{ product.category.name }}</a>
+                            <span class="breadcrumb__separator">/</span>
+                        </li>
+                        <li class="breadcrumb__item breadcrumb__item--current">
+                            <a aria-current="page" class="breadcrumb__link breadcrumb--current">{{ product.name }}</a>
+                        </li>
+                    </ol>
+                </nav>
+            </xo-container>
         </div>
     </section>
 
-    <section class="shopify-section section" id="shopify-section-main-product">
-        <div class="xo-section xo-section--main-product color-background-1" style="z-index:99; position: relative">
-            <xo-product xo-product-id="{{ product.id }}" xo-section-id="template--main-product">
-                <xo-container class="xo-container--box">
-                    <xo-grid>
-                        <xo-animate style="--xs: 12; --md: 7" xo-cascade="">
-                            <div class="xo-product-info-media-style3" style="position: sticky;">
-                                <xo-gallery aria-label="Gallery Viewer" xo-portal-class="main-product__portal" xo-sync="false">
-                                    <xo-carousel xo-name="product-information-desktop">
-                                        <div class="xo-product-info-media-style3__top">
-                                            <xo-carousel-inner>
-                                                <xo-carousel-list aria-label="Slider" role="list">
-                                                    {% for image in images %}
-                                                    <xo-carousel-slide aria-label="{{ forloop.counter }} of {{ images.count }}" class="xo-product-info-media-style3__slide">
-                                                        <xo-image-zoom xo-use-wheel="false" xo-zoom="3" xo-zoom-src="{{ image.image.url }}">
-                                                            <xo-gallery-item xo-src="{{ image.image.url }}">
-                                                                <div class="xo-product-info-media-style3__image">
-                                                                    <div class="xo-media" style="--media-aspect-ratio: 1/1">
-                                                                        <img src="{{ image.image.url }}" alt="{{ product.name }}" width="1000" loading="lazy">
+    <!-- Main Product Section -->
+    <section class="shopify-section section">
+        <div class="xo-section color-background-1" style="--margin: 0;--pt: 0;--pb: 0;">
+            <xo-container class="xo-container--box">
+                <xo-grid>
+                    <!-- Product Images -->
+                    <xo-animate style="--xs: 12; --md: 7">
+                        <div class="xo-product-info-media-style3" style="position: sticky;">
+                            <xo-gallery aria-label="Gallery Viewer">
+                                <xo-carousel xo-name="product-information-desktop">
+                                    <div class="xo-product-info-media-style3__top">
+                                        <xo-carousel-inner>
+                                            <xo-carousel-list aria-label="Slider" role="list">
+                                                <!-- Main Product Image -->
+                                                {% if product.image %}
+                                                <xo-carousel-slide class="xo-product-info-media-style3__slide">
+                                                    <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
+                                                        <xo-gallery-item>
+                                                            <div class="xo-product-info-media-style3__image">
+                                                                <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                                        <img alt="{{ product.name }}" 
+                                                                             src="{{ product.image.url }}" 
+                                                                             loading="lazy" 
+                                                                             id="mainProductImage"/>
                                                                     </div>
                                                                 </div>
-                                                            </xo-gallery-item>
-                                                        </xo-image-zoom>
+                                                            </div>
+                                                        </xo-gallery-item>
+                                                    </xo-image-zoom>
+                                                </xo-carousel-slide>
+                                                {% endif %}
+
+                                                <!-- Gallery Images -->
+                                                {% for image in product.images.all %}
+                                                <xo-carousel-slide class="xo-product-info-media-style3__slide">
+                                                    <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
+                                                        <xo-gallery-item>
+                                                            <div class="xo-product-info-media-style3__image">
+                                                                <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                                        <img alt="{{ product.name }}" 
+                                                                             src="{{ image.image.url }}" 
+                                                                             loading="lazy"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </xo-gallery-item>
+                                                    </xo-image-zoom>
+                                                </xo-carousel-slide>
+                                                {% endfor %}
+                                            </xo-carousel-list>
+                                        </xo-carousel-inner>
+                                        
+                                        <!-- Thumbnails -->
+                                        <xo-carousel-thumbnail class="xo-product-info-media-style3__thumbnails" xo-gap="10" xo-per-view="5">
+                                            <xo-carousel-inner>
+                                                <xo-carousel-list>
+                                                    {% if product.image %}
+                                                    <xo-carousel-slide class="xo-product-info-media-style3__thumb-slide">
+                                                        <img src="{{ product.image.url }}" alt="thumbnail"/>
+                                                    </xo-carousel-slide>
+                                                    {% endif %}
+                                                    {% for image in product.images.all %}
+                                                    <xo-carousel-slide class="xo-product-info-media-style3__thumb-slide">
+                                                        <img src="{{ image.image.url }}" alt="thumbnail"/>
                                                     </xo-carousel-slide>
                                                     {% endfor %}
                                                 </xo-carousel-list>
                                             </xo-carousel-inner>
-                                            <xo-carousel-prev class="xo-product-info-media-style3__arrow xo-product-info-media-style3__arrow--left"><button><svg height="12" viewBox="0 0 320 512"><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" fill="currentColor"></path></svg></button></xo-carousel-prev>
-                                            <xo-carousel-next class="xo-product-info-media-style3__arrow xo-product-info-media-style3__arrow--right"><button><svg height="12" viewBox="0 0 320 512"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="currentColor"></path></svg></button></xo-carousel-next>
-                                        </div>
-                                        </xo-carousel>
-                                </xo-gallery>
+                                        </xo-carousel-thumbnail>
+                                    </div>
+                                </xo-carousel>
+                            </xo-gallery>
+                        </div>
+                    </xo-animate>
+
+                    <!-- Product Info -->
+                    <xo-animate class="main-product__right" style="--xs: 12; --md: 5">
+                        <div class="xo-product-info-content" style="position: sticky; top: 9.3rem">
+                            <!-- Product Title -->
+                            <div class="xo-product-info-content__header">
+                                <h1 class="xo-product-info-content__title" style="--fz:2.4rem">
+                                    {{ product.name }}
+                                </h1>
+                                <button class="wishlist-btn circle-btn" data-product-id="{{ product.id }}">
+                                    {% if product in request.user.wishlist.products.all %}
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="red">
+                                        <path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/>
+                                    </svg>
+                                    {% else %}
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
+                                        <path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/>
+                                    </svg>
+                                    {% endif %}
+                                </button>
                             </div>
-                        </xo-animate>
 
-                        <xo-animate class="main-product__right" style="--xs: 12; --md: 5" xo-cascade="">
-                            <div class="xo-product-info-content" style="position: sticky; top: 9.3rem">
-                                <xo-collapse-provider>
-                                    
-                                    <xo-animate style="padding-bottom:5px" xo-cascade="">
-                                        <span class="brand-name">{{ product.brand.name }}</span>
-                                    </xo-animate>
+                            <!-- Brand -->
+                            {% if product.brand %}
+                            <p style="margin: 10px 0; font-size: 14px; color: #666;">
+                                Brand: <strong>{{ product.brand.name }}</strong>
+                            </p>
+                            {% endif %}
 
-                                    <xo-animate style="padding-top:0px; padding-bottom:0px" xo-cascade="">
-                                        <div class="xo-product-info-content__header">
-                                            <h1 class="xo-product-info-content__title" style="--fz:2.4rem">
-                                                {{ product.name }}
-                                            </h1>
-                                            <div>
-                                                <button class="wishlist-btn circle-btn" data-product-id="{{ product.id }}">
-                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" /></svg>
-                                                </button>
-                                            </div>
+                            <!-- Price -->
+                            <div class="xo-product-info-content__price" style="padding: 20px 0;">
+                                <div class="xo-price xo-price--larger">
+                                    <div class="xo-price__container">
+                                        <div class="xo-price__sale">
+                                            <span class="xo-price__item xo-price__item--accent" id="productPrice">
+                                                QAR {{ product.base_price }}
+                                            </span>
                                         </div>
-                                    </xo-animate>
+                                    </div>
+                                </div>
+                            </div>
 
-                                    <xo-animate style="padding-top:0px; padding-bottom:20px" xo-cascade="">
-                                        <div class="xo-price xo-price--larger">
-                                            <div class="xo-price__container">
-                                                <div class="xo-price__sale">
-                                                    <span class="xo-price__item xo-price__item--accent">QAR {{ product.price }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </xo-animate>
+                            <!-- Description -->
+                            <p class="xo-product-info-content__description" style="padding-bottom: 30px;">
+                                {{ product.description|linebreaksbr }}
+                            </p>
 
-                                    <xo-animate style="padding-top:0px; padding-bottom:20px" xo-cascade="">
-                                        <p class="xo-product-info-content__description">
-                                            {{ product.description|truncatewords:20 }}
-                                        </p>
-                                    </xo-animate>
-
-                                    <form method="POST" id="product_form_id_{{ product.id }}" action=" ">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="product_id" value="{{ product.id }}">
-
-                                        {% if product.product_type == 'contact_lenses' and colors %}
-                                        <xo-animate style="padding-bottom: 20px;">
-                                            <label style="font-weight:bold; margin-bottom:10px; display:block;">Select Color:</label>
-                                            <div class="variant-swatch-container">
-                                                {% for color in colors %}
-                                                    <a href="{{ color.get_absolute_url }}" class="variant-swatch {% if color == product %}active{% endif %}" title="{{ color.color_name }}">
-                                                        <img src="{{ color.image.url }}" alt="{{ color.color_name }}">
-                                                    </a>
-                                                {% endfor %}
-                                            </div>
-                                        </xo-animate>
-
-                                        <xo-animate style="padding-bottom: 20px;">
-                                            <div class="lens-power-grid">
-                                                <div class="power-select">
-                                                    <label>Right Eye (OD)</label>
-                                                    <select name="power_od" required>
-                                                        <option value="0.00">Plano (0.00)</option>
-                                                        <option value="-0.50">-0.50</option>
-                                                        <option value="-1.00">-1.00</option>
-                                                        </select>
-                                                </div>
-                                                <div class="power-select">
-                                                    <label>Left Eye (OS)</label>
-                                                    <select name="power_os" required>
-                                                        <option value="0.00">Plano (0.00)</option>
-                                                        <option value="-0.50">-0.50</option>
-                                                        <option value="-1.00">-1.00</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </xo-animate>
+                            <!-- Color Selection for Contact Lenses -->
+                            {% if product.product_type == 'contact_lenses' and contact_lens %}
+                            <div style="padding-bottom: 20px;">
+                                <h3 style="font-size: 16px; margin-bottom: 15px;">Select Color:</h3>
+                                <div id="colorSwatches">
+                                    {% for color in colors %}
+                                    <div class="color-swatch {% if not color.is_active %}disabled{% endif %}" 
+                                         data-color-id="{{ color.id }}"
+                                         data-color-name="{{ color.name }}"
+                                         data-power-enabled="{{ color.power_enabled }}"
+                                         onclick="selectColor(this)">
+                                        <img src="{{ color.image.url }}" alt="{{ color.name }}"/>
+                                        <div class="color-swatch-name">{{ color.name }}</div>
+                                        {% if color.power_enabled %}
+                                        <span class="power-badge">Power Available</span>
+                                        {% else %}
+                                        <span class="power-badge" style="background: #fce4ec; color: #c2185b;">Plano Only</span>
                                         {% endif %}
-
-                                        <xo-animate style="padding-bottom: 20px;">
-                                            <xo-cart-quantity class="xo-quantity-style2" style="--width: 13.5rem; --height: 5rem">
-                                                <xo-cart-quantity-minus class="xo-quantity-style2__button">
-                                                    <svg viewBox="0 0 10 2" width="12"><path d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 110 1H1A.5.5 0 01.5 1z" fill="currentColor"></path></svg>
-                                                </xo-cart-quantity-minus>
-                                                <input class="xo-quantity-style2__number xo-quantity-style2__number--half" type="number" name="quantity" value="1" min="1" max="{{ product.stock }}">
-                                                <xo-cart-quantity-plus class="xo-quantity-style2__button">
-                                                    <svg viewBox="0 0 10 10" width="12"><path d="M1 4.51a.5.5 0 000 1h3.5l.01 3.5a.5.5 0 001-.01V5.5l3.5-.01a.5.5 0 00-.01-1H5.5L5.49.99a.5.5 0 00-1 .01v3.5l-3.5.01H1z" fill="currentColor"></path></svg>
-                                                </xo-cart-quantity-plus>
-                                            </xo-cart-quantity>
-                                        </xo-animate>
-
-                                        <xo-animate style="padding-bottom:30px" xo-cascade="">
-                                            
-                                            {% if product.product_type == 'eyeglasses' %}
-                                                <button type="submit" formaction=" " class="xo-btn xo-btn--light xo-btn--primary xo-btn--block">
-                                                    <span class="xo-btn__content"><span class="xo-btn__text">Select Lenses</span></span>
-                                                </button>
-
-                                            {% elif product.product_type == 'sunglasses' %}
-                                                <div class="action-buttons-grid">
-                                                    <button type="button" class="xo-btn xo-btn--light xo-btn--block add-to-cart-btn btn-outline" data-url=" ">
-                                                        <span class="xo-btn__content"><span class="xo-btn__text">Frame Only</span></span>
-                                                    </button>
-                                                    
-                                                    <button type="submit" formaction=" " class="xo-btn xo-btn--light xo-btn--primary xo-btn--block">
-                                                        <span class="xo-btn__content"><span class="xo-btn__text">Buy with Power</span></span>
-                                                    </button>
-                                                </div>
-
-                                            {% else %}
-                                                <button type="button" class="xo-btn xo-btn--light xo-btn--primary xo-btn--slide-up xo-btn--block add-to-cart-btn" data-url=" ">
-                                                    <span class="xo-btn__content"><span class="xo-btn__text">Add to Cart</span></span>
-                                                </button>
-                                            {% endif %}
-
-                                        </xo-animate>
-
-                                    </form>
-                                    <xo-animate style="padding-top:0px; padding-bottom:30px" xo-cascade="">
-                                        <div class="shipping">
-                                            <div class="shipping_item">
-                                                <p>Estimate delivery times: <strong>3-6 days</strong> Qatar.</p>
-                                            </div>
-                                        </div>
-                                    </xo-animate>
-
-                                </xo-collapse-provider>
+                                    </div>
+                                    {% endfor %}
+                                </div>
                             </div>
-                        </xo-animate>
-                    </xo-grid>
-                </xo-container>
-            </xo-product>
+                            {% endif %}
+
+                            <!-- Product Form -->
+                            <form method="POST" id="product_form_{{ product.id }}">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <input type="hidden" name="selected_color_id" id="selectedColorId">
+                                <input type="hidden" name="selected_lens_option" id="selectedLensOption">
+                                <input type="hidden" name="power_left" id="powerLeft">
+                                <input type="hidden" name="power_right" id="powerRight">
+
+                                <!-- Quantity -->
+                                <xo-cart-quantity class="xo-quantity-style2" style="--width: 13.5rem; --height: 5rem">
+                                    <xo-cart-quantity-minus class="xo-quantity-style2__button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" viewBox="0 0 10 2">
+                                            <path fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 110 1H1A.5.5 0 01.5 1z" fill="currentColor"/>
+                                        </svg>
+                                    </xo-cart-quantity-minus>
+                                    <input class="xo-quantity-style2__number" 
+                                           type="number" 
+                                           name="quantity" 
+                                           value="1" 
+                                           min="1" 
+                                           max="{{ product.stock }}">
+                                    <xo-cart-quantity-plus class="xo-quantity-style2__button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" viewBox="0 0 10 10">
+                                            <path fill-rule="evenodd" d="M1 4.51a.5.5 0 000 1h3.5l.01 3.5a.5.5 0 001-.01V5.5l3.5-.01a.5.5 0 00-.01-1H5.5L5.49.99a.5.5 0 00-1 .01v3.5l-3.5.01H1z" fill="currentColor"/>
+                                        </svg>
+                                    </xo-cart-quantity-plus>
+                                </xo-cart-quantity>
+
+                                <div class="xo-space xo-space--vertical" style="--space: 2.5rem"></div>
+
+                                <!-- Buttons for Sunglasses/Eyeglasses -->
+                                {% if product.product_type in 'sunglasses,eyeglasses' %}
+                                <button type="button" 
+                                        class="xo-btn xo-btn--light xo-btn--primary xo-btn--block"
+                                        onclick="openLensModal()"
+                                        style="margin-bottom: 15px;">
+                                    <span class="xo-btn__content">
+                                        <span class="xo-btn__text">Select Lenses</span>
+                                    </span>
+                                </button>
+                                {% endif %}
+
+                                <!-- Add to Cart -->
+                                <button type="button" 
+                                        class="xo-btn xo-btn--light xo-btn--primary xo-btn--block add-to-cart-btn"
+                                        data-url=" ">
+                                    <span class="xo-btn__content">
+                                        <span class="xo-btn__text">Add to Cart</span>
+                                    </span>
+                                </button>
+
+                                <div class="xo-space xo-space--vertical" style="--space: 1.5rem"></div>
+
+                                <!-- Buy Now -->
+                                <button type="submit" 
+                                        formaction=" "
+                                        class="shopify-payment-button__button"
+                                        style="background: #000;">
+                                    Buy it now
+                                </button>
+                            </form>
+
+                            <!-- Shipping Info -->
+                            <div class="shipping" style="margin-top: 30px;">
+                                <div class="shipping_item" style="display: flex; gap: 15px; margin-bottom: 15px;">
+                                    <svg height="27" width="24" viewBox="0 0 150 150">
+                                        <path d="M139.75,121.3c-0.34,0.71-0.59,1.47-1.03,2.12..." fill="currentColor"/>
+                                    </svg>
+                                    <p style="margin: 0;">Estimate delivery: <strong>12-26 days</strong> (International), <strong>3-6 days</strong> India.</p>
+                                </div>
+                                <div class="shipping_item" style="display: flex; gap: 15px;">
+                                    <svg height="27" width="22" viewBox="0 0 150 150">
+                                        <path d="M94.51,19.67c0,0.77,0,1.36,0,1.96..." fill="currentColor"/>
+                                    </svg>
+                                    <p style="margin: 0;">Return within <strong>45 days</strong> of purchase.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </xo-animate>
+                </xo-grid>
+            </xo-container>
         </div>
     </section>
 
+    <!-- Contact Lens Details -->
+    {% if product.product_type == 'contact_lenses' and contact_lens %}
     <section class="shopify-section section">
-        <xo-container class="xo-container--box">
-             <div class="product-description-style4" style="padding: 20px 0;">
-                 <h3>Description</h3>
-                 {{ product.description|linebreaks }}
-                 
-                 {% if specifications %}
-                 <h3 style="margin-top:20px;">Specifications</h3>
-                 <table style="width:100%; border-collapse: collapse;">
-                     {% for spec in specifications %}
-                     <tr style="border-bottom: 1px solid #eee;">
-                         <td style="padding: 10px; font-weight:bold;">{{ spec.name }}</td>
-                         <td style="padding: 10px;">{{ spec.value }}</td>
-                     </tr>
-                     {% endfor %}
-                 </table>
-                 {% endif %}
-             </div>
-        </xo-container>
+        <div class="xo-section color-background-1" style="--pt: 30; --pb: 30;">
+            <xo-container class="xo-container--box">
+                <h2 style="margin-bottom: 20px;">Lens Details</h2>
+                <xo-grid style="--xs: 1; --md: 2; gap: 20px;">
+                    <div>
+                        <p><strong>Brand:</strong> {{ contact_lens.brand_name }}</p>
+                        <p><strong>Package Size:</strong> Pack of {{ contact_lens.package_size }}</p>
+                        <p><strong>Replacement:</strong> {{ contact_lens.replacement_schedule }}</p>
+                        <p><strong>Lens Type:</strong> {{ contact_lens.lens_type }}</p>
+                    </div>
+                    <div>
+                        <p><strong>Intended Use:</strong> {{ contact_lens.intended_use }}</p>
+                        <p><strong>Diameter:</strong> {{ contact_lens.diameter }} mm</p>
+                        <p><strong>Base Curve:</strong> {{ contact_lens.base_curve }}</p>
+                        <p><strong>Water Content:</strong> {{ contact_lens.water_content }}%</p>
+                    </div>
+                </xo-grid>
+            </xo-container>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Product Tabs -->
+    <section class="shopify-section section">
+        <div class="xo-section color-background-1" style="--pt: 50; --pb: 50;">
+            <xo-container class="xo-container--box">
+                <xo-tabs>
+                    <xo-list class="product-information-tabs__header">
+                        <xo-list-item>
+                            <xo-tabs-trigger class="product-information-tabs__trigger" xo-active xo-name="tab-description">
+                                Description
+                            </xo-tabs-trigger>
+                        </xo-list-item>
+                        <xo-list-item>
+                            <xo-tabs-trigger class="product-information-tabs__trigger" xo-name="tab-shipping">
+                                Shipping & Return
+                            </xo-tabs-trigger>
+                        </xo-list-item>
+                        {% if specifications %}
+                        <xo-list-item>
+                            <xo-tabs-trigger class="product-information-tabs__trigger" xo-name="tab-specs">
+                                Specifications
+                            </xo-tabs-trigger>
+                        </xo-list-item>
+                        {% endif %}
+                    </xo-list>
+                    <xo-tabs-content>
+                        <xo-tabs-pane xo-name="tab-description">
+                            <div style="padding: 20px;">
+                                {{ product.description|linebreaksbr }}
+                            </div>
+                        </xo-tabs-pane>
+                        <xo-tabs-pane xo-name="tab-shipping">
+                            <div style="padding: 20px;">
+                                <p>Returns accepted within 45 days of purchase on unworn items.</p>
+                                <p>Free shipping on orders over 100 QAR.</p>
+                            </div>
+                        </xo-tabs-pane>
+                        {% if specifications %}
+                        <xo-tabs-pane xo-name="tab-specs">
+                            <div style="padding: 20px;">
+                                <table style="width: 100%;">
+                                    {% for spec in specifications %}
+                                    <tr>
+                                        <td style="padding: 10px; font-weight: bold;">{{ spec.name }}</td>
+                                        <td style="padding: 10px;">{{ spec.value }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                            </div>
+                        </xo-tabs-pane>
+                        {% endif %}
+                    </xo-tabs-content>
+                </xo-tabs>
+            </xo-container>
+        </div>
     </section>
 
+    <!-- Related Products -->
+    {% if related_products %}
+    <section class="shopify-section section">
+        <div class="xo-section color-background-1" style="--pt: 50; --pb: 50;">
+            <xo-container class="xo-container--box">
+                <h2 class="xo-section-heading__title" style="text-align: center; margin-bottom: 30px;">
+                    You Might Also Like
+                </h2>
+                <xo-grid style="--xs: 1; --sm: 2; --md: 4; gap: 20px;">
+                    {% for rp in related_products %}
+                    <div class="product-card">
+                        <a href="{% url 'product_detail' rp.slug %}">
+                            {% if rp.image %}
+                            <img src="{{ rp.image.url }}" alt="{{ rp.name }}" style="width: 100%; border-radius: 8px;"/>
+                            {% endif %}
+                            <h3 style="margin-top: 10px; font-size: 16px;">{{ rp.name }}</h3>
+                            <p style="font-weight: bold;">QAR {{ rp.base_price }}</p>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </xo-grid>
+            </xo-container>
+        </div>
+    </section>
+    {% endif %}
 </main>
+
+<!-- Lens Selection Modal -->
+<div id="lensModal" class="lens-modal">
+    <div class="lens-modal-content">
+        <span class="close" onclick="closeLensModal()" style="float: right; font-size: 28px; cursor: pointer;">&times;</span>
+        <h2>Select Your Lenses</h2>
+        <div id="lensOptions">
+            <!-- Lens options will be loaded here via JavaScript or Django -->
+        </div>
+        <button onclick="confirmLensSelection()" class="xo-btn xo-btn--primary" style="margin-top: 20px;">
+            Confirm Selection
+        </button>
+    </div>
+</div>
+
+<script>
+// ------------------------------
+// Color selection for contact lenses
+// ------------------------------
+let selectedColorId = null;
+
+function selectColor(element) {
+    if (element.classList.contains('disabled')) return;
+
+    document.querySelectorAll('.color-swatch').forEach(swatch => {
+        swatch.classList.remove('selected');
+    });
+
+    element.classList.add('selected');
+    selectedColorId = element.dataset.colorId;
+    document.getElementById('selectedColorId').value = selectedColorId;
+
+    const colorImage = element.querySelector('img')?.src;
+    const mainImage = document.getElementById('mainProductImage');
+    if (mainImage && colorImage) {
+        mainImage.src = colorImage;
+    }
+}
+
+// ------------------------------
+// Lens Modal
+// ------------------------------
+function openLensModal() {
+    document.getElementById('lensModal').style.display = 'block';
+}
+
+function closeLensModal() {
+    document.getElementById('lensModal').style.display = 'none';
+}
+
+function confirmLensSelection() {
+    const selected = document.querySelector('.lens-option.selected');
+    if (selected) {
+        document.getElementById('selectedLensOption').value = selected.dataset.optionId;
+        closeLensModal();
+        showNotification('Lens option selected successfully', 'success');
+    } else {
+        showNotification('Please select a lens option', 'warning');
+    }
+}
+
+// ------------------------------
+// Quantity Controls
+// ------------------------------
+document.addEventListener('DOMContentLoaded', function() {
+    const quantityContainers = document.querySelectorAll('.xo-cart-quantity');
+
+    quantityContainers.forEach(container => {
+        const quantityInput = container.querySelector('input[type="number"]');
+        const plusBtn = container.querySelector('xo-cart-quantity-plus');
+        const minusBtn = container.querySelector('xo-cart-quantity-minus');
+
+        if (!quantityInput || !plusBtn || !minusBtn) return;
+
+        const maxStock = parseInt(quantityInput.getAttribute('max')) || 999;
+        const minQuantity = 1;
+
+        plusBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            let currentValue = parseInt(quantityInput.value) || 1;
+
+            if (currentValue < maxStock) {
+                quantityInput.value = currentValue + 1;
+            } else {
+                showStockNotification(`Maximum stock: ${maxStock}`);
+            }
+        });
+
+        minusBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            let currentValue = parseInt(quantityInput.value) || 1;
+
+            if (currentValue > minQuantity) {
+                quantityInput.value = currentValue - 1;
+            }
+        });
+    });
+});
+
+// ------------------------------
+// Stock Notification
+// ------------------------------
+function showStockNotification(message) {
+    let notif = document.createElement('div');
+    notif.className = 'stock-notification';
+    notif.innerHTML = `<strong>Stock Alert</strong><br>${message}`;
+    document.body.appendChild(notif);
+
+    setTimeout(() => notif.classList.add('show'), 50);
+
+    setTimeout(() => {
+        notif.classList.remove('show');
+        setTimeout(() => notif.remove(), 300);
+    }, 3000);
+}
+
+// ------------------------------
+// General Notification
+// ------------------------------
+function showNotification(message, type = 'success') {
+    let notif = document.createElement('div');
+    notif.className = 'custom-notification';
+    notif.innerHTML = message;
+
+    if (type === 'warning') {
+        notif.style.borderLeft = '4px solid #f59e0b';
+    } else if (type === 'error') {
+        notif.style.borderLeft = '4px solid #dc2626';
+    } else {
+        notif.style.borderLeft = '4px solid #16a34a';
+    }
+
+    document.body.appendChild(notif);
+
+    setTimeout(() => notif.classList.add('show'), 50);
+
+    setTimeout(() => {
+        notif.classList.remove('show');
+        setTimeout(() => notif.remove(), 300);
+    }, 3000);
+}
+
+// ------------------------------
+// Lens option selection
+// ------------------------------
+document.addEventListener('click', function(e) {
+    const option = e.target.closest('.lens-option');
+    if (!option) return;
+
+    document.querySelectorAll('.lens-option').forEach(el => {
+        el.classList.remove('selected');
+    });
+
+    option.classList.add('selected');
+});
+
+// ------------------------------
+// Add to Cart AJAX
+// ------------------------------
+document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const form = this.closest('form');
+        const url = this.dataset.url;
+        const formData = new FormData(form);
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Added to cart successfully', 'success');
+            } else {
+                showNotification(data.message || 'Something went wrong', 'error');
+            }
+        })
+        .catch(() => {
+            showNotification('Server error. Try again.', 'error');
+        });
+    });
+});
+</script>
 {% endblock %}
