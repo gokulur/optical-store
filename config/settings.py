@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 from decouple import config
 SECRET_KEY = config("SECRET_KEY")
@@ -144,14 +145,18 @@ USE_I18N = True
 USE_TZ = True
 
 
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
  
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+# STATIC_URL = "/static/"
+# STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
