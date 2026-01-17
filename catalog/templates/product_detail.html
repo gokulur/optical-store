@@ -242,6 +242,7 @@
                 <xo-grid>
                     <!-- Product Images -->
                     <xo-animate style="--xs: 12; --md: 7">
+                        <!-- Desktop Gallery -->
                         <div class="xo-product-info-media-style3" style="position: sticky;">
                             <xo-gallery aria-label="Gallery Viewer">
                                 <xo-carousel xo-name="product-information-desktop">
@@ -289,24 +290,144 @@
                                             </xo-carousel-list>
                                         </xo-carousel-inner>
                                         
-                                        <!-- Thumbnails -->
+                                        <!-- Desktop Arrow Navigation -->
+                                        <xo-carousel-prev class="xo-product-info-media-style3__arrow xo-product-info-media-style3__arrow--left">
+                                            <button>
+                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" fill="currentColor"></path>
+                                                </svg>
+                                            </button>
+                                        </xo-carousel-prev>
+                                        <xo-carousel-next class="xo-product-info-media-style3__arrow xo-product-info-media-style3__arrow--right">
+                                            <button>
+                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c12.5-12.5 12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="currentColor"></path>
+                                                </svg>
+                                            </button>
+                                        </xo-carousel-next>
+                                        
+                                        <!-- Desktop Thumbnails -->
                                         <xo-carousel-thumbnail class="xo-product-info-media-style3__thumbnails" xo-gap="10" xo-per-view="5">
                                             <xo-carousel-inner>
                                                 <xo-carousel-list>
                                                     {% if product.image %}
                                                     <xo-carousel-slide class="xo-product-info-media-style3__thumb-slide">
-                                                        <img src="{{ product.image.url }}" alt="thumbnail"/>
+                                                        <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                            <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                                <img src="{{ product.image.url }}" alt="thumbnail"/>
+                                                            </div>
+                                                        </div>
                                                     </xo-carousel-slide>
                                                     {% endif %}
                                                     {% for image in product.images.all %}
                                                     <xo-carousel-slide class="xo-product-info-media-style3__thumb-slide">
-                                                        <img src="{{ image.image.url }}" alt="thumbnail"/>
+                                                        <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                            <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                                <img src="{{ image.image.url }}" alt="thumbnail"/>
+                                                            </div>
+                                                        </div>
                                                     </xo-carousel-slide>
                                                     {% endfor %}
                                                 </xo-carousel-list>
                                             </xo-carousel-inner>
                                         </xo-carousel-thumbnail>
                                     </div>
+                                </xo-carousel>
+                            </xo-gallery>
+                        </div>
+                        
+                        <!-- Mobile Gallery -->
+                        <div class="xo-product-info-media-mobile">
+                            <xo-gallery aria-label="Gallery Viewer">
+                                <xo-carousel xo-name="product-information-mobile">
+                                    <div class="xo-product-info-media-mobile__top">
+                                        <xo-carousel-inner>
+                                            <xo-carousel-list aria-label="Slider" role="list" style="height: fit-content">
+                                                <!-- Main Product Image Mobile -->
+                                                {% if product.image %}
+                                                <xo-carousel-slide class="xo-product-info-media-mobile__slide">
+                                                    <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
+                                                        <xo-gallery-item>
+                                                            <div class="xo-product-info-media-mobile__image">
+                                                                <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                                        <img alt="{{ product.name }}" 
+                                                                             src="{{ product.image.url }}" 
+                                                                             loading="lazy"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </xo-gallery-item>
+                                                    </xo-image-zoom>
+                                                </xo-carousel-slide>
+                                                {% endif %}
+
+                                                <!-- Gallery Images Mobile -->
+                                                {% for image in product.images.all %}
+                                                <xo-carousel-slide class="xo-product-info-media-mobile__slide">
+                                                    <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
+                                                        <xo-gallery-item>
+                                                            <div class="xo-product-info-media-mobile__image">
+                                                                <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                                        <img alt="{{ product.name }}" 
+                                                                             src="{{ image.image.url }}" 
+                                                                             loading="lazy"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </xo-gallery-item>
+                                                    </xo-image-zoom>
+                                                </xo-carousel-slide>
+                                                {% endfor %}
+                                            </xo-carousel-list>
+                                        </xo-carousel-inner>
+                                        
+                                        <!-- Mobile Arrow Navigation -->
+                                        <xo-carousel-prev class="xo-product-info-media-mobile__arrow xo-product-info-media-mobile__arrow--left">
+                                            <button>
+                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" fill="currentColor"></path>
+                                                </svg>
+                                            </button>
+                                        </xo-carousel-prev>
+                                        <xo-carousel-next class="xo-product-info-media-mobile__arrow xo-product-info-media-mobile__arrow--right">
+                                            <button>
+                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c12.5-12.5 12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="currentColor"></path>
+                                                </svg>
+                                            </button>
+                                        </xo-carousel-next>
+                                    </div>
+                                    
+                                    <!-- Mobile Pagination Dots -->
+                                    <xo-carousel-pagination class="xo-product-info-media-mobile__pagination"></xo-carousel-pagination>
+                                    
+                                    <!-- Mobile Thumbnails -->
+                                    <xo-carousel-thumbnail class="xo-product-info-media-mobile__thumbnails" xo-gap="10" xo-per-view="5">
+                                        <xo-carousel-inner style="padding-bottom: 0.1rem; margin-bottom: -0.1rem;">
+                                            <xo-carousel-list aria-label="Slider" role="list" style="padding-right: 0.2rem; margin-right: -0.2rem;">
+                                                {% if product.image %}
+                                                <xo-carousel-slide class="xo-product-info-media-mobile__thumb-slide">
+                                                    <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                        <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                            <img src="{{ product.image.url }}" alt="thumbnail"/>
+                                                        </div>
+                                                    </div>
+                                                </xo-carousel-slide>
+                                                {% endif %}
+                                                {% for image in product.images.all %}
+                                                <xo-carousel-slide class="xo-product-info-media-mobile__thumb-slide">
+                                                    <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                        <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                            <img src="{{ image.image.url }}" alt="thumbnail"/>
+                                                        </div>
+                                                    </div>
+                                                </xo-carousel-slide>
+                                                {% endfor %}
+                                            </xo-carousel-list>
+                                        </xo-carousel-inner>
+                                    </xo-carousel-thumbnail>
                                 </xo-carousel>
                             </xo-gallery>
                         </div>
@@ -428,7 +549,7 @@
                                 <!-- Add to Cart -->
                                 <button type="button" 
                                         class="xo-btn xo-btn--light xo-btn--primary xo-btn--block add-to-cart-btn"
-                                        data-url=" ">
+                                        data-url="">
                                     <span class="xo-btn__content">
                                         <span class="xo-btn__text">Add to Cart</span>
                                     </span>
@@ -438,7 +559,7 @@
 
                                 <!-- Buy Now -->
                                 <button type="submit" 
-                                        formaction=" "
+                                        formaction=""
                                         class="shopify-payment-button__button"
                                         style="background: #000;">
                                     Buy it now
@@ -588,6 +709,7 @@
         </button>
     </div>
 </div>
+
 
 <script>
 // ------------------------------
