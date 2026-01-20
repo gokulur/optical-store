@@ -1,138 +1,611 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Eyeglasses - Eyewear Store{% endblock %}
+{% block title %}Eyeglasses - Eyese Optical{% endblock %}
 
 {% block content %}
-<div class="product-listing-page">
+<style>
+    /* Gender/Category Filter Tabs */
+    .gender-filter {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        padding: 30px 0;
+        border-bottom: 1px solid #e0e0e0;
+        margin-bottom: 30px;
+    }
+    
+    .gender-filter a {
+        padding: 12px 30px;
+        text-decoration: none;
+        color: #666;
+        font-weight: 500;
+        border-radius: 5px;
+        transition: all 0.3s;
+    }
+    
+    .gender-filter a:hover {
+        background: #f5f5f5;
+        color: #000;
+    }
+    
+    .gender-filter a.active {
+        background: #000;
+        color: #fff;
+    }
+    
+    /* Filters & Products Container */
+    .listing-container {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 30px;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px 50px;
+    }
+    
+    /* Sidebar Filters */
+    .filters-sidebar {
+        position: sticky;
+        top: 100px;
+        height: fit-content;
+    }
+    
+    .filters-sidebar h3 {
+        font-size: 20px;
+        margin-bottom: 25px;
+        font-weight: 600;
+    }
+    
+    .filter-group {
+        margin-bottom: 30px;
+        padding-bottom: 25px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .filter-group h4 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .filter-group ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .filter-group li {
+        margin-bottom: 10px;
+    }
+    
+    .filter-group label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        font-size: 14px;
+        color: #333;
+    }
+    
+    .filter-group input[type="checkbox"] {
+        margin-right: 10px;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+    
+    .clear-filters {
+        width: 100%;
+        padding: 12px;
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    
+    .clear-filters:hover {
+        background: #000;
+        color: #fff;
+        border-color: #000;
+    }
+    
+    /* Products Area */
+    .products-area {
+        width: 100%;
+    }
+    
+    .products-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    
+    .showing-count {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .sort-by {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .sort-by label {
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .sort-by select {
+        padding: 8px 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    
+    /* Products Grid */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+    }
+    
+    .product-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s;
+        position: relative;
+    }
+    
+    .product-card:hover {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transform: translateY(-5px);
+    }
+    
+    .product-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1/1;
+        overflow: hidden;
+        background: #f9f9f9;
+    }
+    
+    .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s;
+    }
+    
+    .product-card:hover .product-image img {
+        transform: scale(1.05);
+    }
+    
+    .product-info {
+        padding: 15px;
+    }
+    
+    .product-info .brand {
+        font-size: 12px;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+    
+    .product-info .product-name {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 5px 0;
+        color: #000;
+    }
+    
+    .product-info .gender {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 10px;
+    }
+    
+    .price-section {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .price-section .price {
+        font-size: 18px;
+        font-weight: 700;
+        color: #000;
+    }
+    
+    .price-section .compare-price {
+        font-size: 14px;
+        color: #999;
+        text-decoration: line-through;
+    }
+    
+    .product-actions {
+        display: flex;
+        gap: 10px;
+        padding: 15px;
+        border-top: 1px solid #e0e0e0;
+    }
+    
+    .product-actions .select-lenses {
+        flex: 1;
+        padding: 10px 20px;
+        background: #000;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.3s;
+    }
+    
+    .product-actions .select-lenses:hover {
+        background: #333;
+    }
+    
+    .product-actions .wishlist {
+        width: 45px;
+        height: 45px;
+        border: 1px solid #ddd;
+        background: #fff;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 20px;
+        transition: all 0.3s;
+    }
+    
+    .product-actions .wishlist:hover {
+        background: #000;
+        color: #fff;
+        border-color: #000;
+    }
+    
+    .no-products {
+        text-align: center;
+        padding: 50px;
+        font-size: 18px;
+        color: #666;
+        grid-column: 1/-1;
+    }
+    
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-top: 40px;
+    }
+    
+    .pagination a {
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        text-decoration: none;
+        color: #666;
+        transition: all 0.3s;
+    }
+    
+    .pagination a:hover {
+        background: #000;
+        color: #fff;
+        border-color: #000;
+    }
+    
+    .pagination a.active {
+        background: #000;
+        color: #fff;
+        border-color: #000;
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 1024px) {
+        .listing-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .filters-sidebar {
+            position: static;
+        }
+        
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .gender-filter {
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 20px 0;
+        }
+        
+        .gender-filter a {
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+        
+        .products-toolbar {
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .product-info .product-name {
+            font-size: 14px;
+        }
+        
+        .price-section .price {
+            font-size: 16px;
+        }
+    }
+</style>
+
+<main class="content-for-layout focus-none" id="xo-main-content" role="main">
+    <!-- Breadcrumb -->
+    <section class="shopify-section section">
+        <div class="xo-section color-background-1" style="--margin: 0;--pt: 15;--pb: 15;">
+            <xo-container class="xo-container--box">
+                <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+                    <ol class="breadcrumb__list" style="--justify:flex-start">
+                        <li class="breadcrumb__item">
+                            <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                            <span class="breadcrumb__separator">/</span>
+                        </li>
+                        <li class="breadcrumb__item breadcrumb__item--current">
+                            <a aria-current="page" class="breadcrumb__link breadcrumb--current">Eyeglasses</a>
+                        </li>
+                    </ol>
+                </nav>
+            </xo-container>
+        </div>
+    </section>
+    
     <!-- Page Header -->
-    <div class="page-header">
-        <h1>Eyeglasses</h1>
-        <p>Find your perfect prescription eyeglasses</p>
-    </div>
+    <section class="shopify-section section">
+        <div class="xo-section color-background-1" style="--pt: 30; --pb: 20;">
+            <xo-container class="xo-container--box">
+                <div style="text-align: center;">
+                    <h1 style="font-size: 36px; margin-bottom: 10px;">Eyeglasses</h1>
+                    <p style="color: #666; font-size: 16px;">Find your perfect prescription eyeglasses</p>
+                </div>
+            </xo-container>
+        </div>
+    </section>
     
     <!-- Gender Filter -->
-    <div class="gender-filter">
-        <a href="?gender=all" class="{% if selected_gender == 'all' %}active{% endif %}">All</a>
-        <a href="?gender=men" class="{% if selected_gender == 'men' %}active{% endif %}">For Him</a>
-        <a href="?gender=women" class="{% if selected_gender == 'women' %}active{% endif %}">For Her</a>
-        <a href="?gender=kids" class="{% if selected_gender == 'kids' %}active{% endif %}">For Kids</a>
-    </div>
+    <section class="shopify-section section">
+        <div class="xo-section color-background-1">
+            <xo-container class="xo-container--box">
+                <div class="gender-filter">
+                    <a href="?gender=all" class="{% if selected_gender == 'all' or not selected_gender %}active{% endif %}">All</a>
+                    <a href="?gender=men" class="{% if selected_gender == 'men' %}active{% endif %}">For Him</a>
+                    <a href="?gender=women" class="{% if selected_gender == 'women' %}active{% endif %}">For Her</a>
+                    <a href="?gender=kids" class="{% if selected_gender == 'kids' %}active{% endif %}">For Kids</a>
+                </div>
+            </xo-container>
+        </div>
+    </section>
     
-    <div class="listing-container">
-        <!-- Sidebar Filters -->
-        <aside class="filters-sidebar">
-            <h3>Filters</h3>
-            
-            <!-- Brand Filter -->
-            <div class="filter-group">
-                <h4>Brand</h4>
-                <ul>
-                    {% for brand in brands %}
-                    <li>
-                        <label>
-                            <input type="checkbox" name="brand" value="{{ brand.slug }}">
-                            {{ brand.name }}
-                        </label>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            
-            <!-- Price Filter -->
-            <div class="filter-group">
-                <h4>Price Range</h4>
-                <input type="range" name="min_price" min="0" max="3000">
-                <input type="range" name="max_price" min="0" max="3000">
-                <div class="price-display">
-                    <span>0 QAR</span> - <span>3000 QAR</span>
-                </div>
-            </div>
-            
-            <!-- Frame Shape -->
-            <div class="filter-group">
-                <h4>Frame Shape</h4>
-                <ul>
-                    <li><label><input type="checkbox" name="shape" value="rectangle"> Rectangle</label></li>
-                    <li><label><input type="checkbox" name="shape" value="round"> Round</label></li>
-                    <li><label><input type="checkbox" name="shape" value="square"> Square</label></li>
-                    <li><label><input type="checkbox" name="shape" value="aviator"> Aviator</label></li>
-                    <li><label><input type="checkbox" name="shape" value="cat-eye"> Cat Eye</label></li>
-                </ul>
-            </div>
-            
-            <!-- Frame Material -->
-            <div class="filter-group">
-                <h4>Frame Material</h4>
-                <ul>
-                    <li><label><input type="checkbox" name="material" value="metal"> Metal</label></li>
-                    <li><label><input type="checkbox" name="material" value="plastic"> Plastic</label></li>
-                    <li><label><input type="checkbox" name="material" value="acetate"> Acetate</label></li>
-                    <li><label><input type="checkbox" name="material" value="titanium"> Titanium</label></li>
-                </ul>
-            </div>
-            
-            <button class="clear-filters">Clear All Filters</button>
-        </aside>
-        
-        <!-- Products Grid -->
-        <div class="products-area">
-            <!-- Toolbar -->
-            <div class="products-toolbar">
-                <div class="showing-count">
-                    Showing {{ products.count }} products
-                </div>
-                <div class="sort-by">
-                    <label>Sort by:</label>
-                    <select name="sort">
-                        <option value="-created_at">Newest</option>
-                        <option value="base_price">Price: Low to High</option>
-                        <option value="-base_price">Price: High to Low</option>
-                        <option value="name">Name: A-Z</option>
-                    </select>
-                </div>
-            </div>
-            
-            <!-- Products Grid -->
-            <div class="products-grid">
-                {% for product in products %}
-                <div class="product-card">
-                    <a href="{% url 'catalog:eyeglass_detail' product.slug %}">
-                        <div class="product-image">
-                            {% if product.images.first %}
-                            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
-                            {% endif %}
+    <!-- Products Section -->
+    <section class="shopify-section section">
+        <div class="xo-section color-background-1" style="--pb: 50;">
+            <div class="listing-container">
+                <!-- Sidebar Filters -->
+                <aside class="filters-sidebar">
+                    <h3>Filters</h3>
+                    
+                    <form method="GET" id="filterForm">
+                        <!-- Preserve gender filter -->
+                        {% if selected_gender %}
+                        <input type="hidden" name="gender" value="{{ selected_gender }}">
+                        {% endif %}
+                        
+                        <!-- Brand Filter -->
+                        <div class="filter-group">
+                            <h4>Brand</h4>
+                            <ul>
+                                {% for brand in brands %}
+                                <li>
+                                    <label>
+                                        <input type="checkbox" name="brand" value="{{ brand.slug }}" 
+                                               {% if brand.slug in selected_brands %}checked{% endif %}>
+                                        {{ brand.name }}
+                                    </label>
+                                </li>
+                                {% endfor %}
+                            </ul>
                         </div>
-                        <div class="product-info">
-                            <p class="brand">{{ product.brand.name }}</p>
-                            <h3 class="product-name">{{ product.name }}</h3>
-                            <p class="gender">{{ product.get_gender_display }}</p>
-                            <div class="price-section">
-                                <span class="price">{{ product.base_price }} QAR</span>
-                                {% if product.compare_at_price %}
-                                <span class="compare-price">{{ product.compare_at_price }} QAR</span>
-                                {% endif %}
+                        
+                        <!-- Price Filter -->
+                        <div class="filter-group">
+                            <h4>Price Range (QAR)</h4>
+                            <div style="margin-bottom: 10px;">
+                                <input type="number" name="min_price" placeholder="Min" 
+                                       value="{{ request.GET.min_price }}"
+                                       style="width: 48%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                                <input type="number" name="max_price" placeholder="Max" 
+                                       value="{{ request.GET.max_price }}"
+                                       style="width: 48%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; margin-left: 4%;">
                             </div>
                         </div>
-                    </a>
-                    <div class="product-actions">
-                        <button class="select-lenses">Select Lenses</button>
-                        <button class="wishlist">♡</button>
+                        
+                        <!-- Frame Shape -->
+                        <div class="filter-group">
+                            <h4>Frame Shape</h4>
+                            <ul>
+                                <li><label><input type="checkbox" name="shape" value="rectangle" 
+                                    {% if 'rectangle' in selected_shapes %}checked{% endif %}> Rectangle</label></li>
+                                <li><label><input type="checkbox" name="shape" value="round" 
+                                    {% if 'round' in selected_shapes %}checked{% endif %}> Round</label></li>
+                                <li><label><input type="checkbox" name="shape" value="square" 
+                                    {% if 'square' in selected_shapes %}checked{% endif %}> Square</label></li>
+                                <li><label><input type="checkbox" name="shape" value="aviator" 
+                                    {% if 'aviator' in selected_shapes %}checked{% endif %}> Aviator</label></li>
+                                <li><label><input type="checkbox" name="shape" value="cat-eye" 
+                                    {% if 'cat-eye' in selected_shapes %}checked{% endif %}> Cat Eye</label></li>
+                                <li><label><input type="checkbox" name="shape" value="wayfarer" 
+                                    {% if 'wayfarer' in selected_shapes %}checked{% endif %}> Wayfarer</label></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Frame Material -->
+                        <div class="filter-group">
+                            <h4>Frame Material</h4>
+                            <ul>
+                                <li><label><input type="checkbox" name="material" value="metal" 
+                                    {% if 'metal' in selected_materials %}checked{% endif %}> Metal</label></li>
+                                <li><label><input type="checkbox" name="material" value="plastic" 
+                                    {% if 'plastic' in selected_materials %}checked{% endif %}> Plastic</label></li>
+                                <li><label><input type="checkbox" name="material" value="acetate" 
+                                    {% if 'acetate' in selected_materials %}checked{% endif %}> Acetate</label></li>
+                                <li><label><input type="checkbox" name="material" value="titanium" 
+                                    {% if 'titanium' in selected_materials %}checked{% endif %}> Titanium</label></li>
+                                <li><label><input type="checkbox" name="material" value="wood" 
+                                    {% if 'wood' in selected_materials %}checked{% endif %}> Wood</label></li>
+                            </ul>
+                        </div>
+                        
+                        <button type="submit" class="clear-filters" style="background: #000; color: #fff; margin-bottom: 10px;">
+                            Apply Filters
+                        </button>
+                        <button type="button" onclick="clearFilters()" class="clear-filters">
+                            Clear All Filters
+                        </button>
+                    </form>
+                </aside>
+                
+                <!-- Products Area -->
+                <div class="products-area">
+                    <!-- Toolbar -->
+                    <div class="products-toolbar">
+                        <div class="showing-count">
+                            Showing {{ products.count }} {% if products.count == 1 %}product{% else %}products{% endif %}
+                        </div>
+                        <div class="sort-by">
+                            <label>Sort by:</label>
+                            <select name="sort" onchange="sortProducts(this.value)">
+                                <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>Newest</option>
+                                <option value="base_price" {% if request.GET.sort == 'base_price' %}selected{% endif %}>Price: Low to High</option>
+                                <option value="-base_price" {% if request.GET.sort == '-base_price' %}selected{% endif %}>Price: High to Low</option>
+                                <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name: A-Z</option>
+                                <option value="-name" {% if request.GET.sort == '-name' %}selected{% endif %}>Name: Z-A</option>
+                            </select>
+                        </div>
                     </div>
+                    
+                    <!-- Products Grid -->
+                    <div class="products-grid">
+                        {% for product in products %}
+                        <div class="product-card">
+                            <a href="{% url 'product_detail' product.slug %}" style="text-decoration: none; color: inherit;">
+                                <div class="product-image">
+                                    {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                    {% else %}
+                                    <img src="{% static 'images/placeholder.jpg' %}" alt="{{ product.name }}">
+                                    {% endif %}
+                                </div>
+                                <div class="product-info">
+                                    {% if product.brand %}
+                                    <p class="brand">{{ product.brand.name }}</p>
+                                    {% endif %}
+                                    <h3 class="product-name">{{ product.name }}</h3>
+                                    <p class="gender">{{ product.get_gender_display }}</p>
+                                    <div class="price-section">
+                                        <span class="price">QAR {{ product.base_price }}</span>
+                                        {% if product.compare_at_price %}
+                                        <span class="compare-price">QAR {{ product.compare_at_price }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </a>
+                            <div class="product-actions">
+                                <button class="select-lenses" onclick="window.location.href='{% url 'product_detail' product.slug %}'">
+                                    Select Lenses
+                                </button>
+                                <button class="wishlist" onclick="toggleWishlist({{ product.id }}, this)">♡</button>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="no-products">No products found matching your criteria.</p>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if products.has_other_pages %}
+                    <div class="pagination">
+                        {% if products.has_previous %}
+                        <a href="?page={{ products.previous_page_number }}{% if request.GET.gender %}&gender={{ request.GET.gender }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" class="prev">Previous</a>
+                        {% endif %}
+                        
+                        {% for num in products.paginator.page_range %}
+                        {% if products.number == num %}
+                        <a href="#" class="page active">{{ num }}</a>
+                        {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                        <a href="?page={{ num }}{% if request.GET.gender %}&gender={{ request.GET.gender }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" class="page">{{ num }}</a>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        {% if products.has_next %}
+                        <a href="?page={{ products.next_page_number }}{% if request.GET.gender %}&gender={{ request.GET.gender }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" class="next">Next</a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                 </div>
-                {% empty %}
-                <p class="no-products">No products found matching your criteria.</p>
-                {% endfor %}
-            </div>
-            
-            <!-- Pagination -->
-            <div class="pagination">
-                <a href="#" class="prev">Previous</a>
-                <a href="#" class="page active">1</a>
-                <a href="#" class="page">2</a>
-                <a href="#" class="page">3</a>
-                <a href="#" class="next">Next</a>
             </div>
         </div>
-    </div>
-</div>
+    </section>
+</main>
+
+<script>
+// Auto-submit form when filters change
+document.querySelectorAll('#filterForm input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        document.getElementById('filterForm').submit();
+    });
+});
+
+// Sort products
+function sortProducts(sortValue) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sort', sortValue);
+    window.location.href = url.toString();
+}
+
+// Clear all filters
+function clearFilters() {
+    const url = new URL(window.location.href);
+    const gender = url.searchParams.get('gender');
+    window.location.href = window.location.pathname + (gender ? '?gender=' + gender : '');
+}
+
+// Toggle wishlist
+function toggleWishlist(productId, button) {
+    // Implement wishlist toggle functionality
+    button.innerHTML = button.innerHTML === '♡' ? '♥' : '♡';
+    button.style.color = button.innerHTML === '♥' ? 'red' : 'inherit';
+}
+</script>
 {% endblock %}
