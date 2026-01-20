@@ -89,9 +89,9 @@ def user_login(request):
         if user:
             login(request, user)
             
-            # Handle remember me
+            
             if not remember_me:
-                request.session.set_expiry(0)  # Session expires on browser close
+                request.session.set_expiry(0)  
             
             messages.success(request, f'Welcome back, {user.first_name or user.username}!')
             
@@ -104,16 +104,16 @@ def user_login(request):
         
         messages.error(request, 'Invalid email or password')
     
-    return render(request, 'users/login.html')
+    return render(request, 'login.html')
 
 
 # ==================== REDIRECT LOGIC ====================
 def redirect_after_login(user):
     """Redirect based on user type"""
     if user.is_superuser or user.user_type == 'admin':
-        return redirect('/admin/')
+        return redirect('/adminpanel/')
     elif user.is_staff or user.user_type == 'staff':
-        return redirect('/admin/')
+        return redirect('/adminpanel/')
     else:
         return redirect('users:dashboard')
 
