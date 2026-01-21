@@ -1,122 +1,292 @@
 {% extends 'base.html' %}
-{% block title %}{{ product.name }} | {{ product.brand.name }}{% endblock %}
 {% load static %}
+{% block title %}{{ product.name }} - Eyeglasses{% endblock %}
 
 {% block content %}
 <style>
-    /* --- THEME OVERRIDES FOR EYEGLASSES --- */
+    /* Copy all the lens modal styles from the eyeglass_detail document */
+    .lens-modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.6);
+    }
     
-    .brand-label {
-        text-transform: uppercase;
-        font-size: 0.85rem;
-        letter-spacing: 1.5px;
+    .lens-modal-content {
+        background-color: #fefefe;
+        margin: 3% auto;
+        padding: 30px;
+        border: 1px solid #888;
+        width: 95%;
+        max-width: 1000px;
+        border-radius: 10px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .lens-modal-content .close {
+        float: right;
+        font-size: 32px;
+        font-weight: bold;
         color: #666;
-        margin-bottom: 5px;
-        display: block;
-        font-weight: 600;
-    }
-
-    .vto-trigger {
-        position: absolute;
-        bottom: 20px;
-        left: 20px;
-        z-index: 10;
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid #000;
-        padding: 10px 20px;
-        border-radius: 30px;
         cursor: pointer;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        line-height: 20px;
     }
     
-    .vto-trigger:hover {
+    .lens-modal-content .close:hover {
+        color: #000;
+    }
+    
+    .lens-modal-content h2 {
+        margin-bottom: 20px;
+    }
+    
+    .lens-categories {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #e0e0e0;
+        overflow-x: auto;
+    }
+    
+    .lens-tab {
+        padding: 12px 20px;
+        border: none;
+        background: #f5f5f5;
+        cursor: pointer;
+        font-weight: 500;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s;
+        white-space: nowrap;
+    }
+    
+    .lens-tab:hover {
+        background: #e8e8e8;
+    }
+    
+    .lens-tab.active {
+        border-bottom-color: #000;
+        background: #fff;
+    }
+    
+    .lens-category {
+        display: none;
+    }
+    
+    .lens-category.active {
+        display: block;
+    }
+    
+    .lens-category h3 {
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .lens-option-card {
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+        position: relative;
+    }
+    
+    .lens-option-card:hover {
+        border-color: #999;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .lens-option-card input[type="radio"] {
+        margin-right: 10px;
+    }
+    
+    .lens-option-card.selected {
+        border-color: #000;
+        background-color: #f9f9f9;
+    }
+    
+    .lens-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .lens-header h4 {
+        margin: 0;
+        font-size: 18px;
+    }
+    
+    .lens-header .price {
+        font-size: 20px;
+        font-weight: bold;
+        color: #000;
+    }
+    
+    .lens-option-card .index {
+        color: #666;
+        font-size: 14px;
+        margin: 5px 0;
+    }
+    
+    .lens-option-card .features {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0;
+    }
+    
+    .lens-option-card .features li {
+        padding: 4px 0;
+        font-size: 14px;
+        color: #333;
+    }
+    
+    .lens-option-card .features li:before {
+        content: "• ";
+        color: #4caf50;
+        font-weight: bold;
+    }
+    
+    .lens-option-card .addons {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #e0e0e0;
+    }
+    
+    .lens-option-card .addons label {
+        display: block;
+        padding: 6px 0;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    
+    .power-selection-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .power-selection-grid label {
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 5px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .power-selection-grid label:hover {
+        border-color: #000;
+        background: #f9f9f9;
+    }
+    
+    .prescription-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+    }
+    
+    .prescription-section h3 {
+        margin-bottom: 15px;
+    }
+    
+    .prescription-form table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+    
+    .prescription-form th,
+    .prescription-form td {
+        padding: 12px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+    
+    .prescription-form th {
         background: #000;
         color: #fff;
-    }
-
-    /* Size Guide / Frame Dimensions */
-    .frame-dimensions {
-        display: flex;
-        gap: 15px;
-        margin: 15px 0 25px 0;
-        padding: 15px;
-        background: #f8f8f8;
-        border-radius: 8px;
-        justify-content: center;
-    }
-    
-    .dimension-item {
-        text-align: center;
-        font-size: 0.8rem;
-    }
-    
-    .dimension-item span {
-        display: block;
-        font-weight: bold;
-        font-size: 1rem;
-        margin-top: 4px;
-    }
-
-    .shopify-payment-button__button {
-        height: clamp(25px, var(--shopify-accelerated-checkout-button-block-size, 44px), 55px);
-        min-height: clamp(25px, var(--shopify-accelerated-checkout-button-block-size, 44px), 55px);
-        border-radius: 0px;
-        width: 100%;
-        border: none;
-        color: #fff;
-        cursor: pointer;
-        display: block;
-        font-size: 1em;
         font-weight: 500;
+    }
+    
+    .prescription-form input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .total-price-section {
+        padding: 20px;
+        background: #f5f5f5;
+        margin: 20px 0;
+        border-radius: 8px;
         text-align: center;
     }
-
-    /* Lens Modal Styles (Simplified for inclusion) */
-    .lens-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
-    .lens-modal-content { background-color: #fff; margin: 5% auto; padding: 30px; border-radius: 8px; width: 90%; max-width: 600px; position: relative; }
-    .close { position: absolute; right: 20px; top: 10px; font-size: 28px; cursor: pointer; }
+    
+    .total-price-section h3 {
+        margin: 0;
+        font-size: 24px;
+    }
+    
+    .total-price-section span {
+        color: #4caf50;
+        font-size: 28px;
+    }
+    
+    .btn-confirm-lens {
+        width: 100%;
+        padding: 18px;
+        background: #000;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    
+    .btn-confirm-lens:hover {
+        background: #333;
+    }
+    
+    @media (max-width: 768px) {
+        .lens-modal-content {
+            width: 98%;
+            margin: 2% auto;
+            padding: 20px;
+        }
+        
+        .power-selection-grid {
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        }
+    }
 </style>
 
-<main class="content-for-layout focus-none" id="xo-main-content" role="main" tabindex="-1">
-    <section class="shopify-section section">
-        <div class="xo-section color-background-1" style="--margin: 0;--pt: 15;--pb: 15;">
-            <xo-container class="xo-container--box">
-                <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
-                    <ol class="breadcrumb__list" style="--justify:flex-start">
-                        <li class="breadcrumb__item"><a class="breadcrumb__link" href="{% url 'home' %}">Home</a><span class="breadcrumb__separator">/</span></li>
-                        <li class="breadcrumb__item"><a class="breadcrumb__link" href="#">Eyeglasses</a><span class="breadcrumb__separator">/</span></li>
-                        {% if product.brand %}
-                        <li class="breadcrumb__item"><a class="breadcrumb__link" href="#">{{ product.brand.name }}</a><span class="breadcrumb__separator">/</span></li>
-                        {% endif %}
-                        <li class="breadcrumb__item breadcrumb__item--current"><a aria-current="page" class="breadcrumb__link breadcrumb--current">{{ product.name }}</a></li>
-                    </ol>
-                </nav>
-            </xo-container>
-        </div>
-    </section>
-
-    <section class="shopify-section section">
+<!-- Use your existing product detail HTML structure from the previous template -->
+  <section class="shopify-section section">
         <div class="xo-section color-background-1" style="--margin: 0;--pt: 0;--pb: 0;">
             <xo-container class="xo-container--box">
                 <xo-grid>
+                    <!-- Product Images -->
                     <xo-animate style="--xs: 12; --md: 7">
-                        <div class="xo-product-info-media-style3" style="position: sticky; position: -webkit-sticky; top: 20px;">
-                            
-                            <button class="vto-trigger">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                Try On
-                            </button>
-
+                        <!-- Desktop Gallery -->
+                        <div class="xo-product-info-media-style3" style="position: sticky;">
                             <xo-gallery aria-label="Gallery Viewer">
                                 <xo-carousel xo-name="product-information-desktop">
                                     <div class="xo-product-info-media-style3__top">
                                         <xo-carousel-inner>
                                             <xo-carousel-list aria-label="Slider" role="list">
+                                                <!-- Main Product Image -->
                                                 {% if product.image %}
                                                 <xo-carousel-slide class="xo-product-info-media-style3__slide">
                                                     <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
@@ -124,7 +294,10 @@
                                                             <div class="xo-product-info-media-style3__image">
                                                                 <div class="xo-media" style="--media-aspect-ratio: 1/1">
                                                                     <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" />
+                                                                        <img alt="{{ product.name }}" 
+                                                                             src="{{ product.image.url }}" 
+                                                                             loading="lazy" 
+                                                                             id="mainProductImage"/>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -132,6 +305,8 @@
                                                     </xo-image-zoom>
                                                 </xo-carousel-slide>
                                                 {% endif %}
+
+                                                <!-- Gallery Images -->
                                                 {% for image in product.images.all %}
                                                 <xo-carousel-slide class="xo-product-info-media-style3__slide">
                                                     <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
@@ -139,7 +314,9 @@
                                                             <div class="xo-product-info-media-style3__image">
                                                                 <div class="xo-media" style="--media-aspect-ratio: 1/1">
                                                                     <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                                        <img src="{{ image.image.url }}" alt="{{ product.name }}" loading="lazy" />
+                                                                        <img alt="{{ product.name }}" 
+                                                                             src="{{ image.image.url }}" 
+                                                                             loading="lazy"/>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -149,20 +326,140 @@
                                                 {% endfor %}
                                             </xo-carousel-list>
                                         </xo-carousel-inner>
-                                        <xo-carousel-prev class="xo-product-info-media-style3__arrow xo-product-info-media-style3__arrow--left"><button><svg height="12" viewBox="0 0 320 512"><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" fill="currentColor"></path></svg></button></xo-carousel-prev>
-                                        <xo-carousel-next class="xo-product-info-media-style3__arrow xo-product-info-media-style3__arrow--right"><button><svg height="12" viewBox="0 0 320 512"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="currentColor"></path></svg></button></xo-carousel-next>
+                                        
+                                        <!-- Desktop Arrow Navigation -->
+                                        <xo-carousel-prev class="xo-product-info-media-style3__arrow xo-product-info-media-style3__arrow--left">
+                                            <button>
+                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" fill="currentColor"></path>
+                                                </svg>
+                                            </button>
+                                        </xo-carousel-prev>
+                                        <xo-carousel-next class="xo-product-info-media-style3__arrow xo-product-info-media-style3__arrow--right">
+                                            <button>
+                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c12.5-12.5 12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="currentColor"></path>
+                                                </svg>
+                                            </button>
+                                        </xo-carousel-next>
+                                        
+                                        <!-- Desktop Thumbnails -->
+                                        <xo-carousel-thumbnail class="xo-product-info-media-style3__thumbnails" xo-gap="10" xo-per-view="5">
+                                            <xo-carousel-inner>
+                                                <xo-carousel-list>
+                                                    {% if product.image %}
+                                                    <xo-carousel-slide class="xo-product-info-media-style3__thumb-slide">
+                                                        <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                            <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                                <img src="{{ product.image.url }}" alt="thumbnail"/>
+                                                            </div>
+                                                        </div>
+                                                    </xo-carousel-slide>
+                                                    {% endif %}
+                                                    {% for image in product.images.all %}
+                                                    <xo-carousel-slide class="xo-product-info-media-style3__thumb-slide">
+                                                        <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                            <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                                <img src="{{ image.image.url }}" alt="thumbnail"/>
+                                                            </div>
+                                                        </div>
+                                                    </xo-carousel-slide>
+                                                    {% endfor %}
+                                                </xo-carousel-list>
+                                            </xo-carousel-inner>
+                                        </xo-carousel-thumbnail>
                                     </div>
-                                    <xo-carousel-thumbnail class="xo-product-info-media-style3__thumbnails" xo-gap="10" xo-per-view="5">
+                                </xo-carousel>
+                            </xo-gallery>
+                        </div>
+                        
+                        <!-- Mobile Gallery -->
+                        <div class="xo-product-info-media-mobile">
+                            <xo-gallery aria-label="Gallery Viewer">
+                                <xo-carousel xo-name="product-information-mobile">
+                                    <div class="xo-product-info-media-mobile__top">
                                         <xo-carousel-inner>
-                                            <xo-carousel-list>
+                                            <xo-carousel-list aria-label="Slider" role="list" style="height: fit-content">
+                                                <!-- Main Product Image Mobile -->
                                                 {% if product.image %}
-                                                <xo-carousel-slide class="xo-product-info-media-style3__thumb-slide">
-                                                    <div class="xo-media" style="--media-aspect-ratio: 1/1"><div class="xo-image"><img src="{{ product.image.url }}" alt="thumb"/></div></div>
+                                                <xo-carousel-slide class="xo-product-info-media-mobile__slide">
+                                                    <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
+                                                        <xo-gallery-item>
+                                                            <div class="xo-product-info-media-mobile__image">
+                                                                <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                                        <img alt="{{ product.name }}" 
+                                                                             src="{{ product.image.url }}" 
+                                                                             loading="lazy"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </xo-gallery-item>
+                                                    </xo-image-zoom>
+                                                </xo-carousel-slide>
+                                                {% endif %}
+
+                                                <!-- Gallery Images Mobile -->
+                                                {% for image in product.images.all %}
+                                                <xo-carousel-slide class="xo-product-info-media-mobile__slide">
+                                                    <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
+                                                        <xo-gallery-item>
+                                                            <div class="xo-product-info-media-mobile__image">
+                                                                <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                                        <img alt="{{ product.name }}" 
+                                                                             src="{{ image.image.url }}" 
+                                                                             loading="lazy"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </xo-gallery-item>
+                                                    </xo-image-zoom>
+                                                </xo-carousel-slide>
+                                                {% endfor %}
+                                            </xo-carousel-list>
+                                        </xo-carousel-inner>
+                                        
+                                        <!-- Mobile Arrow Navigation -->
+                                        <xo-carousel-prev class="xo-product-info-media-mobile__arrow xo-product-info-media-mobile__arrow--left">
+                                            <button>
+                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" fill="currentColor"></path>
+                                                </svg>
+                                            </button>
+                                        </xo-carousel-prev>
+                                        <xo-carousel-next class="xo-product-info-media-mobile__arrow xo-product-info-media-mobile__arrow--right">
+                                            <button>
+                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c12.5-12.5 12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="currentColor"></path>
+                                                </svg>
+                                            </button>
+                                        </xo-carousel-next>
+                                    </div>
+                                    
+                                    <!-- Mobile Pagination Dots -->
+                                    <xo-carousel-pagination class="xo-product-info-media-mobile__pagination"></xo-carousel-pagination>
+                                    
+                                    <!-- Mobile Thumbnails -->
+                                    <xo-carousel-thumbnail class="xo-product-info-media-mobile__thumbnails" xo-gap="10" xo-per-view="5">
+                                        <xo-carousel-inner style="padding-bottom: 0.1rem; margin-bottom: -0.1rem;">
+                                            <xo-carousel-list aria-label="Slider" role="list" style="padding-right: 0.2rem; margin-right: -0.2rem;">
+                                                {% if product.image %}
+                                                <xo-carousel-slide class="xo-product-info-media-mobile__thumb-slide">
+                                                    <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                        <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                            <img src="{{ product.image.url }}" alt="thumbnail"/>
+                                                        </div>
+                                                    </div>
                                                 </xo-carousel-slide>
                                                 {% endif %}
                                                 {% for image in product.images.all %}
-                                                <xo-carousel-slide class="xo-product-info-media-style3__thumb-slide">
-                                                    <div class="xo-media" style="--media-aspect-ratio: 1/1"><div class="xo-image"><img src="{{ image.image.url }}" alt="thumb"/></div></div>
+                                                <xo-carousel-slide class="xo-product-info-media-mobile__thumb-slide">
+                                                    <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                        <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                            <img src="{{ image.image.url }}" alt="thumbnail"/>
+                                                        </div>
+                                                    </div>
                                                 </xo-carousel-slide>
                                                 {% endfor %}
                                             </xo-carousel-list>
@@ -173,197 +470,537 @@
                         </div>
                     </xo-animate>
 
+                    <!-- Product Info -->
                     <xo-animate class="main-product__right" style="--xs: 12; --md: 5">
                         <div class="xo-product-info-content" style="position: sticky; top: 9.3rem">
-                            
+                            <!-- Product Title -->
                             <div class="xo-product-info-content__header">
-                                {% if product.brand %}
-                                    <span class="brand-label">{{ product.brand.name }}</span>
-                                {% endif %}
-                                <h1 class="xo-product-info-content__title" style="--fz:2.2rem; margin-top:0;">
+                                <h1 class="xo-product-info-content__title" style="--fz:2.4rem">
                                     {{ product.name }}
                                 </h1>
                                 <button class="wishlist-btn circle-btn" data-product-id="{{ product.id }}">
                                     {% if product in request.user.wishlist.products.all %}
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="red"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/></svg>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="red">
+                                        <path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/>
+                                    </svg>
                                     {% else %}
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/></svg>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
+                                        <path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/>
+                                    </svg>
                                     {% endif %}
                                 </button>
                             </div>
 
-                            <div class="xo-product-info-content__price" style="padding: 10px 0 20px;">
+                            <!-- Brand -->
+                            {% if product.brand %}
+                            <p style="margin: 10px 0; font-size: 14px; color: #666;">
+                                Brand: <strong>{{ product.brand.name }}</strong>
+                            </p>
+                            {% endif %}
+
+                            <!-- Price -->
+                            <div class="xo-product-info-content__price" style="padding: 20px 0;">
                                 <div class="xo-price xo-price--larger">
-                                    <span class="xo-price__item xo-price__item--accent">QAR {{ product.base_price }}</span>
-                                    <span style="font-size:0.8rem; color:#666; display:block; font-weight:normal;">(Frame Only)</span>
+                                    <div class="xo-price__container">
+                                        <div class="xo-price__sale">
+                                            <span class="xo-price__item xo-price__item--accent" id="productPrice">
+                                                QAR {{ product.base_price }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="frame-dimensions">
-                                <div class="dimension-item">
-                                    Lens Width
-                                    <span>{{ product.lens_width|default:"50" }} mm</span>
-                                </div>
-                                <div class="dimension-item" style="border-left: 1px solid #ddd; border-right:1px solid #ddd; padding:0 15px;">
-                                    Bridge
-                                    <span>{{ product.bridge_width|default:"20" }} mm</span>
-                                </div>
-                                <div class="dimension-item">
-                                    Temple
-                                    <span>{{ product.temple_length|default:"140" }} mm</span>
+                            <!-- Description -->
+                            <p class="xo-product-info-content__description" style="padding-bottom: 30px;">
+                                {{ product.description|linebreaksbr }}
+                            </p>
+
+                            <!-- Color Selection for Contact Lenses -->
+                            {% if product.product_type == 'contact_lenses' and contact_lens %}
+                            <div style="padding-bottom: 20px;">
+                                <h3 style="font-size: 16px; margin-bottom: 15px;">Select Color:</h3>
+                                <div id="colorSwatches">
+                                    {% for color in colors %}
+                                    <div class="color-swatch {% if not color.is_active %}disabled{% endif %}" 
+                                         data-color-id="{{ color.id }}"
+                                         data-color-name="{{ color.name }}"
+                                         data-power-enabled="{{ color.power_enabled }}"
+                                         onclick="selectColor(this)">
+                                        <img src="{{ color.image.url }}" alt="{{ color.name }}"/>
+                                        <div class="color-swatch-name">{{ color.name }}</div>
+                                        {% if color.power_enabled %}
+                                        <span class="power-badge">Power Available</span>
+                                        {% else %}
+                                        <span class="power-badge" style="background: #fce4ec; color: #c2185b;">Plano Only</span>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
                                 </div>
                             </div>
+                            {% endif %}
 
+                            <!-- Product Form -->
                             <form method="POST" id="product_form_{{ product.id }}">
                                 {% csrf_token %}
                                 <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <input type="hidden" name="selected_color_id" id="selectedColorId">
+                                <input type="hidden" name="selected_lens_option" id="selectedLensOption">
+                                <input type="hidden" name="power_left" id="powerLeft">
+                                <input type="hidden" name="power_right" id="powerRight">
 
+                                <!-- Quantity -->
+                                <xo-cart-quantity class="xo-quantity-style2" style="--width: 13.5rem; --height: 5rem">
+                                    <xo-cart-quantity-minus class="xo-quantity-style2__button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" viewBox="0 0 10 2">
+                                            <path fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 110 1H1A.5.5 0 01.5 1z" fill="currentColor"/>
+                                        </svg>
+                                    </xo-cart-quantity-minus>
+                                    <input class="xo-quantity-style2__number" 
+                                           type="number" 
+                                           name="quantity" 
+                                           value="1" 
+                                           min="1" 
+                                           max="{{ product.stock }}">
+                                    <xo-cart-quantity-plus class="xo-quantity-style2__button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" viewBox="0 0 10 10">
+                                            <path fill-rule="evenodd" d="M1 4.51a.5.5 0 000 1h3.5l.01 3.5a.5.5 0 001-.01V5.5l3.5-.01a.5.5 0 00-.01-1H5.5L5.49.99a.5.5 0 00-1 .01v3.5l-3.5.01H1z" fill="currentColor"/>
+                                        </svg>
+                                    </xo-cart-quantity-plus>
+                                </xo-cart-quantity>
+
+                                <div class="xo-space xo-space--vertical" style="--space: 2.5rem"></div>
+
+                                <!-- Buttons for Sunglasses/Eyeglasses -->
+                                {% if product.product_type in 'sunglasses,eyeglasses' %}
                                 <button type="button" 
-                                        onclick="window.location.href=''"
                                         class="xo-btn xo-btn--light xo-btn--primary xo-btn--block"
-                                        style="margin-bottom: 10px; background-color: #000; color: #fff;">
+                                        onclick="openLensSelection()"
+                                        style="margin-bottom: 15px;">
                                     <span class="xo-btn__content">
                                         <span class="xo-btn__text">Select Lenses</span>
                                     </span>
                                 </button>
+                                {% endif %}
 
+                                <!-- Add to Cart -->
                                 <button type="button" 
-                                        class="xo-btn xo-btn--light xo-btn--block add-to-cart-btn"
-                                        data-url=""
-                                        style="background-color: transparent; border: 1px solid #000; color: #000;">
+                                        class="xo-btn xo-btn--light xo-btn--primary xo-btn--block add-to-cart-btn"
+                                        data-url="">
                                     <span class="xo-btn__content">
-                                        <span class="xo-btn__text">Buy Frame Only</span>
+                                        <span class="xo-btn__text">Add to Cart</span>
                                     </span>
                                 </button>
 
+                                <div class="xo-space xo-space--vertical" style="--space: 1.5rem"></div>
+
+                                <!-- Buy Now -->
+                                <button type="submit" 
+                                        formaction=""
+                                        class="shopify-payment-button__button"
+                                        style="background: #000;">
+                                    Buy it now
+                                </button>
                             </form>
 
+                            <!-- Shipping Info -->
                             <div class="shipping" style="margin-top: 30px;">
                                 <div class="shipping_item" style="display: flex; gap: 15px; margin-bottom: 15px;">
-                                    <svg height="27" width="24" viewBox="0 0 150 150"><path d="M139.75,121.3c-0.34,0.71-0.59,1.47-1.03,2.12..." fill="currentColor"/></svg>
-                                    <p style="margin: 0;">1 Year Warranty on Frames.</p>
+                                    <svg height="27" width="24" viewBox="0 0 150 150">
+                                        <path d="M139.75,121.3c-0.34,0.71-0.59,1.47-1.03,2.12..." fill="currentColor"/>
+                                    </svg>
+                                    <p style="margin: 0;">Estimate delivery: <strong>12-26 days</strong> (International), <strong>3-6 days</strong> India.</p>
                                 </div>
                                 <div class="shipping_item" style="display: flex; gap: 15px;">
-                                    <svg height="27" width="22" viewBox="0 0 150 150"><path d="M94.51,19.67c0,0.77,0,1.36,0,1.96..." fill="currentColor"/></svg>
-                                    <p style="margin: 0;">Free Lens Cleaning Kit included.</p>
+                                    <svg height="27" width="22" viewBox="0 0 150 150">
+                                        <path d="M94.51,19.67c0,0.77,0,1.36,0,1.96..." fill="currentColor"/>
+                                    </svg>
+                                    <p style="margin: 0;">Return within <strong>45 days</strong> of purchase.</p>
                                 </div>
                             </div>
-
                         </div>
                     </xo-animate>
                 </xo-grid>
             </xo-container>
         </div>
     </section>
+<!-- This includes the breadcrumb, product images (desktop + mobile), product info, etc. -->
 
+<!-- Main Product Section - SAME AS BEFORE -->
+<main class="content-for-layout focus-none" id="xo-main-content" role="main" tabindex="-1">
     <section class="shopify-section section">
-        <div class="xo-section color-background-1" style="--pt: 50; --pb: 50;">
+        <div class="xo-section color-background-1" style="--margin: 0;--pt: 15;--pb: 15;">
             <xo-container class="xo-container--box">
-                <xo-tabs>
-                    <xo-list class="product-information-tabs__header">
-                        <xo-list-item><xo-tabs-trigger class="product-information-tabs__trigger" xo-active xo-name="tab-desc">Description</xo-tabs-trigger></xo-list-item>
-                        <xo-list-item><xo-tabs-trigger class="product-information-tabs__trigger" xo-name="tab-specs">Specifications</xo-tabs-trigger></xo-list-item>
-                    </xo-list>
-                    <xo-tabs-content>
-                        <xo-tabs-pane xo-name="tab-desc">
-                            <div style="padding: 20px;">{{ product.description|linebreaksbr }}</div>
-                        </xo-tabs-pane>
-                        <xo-tabs-pane xo-name="tab-specs">
-                            <div style="padding: 20px;">
-                                <table style="width: 100%; border-collapse: collapse;">
-                                    <tr style="border-bottom: 1px solid #eee;">
-                                        <td style="padding: 10px; font-weight: bold;">Frame Material</td>
-                                        <td style="padding: 10px;">{{ product.frame_material|default:"Acetate" }}</td>
-                                    </tr>
-                                    <tr style="border-bottom: 1px solid #eee;">
-                                        <td style="padding: 10px; font-weight: bold;">Frame Shape</td>
-                                        <td style="padding: 10px;">{{ product.frame_shape|default:"Rectangle" }}</td>
-                                    </tr>
-                                    <tr style="border-bottom: 1px solid #eee;">
-                                        <td style="padding: 10px; font-weight: bold;">Gender</td>
-                                        <td style="padding: 10px;">{{ product.get_gender_display }}</td>
-                                    </tr>
-                                    {% for spec in specifications %}
-                                    <tr style="border-bottom: 1px solid #eee;">
-                                        <td style="padding: 10px; font-weight: bold;">{{ spec.name }}</td>
-                                        <td style="padding: 10px;">{{ spec.value }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </table>
-                            </div>
-                        </xo-tabs-pane>
-                    </xo-tabs-content>
-                </xo-tabs>
+                <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+                    <ol class="breadcrumb__list" style="--justify:flex-start">
+                        <li class="breadcrumb__item">
+                            <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                            <span class="breadcrumb__separator">/</span>
+                        </li>
+                        <li class="breadcrumb__item">
+                            <a class="breadcrumb__link" href="#">Eyeglasses</a>
+                            <span class="breadcrumb__separator">/</span>
+                        </li>
+                        <li class="breadcrumb__item breadcrumb__item--current">
+                            <a aria-current="page" class="breadcrumb__link breadcrumb--current">{{ product.name }}</a>
+                        </li>
+                    </ol>
+                </nav>
             </xo-container>
         </div>
     </section>
 
-    {% if related_products %}
-    <section class="shopify-section section">
-        <div class="xo-section color-background-1" style="--pt: 50; --pb: 50;">
-            <xo-container class="xo-container--box">
-                <h2 class="xo-section-heading__title" style="text-align: center; margin-bottom: 30px;">Similar Styles</h2>
-                <xo-grid style="--xs: 1; --sm: 2; --md: 4; gap: 20px;">
-                    {% for rp in related_products %}
-                    <div class="product-card">
-                        <a href="{% url 'catalog:eyeglass_detail' rp.slug %}">
-                            {% if rp.image %}
-                            <img src="{{ rp.image.url }}" alt="{{ rp.name }}" style="width: 100%; border-radius: 8px;"/>
-                            {% endif %}
-                            <h3 style="margin-top: 10px; font-size: 16px;">{{ rp.name }}</h3>
-                            <p style="font-weight: bold;">QAR {{ rp.base_price }}</p>
-                        </a>
-                    </div>
-                    {% endfor %}
-                </xo-grid>
-            </xo-container>
-        </div>
-    </section>
-    {% endif %}
+    <!-- Include product images and info sections from your theme here -->
+    <!-- The desktop/mobile gallery structure stays the same -->
+    
+    <!-- Add the Select Lenses button in the product info section -->
+    <!-- <button type="button" 
+            class="xo-btn xo-btn--light xo-btn--primary xo-btn--block"
+            onclick="openLensSelection()"
+            style="margin-bottom: 15px;">
+        <span class="xo-btn__content">
+            <span class="xo-btn__text">Select Lenses</span>
+        </span>
+    </button> -->
 </main>
 
+<!-- COMPREHENSIVE LENS SELECTION MODAL -->
+<div id="lensModal" class="lens-modal">
+    <div class="lens-modal-content">
+        <span class="close" onclick="closeLensModal()">&times;</span>
+        <h2>Select Your Lenses</h2>
+        
+        <!-- Lens Category Tabs -->
+        <div class="lens-categories">
+            <button class="lens-tab active" onclick="showLensCategory('single-vision')">
+                Single-Vision Lenses
+            </button>
+            <button class="lens-tab" onclick="showLensCategory('progressive')">
+                Progressive & Bifocal
+            </button>
+            <button class="lens-tab" onclick="showLensCategory('reading')">
+                Reading Glasses
+            </button>
+            <button class="lens-tab" onclick="showLensCategory('without')">
+                Without Prescription
+            </button>
+        </div>
+        
+        <!-- Single Vision Lenses -->
+        <div id="single-vision" class="lens-category active">
+            <h3>Single-Vision Lenses</h3>
+            
+            <div class="lens-option-card">
+                <input type="radio" name="lens_choice" value="regular-basic" id="regular-basic">
+                <label for="regular-basic">
+                    <div class="lens-header">
+                        <h4>Regular Lens (Basic)</h4>
+                        <span class="price">150 QAR</span>
+                    </div>
+                    <p class="index">Index: 1.56</p>
+                    <ul class="features">
+                        <li>Anti-reflection coating</li>
+                        <li>Power Range: up to ±4.00 (CYL up to ±2.00)</li>
+                    </ul>
+                    <div class="addons">
+                        <label><input type="radio" name="regular-addon" value="0" checked> Regular (0 QAR)</label>
+                        <label><input type="radio" name="regular-addon" value="100"> Blue UV Protection (+100 QAR)</label>
+                        <label><input type="radio" name="regular-addon" value="100"> Photochromic (+100 QAR)</label>
+                        <label><input type="radio" name="regular-addon" value="100"> Tinted (+100 QAR)</label>
+                    </div>
+                </label>
+            </div>
+            
+            <div class="lens-option-card">
+                <input type="radio" name="lens_choice" value="essilor-easy" id="essilor-easy">
+                <label for="essilor-easy">
+                    <div class="lens-header">
+                        <h4>Essilor Crizal Easy Pro</h4>
+                        <span class="price">270 QAR</span>
+                    </div>
+                    <p class="index">Index: 1.56</p>
+                    <ul class="features">
+                        <li>Anti-reflection & UV protection</li>
+                        <li>Easy cleaning</li>
+                        <li>Vision clarity</li>
+                        <li>Power Range: up to ±3.00 (CYL up to ±2.00)</li>
+                    </ul>
+                    <div class="addons">
+                        <label><input type="radio" name="essilor-addon" value="0" checked> Regular (0 QAR)</label>
+                        <label><input type="radio" name="essilor-addon" value="60"> Premium Blue Filtration (+60 QAR)</label>
+                        <label><input type="radio" name="essilor-addon" value="90"> Transition Classic (+90 QAR)</label>
+                        <label><input type="radio" name="essilor-addon" value="60"> Tinted (+60 QAR)</label>
+                    </div>
+                </label>
+            </div>
+            
+            <div class="lens-option-card">
+                <input type="radio" name="lens_choice" value="essilor-sapphire" id="essilor-sapphire">
+                <label for="essilor-sapphire">
+                    <div class="lens-header">
+                        <h4>Essilor Crizal Sapphire</h4>
+                        <span class="price">525 QAR</span>
+                    </div>
+                    <p class="index">Index: 1.56</p>
+                    <ul class="features">
+                        <li>Anti-reflection & UV protection</li>
+                        <li>High transparency</li>
+                        <li>Durable resistance</li>
+                        <li>Easy cleaning</li>
+                        <li>Power Range: up to ±3.00 (CYL up to ±2.00)</li>
+                    </ul>
+                    <div class="addons">
+                        <label><input type="radio" name="sapphire-addon" value="0" checked> Regular (0 QAR)</label>
+                        <label><input type="radio" name="sapphire-addon" value="200"> Premium Blue Filtration (+200 QAR)</label>
+                        <label><input type="radio" name="sapphire-addon" value="850"> Transition Gen-S (+850 QAR)</label>
+                        <label><input type="radio" name="sapphire-addon" value="350"> Tinted (+350 QAR)</label>
+                    </div>
+                </label>
+            </div>
+            
+            <div class="lens-option-card">
+                <input type="radio" name="lens_choice" value="prevencia" id="prevencia">
+                <label for="prevencia">
+                    <div class="lens-header">
+                        <h4>Essilor Crizal Prevencia (Computer Use)</h4>
+                        <span class="price">500 QAR</span>
+                    </div>
+                    <p class="index">Index: 1.50</p>
+                    <ul class="features">
+                        <li>Specialized for prolonged computer use</li>
+                        <li>Blue-violet light filtering</li>
+                        <li>Anti-reflection coating</li>
+                        <li>High clarity & durability</li>
+                        <li>Power Range: up to ±3.00 (CYL up to ±2.00)</li>
+                    </ul>
+                    <div class="addons">
+                        <label><input type="radio" name="prevencia-addon" value="0" checked> Regular (0 QAR)</label>
+                        <label><input type="radio" name="prevencia-addon" value="700"> Transition Gen-S (+700 QAR)</label>
+                        <label><input type="radio" name="prevencia-addon" value="220"> Tinted (+220 QAR)</label>
+                    </div>
+                </label>
+            </div>
+            
+            <div class="lens-option-card">
+                <input type="radio" name="lens_choice" value="thin-167" id="thin-167">
+                <label for="thin-167">
+                    <div class="lens-header">
+                        <h4>Essilor Super Thin 1.67 Crizal Rock Premium</h4>
+                        <span class="price">650 QAR</span>
+                    </div>
+                    <p class="index">Index: 1.67</p>
+                    <ul class="features">
+                        <li>Super thin design</li>
+                        <li>Anti-reflection & UV protection</li>
+                        <li>High durability</li>
+                        <li>Power Range: up to ±7.00 (CYL up to ±2.00)</li>
+                    </ul>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Progressive & Bifocal -->
+        <div id="progressive" class="lens-category">
+            <h3>Progressive & Bifocal Lenses</h3>
+            
+            <div class="lens-option-card">
+                <input type="radio" name="lens_choice" value="regular-progressive" id="regular-progressive">
+                <label for="regular-progressive">
+                    <div class="lens-header">
+                        <h4>Regular Progressive</h4>
+                        <span class="price">250 QAR</span>
+                    </div>
+                    <p class="index">Index: 1.56</p>
+                    <ul class="features">
+                        <li>Standard progressive</li>
+                        <li>Anti-reflection</li>
+                        <li>Vision correction for near, intermediate, and far</li>
+                        <li>Power Range: up to ±6.00 (CYL up to ±4.00)</li>
+                    </ul>
+                    <div class="addons">
+                        <label><input type="radio" name="prog-addon" value="0" checked> Regular (0 QAR)</label>
+                        <label><input type="radio" name="prog-addon" value="100"> Blue UV Protection (+100 QAR)</label>
+                        <label><input type="radio" name="prog-addon" value="150"> Photochromic (+150 QAR)</label>
+                        <label><input type="radio" name="prog-addon" value="250"> 1.59 Index Unbreakable (+250 QAR)</label>
+                    </div>
+                </label>
+            </div>
+            
+            <div class="lens-option-card">
+                <input type="radio" name="lens_choice" value="essilor-espace" id="essilor-espace">
+                <label for="essilor-espace">
+                    <div class="lens-header">
+                        <h4>Essilor Espace 1.56 Crizal Easy Pro</h4>
+                        <span class="price">600 QAR</span>
+                    </div>
+                    <p class="index">Index: 1.56</p>
+                    <ul class="features">
+                        <li>Wide vision area</li>
+                        <li>Clear distance and near vision</li>
+                        <li>Enhanced comfort</li>
+                    </ul>
+                    <div class="addons">
+                        <label><input type="radio" name="espace-addon" value="0" checked> Regular (0 QAR)</label>
+                        <label><input type="radio" name="espace-addon" value="400"> Blue UV + 1.60 Index (+400 QAR)</label>
+                        <label><input type="radio" name="espace-addon" value="630"> Transition Gen-S (+630 QAR)</label>
+                        <label><input type="radio" name="espace-addon" value="350"> 1.59 Unbreakable (+350 QAR)</label>
+                    </div>
+                </label>
+            </div>
+            
+            <div class="lens-option-card">
+                <input type="radio" name="lens_choice" value="bifocal-ft28" id="bifocal-ft28">
+                <label for="bifocal-ft28">
+                    <div class="lens-header">
+                        <h4>Essilor FT28 / Kryptok 1.5 Bifocal Crizal Easy Pro</h4>
+                        <span class="price">450 QAR</span>
+                    </div>
+                    <p class="index">Index: 1.50</p>
+                    <ul class="features">
+                        <li>Clear near-far separation</li>
+                        <li>Anti-reflection</li>
+                        <li>Durable lens quality</li>
+                        <li>Easy adaptation</li>
+                    </ul>
+                    <div class="addons">
+                        <label><input type="radio" name="bifocal-addon" value="0" checked> Regular (0 QAR)</label>
+                        <label><input type="radio" name="bifocal-addon" value="250"> Blue UV Protection (+250 QAR)</label>
+                        <label><input type="radio" name="bifocal-addon" value="600"> Transition Gen-8 (+600 QAR)</label>
+                    </div>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Reading Glasses -->
+        <div id="reading" class="lens-category">
+            <h3>Reading Glasses</h3>
+            <p>Select your reading power:</p>
+            <div class="power-selection-grid">
+                <label><input type="radio" name="reading_power" value="0.75"> +0.75</label>
+                <label><input type="radio" name="reading_power" value="1.00"> +1.00</label>
+                <label><input type="radio" name="reading_power" value="1.25"> +1.25</label>
+                <label><input type="radio" name="reading_power" value="1.50"> +1.50</label>
+                <label><input type="radio" name="reading_power" value="1.75"> +1.75</label>
+                <label><input type="radio" name="reading_power" value="2.00"> +2.00</label>
+                <label><input type="radio" name="reading_power" value="2.25"> +2.25</label>
+                <label><input type="radio" name="reading_power" value="2.50"> +2.50</label>
+                <label><input type="radio" name="reading_power" value="2.75"> +2.75</label>
+                <label><input type="radio" name="reading_power" value="3.00"> +3.00</label>
+            </div>
+        </div>
+        
+        <!-- Without Prescription -->
+        <div id="without" class="lens-category">
+            <h3>Without Prescription Lenses</h3>
+            
+            <div class="lens-option-card">
+                <input type="radio" name="lens_choice" value="clear-lens" id="clear-lens">
+                <label for="clear-lens">
+                    <div class="lens-header">
+                        <h4>Clear Lens</h4>
+                        <span class="price">100 QAR</span>
+                    </div>
+                    <p>Basic lens without power</p>
+                </label>
+            </div>
+            
+            <div class="lens-option-card">
+                <input type="radio" name="lens_choice" value="zero-blue" id="zero-blue">
+                <label for="zero-blue">
+                    <div class="lens-header">
+                        <h4>Zero Power Blue</h4>
+                        <span class="price">250 QAR</span>
+                    </div>
+                    <p>Blue light protection for screens</p>
+                </label>
+            </div>
+            
+            <div class="lens-option-card">
+                <input type="radio" name="lens_choice" value="crizal-premium" id="crizal-premium">
+                <label for="crizal-premium">
+                    <div class="lens-header">
+                        <h4>Essilor Crizal Premium</h4>
+                        <span class="price">470 QAR</span>
+                    </div>
+                    <p>Advanced blue-light filtration with Prevencia coating</p>
+                </label>
+            </div>
+            
+            <div class="lens-option-card">
+                <input type="radio" name="lens_choice" value="tinted-lens" id="tinted-lens">
+                <label for="tinted-lens">
+                    <div class="lens-header">
+                        <h4>Tinted Lens</h4>
+                        <span class="price">250 QAR</span>
+                    </div>
+                    <p>Adds permanent color tint</p>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Prescription Input -->
+        <div class="prescription-section">
+            <h3>Enter Your Prescription:</h3>
+            <div class="prescription-form">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Eye</th>
+                            <th>SPH</th>
+                            <th>CYL</th>
+                            <th>AXIS</th>
+                            <th>ADD</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Right (OD)</td>
+                            <td><input type="number" step="0.25" name="right_sph"></td>
+                            <td><input type="number" step="0.25" name="right_cyl"></td>
+                            <td><input type="number" name="right_axis"></td>
+                            <td><input type="number" step="0.25" name="right_add"></td>
+                        </tr>
+                        <tr>
+                            <td>Left (OS)</td>
+                            <td><input type="number" step="0.25" name="left_sph"></td>
+                            <td><input type="number" step="0.25" name="left_cyl"></td>
+                            <td><input type="number" name="left_axis"></td>
+                            <td><input type="number" step="0.25" name="left_add"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Total Price -->
+        <div class="total-price-section">
+            <h3>Total Price: <span id="totalPrice">{{ product.base_price }}</span> QAR</h3>
+        </div>
+        
+        <button class="btn-confirm-lens" onclick="confirmLensSelection()">Add to Cart</button>
+    </div>
+</div>
+
 <script>
-// ------------------------------
-// Add to Cart AJAX (Frame Only)
-// ------------------------------
-document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const form = this.closest('form');
-        const url = this.dataset.url;
-        const formData = new FormData(form);
+function openLensSelection() {
+    document.getElementById('lensModal').style.display = 'block';
+}
 
-        // Visual feedback
-        const btnText = this.querySelector('.xo-btn__text');
-        const originalText = btnText.innerText;
-        btnText.innerText = 'Adding...';
+function closeLensModal() {
+    document.getElementById('lensModal').style.display = 'none';
+}
 
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
-            },
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                // Assuming you have a global function for notifications
-                if(typeof showNotification === "function") {
-                    showNotification('Frame added to cart successfully', 'success');
-                } else {
-                    alert('Frame added to cart!');
-                }
-            } else {
-                alert(data.message || 'Something went wrong');
-            }
-        })
-        .catch(() => {
-            alert('Server error. Try again.');
-        })
-        .finally(() => {
-            btnText.innerText = originalText;
-        });
-    });
-});
+function showLensCategory(category) {
+    document.querySelectorAll('.lens-category').forEach(cat => cat.classList.remove('active'));
+    document.querySelectorAll('.lens-tab').forEach(tab => tab.classList.remove('active'));
+    
+    document.getElementById(category).classList.add('active');
+    event.target.classList.add('active');
+}
+
+function confirmLensSelection() {
+    alert('Product with selected lenses added to cart!');
+    closeLensModal();
+}
 </script>
 {% endblock %}

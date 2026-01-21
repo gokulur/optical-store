@@ -519,7 +519,7 @@
                     <div class="products-grid">
                         {% for product in products %}
                         <div class="product-card">
-                            <a href="{% url 'product_detail' product.slug %}" style="text-decoration: none; color: inherit;">
+                            <a href="{% url 'catalog:eyeglass_detail' product.slug %}" style="text-decoration: none; color: inherit;">
                                 <div class="product-image">
                                     {% if product.image %}
                                     <img src="{{ product.image.url }}" alt="{{ product.name }}">
