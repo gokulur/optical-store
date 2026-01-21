@@ -499,54 +499,82 @@ def contact_lens_list(request):
         'lens_type': lens_type
     })
 
+
 @login_required
 @user_passes_test(is_admin)
 def contact_lens_add(request):
     if request.method == 'POST':
         try:
             with transaction.atomic():
-                # 1. Create Product first
+
+                # --- REQUIRED FIELDS ---
+                name = request.POST.get('name')
+                sku = request.POST.get('sku')
+                slug = request.POST.get('slug')
+                category_id = request.POST.get('category')
+                base_price = request.POST.get('base_price')
+
+                if not all([name, sku, slug, category_id, base_price]):
+                    messages.error(request, "Please fill all required fields.")
+                    return redirect(request.path)
+
+                # --- Create Product ---
                 product = Product.objects.create(
-                    name=request.POST.get('name'),
-                    sku=request.POST.get('sku'),
-                    slug=request.POST.get('slug'),
+                    name=name,
+                    sku=sku,
+                    slug=slug,
                     product_type='contact_lenses',
-                    category_id=request.POST.get('category'),
+                    category_id=int(category_id),
                     brand_id=request.POST.get('brand') or None,
                     description=request.POST.get('description', ''),
-                    base_price=request.POST.get('base_price'),
-                    track_inventory=True,
+                    base_price=Decimal(base_price),
+                    track_inventory=request.POST.get('track_inventory') == 'on',
                     stock_quantity=int(request.POST.get('stock_quantity') or 0),
                     is_active=request.POST.get('is_active') == 'on',
                 )
-                
-                # 2. Create ContactLensProduct
-                contact_lens = ContactLensProduct.objects.create(
+
+                # --- Create Contact Lens ---
+                ContactLensProduct.objects.create(
                     product=product,
                     lens_type=request.POST.get('lens_type'),
                     replacement_schedule=request.POST.get('replacement_schedule'),
-                    package_size=request.POST.get('package_size'),
-                    diameter=request.POST.get('diameter'),
-                    base_curve=request.POST.get('base_curve'),
-                    water_content=request.POST.get('water_content'),
+                    package_size=int(request.POST.get('package_size')),
+                    diameter=Decimal(request.POST.get('diameter')),
+                    base_curve=Decimal(request.POST.get('base_curve')),
+                    water_content=Decimal(request.POST.get('water_content')),
                     intended_use=request.POST.get('intended_use', 'Vision / Cosmetic'),
                 )
-                
-                # 3. Add images
-                for idx, img in enumerate(request.FILES.getlist('images')):
-                    ProductImage.objects.create(product=product, image=img, is_primary=(idx==0))
-                
-                messages.success(request, 'Contact Lens added!')
+
+                # --- Images ---
+                for i, image in enumerate(request.FILES.getlist('images')):
+                    ProductImage.objects.create(
+                        product=product,
+                        image=image,
+                        is_primary=(i == 0)
+                    )
+
+                messages.success(request, "Contact lens added successfully!")
                 return redirect('adminpanel:contact_lens_list')
+
         except IntegrityError:
-            messages.error(request, 'SKU or Slug exists.')
+            messages.error(request, "SKU or Slug already exists.")
+
         except Exception as e:
-            messages.error(request, str(e))
-    
+            messages.error(request, f"Error: {str(e)}")
+
+    # --- GET REQUEST ---
     context = {
-        'brands': Brand.objects.filter(available_for_contact_lenses=True, is_active=True)
+        'brands': Brand.objects.filter(
+            available_for_contact_lenses=True,
+            is_active=True
+        ),
+        'categories': Category.objects.filter(
+            is_active=True
+        )
     }
+
     return render(request, 'adminpanel/contact_lenses/add.html', context)
+
 
 @login_required
 @user_passes_test(is_admin)
