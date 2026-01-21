@@ -1,293 +1,169 @@
-
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}{{ product.name }} - Contact Lenses{% endblock %}
 
 {% block content %}
-<div class="product-detail-page contact-lens-page">
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-        <a href="{% url 'catalog:home' %}">Home</a> / 
-        <a href="{% url 'catalog:contact_lenses_list' %}">Contact Lenses</a> / 
-        <span>{{ product.name }}</span>
-    </div>
-    
-    <div class="product-detail-container">
-        <!-- Product Images -->
-        <div class="product-images">
-            <div class="main-image">
-                {% if images.first %}
-                <img src="{{ images.first.image.url }}" alt="{{ product.name }}" id="mainImage">
-                {% endif %}
-            </div>
-            <div class="thumbnail-images">
-                {% for image in images %}
-                <img src="{{ image.image.url }}" alt="{{ product.name }}" 
-                     onclick="changeMainImage('{{ image.image.url }}')">
-                {% endfor %}
-            </div>
-        </div>
-        
-        <!-- Product Info -->
-        <div class="product-info">
-            <p class="brand">{{ product.brand.name }}</p>
-            <h1 class="product-name">{{ product.name }}</h1>
-            <p class="sku">SKU: {{ product.sku }}</p>
-            
-            <div class="price-section">
-                <span class="current-price">{{ product.base_price }} QAR</span>
-                <p class="package-info">Pack of {{ contact_lens.package_size }} lenses</p>
-            </div>
-            
-            <div class="short-description">
-                <p>{{ product.short_description }}</p>
-            </div>
-            
-            <!-- Color Selection (for color lenses) -->
-            {% if contact_lens.lens_type == 'color' %}
-            <div class="color-selection">
-                <h3>Select Color:</h3>
-                <div class="color-options-grid">
-                    {% for color in colors %}
-                    <div class="color-option" data-color-id="{{ color.id }}" 
-                         data-power-enabled="{{ color.power_enabled }}"
-                         onclick="selectColor({{ color.id }}, '{{ color.name }}', {{ color.power_enabled|lower }})">
-                        <img src="{{ color.image.url }}" alt="{{ color.name }}">
-                        <p>{{ color.name }}</p>
-                        {% if not color.power_enabled %}
-                        <span class="plano-only">Plano Only</span>
-                        {% else %}
-                        <span class="with-power">With Power</span>
-                        {% endif %}
-                    </div>
+
+<section class="shopify-section section">
+  <div class="xo-section color-background-1">
+    <xo-container class="xo-container--box">
+      <xo-grid>
+
+        <!-- LEFT: SAME GALLERY AS EYEGLASSES -->
+        <xo-animate style="--xs: 12; --md: 7">
+          <div class="xo-product-info-media-style3" style="position: sticky;">
+            <xo-gallery>
+              <xo-carousel>
+                <xo-carousel-inner>
+                  <xo-carousel-list>
+                    {% for image in product.images.all %}
+                      <xo-carousel-slide>
+                        <img src="{{ image.image.url }}" alt="{{ product.name }}">
+                      </xo-carousel-slide>
+                    {% empty %}
+                      <xo-carousel-slide>
+                        <img src="{% static 'images/no-image.png' %}">
+                      </xo-carousel-slide>
                     {% endfor %}
-                </div>
-                <p class="selected-color-name">Selected: <span id="selectedColorName">-</span></p>
+                  </xo-carousel-list>
+                </xo-carousel-inner>
+              </xo-carousel>
+            </xo-gallery>
+          </div>
+        </xo-animate>
+
+        <!-- RIGHT: PRODUCT INFO (SAME STRUCTURE AS EYEGLASSES) -->
+        <xo-animate class="main-product__right" style="--xs: 12; --md: 5">
+          <div class="xo-product-info-content" style="position: sticky; top: 9.3rem">
+
+            <!-- TITLE -->
+            <div class="xo-product-info-content__header">
+              <h1 class="xo-product-info-content__title" style="--fz:2.4rem">
+                {{ product.name }}
+              </h1>
             </div>
-            
-            <!-- Power Selection -->
-            <div class="power-selection" id="powerSection" style="display:none;">
-                <h3>Select Power:</h3>
-                <p class="power-note">Powers outside the available range will either be placed as a special order or cancelled.</p>
-                
-                <div class="eye-power-selection">
-                    <div class="eye-section">
-                        <h4>Left Eye</h4>
-                        <select name="left_power" id="leftPower">
-                            <option value="0.00">Plano (0.00)</option>
-                            {% for power in power_ranges %}
-                            <option value="{{ power }}">{{ power }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="eye-section">
-                        <h4>Right Eye</h4>
-                        <select name="right_power" id="rightPower">
-                            <option value="0.00">Plano (0.00)</option>
-                            {% for power in power_ranges %}
-                            <option value="{{ power }}">{{ power }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                
-                <label class="same-power-checkbox">
-                    <input type="checkbox" id="samePower" onchange="lockSamePower()">
-                    Use same power for both eyes
-                </label>
+
+            <!-- BRAND -->
+            {% if product.brand %}
+            <p style="margin: 10px 0; font-size: 14px; color: #666;">
+              Brand: <strong>{{ product.brand.name }}</strong>
+            </p>
+            {% endif %}
+
+            <!-- PRICE -->
+            <div class="xo-product-info-content__price" style="padding: 20px 0;">
+              <div class="xo-price xo-price--larger">
+                <span class="xo-price__item xo-price__item--accent">
+                  QAR {{ product.base_price }}
+                </span>
+              </div>
             </div>
-            {% else %}
-            <!-- For clear lenses, show power selection directly -->
-            <div class="power-selection">
-                <h3>Select Power:</h3>
-                
-                <div class="eye-power-selection">
-                    <div class="eye-section">
-                        <h4>Left Eye</h4>
-                        <label>SPH: <input type="number" step="0.25" name="left_sph"></label>
-                        <label>CYL: <input type="number" step="0.25" name="left_cyl"></label>
-                        <label>AXIS: <input type="number" name="left_axis"></label>
-                    </div>
-                    
-                    <div class="eye-section">
-                        <h4>Right Eye</h4>
-                        <label>SPH: <input type="number" step="0.25" name="right_sph"></label>
-                        <label>CYL: <input type="number" step="0.25" name="right_cyl"></label>
-                        <label>AXIS: <input type="number" name="right_axis"></label>
-                    </div>
-                </div>
+
+            <p style="font-size:14px;color:#666;">Pack of {{ contact_lens.package_size }} lenses</p>
+
+            <!-- COLOR SELECTION -->
+            {% if contact_lens.lens_type == 'color' %}
+            <div style="padding: 20px 0;">
+              <h3 style="font-size: 16px;">Select Color</h3>
+
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;">
+                {% for color in colors %}
+                  <div onclick="selectColor(this, {{ color.id }}, {{ color.power_enabled|lower }})"
+                       style="border:1px solid #ddd;padding:8px;border-radius:8px;cursor:pointer;text-align:center;">
+                    <img src="{{ color.image.url }}" style="width:100%;border-radius:6px;">
+                    <small>{{ color.name }}</small>
+                  </div>
+                {% endfor %}
+              </div>
+
+              <p style="margin-top:10px;">Selected: <strong id="selectedColorName">-</strong></p>
             </div>
             {% endif %}
-            
-            <!-- Out of Stock Notification -->
-            <div class="notify-section">
-                <p>Don't see your power? Get notified when it's available:</p>
-                <input type="text" placeholder="Enter your required power" id="notifyPower">
-                <input type="email" placeholder="Your email address" id="notifyEmail">
-                <button class="btn-notify">Notify Me</button>
-            </div>
-            
-            <!-- Add to Cart Section -->
-            <div class="cart-section">
-                <div class="quantity-selector">
-                    <label>Quantity:</label>
-                    <button onclick="decreaseQty()">-</button>
-                    <input type="number" id="quantity" value="1" min="1">
-                    <button onclick="increaseQty()">+</button>
+
+            <!-- POWER -->
+            <div id="powerSection" style="display:none;padding-bottom:20px;">
+              <h3 style="font-size:16px;">Select Power</h3>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div>
+                  <label>Left Eye</label>
+                  <select id="leftPower">
+                    {% for p in power_ranges %}
+                      <option>{{ p }}</option>
+                    {% endfor %}
+                  </select>
                 </div>
-                <button class="btn-add-to-cart" onclick="addToCart()">Add to Cart</button>
+                <div>
+                  <label>Right Eye</label>
+                  <select id="rightPower">
+                    {% for p in power_ranges %}
+                      <option>{{ p }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <label style="display:block;margin-top:10px;">
+                <input type="checkbox" id="samePower" onchange="lockSamePower()"> Same for both eyes
+              </label>
             </div>
-            
-            <div class="wishlist-section">
-                <button class="add-to-wishlist">Add to Wishlist ♡</button>
-            </div>
-            
-            <!-- Product Details -->
-            <div class="product-details-table">
-                <h3>About the Product</h3>
-                <table>
-                    <tr>
-                        <td>Brand</td>
-                        <td>{{ product.brand.name }}</td>
-                    </tr>
-                    <tr>
-                        <td>Package Size</td>
-                        <td>Pack of {{ contact_lens.package_size }} lenses</td>
-                    </tr>
-                    <tr>
-                        <td>Replacement Schedule</td>
-                        <td>{{ contact_lens.get_replacement_schedule_display }}</td>
-                    </tr>
-                    <tr>
-                        <td>Lens Type</td>
-                        <td>{{ contact_lens.get_lens_type_display|upper }} CONTACT LENS</td>
-                    </tr>
-                    <tr>
-                        <td>Intended Use</td>
-                        <td>{{ contact_lens.intended_use }}</td>
-                    </tr>
-                    <tr>
-                        <td>Diameter</td>
-                        <td>{{ contact_lens.diameter }} MM</td>
-                    </tr>
-                    <tr>
-                        <td>Base Curve</td>
-                        <td>{{ contact_lens.base_curve }}</td>
-                    </tr>
-                    <tr>
-                        <td>Water Content</td>
-                        <td>{{ contact_lens.water_content }}%</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Product Description -->
-    <div class="product-description">
-        <h2>Product Description</h2>
-        <div>{{ product.description|safe }}</div>
-    </div>
-    
-    <!-- Related Products -->
-    <div class="related-products">
-        <h2>You May Also Like</h2>
-        <div class="products-grid">
-            {% for related in related_products %}
-            <div class="product-card">
-                <a href="{% url 'catalog:contact_lens_detail' related.slug %}">
-                    {% if related.images.first %}
-                    <img src="{{ related.images.first.image.url }}" alt="{{ related.name }}">
-                    {% endif %}
-                    <p class="brand">{{ related.brand.name }}</p>
-                    <h3>{{ related.name }}</h3>
-                    <p class="price">{{ related.base_price }} QAR</p>
-                </a>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
+
+            <!-- QUANTITY (SAME XO STYLE) -->
+            <xo-cart-quantity class="xo-quantity-style2" style="--width: 13.5rem; --height: 5rem">
+              <input class="xo-quantity-style2__number" type="number" id="quantity" value="1" min="1">
+            </xo-cart-quantity>
+
+            <div class="xo-space xo-space--vertical" style="--space: 2rem"></div>
+
+            <!-- ADD TO CART -->
+            <button type="button"
+                    class="xo-btn xo-btn--light xo-btn--primary xo-btn--block"
+                    onclick="addToCart()">
+              <span class="xo-btn__content">
+                <span class="xo-btn__text">Add to Cart</span>
+              </span>
+            </button>
+
+          </div>
+        </xo-animate>
+
+      </xo-grid>
+    </xo-container>
+  </div>
+</section>
 
 <script>
 let selectedColorId = null;
 let selectedColorPowerEnabled = false;
 
-function changeMainImage(url) {
-    document.getElementById('mainImage').src = url;
-}
+function selectColor(el, id, powerEnabled) {
+  selectedColorId = id;
+  selectedColorPowerEnabled = powerEnabled;
 
-function selectColor(colorId, colorName, powerEnabled) {
-    selectedColorId = colorId;
-    selectedColorPowerEnabled = powerEnabled;
-    
-    document.getElementById('selectedColorName').textContent = colorName;
-    
-    // Highlight selected color
-    document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
-    event.currentTarget.classList.add('selected');
-    
-    // Show/hide power section based on color
-    if (powerEnabled) {
-        document.getElementById('powerSection').style.display = 'block';
-    } else {
-        document.getElementById('powerSection').style.display = 'none';
-    }
+  document.querySelectorAll('[onclick^="selectColor"]').forEach(e => e.style.border = '1px solid #ddd');
+  el.style.border = '2px solid black';
+
+  document.getElementById('selectedColorName').innerText = el.innerText.trim();
+  document.getElementById('powerSection').style.display = powerEnabled ? 'block' : 'none';
 }
 
 function lockSamePower() {
-    const samePower = document.getElementById('samePower').checked;
-    const rightPower = document.getElementById('rightPower');
-    
-    if (samePower) {
-        rightPower.disabled = true;
-        rightPower.value = document.getElementById('leftPower').value;
-    } else {
-        rightPower.disabled = false;
-    }
-}
-
-// Update right eye when same power is checked
-document.addEventListener('DOMContentLoaded', function() {
-    const leftPower = document.getElementById('leftPower');
-    if (leftPower) {
-        leftPower.addEventListener('change', function() {
-            if (document.getElementById('samePower').checked) {
-                document.getElementById('rightPower').value = this.value;
-            }
-        });
-    }
-});
-
-function decreaseQty() {
-    const qtyInput = document.getElementById('quantity');
-    if (qtyInput.value > 1) {
-        qtyInput.value = parseInt(qtyInput.value) - 1;
-    }
-}
-
-function increaseQty() {
-    const qtyInput = document.getElementById('quantity');
-    qtyInput.value = parseInt(qtyInput.value) + 1;
+  const right = document.getElementById('rightPower');
+  right.disabled = document.getElementById('samePower').checked;
+  if (right.disabled) {
+    right.value = document.getElementById('leftPower').value;
+  }
 }
 
 function addToCart() {
-    {% if contact_lens.lens_type == 'color' %}
-    if (!selectedColorId) {
-        alert('Please select a color first');
-        return;
-    }
-    
-    if (selectedColorPowerEnabled) {
-        const leftPower = document.getElementById('leftPower').value;
-        const rightPower = document.getElementById('rightPower').value;
-        console.log('Adding to cart with powers:', leftPower, rightPower);
-    }
-    {% endif %}
-    
-    const quantity = document.getElementById('quantity').value;
-    alert(`Added ${quantity} pack(s) to cart!`);
+  {% if contact_lens.lens_type == 'color' %}
+  if (!selectedColorId) {
+    alert("Please select a color");
+    return;
+  }
+  {% endif %}
+  alert("Added to cart");
 }
 </script>
+
 {% endblock %}
