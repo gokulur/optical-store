@@ -62,7 +62,7 @@ def user_register(request):
         
         return redirect_after_login(user)
     
-    return render(request, 'users/register.html')
+    return render(request, 'register.html')
 
 
 # ==================== LOGIN ====================
