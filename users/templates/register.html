@@ -254,128 +254,128 @@
             <label>Confirm Password</label>
             <input type="password" name="password_confirm" id="password_confirm" required>
             <span class="error" id="confirm-error"></span>
-
+<!-- 
             <label>
                 <input type="checkbox" id="terms"> I agree to Terms & Conditions
-            </label>
+            </label> -->
             <span class="error" id="terms-error"></span>
-
+            <a href=" ">Already have an account? Login here</a>  
             <br>
             <input type="submit" value="Register">
         </form>
     </div>
 </div>
 <script>
-const form = document.getElementById("registerForm");
+    const form = document.getElementById("registerForm");
 
-const first = document.getElementById("first_name");
-const last = document.getElementById("last_name");
-const email = document.getElementById("email");
-const phone = document.getElementById("phone");
-const password = document.getElementById("password");
-const confirm = document.getElementById("password_confirm");
-const terms = document.getElementById("terms");
+    const first = document.getElementById("first_name");
+    const last = document.getElementById("last_name");
+    const email = document.getElementById("email");
+    const phone = document.getElementById("phone");
+    const password = document.getElementById("password");
+    const confirm = document.getElementById("password_confirm");
+    const terms = document.getElementById("terms");
 
-const strength = document.getElementById("password-strength");
+    const strength = document.getElementById("password-strength");
 
-function error(input, id, msg) {
-  input.classList.add("input-error");
-  input.classList.remove("input-success");
-  document.getElementById(id).innerText = msg;
-  return false;
-}
+    function error(input, id, msg) {
+        input.classList.add("input-error");
+        input.classList.remove("input-success");
+        document.getElementById(id).innerText = msg;
+        return false;
+    }
 
-function success(input, id) {
-  input.classList.remove("input-error");
-  input.classList.add("input-success");
-  document.getElementById(id).innerText = "";
-  return true;
-}
+    function success(input, id) {
+        input.classList.remove("input-error");
+        input.classList.add("input-success");
+        document.getElementById(id).innerText = "";
+        return true;
+    }
 
-// First name
-first.addEventListener("input", () => {
-  /^[A-Za-z]{2,}$/.test(first.value.trim())
-    ? success(first, "first-error")
-    : error(first, "first-error", "Minimum 2 letters, only alphabets");
-});
+    // First name
+    first.addEventListener("input", () => {
+        /^[A-Za-z]{2,}$/.test(first.value.trim())
+            ? success(first, "first-error")
+            : error(first, "first-error", "Minimum 2 letters, only alphabets");
+    });
 
-// Last name
-last.addEventListener("input", () => {
-  /^[A-Za-z]{2,}$/.test(last.value.trim())
-    ? success(last, "last-error")
-    : error(last, "last-error", "Minimum 2 letters, only alphabets");
-});
+    // Last name
+    last.addEventListener("input", () => {
+        /^[A-Za-z]{2,}$/.test(last.value.trim())
+            ? success(last, "last-error")
+            : error(last, "last-error", "Minimum 2 letters, only alphabets");
+    });
 
-// Email
-email.addEventListener("input", () => {
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())
-    ? success(email, "email-error")
-    : error(email, "email-error", "Enter valid email");
-});
+    // Email
+    email.addEventListener("input", () => {
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())
+            ? success(email, "email-error")
+            : error(email, "email-error", "Enter valid email");
+    });
 
-// Phone optional
-phone.addEventListener("input", () => {
-  if (!phone.value.trim()) return success(phone, "phone-error");
+    // Phone optional
+    phone.addEventListener("input", () => {
+        if (!phone.value.trim()) return success(phone, "phone-error");
 
-  /^\+?[0-9]{8,15}$/.test(phone.value)
-    ? success(phone, "phone-error")
-    : error(phone, "phone-error", "Enter valid phone number");
-});
+        /^\+?[0-9]{8,15}$/.test(phone.value)
+            ? success(phone, "phone-error")
+            : error(phone, "phone-error", "Enter valid phone number");
+    });
 
-// Password strength
-password.addEventListener("input", () => {
-  const val = password.value;
-  let score = 0;
+    // Password strength
+    password.addEventListener("input", () => {
+        const val = password.value;
+        let score = 0;
 
-  if (val.length >= 8) score++;
-  if (/[A-Z]/.test(val)) score++;
-  if (/[a-z]/.test(val)) score++;
-  if (/[0-9]/.test(val)) score++;
-  if (/[^A-Za-z0-9]/.test(val)) score++;
+        if (val.length >= 8) score++;
+        if (/[A-Z]/.test(val)) score++;
+        if (/[a-z]/.test(val)) score++;
+        if (/[0-9]/.test(val)) score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
 
-  if (score <= 2) {
-    strength.innerText = "Weak password";
-    strength.className = "password-strength weak";
-  } else if (score <= 4) {
-    strength.innerText = "Medium password";
-    strength.className = "password-strength medium";
-  } else {
-    strength.innerText = "Strong password";
-    strength.className = "password-strength strong";
-  }
+        if (score <= 2) {
+            strength.innerText = "Weak password";
+            strength.className = "password-strength weak";
+        } else if (score <= 4) {
+            strength.innerText = "Medium password";
+            strength.className = "password-strength medium";
+        } else {
+            strength.innerText = "Strong password";
+            strength.className = "password-strength strong";
+        }
 
-  score >= 4
-    ? success(password, "password-error")
-    : error(password, "password-error", "Use uppercase, lowercase, number & symbol");
-});
+        score >= 4
+            ? success(password, "password-error")
+            : error(password, "password-error", "Use uppercase, lowercase, number & symbol");
+    });
 
-// Confirm password
-confirm.addEventListener("input", () => {
-  confirm.value === password.value
-    ? success(confirm, "confirm-error")
-    : error(confirm, "confirm-error", "Passwords do not match");
-});
+    // Confirm password
+    confirm.addEventListener("input", () => {
+        confirm.value === password.value
+            ? success(confirm, "confirm-error")
+            : error(confirm, "confirm-error", "Passwords do not match");
+    });
 
-// Submit
-form.addEventListener("submit", e => {
-  let ok = true;
+    // Submit
+    form.addEventListener("submit", e => {
+        let ok = true;
 
-  if (!/^[A-Za-z]{2,}$/.test(first.value)) ok = false;
-  if (!/^[A-Za-z]{2,}$/.test(last.value)) ok = false;
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) ok = false;
-  if (phone.value && !/^\+?[0-9]{8,15}$/.test(phone.value)) ok = false;
-  if (password.value.length < 8) ok = false;
-  if (confirm.value !== password.value) ok = false;
+        if (!/^[A-Za-z]{2,}$/.test(first.value)) ok = false;
+        if (!/^[A-Za-z]{2,}$/.test(last.value)) ok = false;
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) ok = false;
+        if (phone.value && !/^\+?[0-9]{8,15}$/.test(phone.value)) ok = false;
+        if (password.value.length < 8) ok = false;
+        if (confirm.value !== password.value) ok = false;
 
-  if (!terms.checked) {
-    document.getElementById("terms-error").innerText = "You must accept terms";
-    ok = false;
-  } else {
-    document.getElementById("terms-error").innerText = "";
-  }
+        if (!terms.checked) {
+            document.getElementById("terms-error").innerText = "You must accept terms";
+            ok = false;
+        } else {
+            document.getElementById("terms-error").innerText = "";
+        }
 
-  if (!ok) e.preventDefault();
-});
+        if (!ok) e.preventDefault();
+    });
 </script>
 
 {% endblock %}
