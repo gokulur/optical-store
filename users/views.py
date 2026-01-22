@@ -9,60 +9,63 @@ from django.views.decorators.http import require_POST
 from django.db.models import Sum, Count
 from datetime import datetime
 
+from users.forms import RegisterForm
+
 from .models import User, CustomerProfile, Address
 
 
-# ==================== REGISTER ====================
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, get_user_model
+from django.contrib import messages
+from .forms import RegisterForm
+from .models import CustomerProfile
+
+User = get_user_model()
+
+
 def user_register(request):
-    """User registration"""
     if request.user.is_authenticated:
         return redirect_after_login(request.user)
-    
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        password_confirm = request.POST.get('password_confirm')
-        first_name = request.POST.get('first_name', '')
-        last_name = request.POST.get('last_name', '')
-        phone = request.POST.get('phone', '')
-        
-        # Validation
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'Email already registered.')
-            return render(request, 'users/register.html')
-        
-        if password != password_confirm:
-            messages.error(request, 'Passwords do not match.')
-            return render(request, 'users/register.html')
-        
-        try:
-            validate_password(password)
-        except ValidationError as e:
-            messages.error(request, ' '.join(e.messages))
-            return render(request, 'users/register.html')
-        
-        # Create user
-        username = email.split('@')[0]  # Use email prefix as username
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            first_name=first_name,
-            last_name=last_name,
-            phone=phone,
-            user_type='customer'
-        )
-        
-        # Create customer profile
-        CustomerProfile.objects.create(user=user)
-        
-        # Login user
-        login(request, user)
-        messages.success(request, 'Account created successfully! Welcome to our store.')
-        
-        return redirect_after_login(user)
-    
-    return render(request, 'register.html')
+
+    form = RegisterForm(request.POST or None)
+
+    if request.method == "POST":
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
+
+            # Generate unique username safely
+            base_username = email.split('@')[0]
+            username = base_username
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=form.cleaned_data['first_name'],
+                last_name=form.cleaned_data['last_name'],
+                phone=form.cleaned_data.get('phone', ''),
+                user_type='customer'
+            )
+
+            # Create customer profile
+            CustomerProfile.objects.create(user=user)
+
+            login(request, user)
+            messages.success(request, "Account created successfully. Welcome!")
+            return redirect_after_login(user)
+
+        else:
+            messages.error(request, "Please correct the errors below.")
+
+    return render(request, "register.html", {"form": form})
+
 
 
 # ==================== LOGIN ====================
@@ -128,48 +131,67 @@ def user_logout(request):
 
 
 # ==================== DASHBOARD ====================
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.db.models import Count, Sum
+from .models import CustomerProfile
+
+
 @login_required
 def dashboard(request):
-    """User dashboard"""
     user = request.user
-    
-    # Get recent orders (you'll need to import Order model)
-    # recent_orders = Order.objects.filter(customer=user).order_by('-created_at')[:5]
-    recent_orders = []  # Placeholder
-    
-    # Get customer profile
-    try:
-        profile = user.customer_profile
-    except:
-        profile = CustomerProfile.objects.create(user=user)
-    
-    # Get statistics
-    # order_stats = Order.objects.filter(customer=user).aggregate(
-    #     total_orders=Count('id'),
-    #     total_spent=Sum('total_amount')
-    # )
-    order_stats = {'total_orders': 0, 'total_spent': 0}  # Placeholder
-    
-    # Get saved addresses
-    addresses = user.addresses.all()[:3]
-    
-    # Get prescriptions count
-    prescriptions_count = user.prescriptions.count()
-    
-    # Get reviews count
-    reviews_count = user.reviews.count()
-    
-    context = {
-        'user': user,
-        'profile': profile,
-        'recent_orders': recent_orders,
-        'order_stats': order_stats,
-        'addresses': addresses,
-        'prescriptions_count': prescriptions_count,
-        'reviews_count': reviews_count,
+
+    # -----------------------------
+    # Get or create customer profile safely
+    # -----------------------------
+    profile, created = CustomerProfile.objects.get_or_create(user=user)
+
+    # -----------------------------
+    # Recent orders (safe placeholder)
+    # Replace when Order model exists
+    # -----------------------------
+    recent_orders = []
+    order_stats = {
+        "total_orders": profile.total_orders,
+        "total_spent": profile.total_spent,
     }
-    
-    return render(request, 'users/dashboard.html', context)
+
+    # -----------------------------
+    # Addresses (safe)
+    # -----------------------------
+    addresses = user.addresses.all()[:3] if hasattr(user, "addresses") else []
+
+    # -----------------------------
+    # Safe related object counts
+    # (won't crash if model not yet built)
+    # -----------------------------
+    prescriptions_count = (
+        user.prescriptions.count()
+        if hasattr(user, "prescriptions")
+        else 0
+    )
+
+    reviews_count = (
+        user.reviews.count()
+        if hasattr(user, "reviews")
+        else 0
+    )
+
+    # -----------------------------
+    # Final context
+    # -----------------------------
+    context = {
+        "user": user,
+        "profile": profile,
+        "recent_orders": recent_orders,
+        "order_stats": order_stats,
+        "addresses": addresses,
+        "prescriptions_count": prescriptions_count,
+        "reviews_count": reviews_count,
+    }
+
+    return render(request, "dashboard.html", context)
+
 
 
 # ==================== PROFILE ====================
