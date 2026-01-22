@@ -1,0 +1,12 @@
+Hi {{ user.first_name }},
+
+Welcome to Eyese Optical 👓
+
+Please click the link below to verify your email:
+
+http://{{ domain }}{% url 'users:activate' uidb64=uid token=token %}
+
+If you didn’t create this account, ignore this email.
+
+— Eyese Optical Team
+Thank you for joining us!

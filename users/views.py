@@ -25,46 +25,88 @@ from .models import CustomerProfile
 User = get_user_model()
 
 
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth import login
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import EmailMessage
+from django.http import HttpResponse
+
+from .models import User, CustomerProfile
+
+
 def user_register(request):
-    if request.user.is_authenticated:
-        return redirect_after_login(request.user)
-
-    form = RegisterForm(request.POST or None)
-
     if request.method == "POST":
-        if form.is_valid():
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
+        form = RegisterForm(request.POST)
 
-            # Generate unique username safely
-            base_username = email.split('@')[0]
-            username = base_username
-            counter = 1
-            while User.objects.filter(username=username).exists():
-                username = f"{base_username}{counter}"
-                counter += 1
+        if form.is_valid():
+            email = form.cleaned_data["email"]
+            password = form.cleaned_data["password"]
+            first_name = form.cleaned_data["first_name"]
+            last_name = form.cleaned_data["last_name"]
+            phone = form.cleaned_data.get("phone")
+
+            username = email.split("@")[0]
 
             user = User.objects.create_user(
                 username=username,
                 email=email,
                 password=password,
-                first_name=form.cleaned_data['first_name'],
-                last_name=form.cleaned_data['last_name'],
-                phone=form.cleaned_data.get('phone', ''),
-                user_type='customer'
+                first_name=first_name,
+                last_name=last_name,
+                phone=phone,
+                is_active=False  # Email verification required
             )
 
-            # Create customer profile
             CustomerProfile.objects.create(user=user)
 
-            login(request, user)
-            messages.success(request, "Account created successfully. Welcome!")
-            return redirect_after_login(user)
+            # Send verification email
+            current_site = get_current_site(request)
+            subject = "Verify your email - Eyese Optical"
+
+            message = render_to_string("users/email_verification.html", {
+                "user": user,
+                "domain": current_site.domain,
+                "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                "token": default_token_generator.make_token(user),
+            })
+
+            EmailMessage(subject, message, to=[email]).send()
+
+            messages.success(request, "Account created! Check your email to verify.")
+            return redirect("users:login")
 
         else:
-            messages.error(request, "Please correct the errors below.")
+            # Show validation errors nicely
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
 
-    return render(request, "register.html", {"form": form})
+    else:
+        form = RegisterForm()
+
+    return render(request, "users/register.html", {"form": form})
+
+
+def activate_account(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except:
+        user = None
+
+    if user and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, "Email verified! You can now login.")
+        return redirect("users:login")
+
+    return HttpResponse("Verification link invalid or expired", status=400)
+
 
 
 

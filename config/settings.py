@@ -184,212 +184,26 @@ REST_FRAMEWORK = {
 }
 
 
-# UNFOLD = {
-#     "SITE_TITLE": "Admin Dashboard",
-#     "SITE_HEADER": "Optical Admin",
-#     "SITE_URL": "/",
-#     "SHOW_HISTORY": True,
-# }
-
-# UNFOLD = {
-#     "SITE_TITLE": "My Project Admin",
-#     "SITE_HEADER": "My Project Admin",
-#     "SITE_URL": "/admin/",
-#     "SITE_ICON": "settings",
-#     "SHOW_HISTORY": True,
-
-#     "SIDEBAR": {
-#         "show_search": True,
-#         "show_all_applications": False,
-
-#         "navigation": [
-#             {
-#                 "title": "Catalog",
-#                 "icon": "inventory",
-#                 "items": [
-#                     {"title": "Brands", "link": "/admin/catalog/brand/"},
-#                     {"title": "Categories", "link": "/admin/catalog/category/"},
-#                     {"title": "Products", "link": "/admin/catalog/product/"},
-#                 ],
-#             },
-#             {
-#                 "title": "Inventory",
-#                 "icon": "warehouse",
-#                 "items": [
-#                     {"title": "Stocks", "link": "/admin/inventory/stock/"},
-#                 ],
-#             },
-#             {
-#                 "title": "Users",
-#                 "icon": "group",
-#                 "items": [
-#                     {"title": "Users", "link": "/admin/auth/user/"},
-#                 ],
-#             },
-#         ],
-#     },
-# }
-
-
-# settings.py - Enhanced Unfold Admin Configuration
-# settings.py - Fixed Unfold Admin Configuration
-# from django.templatetags.static import static
-# from django.urls import reverse_lazy
-
-# UNFOLD = {
-#     "SITE_TITLE": "My Project Admin",
-#     "SITE_HEADER": "My Project Administration",
-#     "SITE_URL": "/",
-    
-#     # Enhanced colors and styling
-#     "COLORS": {
-#         "primary": {
-#             "50": "250 245 255",
-#             "100": "243 232 255",
-#             "200": "233 213 255",
-#             "300": "216 180 254",
-#             "400": "192 132 252",
-#             "500": "168 85 247",
-#             "600": "147 51 234",
-#             "700": "126 34 206",
-#             "800": "107 33 168",
-#             "900": "88 28 135",
-#             "950": "59 7 100",
-#         },
-#     },
-    
-#     # Sidebar configuration - FIXED
-#     "SIDEBAR": {
-#     "show_search": True,
-#     "show_all_applications": False,
-
-#     "navigation": [
-#         {
-#             "title": "Dashboard",
-#             "icon": "dashboard",
-#             "items": [
-#                 {
-#                     "title": "Overview",
-#                     "icon": "dashboard",
-#                     "link": reverse_lazy("admin:index"),
-#                 }
-#             ],
-#         },
-
-#         # ---- Separator (EMPTY GROUP) ----
-#         {
-#             "items": []
-#         },
-
-#         {
-#             "title": "Catalog Management",
-#             "icon": "inventory_2",
-#             "collapsible": True,
-#             "items": [
-#                 {
-#                     "title": "Brands",
-#                     "icon": "business",
-#                     "link": reverse_lazy("admin:catalog_brand_changelist"),
-#                 },
-#                 {
-#                     "title": "Categories",
-#                     "icon": "category",
-#                     "link": reverse_lazy("admin:catalog_category_changelist"),
-#                 },
-#                 {
-#                     "title": "Products",
-#                     "icon": "shopping_bag",
-#                     "link": reverse_lazy("admin:catalog_product_changelist"),
-#                 },
-#                 {
-#                     "title": "Product Variants",
-#                     "icon": "palette",
-#                     "link": reverse_lazy("admin:catalog_productvariant_changelist"),
-#                 },
-#             ],
-#         },
-
-#         {
-#             "title": "Lens Management",
-#             "icon": "visibility",
-#             "collapsible": True,
-#             "items": [
-#                 {
-#                     "title": "Contact Lens Powers",
-#                     "icon": "remove_red_eye",
-#                     "link": reverse_lazy("admin:catalog_contactlenspower_changelist"),
-#                 },
-#                 {
-#                     "title": "Lens Options",
-#                     "icon": "settings_brightness",
-#                     "link": reverse_lazy("admin:catalog_lensoption_changelist"),
-#                 },
-#                 {
-#                     "title": "Power Availability",
-#                     "icon": "check_circle",
-#                     "link": reverse_lazy("admin:catalog_lenspoweravailability_changelist"),
-#                 },
-#             ],
-#         },
-
-#         # ---- Separator ----
-#         {
-#             "items": []
-#         },
-
-#         {
-#             "title": "User Management",
-#             "icon": "group",
-#             "collapsible": True,
-#             "items": [
-#                 {
-#                     "title": "Users",
-#                     "icon": "person",
-#                     "link": reverse_lazy("admin:auth_user_changelist"),
-#                 },
-#                 {
-#                     "title": "Groups",
-#                     "icon": "groups",
-#                     "link": reverse_lazy("admin:auth_group_changelist"),
-#                 },
-#             ],
-#         },
-#     ],
-# },
-
-    
-#     # Dashboard tabs
-#     "TABS": [
-#         {
-#             "models": [
-#                 "catalog.brand",
-#                 "catalog.category",
-#                 "catalog.product",
-#             ],
-#             "items": [
-#                 {
-#                     "title": "Overview",
-#                     "icon": "dashboard",
-#                     "link": reverse_lazy("admin:index"),
-#                 },
-#                 {
-#                     "title": "Products",
-#                     "icon": "shopping_bag",
-#                     "link": reverse_lazy("admin:catalog_product_changelist"),
-#                 },
-#             ],
-#         },
-#     ],
-    
-#     # Additional settings
-#     "SHOW_HISTORY": True,
-#     "SHOW_VIEW_ON_SITE": True,
-#     "ENVIRONMENT": "development",
-# }
-
+ 
 AUTH_USER_MODEL = 'users.User'
 # settings.py
 
 LOGIN_URL = '/users/login/'
 LOGIN_REDIRECT_URL = '/users/dashboard/'
 LOGOUT_REDIRECT_URL = '/users/login/'
+
+
+#Setting Email
+
+from decouple import config
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+

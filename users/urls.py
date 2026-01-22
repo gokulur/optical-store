@@ -6,6 +6,7 @@ app_name = 'users'
 urlpatterns = [
     # Authentication
     path('register/', views.user_register, name='register'),
+    path("activate/<uidb64>/<token>/", views.activate_account, name="activate"),
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),
