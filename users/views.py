@@ -50,7 +50,14 @@ def user_register(request):
             last_name = form.cleaned_data["last_name"]
             phone = form.cleaned_data.get("phone")
 
-            username = email.split("@")[0]
+            # Safe unique username
+            base_username = email.split("@")[0]
+            username = base_username
+            counter = 1
+
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
 
             user = User.objects.create_user(
                 username=username,
@@ -59,15 +66,15 @@ def user_register(request):
                 first_name=first_name,
                 last_name=last_name,
                 phone=phone,
-                is_active=False  # Email verification required
+                is_active=False
             )
 
             CustomerProfile.objects.create(user=user)
 
-            # Send verification email
+            # Email verification
             current_site = get_current_site(request)
-            subject = "Verify your email - Eyese Optical"
 
+            subject = "Verify your email - Eyese Optical"
             message = render_to_string("users/email_verification.html", {
                 "user": user,
                 "domain": current_site.domain,
@@ -77,19 +84,19 @@ def user_register(request):
 
             EmailMessage(subject, message, to=[email]).send()
 
-            messages.success(request, "Account created! Check your email to verify.")
+            messages.success(request, "Account created! Please verify your email.")
             return redirect("users:login")
 
         else:
-            # Show validation errors nicely
+            # Show form errors cleanly
             for field, errors in form.errors.items():
                 for error in errors:
-                    messages.error(request, f"{field}: {error}")
+                    messages.error(request, error)
 
     else:
         form = RegisterForm()
 
-    return render(request, "users/register.html", {"form": form})
+    return render(request, "register.html", {"form": form})
 
 
 def activate_account(request, uidb64, token):

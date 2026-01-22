@@ -1,125 +1,384 @@
-<!-- register.html -->
 {% extends 'base.html' %}
 
-{% block title %}Register - Eyewear Store{% endblock %}
+{% block title %}Registration{% endblock %}
 
 {% block content %}
-<div class="auth-page register-page">
-    <div class="auth-container">
-        <div class="auth-card">
-            <h1>Create Account</h1>
-            <p class="subtitle">Join us today and start shopping</p>
-            
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            
-            <form method="post" action="{% url 'users:register' %}" class="auth-form">
-                {% csrf_token %}
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="first_name">First Name *</label>
-                        <input type="text" name="first_name" value="{{ form.first_name.value|default:'' }}">
 
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="last_name">Last Name *</label>
-                        <input type="text" name="last_name" id="last_name" required
-                               placeholder="Doe">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="email">Email Address *</label>
-                    <input type="email" name="email" id="email" required
-                           placeholder="your@email.com">
-                    <small>We'll send order confirmations to this email</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="phone">Phone Number</label>
-                    <input type="tel" name="phone" id="phone"
-                           placeholder="+974 XXXX XXXX">
-                    <small>Optional - for order updates</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password *</label>
-                    <input type="password" name="password" id="password" required
-                           placeholder="Create a strong password">
-                    <small>At least 8 characters with letters and numbers</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password_confirm">Confirm Password *</label>
-                    <input type="password" name="password_confirm" id="password_confirm" required
-                           placeholder="Re-enter your password">
-                </div>
-                
-                <div class="form-group checkbox">
-                    <label>
-                        <input type="checkbox" name="terms" required>
-                        I agree to the <a href=" " target="_blank">Terms & Conditions</a> and <a href=" " target="_blank">Privacy Policy</a>
-                    </label>
-                </div>
-                
-                <div class="form-group checkbox">
-                    <label>
-                        <input type="checkbox" name="newsletter" checked>
-                        Send me exclusive offers and updates
-                    </label>
-                </div>
-                
-                <button type="submit" class="btn btn-primary btn-block">
-                    Create Account
-                </button>
-            </form>
-            
-            <div class="auth-divider">
-                <span>OR</span>
-            </div>
-            
-            <div class="social-login">
-                <button class="btn btn-social btn-google">
-                    Sign up with Google
-                </button>
-                <button class="btn btn-social btn-facebook">
-                    Sign up with Facebook
-                </button>
-            </div>
-            
-            <div class="auth-footer">
-                <p>Already have an account? <a href="{% url 'users:login' %}">Login</a></p>
-            </div>
+<style>
+    @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap");
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background-color: #f5f5f5;
+        /* light gray background */
+        font-family: "Open Sans", sans-serif;
+        color: #111;
+        /* dark text */
+    }
+
+    img {
+        width: 100%;
+        border-bottom-left-radius: 10px;
+        border-top-left-radius: 10px;
+        display: block;
+    }
+
+    a {
+
+        color: #111;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: #444;
+    }
+
+    .modernForm {
+        max-width: 1200px;
+        display: flex;
+        margin: 30px auto;
+        background-color: #fff;
+        /* white form background */
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .imageSection {
+        flex-basis: 50%;
+        position: relative;
+        color: white;
+        display: flex;
+    }
+
+    .imageSection .image {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    .imageSection img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+    }
+
+
+    .overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.4);
+        /* dark overlay */
+        border-bottom-left-radius: 10px;
+        border-top-left-radius: 10px;
+        z-index: 0;
+    }
+
+    .textInside {
+        position: absolute;
+        bottom: 200px;
+        right: 50px;
+        color: #fff;
+    }
+
+    .textInside h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .textInside .tagLine {
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .contactForm {
+        flex-basis: 45%;
+        margin: auto;
+        color: #111;
+        padding: 40px 30px;
+    }
+
+    .contactForm h1 {
+        margin-bottom: 20px;
+        font-weight: 700;
+    }
+
+    input[type="email"],
+    input[type="text"],
+    input[type="password"],
+    input[type="number"] {
+        width: 100%;
+        padding: 12px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        margin-bottom: 15px;
+        font-size: 1rem;
+    }
+
+    input[type="checkbox"] {
+        margin-right: 10px;
+    }
+
+    input[type="submit"] {
+        background-color: #111;
+        /* black button */
+        font-size: 1rem;
+        border: none;
+        color: white;
+        padding: 12px 50px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    input[type="submit"]:hover {
+        background-color: #444;
+        /* dark gray hover */
+    }
+
+    @media only screen and (max-width: 768px) {
+        .modernForm {
+            flex-wrap: wrap;
+        }
+
+        .imageSection,
+        .contactForm {
+            flex-basis: 100%;
+        }
+
+        .overlay,
+        img {
+            border-radius: 10px 10px 0 0;
+        }
+
+        .contactForm {
+            padding: 30px;
+        }
+    }
+
+    .error {
+        color: red;
+        font-size: 12px;
+
+        display: block;
+    }
+
+    .input-error {
+        border: 1px solid red !important;
+    }
+
+    .input-success {
+        border: 1px solid green !important;
+    }
+
+    input {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    label {
+        display: block;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+
+    .password-strength {
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+    .weak {
+        color: red;
+    }
+
+    .medium {
+        color: orange;
+    }
+
+    .strong {
+        color: green;
+    }
+</style>
+</style>
+
+<div class="modernForm">
+    <div class="imageSection">
+        <div class="image">
+            <div class="overlay"></div>
+            <img src="https://images.pexels.com/photos/1895015/pexels-photo-1895015.jpeg"
+                alt="pexels-yuri-manei-2272854">
         </div>
-        
-         
+        <div class="textInside">
+            <h1>Smell Good, Feel Great</h1>
+            <p class="tagLine">Explore Fragrances That Define You</p>
+        </div>
+    </div>
+
+    <div class="contactForm">
+        <h1>Registration</h1>
+        <form method="POST" action="{% url 'users:register' %}" id="registerForm" novalidate>
+            {% csrf_token %}
+
+            <label>First Name</label>
+            <input type="text" name="first_name" id="first_name" placeholder="John" required>
+            <span class="error" id="first-error"></span>
+
+            <label>Last Name</label>
+            <input type="text" name="last_name" id="last_name" placeholder="Doe" required>
+            <span class="error" id="last-error"></span>
+
+            <label>Email</label>
+            <input type="email" name="email" id="email" placeholder="you@example.com" required>
+            <span class="error" id="email-error"></span>
+
+            <label>Phone (optional)</label>
+            <input type="text" name="phone" id="phone" placeholder="+974XXXXXXXX">
+            <span class="error" id="phone-error"></span>
+
+            <label>Password</label>
+            <input type="password" name="password" id="password" required>
+            <span class="password-strength" id="password-strength"></span>
+            <span class="error" id="password-error"></span>
+
+            <label>Confirm Password</label>
+            <input type="password" name="password_confirm" id="password_confirm" required>
+            <span class="error" id="confirm-error"></span>
+
+            <label>
+                <input type="checkbox" id="terms"> I agree to Terms & Conditions
+            </label>
+            <span class="error" id="terms-error"></span>
+
+            <br>
+            <input type="submit" value="Register">
+        </form>
     </div>
 </div>
-
 <script>
-// Password strength indicator
-const passwordInput = document.getElementById('password');
-const confirmInput = document.getElementById('password_confirm');
+const form = document.getElementById("registerForm");
 
-passwordInput.addEventListener('input', function() {
-    // Add password strength indicator logic here
+const first = document.getElementById("first_name");
+const last = document.getElementById("last_name");
+const email = document.getElementById("email");
+const phone = document.getElementById("phone");
+const password = document.getElementById("password");
+const confirm = document.getElementById("password_confirm");
+const terms = document.getElementById("terms");
+
+const strength = document.getElementById("password-strength");
+
+function error(input, id, msg) {
+  input.classList.add("input-error");
+  input.classList.remove("input-success");
+  document.getElementById(id).innerText = msg;
+  return false;
+}
+
+function success(input, id) {
+  input.classList.remove("input-error");
+  input.classList.add("input-success");
+  document.getElementById(id).innerText = "";
+  return true;
+}
+
+// First name
+first.addEventListener("input", () => {
+  /^[A-Za-z]{2,}$/.test(first.value.trim())
+    ? success(first, "first-error")
+    : error(first, "first-error", "Minimum 2 letters, only alphabets");
 });
 
-confirmInput.addEventListener('input', function() {
-    if (this.value !== passwordInput.value) {
-        this.setCustomValidity('Passwords do not match');
-    } else {
-        this.setCustomValidity('');
-    }
+// Last name
+last.addEventListener("input", () => {
+  /^[A-Za-z]{2,}$/.test(last.value.trim())
+    ? success(last, "last-error")
+    : error(last, "last-error", "Minimum 2 letters, only alphabets");
+});
+
+// Email
+email.addEventListener("input", () => {
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())
+    ? success(email, "email-error")
+    : error(email, "email-error", "Enter valid email");
+});
+
+// Phone optional
+phone.addEventListener("input", () => {
+  if (!phone.value.trim()) return success(phone, "phone-error");
+
+  /^\+?[0-9]{8,15}$/.test(phone.value)
+    ? success(phone, "phone-error")
+    : error(phone, "phone-error", "Enter valid phone number");
+});
+
+// Password strength
+password.addEventListener("input", () => {
+  const val = password.value;
+  let score = 0;
+
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[a-z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+
+  if (score <= 2) {
+    strength.innerText = "Weak password";
+    strength.className = "password-strength weak";
+  } else if (score <= 4) {
+    strength.innerText = "Medium password";
+    strength.className = "password-strength medium";
+  } else {
+    strength.innerText = "Strong password";
+    strength.className = "password-strength strong";
+  }
+
+  score >= 4
+    ? success(password, "password-error")
+    : error(password, "password-error", "Use uppercase, lowercase, number & symbol");
+});
+
+// Confirm password
+confirm.addEventListener("input", () => {
+  confirm.value === password.value
+    ? success(confirm, "confirm-error")
+    : error(confirm, "confirm-error", "Passwords do not match");
+});
+
+// Submit
+form.addEventListener("submit", e => {
+  let ok = true;
+
+  if (!/^[A-Za-z]{2,}$/.test(first.value)) ok = false;
+  if (!/^[A-Za-z]{2,}$/.test(last.value)) ok = false;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) ok = false;
+  if (phone.value && !/^\+?[0-9]{8,15}$/.test(phone.value)) ok = false;
+  if (password.value.length < 8) ok = false;
+  if (confirm.value !== password.value) ok = false;
+
+  if (!terms.checked) {
+    document.getElementById("terms-error").innerText = "You must accept terms";
+    ok = false;
+  } else {
+    document.getElementById("terms-error").innerText = "";
+  }
+
+  if (!ok) e.preventDefault();
 });
 </script>
+
 {% endblock %}
+{% for message in messages %}
+<p>{{ message }}</p>
+{% endfor %}
