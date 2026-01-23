@@ -14,6 +14,9 @@ from users.forms import RegisterForm
 from .models import User, CustomerProfile, Address
 
 
+import random
+from .models import PasswordResetOTP
+from django.contrib.auth.hashers import make_password
 
 
 from django.shortcuts import render, redirect
@@ -579,20 +582,76 @@ def account_settings(request):
 
 # ==================== FORGOT PASSWORD ====================
 def forgot_password(request):
-    """Forgot password - send reset email"""
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        
+    if request.method == "POST":
+        email = request.POST.get("email")
+
         try:
             user = User.objects.get(email=email)
-            # TODO: Send password reset email
-            # For now, just show success message
-            messages.success(request, 'Password reset instructions have been sent to your email.')
-            return redirect('users:login')
         except User.DoesNotExist:
-            messages.error(request, 'No account found with this email address.')
-    
-    return render(request, 'users/forgot_password.html')
+            messages.error(request, "No account found with this email")
+            return redirect("users:forgot_password")
+
+        otp = str(random.randint(100000, 999999))
+
+        PasswordResetOTP.objects.create(user=user, otp=otp)
+
+        EmailMessage(
+            "Password Reset OTP",
+            f"""
+Hi {user.first_name},
+
+Your password reset OTP is: {otp}
+
+Valid for 5 minutes.
+""",
+            to=[email]
+        ).send()
+
+        request.session["reset_user"] = user.id
+        messages.success(request, "OTP sent to your email")
+        return redirect("users:reset_verify")
+
+    return render(request, "forgot_password.html")
+
+
+
+def reset_verify(request):
+    user_id = request.session.get("reset_user")
+    if not user_id:
+        return redirect("users:forgot_password")
+
+    user = User.objects.get(id=user_id)
+
+    if request.method == "POST":
+        otp_input = request.POST.get("otp")
+        new_password = request.POST.get("password")
+
+        try:
+            record = PasswordResetOTP.objects.filter(user=user).latest("created_at")
+        except PasswordResetOTP.DoesNotExist:
+            messages.error(request, "OTP not found")
+            return redirect("users:forgot_password")
+
+        if record.is_expired():
+            messages.error(request, "OTP expired")
+            return redirect("users:forgot_password")
+
+        if otp_input != record.otp:
+            messages.error(request, "Invalid OTP")
+            return redirect("users:reset_verify")
+
+        # Update password securely
+        user.set_password(new_password)
+        user.save()
+
+        record.delete()
+        del request.session["reset_user"]
+
+        messages.success(request, "Password changed successfully!")
+        return redirect("users:login")
+
+    return render(request, "reset_verify.html")
+
 
 
 # ==================== DELETE ACCOUNT ====================
