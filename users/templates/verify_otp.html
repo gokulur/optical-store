@@ -1,0 +1,13 @@
+<h2>Verify OTP</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <input type="text" name="otp" placeholder="Enter 6 digit OTP" required>
+    <button type="submit">Verify</button>
+</form>
+
+<a href="{% url 'users:resend_otp' %}">Resend OTP</a>
+
+{% for message in messages %}
+<p>{{ message }}</p>
+{% endfor %}

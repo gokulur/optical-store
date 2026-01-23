@@ -147,7 +147,29 @@ def verify_otp(request):
         else:
             messages.error(request, "Invalid OTP")
 
-    return render(request, "users/verify_otp.html")
+    return render(request, "verify_otp.html")
+
+
+
+def resend_otp(request):
+    user_id = request.session.get("verify_user")
+    if not user_id:
+        return redirect("users:register")
+
+    user = User.objects.get(id=user_id)
+
+    otp = str(random.randint(100000, 999999))
+    EmailOTP.objects.update_or_create(user=user, defaults={"otp": otp})
+
+    EmailMessage(
+        "New OTP Code",
+        f"Your new OTP is: {otp}",
+        to=[user.email]
+    ).send()
+
+    messages.success(request, "New OTP sent")
+    return redirect("users:verify_otp")
+
 
 
 def activate_account(request, uidb64, token):
