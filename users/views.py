@@ -588,69 +588,59 @@ def forgot_password(request):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            messages.error(request, "No account found with this email")
+            messages.error(request, "No account with this email")
             return redirect("users:forgot_password")
 
-        otp = str(random.randint(100000, 999999))
+        current_site = get_current_site(request)
 
-        PasswordResetOTP.objects.create(user=user, otp=otp)
+        subject = "Reset your password"
+        message = render_to_string("password_reset_email.html", {
+            "user": user,
+            "domain": current_site.domain,
+            "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+            "token": default_token_generator.make_token(user),
+        })
 
-        EmailMessage(
-            "Password Reset OTP",
-            f"""
-Hi {user.first_name},
+        EmailMessage(subject, message, to=[email]).send()
 
-Your password reset OTP is: {otp}
-
-Valid for 5 minutes.
-""",
-            to=[email]
-        ).send()
-
-        request.session["reset_user"] = user.id
-        messages.success(request, "OTP sent to your email")
-        return redirect("users:reset_verify")
+        messages.success(request, "Password reset link sent to your email")
+        return redirect("users:login")
 
     return render(request, "forgot_password.html")
 
 
+def password_reset_confirm(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except:
+        user = None
 
-def reset_verify(request):
-    user_id = request.session.get("reset_user")
-    if not user_id:
-        return redirect("users:forgot_password")
-
-    user = User.objects.get(id=user_id)
+    if user is None or not default_token_generator.check_token(user, token):
+        return HttpResponse("Invalid or expired link")
 
     if request.method == "POST":
-        otp_input = request.POST.get("otp")
-        new_password = request.POST.get("password")
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+
+        if new_password != confirm_password:
+            messages.error(request, "Passwords do not match")
+            return redirect(request.path)
 
         try:
-            record = PasswordResetOTP.objects.filter(user=user).latest("created_at")
-        except PasswordResetOTP.DoesNotExist:
-            messages.error(request, "OTP not found")
-            return redirect("users:forgot_password")
+            validate_password(new_password, user)
+        except ValidationError as e:
+            messages.error(request, " ".join(e.messages))
+            return redirect(request.path)
 
-        if record.is_expired():
-            messages.error(request, "OTP expired")
-            return redirect("users:forgot_password")
-
-        if otp_input != record.otp:
-            messages.error(request, "Invalid OTP")
-            return redirect("users:reset_verify")
-
-        # Update password securely
         user.set_password(new_password)
         user.save()
 
-        record.delete()
-        del request.session["reset_user"]
-
-        messages.success(request, "Password changed successfully!")
+        messages.success(request, "Password updated successfully. You can login now.")
         return redirect("users:login")
 
-    return render(request, "reset_verify.html")
+    return render(request, "password_reset_confirm.html", {"token": token})
+
 
 
 

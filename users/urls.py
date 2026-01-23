@@ -10,7 +10,7 @@ urlpatterns = [
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),
-    path("reset-verify/", views.reset_verify, name="reset_verify"),
+    path("reset/<uidb64>/<token>/", views.password_reset_confirm, name="password_reset_confirm"),
     path("verify-otp/", views.verify_otp, name="verify_otp"),
     path("resend-otp/", views.resend_otp, name="resend_otp"),
 
