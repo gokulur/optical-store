@@ -21,6 +21,8 @@ from django.contrib.auth import login, get_user_model
 from django.contrib import messages
 from .forms import RegisterForm
 from .models import CustomerProfile
+import random
+from .models import EmailOTP
 
 User = get_user_model()
 
@@ -39,6 +41,20 @@ from django.http import HttpResponse
 from .models import User, CustomerProfile
 
 
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import EmailMessage
+from django.http import HttpResponse
+
+from .forms import RegisterForm
+from .models import User, CustomerProfile
+
+
 def user_register(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
@@ -46,57 +62,92 @@ def user_register(request):
         if form.is_valid():
             email = form.cleaned_data["email"]
             password = form.cleaned_data["password"]
-            first_name = form.cleaned_data["first_name"]
-            last_name = form.cleaned_data["last_name"]
-            phone = form.cleaned_data.get("phone")
 
-            # Safe unique username
-            base_username = email.split("@")[0]
-            username = base_username
-            counter = 1
-
+            base = email.split("@")[0]
+            username = base
+            i = 1
             while User.objects.filter(username=username).exists():
-                username = f"{base_username}{counter}"
-                counter += 1
+                username = f"{base}{i}"
+                i += 1
 
             user = User.objects.create_user(
                 username=username,
                 email=email,
                 password=password,
-                first_name=first_name,
-                last_name=last_name,
-                phone=phone,
+                first_name=form.cleaned_data["first_name"],
+                last_name=form.cleaned_data["last_name"],
+                phone=form.cleaned_data.get("phone"),
                 is_active=False
             )
 
             CustomerProfile.objects.create(user=user)
 
-            # Email verification
-            current_site = get_current_site(request)
+            # -------- OTP GENERATE ----------
+            otp = str(random.randint(100000, 999999))
 
-            subject = "Verify your email - Eyese Optical"
-            message = render_to_string("users/email_verification.html", {
-                "user": user,
-                "domain": current_site.domain,
-                "uid": urlsafe_base64_encode(force_bytes(user.pk)),
-                "token": default_token_generator.make_token(user),
-            })
+            EmailOTP.objects.update_or_create(
+                user=user,
+                defaults={"otp": otp}
+            )
+
+            # -------- SEND EMAIL ----------
+            subject = "Your OTP Verification Code"
+            message = f"""
+Hi {user.first_name},
+
+Your OTP code is: {otp}
+
+This OTP is valid for 5 minutes.
+
+If you didn't register, ignore this.
+"""
 
             EmailMessage(subject, message, to=[email]).send()
 
-            messages.success(request, "Account created! Please verify your email.")
+            request.session["verify_user"] = user.id
+            messages.success(request, "OTP sent to your email")
+            return redirect("users:verify_otp")
+
+        for errs in form.errors.values():
+            for e in errs:
+                messages.error(request, e)
+
+    return render(request, "register.html")
+
+def verify_otp(request):
+    user_id = request.session.get("verify_user")
+
+    if not user_id:
+        return redirect("users:register")
+
+    user = User.objects.get(id=user_id)
+
+    if request.method == "POST":
+        otp_input = request.POST.get("otp")
+
+        try:
+            record = EmailOTP.objects.get(user=user)
+        except EmailOTP.DoesNotExist:
+            messages.error(request, "OTP not found")
+            return redirect("users:register")
+
+        if record.is_expired():
+            messages.error(request, "OTP expired. Resend OTP.")
+            return redirect("users:resend_otp")
+
+        if otp_input == record.otp:
+            user.is_active = True
+            user.save()
+
+            record.delete()
+            del request.session["verify_user"]
+
+            messages.success(request, "Account verified successfully!")
             return redirect("users:login")
-
         else:
-            # Show form errors cleanly
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, error)
+            messages.error(request, "Invalid OTP")
 
-    else:
-        form = RegisterForm()
-
-    return render(request, "register.html", {"form": form})
+    return render(request, "users/verify_otp.html")
 
 
 def activate_account(request, uidb64, token):
@@ -109,10 +160,11 @@ def activate_account(request, uidb64, token):
     if user and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        messages.success(request, "Email verified! You can now login.")
+        messages.success(request, "Email verified! Login now.")
         return redirect("users:login")
 
-    return HttpResponse("Verification link invalid or expired", status=400)
+    return HttpResponse("Invalid or expired link")
+
 
 
 

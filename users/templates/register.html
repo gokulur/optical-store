@@ -254,12 +254,14 @@
             <label>Confirm Password</label>
             <input type="password" name="password_confirm" id="password_confirm" required>
             <span class="error" id="confirm-error"></span>
-<!-- 
+
             <label>
-                <input type="checkbox" id="terms"> I agree to Terms & Conditions
-            </label> -->
+                <input type="checkbox" name="terms" id="terms">
+                I agree to Terms & Conditions
+            </label>
             <span class="error" id="terms-error"></span>
-            <a href="{% url 'users:login' %}">Already have an account? Login here</a>  
+
+            <a href="{% url 'users:login' %}">Already have an account? Login here</a>
             <br>
             <input type="submit" value="Register">
         </form>

@@ -1,7 +1,8 @@
 # users/models.py
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
+from django.utils import timezone
+from datetime import timedelta
 
 class User(AbstractUser):
     """Extended user model"""
@@ -113,3 +114,15 @@ class Address(models.Model):
         indexes = [
             models.Index(fields=['user']),
         ]
+
+
+class EmailOTP(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now=True)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timedelta(minutes=5)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.otp}"
