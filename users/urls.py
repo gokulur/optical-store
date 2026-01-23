@@ -13,6 +13,7 @@ urlpatterns = [
     path("reset/<uidb64>/<token>/", views.password_reset_confirm, name="password_reset_confirm"),
     path("verify-otp/", views.verify_otp, name="verify_otp"),
     path("resend-otp/", views.resend_otp, name="resend_otp"),
+ 
 
     # Dashboard & Profile
     path('dashboard/', views.dashboard, name='dashboard'),
