@@ -1,55 +1,887 @@
-{% extends 'base.html' %}
-{% load static %}
+ 
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-{% block title %}Home - Eyese Optical & Eyeglasses{% endblock %}
+<style>
+    :root {
+        --font-heading: 'Cormorant Garamond', serif;
+        --font-body: 'Inter', sans-serif;
+        --color-primary: #1a1a1a;
+        --color-accent: #c9a961;
+        --color-text: #333;
+        --color-light: #f8f8f8;
+    }
 
-{% block content %}
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-<!-- Hero Carousel -->
-<section class="hero-carousel">
-    <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+    body {
+        font-family: var(--font-body);
+        color: var(--color-text);
+        overflow-x: hidden;
+    }
+
+    /* ==================== HERO CAROUSEL ==================== */
+    .hero-section {
+        position: relative;
+        height: 100vh;
+        min-height: 700px;
+        overflow: hidden;
+    }
+
+    .hero-carousel {
+        height: 100%;
+    }
+
+    .carousel-item {
+        height: 100vh;
+        min-height: 700px;
+    }
+
+    .hero-slide {
+        height: 100%;
+        position: relative;
+        display: flex;
+        align-items: center;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .hero-slide::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 100%);
+        z-index: 1;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        color: white;
+        animation: fadeInUp 1s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .hero-title {
+        font-family: var(--font-heading);
+        font-size: clamp(3rem, 8vw, 7rem);
+        font-weight: 300;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        letter-spacing: -0.02em;
+    }
+
+    .hero-subtitle {
+        font-size: clamp(1.1rem, 2vw, 1.5rem);
+        font-weight: 300;
+        margin-bottom: 2.5rem;
+        max-width: 600px;
+        opacity: 0.95;
+        line-height: 1.6;
+    }
+
+    .hero-btn {
+        display: inline-block;
+        padding: 18px 45px;
+        background: white;
+        color: var(--color-primary);
+        text-decoration: none;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        border: 2px solid white;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-btn::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--color-accent);
+        transform: translateX(-100%);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: -1;
+    }
+
+    .hero-btn:hover {
+        color: white;
+        border-color: var(--color-accent);
+    }
+
+    .hero-btn:hover::before {
+        transform: translateX(0);
+    }
+
+    /* Featured Product Integration */
+    .hero-featured-product {
+        margin-top: 3rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        animation: fadeInUp 1s ease-out 0.3s both;
+    }
+
+    .hero-product-price {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--color-accent);
+    }
+
+    .hero-product-link {
+        color: white;
+        text-decoration: none;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 1px solid white;
+        transition: all 0.3s;
+    }
+
+    .hero-product-link:hover {
+        color: var(--color-accent);
+        border-color: var(--color-accent);
+    }
+
+    /* Carousel Controls */
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 70px;
+        height: 70px;
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 50%;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 1;
+        transition: all 0.3s;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .carousel-control-prev {
+        left: 40px;
+    }
+
+    .carousel-control-next {
+        right: 40px;
+    }
+
+    .carousel-control-prev:hover,
+    .carousel-control-next:hover {
+        background: rgba(255,255,255,0.2);
+    }
+
+    .carousel-indicators {
+        bottom: 40px;
+        gap: 10px;
+    }
+
+    .carousel-indicators button {
+        width: 50px;
+        height: 3px;
+        border: none;
+        border-radius: 0;
+        background: rgba(255,255,255,0.4);
+        transition: all 0.3s;
+    }
+
+    .carousel-indicators button.active {
+        background: white;
+        width: 80px;
+    }
+
+    /* ==================== CATEGORIES SECTION ==================== */
+    .categories-section {
+        padding: 120px 0;
+        background: white;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 80px;
+    }
+
+    .section-title {
+        font-family: var(--font-heading);
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 400;
+        margin-bottom: 1rem;
+        color: var(--color-primary);
+    }
+
+    .section-subtitle {
+        font-size: 1.1rem;
+        color: #666;
+        font-weight: 300;
+    }
+
+    .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+
+    .category-card {
+        position: relative;
+        height: 450px;
+        overflow: hidden;
+        text-decoration: none;
+        display: block;
+        cursor: pointer;
+    }
+
+    .category-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 100%);
+        z-index: 2;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .category-card:hover::before {
+        background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 100%);
+    }
+
+    .category-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .category-card:hover .category-image {
+        transform: scale(1.08);
+    }
+
+    .category-content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 40px 30px;
+        z-index: 3;
+        color: white;
+        transform: translateY(0);
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .category-card:hover .category-content {
+        transform: translateY(-10px);
+    }
+
+    .category-name {
+        font-family: var(--font-heading);
+        font-size: 2rem;
+        font-weight: 400;
+        margin-bottom: 0.5rem;
+    }
+
+    .category-description {
+        font-size: 0.95rem;
+        opacity: 0.9;
+        font-weight: 300;
+    }
+
+    .category-card .explore-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 15px;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0;
+        transform: translateX(-10px);
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .category-card:hover .explore-link {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* ==================== FEATURED PRODUCTS ==================== */
+    .featured-section {
+        padding: 120px 0;
+        background: var(--color-light);
+    }
+
+    .section-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 60px;
+    }
+
+    .view-all-link {
+        color: var(--color-primary);
+        text-decoration: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        letter-spacing: 1px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s;
+    }
+
+    .view-all-link:hover {
+        color: var(--color-accent);
+        gap: 15px;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 30px;
+    }
+
+    .product-card {
+        background: white;
+        text-decoration: none;
+        display: block;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid transparent;
+    }
+
+    .product-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        border-color: #e0e0e0;
+    }
+
+    .product-image-wrapper {
+        position: relative;
+        aspect-ratio: 1;
+        background: #fafafa;
+        overflow: hidden;
+    }
+
+    .product-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        padding: 30px;
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .product-card:hover .product-image {
+        transform: scale(1.05);
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: var(--color-accent);
+        color: white;
+        padding: 6px 14px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+
+    .wishlist-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 45px;
+        height: 45px;
+        background: white;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .product-card:hover .wishlist-btn {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .wishlist-btn:hover {
+        background: var(--color-accent);
+        color: white;
+    }
+
+    .product-info {
+        padding: 25px 20px;
+    }
+
+    .product-brand {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: #999;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .product-name {
+        font-size: 1.1rem;
+        color: var(--color-primary);
+        margin-bottom: 12px;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+
+    .product-price {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .current-price {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--color-primary);
+    }
+
+    .original-price {
+        font-size: 1rem;
+        color: #999;
+        text-decoration: line-through;
+    }
+
+    .add-to-cart-btn {
+        width: 100%;
+        padding: 14px;
+        background: var(--color-primary);
+        color: white;
+        border: 2px solid var(--color-primary);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.3s;
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    .product-card:hover .add-to-cart-btn {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .add-to-cart-btn:hover {
+        background: white;
+        color: var(--color-primary);
+    }
+
+    /* ==================== BRANDS SECTION ==================== */
+    .brands-section {
+        padding: 120px 0;
+        background: white;
+    }
+
+    .brands-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 30px;
+        margin-bottom: 60px;
+    }
+
+    .brand-card {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e0e0e0;
+        text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        background: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .brand-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--color-primary);
+        transform: translateY(100%);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .brand-card:hover {
+        border-color: var(--color-primary);
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+    }
+
+    .brand-card:hover::before {
+        transform: translateY(0);
+    }
+
+    .brand-logo {
+        max-width: 70%;
+        max-height: 50px;
+        object-fit: contain;
+        filter: grayscale(100%) opacity(0.6);
+        transition: all 0.4s;
+        position: relative;
+        z-index: 2;
+    }
+
+    .brand-card:hover .brand-logo {
+        filter: grayscale(0%) opacity(1) brightness(0) invert(1);
+    }
+
+    .brand-name {
+        font-weight: 600;
+        color: var(--color-primary);
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        letter-spacing: 1px;
+        position: relative;
+        z-index: 2;
+        transition: color 0.4s;
+    }
+
+    .brand-card:hover .brand-name {
+        color: white;
+    }
+
+    /* ==================== EYE TEST BANNER ==================== */
+    .eye-test-section {
+        position: relative;
+        padding: 150px 0;
+        background-image: url('https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=1920');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+
+    .eye-test-section::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(26,26,26,0.9) 0%, rgba(26,26,26,0.7) 100%);
+    }
+
+    .eye-test-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        color: white;
+    }
+
+    .eye-test-title {
+        font-family: var(--font-heading);
+        font-size: clamp(2.5rem, 5vw, 4.5rem);
+        font-weight: 400;
+        margin-bottom: 1.5rem;
+    }
+
+    .eye-test-description {
+        font-size: 1.2rem;
+        font-weight: 300;
+        margin-bottom: 3rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        opacity: 0.95;
+    }
+
+    .book-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 50px;
+        background: var(--color-accent);
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        letter-spacing: 1.5px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid var(--color-accent);
+    }
+
+    .book-btn:hover {
+        background: transparent;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(201, 169, 97, 0.3);
+    }
+
+    /* ==================== NEWSLETTER ==================== */
+    .newsletter-section {
+        padding: 100px 0;
+        background: var(--color-light);
+    }
+
+    .newsletter-content {
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .newsletter-title {
+        font-family: var(--font-heading);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: var(--color-primary);
+    }
+
+    .newsletter-description {
+        color: #666;
+        margin-bottom: 2.5rem;
+        font-size: 1.05rem;
+    }
+
+    .newsletter-form {
+        display: flex;
+        gap: 15px;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .newsletter-input {
+        flex: 1;
+        padding: 18px 25px;
+        border: 2px solid #e0e0e0;
+        font-size: 1rem;
+        transition: all 0.3s;
+        font-family: var(--font-body);
+    }
+
+    .newsletter-input:focus {
+        outline: none;
+        border-color: var(--color-primary);
+    }
+
+    .newsletter-submit {
+        padding: 18px 40px;
+        background: var(--color-primary);
+        color: white;
+        border: 2px solid var(--color-primary);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .newsletter-submit:hover {
+        background: white;
+        color: var(--color-primary);
+    }
+
+    /* ==================== CHAT SUPPORT ==================== */
+    .chat-widget {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 1000;
+    }
+
+    .chat-button {
+        width: 65px;
+        height: 65px;
+        background: var(--color-accent);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 8px 25px rgba(201, 169, 97, 0.4);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .chat-button:hover {
+        transform: scale(1.1) rotate(10deg);
+        box-shadow: 0 12px 35px rgba(201, 169, 97, 0.5);
+    }
+
+    /* ==================== RESPONSIVE ==================== */
+    @media (max-width: 1200px) {
+        .categories-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .products-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .brands-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero-section {
+            min-height: 600px;
+        }
+        
+        .carousel-item {
+            min-height: 600px;
+        }
+        
+        .categories-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .category-card {
+            height: 350px;
+        }
+        
+        .products-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .brands-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        .carousel-control-prev,
+        .carousel-control-next {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .carousel-control-prev {
+            left: 20px;
+        }
+        
+        .carousel-control-next {
+            right: 20px;
+        }
+        
+        .section-top {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        
+        .newsletter-form {
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .categories-grid,
+        .products-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .brands-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    /* ==================== ANIMATIONS ==================== */
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .scroll-reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .scroll-reveal.revealed {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>
+ 
+<!-- ==================== HERO CAROUSEL ==================== -->
+<section class="hero-section">
+    <div id="heroCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel" data-bs-interval="6000">
         <div class="carousel-indicators">
             <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
             <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
         </div>
         
         <div class="carousel-inner">
-            <!-- Slide 1 -->
+            <!-- Slide 1: New Arrivals -->
             <div class="carousel-item active">
-                <div class="hero-slide" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 600px;">
-                    <div class="container h-100">
-                        <div class="row h-100 align-items-center">
-                            <div class="col-lg-6 text-white">
-                                <h1 class="display-3 fw-bold mb-3" style="font-family: var(--font-heading);">
-                                    Discover Your Perfect Look
-                                </h1>
-                                <p class="lead mb-4">
-                                    Premium eyewear collection crafted for style and comfort
-                                </p>
-                                <a href="{% url 'catalog:sunglasses_list' %}" class="btn btn-primary-custom btn-lg">
-                                    Shop Collection
-                                </a>
+                <div class="hero-slide" style="background-image: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1509695507497-903c140c43b0?w=1920');">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-7">
+                                <div class="hero-content">
+                                    <h1 class="hero-title">New Arrivals<br>2025 Collection</h1>
+                                    <p class="hero-subtitle">Discover the latest in premium eyewear design. Handcrafted frames that blend timeless elegance with contemporary style.</p>
+                                    <a href=" " class="hero-btn">Explore Collection</a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Slide 2 -->
+            <!-- Slide 2: Designer Sunglasses -->
             <div class="carousel-item">
-                <div class="hero-slide" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); min-height: 600px;">
-                    <div class="container h-100">
-                        <div class="row h-100 align-items-center">
-                            <div class="col-lg-6 text-white">
-                                <h1 class="display-3 fw-bold mb-3" style="font-family: var(--font-heading);">
-                                    Summer Collection
-                                </h1>
-                                <p class="lead mb-4">
-                                    Up to 50% off on selected designer frames
-                                </p>
-                                <a href="{% url 'catalog:eyeglasses_list' %}" class="btn btn-primary-custom btn-lg">
-                                    Shop Sale
-                                </a>
+                <div class="hero-slide" style="background-image: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1556306535-0f09a537f0a3?w=1920');">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-7">
+                                <div class="hero-content">
+                                    <h1 class="hero-title">Designer<br>Sunglasses</h1>
+                                    <p class="hero-subtitle">Elevate your style with luxury eyewear from world-renowned brands. UV protection meets unparalleled sophistication.</p>
+                                    <a href="{% url 'catalog:sunglasses_list' %}" class="hero-btn">Shop Sunglasses</a>
+                                    
+                                    <!-- Featured Product Integration -->
+                                    <div class="hero-featured-product">
+                                        <span class="hero-product-price">From 899 QAR</span>
+                                        <a href="{% url 'catalog:brand_detail' 'ray-ban' %}" class="hero-product-link">View Ray-Ban Collection →</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: Sale -->
+            <div class="carousel-item">
+                <div class="hero-slide" style="background-image: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=1920');">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-7">
+                                <div class="hero-content">
+                                    <h1 class="hero-title">Summer Sale<br>Up to 50% Off</h1>
+                                    <p class="hero-subtitle">Limited time offer on selected designer frames and sunglasses. Exceptional quality at extraordinary prices.</p>
+                                    <a href=" " class="hero-btn">Shop Sale</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -58,264 +890,306 @@
         </div>
 
         <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
         </button>
         <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
         </button>
     </div>
 </section>
 
-<!-- Category Section -->
-<section class="py-5">
+<!-- ==================== CATEGORIES ==================== -->
+<section class="categories-section">
     <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold" style="font-family: var(--font-heading);">
-                Shop by Category
-            </h2>
-            <p class="text-muted">Find the perfect eyewear for every occasion</p>
+        <div class="section-header scroll-reveal">
+            <h2 class="section-title">Shop by Category</h2>
+            <p class="section-subtitle">Find your perfect eyewear across our curated collections</p>
         </div>
 
-        <div class="row g-4">
+        <div class="categories-grid">
+            <!-- New Arrivals -->
+            <a href=" " class="category-card scroll-reveal">
+                <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800" alt="New Arrivals" class="category-image">
+                <div class="category-content">
+                    <h3 class="category-name">New Arrivals</h3>
+                    <p class="category-description">Latest collection</p>
+                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </a>
+
             <!-- Sunglasses -->
-            <div class="col-md-6 col-lg-4">
-                <a href="{% url 'catalog:sunglasses_list' %}" class="category-card">
-                    <div class="card border-0 overflow-hidden h-100" style="border-radius: 0;">
-                        <div class="position-relative" style="height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                            <div class="position-absolute bottom-0 start-0 p-4 text-white w-100" style="background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);">
-                                <h3 class="h4 fw-bold mb-2">Sunglasses</h3>
-                                <p class="mb-0 small">Protect your eyes in style</p>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
+            <a href="{% url 'catalog:sunglasses_list' %}" class="category-card scroll-reveal">
+                <img src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800" alt="Sunglasses" class="category-image">
+                <div class="category-content">
+                    <h3 class="category-name">Sunglasses</h3>
+                    <p class="category-description">UV protection in style</p>
+                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </a>
 
             <!-- Eyeglasses -->
-            <div class="col-md-6 col-lg-4">
-                <a href="{% url 'catalog:eyeglasses_list' %}" class="category-card">
-                    <div class="card border-0 overflow-hidden h-100" style="border-radius: 0;">
-                        <div class="position-relative" style="height: 400px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                            <div class="position-absolute bottom-0 start-0 p-4 text-white w-100" style="background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);">
-                                <h3 class="h4 fw-bold mb-2">Eyeglasses</h3>
-                                <p class="mb-0 small">See the world clearly</p>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
+            <a href="{% url 'catalog:eyeglasses_list' %}" class="category-card scroll-reveal">
+                <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=800" alt="Eyeglasses" class="category-image">
+                <div class="category-content">
+                    <h3 class="category-name">Eyeglasses</h3>
+                    <p class="category-description">Vision meets design</p>
+                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </a>
 
             <!-- Contact Lenses -->
-            <div class="col-md-6 col-lg-4">
-                <a href="{% url 'catalog:contact_lenses_list' %}" class="category-card">
-                    <div class="card border-0 overflow-hidden h-100" style="border-radius: 0;">
-                        <div class="position-relative" style="height: 400px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                            <div class="position-absolute bottom-0 start-0 p-4 text-white w-100" style="background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);">
-                                <h3 class="h4 fw-bold mb-2">Contact Lenses</h3>
-                                <p class="mb-0 small">Comfort meets clarity</p>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
+            <a href="{% url 'catalog:contact_lenses_list' %}" class="category-card scroll-reveal">
+                <img src="https://images.unsplash.com/photo-1588200908342-23b585c03e26?w=800" alt="Contact Lenses" class="category-image">
+                <div class="category-content">
+                    <h3 class="category-name">Contact Lenses</h3>
+                    <p class="category-description">Comfort & clarity</p>
+                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </a>
+
+            <!-- Accessories -->
+            <a href=" " class="category-card scroll-reveal">
+                <img src="https://images.unsplash.com/photo-1584308972272-9e4e7685e80f?w=800" alt="Accessories" class="category-image">
+                <div class="category-content">
+                    <h3 class="category-name">Accessories</h3>
+                    <p class="category-description">Complete your look</p>
+                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </a>
+
+            <!-- Brands -->
+            <a href="{% url 'catalog:brand_list' %}" class="category-card scroll-reveal">
+                <img src="https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=800" alt="Brands" class="category-image">
+                <div class="category-content">
+                    <h3 class="category-name">Brands</h3>
+                    <p class="category-description">Designer collections</p>
+                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </a>
+
+            <!-- Sale -->
+            <a href=" " class="category-card scroll-reveal">
+                <img src="https://images.unsplash.com/photo-1556306535-0f09a537f0a3?w=800" alt="Sale" class="category-image">
+                <div class="category-content">
+                    <h3 class="category-name">Sale</h3>
+                    <p class="category-description">Up to 50% off</p>
+                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </a>
+
+            <!-- Kids -->
+            <a href=" " class="category-card scroll-reveal">
+                <img src="https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?w=800" alt="Kids Eyewear" class="category-image">
+                <div class="category-content">
+                    <h3 class="category-name">Kids Eyewear</h3>
+                    <p class="category-description">Durable & fun</p>
+                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </a>
         </div>
     </div>
 </section>
 
-<!-- Featured Products -->
-<section class="py-5 bg-light">
+<!-- ==================== FEATURED PRODUCTS ==================== -->
+<section class="featured-section">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="h3 fw-bold mb-0" style="font-family: var(--font-heading);">Featured Products</h2>
-            <a href="{% url 'catalog:sunglasses_list' %}" class="text-decoration-none text-dark fw-bold">
-                View All <i class="fas fa-arrow-right ms-1"></i>
+        <div class="section-top scroll-reveal">
+            <div>
+                <h2 class="section-title">Featured Products</h2>
+                <p class="section-subtitle">Curated selection of our bestsellers</p>
+            </div>
+            <a href="{% url 'catalog:sunglasses_list' %}" class="view-all-link">
+                View All Products <i class="fas fa-arrow-right"></i>
             </a>
         </div>
 
-        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
-            {% for product in featured_products %}
-            <div class="col">
-                <div class="card h-100 border-0 shadow-sm product-card" style="border-radius: 0;">
-                    <!-- Product Image -->
-                    <div class="position-relative bg-white p-3" style="aspect-ratio: 1/1;">
-                        <a href="{% url 'catalog:product_detail' product.slug %}" class="d-flex align-items-center justify-content-center h-100">
-                            {% if product.images.first %}
-                            <img src="{{ product.images.first.image.url }}" 
-                                 alt="{{ product.name }}" 
-                                 class="img-fluid"
-                                 style="max-height: 100%; object-fit: contain;">
-                            {% else %}
-                            <div class="text-center text-muted">
-                                <i class="fas fa-glasses fa-3x mb-2"></i>
-                                <p class="mb-0 small">No Image</p>
-                            </div>
-                            {% endif %}
-                        </a>
-                        
-                        <!-- Wishlist Button -->
-                        <button class="btn btn-light rounded-circle position-absolute top-0 end-0 m-2 shadow-sm" 
-                                style="width: 40px; height: 40px; padding: 0;">
-                            <i class="far fa-heart"></i>
-                        </button>
-
+        <div class="products-grid">
+            {% for product in featured_products|slice:":8" %}
+            <a href="{% url 'catalog:product_detail' product.slug %}" class="product-card scroll-reveal">
+                <div class="product-image-wrapper">
+                    {% if product.images.first %}
+                    <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="product-image">
+                    {% else %}
+                    <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600" alt="{{ product.name }}" class="product-image">
+                    {% endif %}
+                    
+                    {% if product.compare_at_price %}
+                    <span class="product-badge">Sale</span>
+                    {% endif %}
+                    
+                    <button class="wishlist-btn" onclick="event.preventDefault(); toggleWishlist({{ product.id }})">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+                
+                <div class="product-info">
+                    <div class="product-brand">{{ product.brand.name }}</div>
+                    <h3 class="product-name">{{ product.name|truncatewords:6 }}</h3>
+                    <div class="product-price">
+                        <span class="current-price">{{ product.base_price }} QAR</span>
                         {% if product.compare_at_price %}
-                        <span class="badge bg-danger position-absolute top-0 start-0 m-2">
-                            Sale
-                        </span>
+                        <span class="original-price">{{ product.compare_at_price }} QAR</span>
                         {% endif %}
                     </div>
-
-                    <!-- Product Info -->
-                    <div class="card-body">
-                        <p class="text-muted small text-uppercase mb-1">{{ product.brand.name }}</p>
-                        <h6 class="card-title mb-2">
-                            <a href="{% url 'catalog:product_detail' product.slug %}" 
-                               class="text-dark text-decoration-none text-truncate d-block">
-                                {{ product.name }}
-                            </a>
-                        </h6>
-                        
-                        <!-- Price -->
-                        <div class="d-flex align-items-center gap-2 mb-3">
-                            <span class="fw-bold text-dark">{{ product.base_price }} QAR</span>
-                            {% if product.compare_at_price %}
-                            <span class="text-muted small text-decoration-line-through">
-                                {{ product.compare_at_price }} QAR
-                            </span>
-                            {% endif %}
-                        </div>
-
-                        <!-- Add to Cart Button -->
-                        <button class="btn btn-outline-custom w-100">
-                            <i class="fas fa-shopping-bag me-2"></i>Add to Cart
-                        </button>
-                    </div>
+                    <button class="add-to-cart-btn" onclick="event.preventDefault(); addToCart({{ product.id }})">
+                        <i class="fas fa-shopping-bag"></i> Add to Cart
+                    </button>
                 </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
     </div>
 </section>
 
-<!-- Brand Section -->
-<section class="py-5">
+<!-- ==================== BRANDS ==================== -->
+<section class="brands-section">
     <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="h3 fw-bold" style="font-family: var(--font-heading);">Shop by Brand</h2>
-            <p class="text-muted">Discover our premium eyewear brands</p>
+        <div class="section-header scroll-reveal">
+            <h2 class="section-title">Shop by Brand</h2>
+            <p class="section-subtitle">Discover our premium eyewear collections</p>
         </div>
 
-        <div class="row row-cols-3 row-cols-md-4 row-cols-lg-6 g-4">
-            {% for brand in brands %}
-            <div class="col">
-                <a href="{% url 'catalog:brand_detail' brand.slug %}" 
-                   class="d-flex align-items-center justify-content-center p-3 text-decoration-none border rounded"
-                   style="height: 100px; transition: all 0.3s;">
-                    {% if brand.logo %}
-                    <img src="{{ brand.logo.url }}" 
-                         alt="{{ brand.name }}"
-                         class="img-fluid"
-                         style="max-height: 50px; filter: grayscale(100%); opacity: 0.7; transition: all 0.3s;">
-                    {% else %}
-                    <span class="fw-bold text-uppercase text-muted">{{ brand.name }}</span>
-                    {% endif %}
-                </a>
-            </div>
-            {% endfor %}
+        <div class="brands-grid">
+            <a href="{% url 'catalog:brand_detail' 'ray-ban' %}" class="brand-card scroll-reveal">
+                <span class="brand-name">Ray-Ban</span>
+            </a>
+            <a href="{% url 'catalog:brand_detail' 'oakley' %}" class="brand-card scroll-reveal">
+                <span class="brand-name">Oakley</span>
+            </a>
+            <a href="{% url 'catalog:brand_detail' 'gucci' %}" class="brand-card scroll-reveal">
+                <span class="brand-name">Gucci</span>
+            </a>
+            <a href="{% url 'catalog:brand_detail' 'prada' %}" class="brand-card scroll-reveal">
+                <span class="brand-name">Prada</span>
+            </a>
+            <a href="{% url 'catalog:brand_detail' 'versace' %}" class="brand-card scroll-reveal">
+                <span class="brand-name">Versace</span>
+            </a>
+            <a href="{% url 'catalog:brand_detail' 'vogue' %}" class="brand-card scroll-reveal">
+                <span class="brand-name">Vogue</span>
+            </a>
+            <a href="{% url 'catalog:brand_detail' 'burberry' %}" class="brand-card scroll-reveal">
+                <span class="brand-name">Burberry</span>
+            </a>
+            <a href="{% url 'catalog:brand_detail' 'carrera' %}" class="brand-card scroll-reveal">
+                <span class="brand-name">Carrera</span>
+            </a>
+            <a href="{% url 'catalog:brand_detail' 'emporio-armani' %}" class="brand-card scroll-reveal">
+                <span class="brand-name">Emporio Armani</span>
+            </a>
+            <a href="{% url 'catalog:brand_detail' 'michael-kors' %}" class="brand-card scroll-reveal">
+                <span class="brand-name">Michael Kors</span>
+            </a>
+            <a href="{% url 'catalog:brand_detail' 'tom-ford' %}" class="brand-card scroll-reveal">
+                <span class="brand-name">Tom Ford</span>
+            </a>
+            <a href="{% url 'catalog:brand_detail' 'dolce-gabbana' %}" class="brand-card scroll-reveal">
+                <span class="brand-name">Dolce & Gabbana</span>
+            </a>
         </div>
 
-        <div class="text-center mt-5">
-            <a href="{% url 'catalog:brand_list' %}" class="btn btn-outline-custom">
-                View All Brands
+        <div class="text-center scroll-reveal">
+            <a href="{% url 'catalog:brand_list' %}" class="view-all-link">
+                View All Brands <i class="fas fa-arrow-right"></i>
             </a>
         </div>
     </div>
 </section>
 
-<!-- Eye Test Banner -->
-<section class="py-5 text-white text-center" 
-         style="background: linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 100%), url('https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=1920') center/cover;">
-    <div class="container py-5">
-        <h2 class="display-5 fw-bold mb-3" style="font-family: var(--font-heading);">
-            Book Your Free Eye Test
-        </h2>
-        <p class="lead mb-4" style="max-width: 600px; margin: 0 auto;">
-            Visit our clinics for a comprehensive eye examination by certified optometrists
-        </p>
-        <a href="#" class="btn btn-primary-custom btn-lg">
-            <i class="fas fa-calendar-check me-2"></i>Book Appointment
-        </a>
-    </div>
-</section>
-
-<!-- Newsletter -->
-<section class="py-5 bg-light">
+<!-- ==================== EYE TEST BANNER ==================== -->
+<section class="eye-test-section">
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-6 text-center">
-                <h2 class="h3 fw-bold mb-3" style="font-family: var(--font-heading);">
-                    Stay Updated
-                </h2>
-                <p class="text-muted mb-4">
-                    Subscribe to get exclusive offers and latest updates
-                </p>
-                <form class="d-flex gap-2">
-                    <input type="email" 
-                           class="form-control form-control-lg" 
-                           placeholder="Enter your email"
-                           style="border-radius: 0;">
-                    <button type="submit" class="btn btn-primary-custom">
-                        Subscribe
-                    </button>
-                </form>
-            </div>
+        <div class="eye-test-content scroll-reveal">
+            <h2 class="eye-test-title">Book Your Free Eye Test</h2>
+            <p class="eye-test-description">Visit our clinics for a comprehensive eye examination by certified optometrists. Professional care for your vision health.</p>
+            <a href=" " class="book-btn">
+                <i class="fas fa-calendar-check"></i> Book Appointment
+            </a>
         </div>
     </div>
 </section>
 
-<style>
-    .category-card {
-        text-decoration: none;
-        display: block;
-        transition: transform 0.3s;
+<!-- ==================== NEWSLETTER ==================== -->
+<section class="newsletter-section">
+    <div class="container">
+        <div class="newsletter-content scroll-reveal">
+            <h2 class="newsletter-title">Stay Connected</h2>
+            <p class="newsletter-description">Subscribe to receive exclusive offers, new arrivals, and eyewear insights</p>
+            <form method="post" action=" " class="newsletter-form">
+                {% csrf_token %}
+                <input type="email" name="email" class="newsletter-input" placeholder="Enter your email address" required>
+                <button type="submit" class="newsletter-submit">Subscribe</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== CHAT SUPPORT ==================== -->
+<div class="chat-widget">
+    <button class="chat-button" onclick="openChat()">
+        <i class="fas fa-comments"></i>
+    </button>
+</div>
+
+ 
+<script>
+    // Scroll Reveal Animation
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.scroll-reveal').forEach(el => {
+        observer.observe(el);
+    });
+
+    // Wishlist Toggle
+    function toggleWishlist(productId) {
+        const icon = event.currentTarget.querySelector('i');
+        icon.classList.toggle('far');
+        icon.classList.toggle('fas');
+        
+        // Add your wishlist API call here
+        console.log('Toggle wishlist for product:', productId);
     }
 
-    .category-card:hover {
-        transform: translateY(-5px);
+    // Add to Cart
+    function addToCart(productId) {
+        // Add your cart API call here
+        console.log('Add to cart product:', productId);
+        
+        // Show notification
+        alert('Product added to cart!');
     }
 
-    .product-card {
-        transition: all 0.3s;
+    // Chat Widget
+    function openChat() {
+        // Implement your chat functionality here
+        console.log('Opening chat...');
     }
 
-    .product-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
-    }
-
-    .product-card img {
-        transition: transform 0.3s;
-    }
-
-    .product-card:hover img {
-        transform: scale(1.05);
-    }
-
-    .hero-slide {
-        display: flex;
-        align-items: center;
-    }
-
-    @media (max-width: 991px) {
-        .hero-slide {
-            min-height: 400px !important;
-            text-align: center;
-        }
-
-        .hero-slide h1 {
-            font-size: 2rem !important;
-        }
-    }
-</style>
-
-{% endblock %}
+    // Smooth scroll for anchors
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+</script>
+ 

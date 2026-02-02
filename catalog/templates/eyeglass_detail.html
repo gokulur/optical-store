@@ -4,7 +4,7 @@
 
 {% block content %}
 <style>
-    /* Copy all the lens modal styles from the eyeglass_detail document */
+    /* Lens Modal Styles */
     .lens-modal {
         display: none;
         position: fixed;
@@ -44,6 +44,7 @@
     
     .lens-modal-content h2 {
         margin-bottom: 20px;
+        clear: both;
     }
     
     .lens-categories {
@@ -103,7 +104,9 @@
     }
     
     .lens-option-card input[type="radio"] {
-        margin-right: 10px;
+        position: absolute;
+        top: 20px;
+        left: 20px;
     }
     
     .lens-option-card.selected {
@@ -116,6 +119,7 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 10px;
+        margin-left: 30px;
     }
     
     .lens-header h4 {
@@ -132,13 +136,13 @@
     .lens-option-card .index {
         color: #666;
         font-size: 14px;
-        margin: 5px 0;
+        margin: 5px 0 5px 30px;
     }
     
     .lens-option-card .features {
         list-style: none;
         padding: 0;
-        margin: 10px 0;
+        margin: 10px 0 10px 30px;
     }
     
     .lens-option-card .features li {
@@ -157,6 +161,7 @@
         margin-top: 15px;
         padding-top: 15px;
         border-top: 1px solid #e0e0e0;
+        margin-left: 30px;
     }
     
     .lens-option-card .addons label {
@@ -164,6 +169,11 @@
         padding: 6px 0;
         font-size: 14px;
         cursor: pointer;
+    }
+    
+    .lens-option-card .addons input[type="radio"] {
+        position: static;
+        margin-right: 8px;
     }
     
     .power-selection-grid {
@@ -180,11 +190,19 @@
         text-align: center;
         cursor: pointer;
         transition: all 0.3s;
+        display: block;
     }
     
     .power-selection-grid label:hover {
         border-color: #000;
         background: #f9f9f9;
+    }
+    
+    .power-selection-grid input[type="radio"]:checked + label,
+    .power-selection-grid label:has(input:checked) {
+        border-color: #000;
+        background: #000;
+        color: #fff;
     }
     
     .prescription-section {
@@ -259,6 +277,11 @@
         background: #333;
     }
     
+    .btn-confirm-lens:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+    
     @media (max-width: 768px) {
         .lens-modal-content {
             width: 98%;
@@ -269,18 +292,47 @@
         .power-selection-grid {
             grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
         }
+        
+        .prescription-form {
+            overflow-x: auto;
+        }
     }
 </style>
 
-<!-- Use your existing product detail HTML structure from the previous template -->
-  <section class="shopify-section section">
+<!-- Main Product Section -->
+<main class="content-for-layout focus-none" id="xo-main-content" role="main" tabindex="-1">
+    <!-- Breadcrumb -->
+    <section class="shopify-section section">
+        <div class="xo-section color-background-1" style="--margin: 0;--pt: 15;--pb: 15;">
+            <xo-container class="xo-container--box">
+                <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+                    <ol class="breadcrumb__list" style="--justify:flex-start">
+                        <li class="breadcrumb__item">
+                            <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                            <span class="breadcrumb__separator">/</span>
+                        </li>
+                        <li class="breadcrumb__item">
+                            <a class="breadcrumb__link" href="{% url 'catalog:eyeglasses_list' %}">Eyeglasses</a>
+                            <span class="breadcrumb__separator">/</span>
+                        </li>
+                        <li class="breadcrumb__item breadcrumb__item--current">
+                            <a aria-current="page" class="breadcrumb__link breadcrumb--current">{{ product.name }}</a>
+                        </li>
+                    </ol>
+                </nav>
+            </xo-container>
+        </div>
+    </section>
+
+    <!-- Product Detail Section -->
+    <section class="shopify-section section">
         <div class="xo-section color-background-1" style="--margin: 0;--pt: 0;--pb: 0;">
             <xo-container class="xo-container--box">
                 <xo-grid>
                     <!-- Product Images -->
                     <xo-animate style="--xs: 12; --md: 7">
                         <!-- Desktop Gallery -->
-                        <div class="xo-product-info-media-style3" style="position: sticky;">
+                        <div class="xo-product-info-media-style3" style="position: sticky; top: 9.3rem;">
                             <xo-gallery aria-label="Gallery Viewer">
                                 <xo-carousel xo-name="product-information-desktop">
                                     <div class="xo-product-info-media-style3__top">
@@ -327,22 +379,6 @@
                                             </xo-carousel-list>
                                         </xo-carousel-inner>
                                         
-                                        <!-- Desktop Arrow Navigation -->
-                                        <xo-carousel-prev class="xo-product-info-media-style3__arrow xo-product-info-media-style3__arrow--left">
-                                            <button>
-                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" fill="currentColor"></path>
-                                                </svg>
-                                            </button>
-                                        </xo-carousel-prev>
-                                        <xo-carousel-next class="xo-product-info-media-style3__arrow xo-product-info-media-style3__arrow--right">
-                                            <button>
-                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c12.5-12.5 12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="currentColor"></path>
-                                                </svg>
-                                            </button>
-                                        </xo-carousel-next>
-                                        
                                         <!-- Desktop Thumbnails -->
                                         <xo-carousel-thumbnail class="xo-product-info-media-style3__thumbnails" xo-gap="10" xo-per-view="5">
                                             <xo-carousel-inner>
@@ -369,102 +405,6 @@
                                             </xo-carousel-inner>
                                         </xo-carousel-thumbnail>
                                     </div>
-                                </xo-carousel>
-                            </xo-gallery>
-                        </div>
-                        
-                        <!-- Mobile Gallery -->
-                        <div class="xo-product-info-media-mobile">
-                            <xo-gallery aria-label="Gallery Viewer">
-                                <xo-carousel xo-name="product-information-mobile">
-                                    <div class="xo-product-info-media-mobile__top">
-                                        <xo-carousel-inner>
-                                            <xo-carousel-list aria-label="Slider" role="list" style="height: fit-content">
-                                                <!-- Main Product Image Mobile -->
-                                                {% if product.image %}
-                                                <xo-carousel-slide class="xo-product-info-media-mobile__slide">
-                                                    <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
-                                                        <xo-gallery-item>
-                                                            <div class="xo-product-info-media-mobile__image">
-                                                                <div class="xo-media" style="--media-aspect-ratio: 1/1">
-                                                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                                        <img alt="{{ product.name }}" 
-                                                                             src="{{ product.image.url }}" 
-                                                                             loading="lazy"/>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </xo-gallery-item>
-                                                    </xo-image-zoom>
-                                                </xo-carousel-slide>
-                                                {% endif %}
-
-                                                <!-- Gallery Images Mobile -->
-                                                {% for image in product.images.all %}
-                                                <xo-carousel-slide class="xo-product-info-media-mobile__slide">
-                                                    <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
-                                                        <xo-gallery-item>
-                                                            <div class="xo-product-info-media-mobile__image">
-                                                                <div class="xo-media" style="--media-aspect-ratio: 1/1">
-                                                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                                        <img alt="{{ product.name }}" 
-                                                                             src="{{ image.image.url }}" 
-                                                                             loading="lazy"/>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </xo-gallery-item>
-                                                    </xo-image-zoom>
-                                                </xo-carousel-slide>
-                                                {% endfor %}
-                                            </xo-carousel-list>
-                                        </xo-carousel-inner>
-                                        
-                                        <!-- Mobile Arrow Navigation -->
-                                        <xo-carousel-prev class="xo-product-info-media-mobile__arrow xo-product-info-media-mobile__arrow--left">
-                                            <button>
-                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" fill="currentColor"></path>
-                                                </svg>
-                                            </button>
-                                        </xo-carousel-prev>
-                                        <xo-carousel-next class="xo-product-info-media-mobile__arrow xo-product-info-media-mobile__arrow--right">
-                                            <button>
-                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c12.5-12.5 12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="currentColor"></path>
-                                                </svg>
-                                            </button>
-                                        </xo-carousel-next>
-                                    </div>
-                                    
-                                    <!-- Mobile Pagination Dots -->
-                                    <xo-carousel-pagination class="xo-product-info-media-mobile__pagination"></xo-carousel-pagination>
-                                    
-                                    <!-- Mobile Thumbnails -->
-                                    <xo-carousel-thumbnail class="xo-product-info-media-mobile__thumbnails" xo-gap="10" xo-per-view="5">
-                                        <xo-carousel-inner style="padding-bottom: 0.1rem; margin-bottom: -0.1rem;">
-                                            <xo-carousel-list aria-label="Slider" role="list" style="padding-right: 0.2rem; margin-right: -0.2rem;">
-                                                {% if product.image %}
-                                                <xo-carousel-slide class="xo-product-info-media-mobile__thumb-slide">
-                                                    <div class="xo-media" style="--media-aspect-ratio: 1/1">
-                                                        <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                            <img src="{{ product.image.url }}" alt="thumbnail"/>
-                                                        </div>
-                                                    </div>
-                                                </xo-carousel-slide>
-                                                {% endif %}
-                                                {% for image in product.images.all %}
-                                                <xo-carousel-slide class="xo-product-info-media-mobile__thumb-slide">
-                                                    <div class="xo-media" style="--media-aspect-ratio: 1/1">
-                                                        <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                            <img src="{{ image.image.url }}" alt="thumbnail"/>
-                                                        </div>
-                                                    </div>
-                                                </xo-carousel-slide>
-                                                {% endfor %}
-                                            </xo-carousel-list>
-                                        </xo-carousel-inner>
-                                    </xo-carousel-thumbnail>
                                 </xo-carousel>
                             </xo-gallery>
                         </div>
@@ -516,38 +456,23 @@
                                 {{ product.description|linebreaksbr }}
                             </p>
 
-                            <!-- Color Selection for Contact Lenses -->
-                            {% if product.product_type == 'contact_lenses' and contact_lens %}
-                            <div style="padding-bottom: 20px;">
-                                <h3 style="font-size: 16px; margin-bottom: 15px;">Select Color:</h3>
-                                <div id="colorSwatches">
-                                    {% for color in colors %}
-                                    <div class="color-swatch {% if not color.is_active %}disabled{% endif %}" 
-                                         data-color-id="{{ color.id }}"
-                                         data-color-name="{{ color.name }}"
-                                         data-power-enabled="{{ color.power_enabled }}"
-                                         onclick="selectColor(this)">
-                                        <img src="{{ color.image.url }}" alt="{{ color.name }}"/>
-                                        <div class="color-swatch-name">{{ color.name }}</div>
-                                        {% if color.power_enabled %}
-                                        <span class="power-badge">Power Available</span>
-                                        {% else %}
-                                        <span class="power-badge" style="background: #fce4ec; color: #c2185b;">Plano Only</span>
-                                        {% endif %}
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            {% endif %}
-
                             <!-- Product Form -->
-                            <form method="POST" id="product_form_{{ product.id }}">
+                            <form method="POST" id="product_form_{{ product.id }}" action="{% url 'cart:add_eyeglass_to_cart' %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="product_id" value="{{ product.id }}">
-                                <input type="hidden" name="selected_color_id" id="selectedColorId">
                                 <input type="hidden" name="selected_lens_option" id="selectedLensOption">
-                                <input type="hidden" name="power_left" id="powerLeft">
-                                <input type="hidden" name="power_right" id="powerRight">
+                                <input type="hidden" name="lens_addon" id="selectedLensAddon">
+                                <input type="hidden" name="total_lens_price" id="totalLensPrice">
+                                
+                                <!-- Prescription Data -->
+                                <input type="hidden" name="right_sph" id="hiddenRightSph">
+                                <input type="hidden" name="right_cyl" id="hiddenRightCyl">
+                                <input type="hidden" name="right_axis" id="hiddenRightAxis">
+                                <input type="hidden" name="right_add" id="hiddenRightAdd">
+                                <input type="hidden" name="left_sph" id="hiddenLeftSph">
+                                <input type="hidden" name="left_cyl" id="hiddenLeftCyl">
+                                <input type="hidden" name="left_axis" id="hiddenLeftAxis">
+                                <input type="hidden" name="left_add" id="hiddenLeftAdd">
 
                                 <!-- Quantity -->
                                 <xo-cart-quantity class="xo-quantity-style2" style="--width: 13.5rem; --height: 5rem">
@@ -571,8 +496,7 @@
 
                                 <div class="xo-space xo-space--vertical" style="--space: 2.5rem"></div>
 
-                                <!-- Buttons for Sunglasses/Eyeglasses -->
-                                {% if product.product_type in 'sunglasses,eyeglasses' %}
+                                <!-- Select Lenses Button -->
                                 <button type="button" 
                                         class="xo-btn xo-btn--light xo-btn--primary xo-btn--block"
                                         onclick="openLensSelection()"
@@ -581,12 +505,12 @@
                                         <span class="xo-btn__text">Select Lenses</span>
                                     </span>
                                 </button>
-                                {% endif %}
 
                                 <!-- Add to Cart -->
                                 <button type="button" 
-                                        class="xo-btn xo-btn--light xo-btn--primary xo-btn--block add-to-cart-btn"
-                                        data-url="">
+                                        class="xo-btn xo-btn--light xo-btn--primary xo-btn--block"
+                                        onclick="addToCart()"
+                                        id="addToCartBtn">
                                     <span class="xo-btn__content">
                                         <span class="xo-btn__text">Add to Cart</span>
                                     </span>
@@ -596,7 +520,6 @@
 
                                 <!-- Buy Now -->
                                 <button type="submit" 
-                                        formaction=""
                                         class="shopify-payment-button__button"
                                         style="background: #000;">
                                     Buy it now
@@ -624,47 +547,9 @@
             </xo-container>
         </div>
     </section>
-<!-- This includes the breadcrumb, product images (desktop + mobile), product info, etc. -->
-
-<!-- Main Product Section - SAME AS BEFORE -->
-<main class="content-for-layout focus-none" id="xo-main-content" role="main" tabindex="-1">
-    <section class="shopify-section section">
-        <div class="xo-section color-background-1" style="--margin: 0;--pt: 15;--pb: 15;">
-            <xo-container class="xo-container--box">
-                <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
-                    <ol class="breadcrumb__list" style="--justify:flex-start">
-                        <li class="breadcrumb__item">
-                            <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
-                            <span class="breadcrumb__separator">/</span>
-                        </li>
-                        <li class="breadcrumb__item">
-                            <a class="breadcrumb__link" href="#">Eyeglasses</a>
-                            <span class="breadcrumb__separator">/</span>
-                        </li>
-                        <li class="breadcrumb__item breadcrumb__item--current">
-                            <a aria-current="page" class="breadcrumb__link breadcrumb--current">{{ product.name }}</a>
-                        </li>
-                    </ol>
-                </nav>
-            </xo-container>
-        </div>
-    </section>
-
-    <!-- Include product images and info sections from your theme here -->
-    <!-- The desktop/mobile gallery structure stays the same -->
-    
-    <!-- Add the Select Lenses button in the product info section -->
-    <!-- <button type="button" 
-            class="xo-btn xo-btn--light xo-btn--primary xo-btn--block"
-            onclick="openLensSelection()"
-            style="margin-bottom: 15px;">
-        <span class="xo-btn__content">
-            <span class="xo-btn__text">Select Lenses</span>
-        </span>
-    </button> -->
 </main>
 
-<!-- COMPREHENSIVE LENS SELECTION MODAL -->
+<!-- LENS SELECTION MODAL -->
 <div id="lensModal" class="lens-modal">
     <div class="lens-modal-content">
         <span class="close" onclick="closeLensModal()">&times;</span>
@@ -690,112 +575,102 @@
         <div id="single-vision" class="lens-category active">
             <h3>Single-Vision Lenses</h3>
             
-            <div class="lens-option-card">
-                <input type="radio" name="lens_choice" value="regular-basic" id="regular-basic">
-                <label for="regular-basic">
-                    <div class="lens-header">
-                        <h4>Regular Lens (Basic)</h4>
-                        <span class="price">150 QAR</span>
-                    </div>
-                    <p class="index">Index: 1.56</p>
-                    <ul class="features">
-                        <li>Anti-reflection coating</li>
-                        <li>Power Range: up to ±4.00 (CYL up to ±2.00)</li>
-                    </ul>
-                    <div class="addons">
-                        <label><input type="radio" name="regular-addon" value="0" checked> Regular (0 QAR)</label>
-                        <label><input type="radio" name="regular-addon" value="100"> Blue UV Protection (+100 QAR)</label>
-                        <label><input type="radio" name="regular-addon" value="100"> Photochromic (+100 QAR)</label>
-                        <label><input type="radio" name="regular-addon" value="100"> Tinted (+100 QAR)</label>
-                    </div>
-                </label>
+            <div class="lens-option-card" onclick="selectLensCard(this)">
+                <input type="radio" name="lens_choice" value="regular-basic" data-price="150" id="regular-basic">
+                <div class="lens-header">
+                    <h4>Regular Lens (Basic)</h4>
+                    <span class="price">150 QAR</span>
+                </div>
+                <p class="index">Index: 1.56</p>
+                <ul class="features">
+                    <li>Anti-reflection coating</li>
+                    <li>Power Range: up to ±4.00 (CYL up to ±2.00)</li>
+                </ul>
+                <div class="addons">
+                    <label><input type="radio" name="regular-addon" value="0" data-price="0" checked> Regular (0 QAR)</label>
+                    <label><input type="radio" name="regular-addon" value="blue-uv" data-price="100"> Blue UV Protection (+100 QAR)</label>
+                    <label><input type="radio" name="regular-addon" value="photochromic" data-price="100"> Photochromic (+100 QAR)</label>
+                    <label><input type="radio" name="regular-addon" value="tinted" data-price="100"> Tinted (+100 QAR)</label>
+                </div>
             </div>
             
-            <div class="lens-option-card">
-                <input type="radio" name="lens_choice" value="essilor-easy" id="essilor-easy">
-                <label for="essilor-easy">
-                    <div class="lens-header">
-                        <h4>Essilor Crizal Easy Pro</h4>
-                        <span class="price">270 QAR</span>
-                    </div>
-                    <p class="index">Index: 1.56</p>
-                    <ul class="features">
-                        <li>Anti-reflection & UV protection</li>
-                        <li>Easy cleaning</li>
-                        <li>Vision clarity</li>
-                        <li>Power Range: up to ±3.00 (CYL up to ±2.00)</li>
-                    </ul>
-                    <div class="addons">
-                        <label><input type="radio" name="essilor-addon" value="0" checked> Regular (0 QAR)</label>
-                        <label><input type="radio" name="essilor-addon" value="60"> Premium Blue Filtration (+60 QAR)</label>
-                        <label><input type="radio" name="essilor-addon" value="90"> Transition Classic (+90 QAR)</label>
-                        <label><input type="radio" name="essilor-addon" value="60"> Tinted (+60 QAR)</label>
-                    </div>
-                </label>
+            <div class="lens-option-card" onclick="selectLensCard(this)">
+                <input type="radio" name="lens_choice" value="essilor-easy" data-price="270" id="essilor-easy">
+                <div class="lens-header">
+                    <h4>Essilor Crizal Easy Pro</h4>
+                    <span class="price">270 QAR</span>
+                </div>
+                <p class="index">Index: 1.56</p>
+                <ul class="features">
+                    <li>Anti-reflection & UV protection</li>
+                    <li>Easy cleaning</li>
+                    <li>Vision clarity</li>
+                    <li>Power Range: up to ±3.00 (CYL up to ±2.00)</li>
+                </ul>
+                <div class="addons">
+                    <label><input type="radio" name="essilor-addon" value="0" data-price="0" checked> Regular (0 QAR)</label>
+                    <label><input type="radio" name="essilor-addon" value="blue-premium" data-price="60"> Premium Blue Filtration (+60 QAR)</label>
+                    <label><input type="radio" name="essilor-addon" value="transition" data-price="90"> Transition Classic (+90 QAR)</label>
+                    <label><input type="radio" name="essilor-addon" value="tinted" data-price="60"> Tinted (+60 QAR)</label>
+                </div>
             </div>
             
-            <div class="lens-option-card">
-                <input type="radio" name="lens_choice" value="essilor-sapphire" id="essilor-sapphire">
-                <label for="essilor-sapphire">
-                    <div class="lens-header">
-                        <h4>Essilor Crizal Sapphire</h4>
-                        <span class="price">525 QAR</span>
-                    </div>
-                    <p class="index">Index: 1.56</p>
-                    <ul class="features">
-                        <li>Anti-reflection & UV protection</li>
-                        <li>High transparency</li>
-                        <li>Durable resistance</li>
-                        <li>Easy cleaning</li>
-                        <li>Power Range: up to ±3.00 (CYL up to ±2.00)</li>
-                    </ul>
-                    <div class="addons">
-                        <label><input type="radio" name="sapphire-addon" value="0" checked> Regular (0 QAR)</label>
-                        <label><input type="radio" name="sapphire-addon" value="200"> Premium Blue Filtration (+200 QAR)</label>
-                        <label><input type="radio" name="sapphire-addon" value="850"> Transition Gen-S (+850 QAR)</label>
-                        <label><input type="radio" name="sapphire-addon" value="350"> Tinted (+350 QAR)</label>
-                    </div>
-                </label>
+            <div class="lens-option-card" onclick="selectLensCard(this)">
+                <input type="radio" name="lens_choice" value="essilor-sapphire" data-price="525" id="essilor-sapphire">
+                <div class="lens-header">
+                    <h4>Essilor Crizal Sapphire</h4>
+                    <span class="price">525 QAR</span>
+                </div>
+                <p class="index">Index: 1.56</p>
+                <ul class="features">
+                    <li>Anti-reflection & UV protection</li>
+                    <li>High transparency</li>
+                    <li>Durable resistance</li>
+                    <li>Easy cleaning</li>
+                    <li>Power Range: up to ±3.00 (CYL up to ±2.00)</li>
+                </ul>
+                <div class="addons">
+                    <label><input type="radio" name="sapphire-addon" value="0" data-price="0" checked> Regular (0 QAR)</label>
+                    <label><input type="radio" name="sapphire-addon" value="blue-premium" data-price="200"> Premium Blue Filtration (+200 QAR)</label>
+                    <label><input type="radio" name="sapphire-addon" value="transition-gen-s" data-price="850"> Transition Gen-S (+850 QAR)</label>
+                    <label><input type="radio" name="sapphire-addon" value="tinted" data-price="350"> Tinted (+350 QAR)</label>
+                </div>
             </div>
             
-            <div class="lens-option-card">
-                <input type="radio" name="lens_choice" value="prevencia" id="prevencia">
-                <label for="prevencia">
-                    <div class="lens-header">
-                        <h4>Essilor Crizal Prevencia (Computer Use)</h4>
-                        <span class="price">500 QAR</span>
-                    </div>
-                    <p class="index">Index: 1.50</p>
-                    <ul class="features">
-                        <li>Specialized for prolonged computer use</li>
-                        <li>Blue-violet light filtering</li>
-                        <li>Anti-reflection coating</li>
-                        <li>High clarity & durability</li>
-                        <li>Power Range: up to ±3.00 (CYL up to ±2.00)</li>
-                    </ul>
-                    <div class="addons">
-                        <label><input type="radio" name="prevencia-addon" value="0" checked> Regular (0 QAR)</label>
-                        <label><input type="radio" name="prevencia-addon" value="700"> Transition Gen-S (+700 QAR)</label>
-                        <label><input type="radio" name="prevencia-addon" value="220"> Tinted (+220 QAR)</label>
-                    </div>
-                </label>
+            <div class="lens-option-card" onclick="selectLensCard(this)">
+                <input type="radio" name="lens_choice" value="prevencia" data-price="500" id="prevencia">
+                <div class="lens-header">
+                    <h4>Essilor Crizal Prevencia (Computer Use)</h4>
+                    <span class="price">500 QAR</span>
+                </div>
+                <p class="index">Index: 1.50</p>
+                <ul class="features">
+                    <li>Specialized for prolonged computer use</li>
+                    <li>Blue-violet light filtering</li>
+                    <li>Anti-reflection coating</li>
+                    <li>High clarity & durability</li>
+                    <li>Power Range: up to ±3.00 (CYL up to ±2.00)</li>
+                </ul>
+                <div class="addons">
+                    <label><input type="radio" name="prevencia-addon" value="0" data-price="0" checked> Regular (0 QAR)</label>
+                    <label><input type="radio" name="prevencia-addon" value="transition-gen-s" data-price="700"> Transition Gen-S (+700 QAR)</label>
+                    <label><input type="radio" name="prevencia-addon" value="tinted" data-price="220"> Tinted (+220 QAR)</label>
+                </div>
             </div>
             
-            <div class="lens-option-card">
-                <input type="radio" name="lens_choice" value="thin-167" id="thin-167">
-                <label for="thin-167">
-                    <div class="lens-header">
-                        <h4>Essilor Super Thin 1.67 Crizal Rock Premium</h4>
-                        <span class="price">650 QAR</span>
-                    </div>
-                    <p class="index">Index: 1.67</p>
-                    <ul class="features">
-                        <li>Super thin design</li>
-                        <li>Anti-reflection & UV protection</li>
-                        <li>High durability</li>
-                        <li>Power Range: up to ±7.00 (CYL up to ±2.00)</li>
-                    </ul>
-                </label>
+            <div class="lens-option-card" onclick="selectLensCard(this)">
+                <input type="radio" name="lens_choice" value="thin-167" data-price="650" id="thin-167">
+                <div class="lens-header">
+                    <h4>Essilor Super Thin 1.67 Crizal Rock Premium</h4>
+                    <span class="price">650 QAR</span>
+                </div>
+                <p class="index">Index: 1.67</p>
+                <ul class="features">
+                    <li>Super thin design</li>
+                    <li>Anti-reflection & UV protection</li>
+                    <li>High durability</li>
+                    <li>Power Range: up to ±7.00 (CYL up to ±2.00)</li>
+                </ul>
             </div>
         </div>
         
@@ -803,71 +678,85 @@
         <div id="progressive" class="lens-category">
             <h3>Progressive & Bifocal Lenses</h3>
             
-            <div class="lens-option-card">
-                <input type="radio" name="lens_choice" value="regular-progressive" id="regular-progressive">
-                <label for="regular-progressive">
-                    <div class="lens-header">
-                        <h4>Regular Progressive</h4>
-                        <span class="price">250 QAR</span>
-                    </div>
-                    <p class="index">Index: 1.56</p>
-                    <ul class="features">
-                        <li>Standard progressive</li>
-                        <li>Anti-reflection</li>
-                        <li>Vision correction for near, intermediate, and far</li>
-                        <li>Power Range: up to ±6.00 (CYL up to ±4.00)</li>
-                    </ul>
-                    <div class="addons">
-                        <label><input type="radio" name="prog-addon" value="0" checked> Regular (0 QAR)</label>
-                        <label><input type="radio" name="prog-addon" value="100"> Blue UV Protection (+100 QAR)</label>
-                        <label><input type="radio" name="prog-addon" value="150"> Photochromic (+150 QAR)</label>
-                        <label><input type="radio" name="prog-addon" value="250"> 1.59 Index Unbreakable (+250 QAR)</label>
-                    </div>
-                </label>
+            <div class="lens-option-card" onclick="selectLensCard(this)">
+                <input type="radio" name="lens_choice" value="regular-progressive" data-price="250" id="regular-progressive">
+                <div class="lens-header">
+                    <h4>Regular Progressive</h4>
+                    <span class="price">250 QAR</span>
+                </div>
+                <p class="index">Index: 1.56</p>
+                <ul class="features">
+                    <li>Standard progressive</li>
+                    <li>Anti-reflection</li>
+                    <li>Vision correction for near, intermediate, and far</li>
+                    <li>Power Range: up to ±6.00 (CYL up to ±4.00)</li>
+                </ul>
+                <div class="addons">
+                    <label><input type="radio" name="prog-addon" value="0" data-price="0" checked> Regular (0 QAR)</label>
+                    <label><input type="radio" name="prog-addon" value="blue-uv" data-price="100"> Blue UV Protection (+100 QAR)</label>
+                    <label><input type="radio" name="prog-addon" value="photochromic" data-price="150"> Photochromic (+150 QAR)</label>
+                    <label><input type="radio" name="prog-addon" value="unbreakable" data-price="250"> 1.59 Index Unbreakable (+250 QAR)</label>
+                </div>
             </div>
             
-            <div class="lens-option-card">
-                <input type="radio" name="lens_choice" value="essilor-espace" id="essilor-espace">
-                <label for="essilor-espace">
-                    <div class="lens-header">
-                        <h4>Essilor Espace 1.56 Crizal Easy Pro</h4>
-                        <span class="price">600 QAR</span>
-                    </div>
-                    <p class="index">Index: 1.56</p>
-                    <ul class="features">
-                        <li>Wide vision area</li>
-                        <li>Clear distance and near vision</li>
-                        <li>Enhanced comfort</li>
-                    </ul>
-                    <div class="addons">
-                        <label><input type="radio" name="espace-addon" value="0" checked> Regular (0 QAR)</label>
-                        <label><input type="radio" name="espace-addon" value="400"> Blue UV + 1.60 Index (+400 QAR)</label>
-                        <label><input type="radio" name="espace-addon" value="630"> Transition Gen-S (+630 QAR)</label>
-                        <label><input type="radio" name="espace-addon" value="350"> 1.59 Unbreakable (+350 QAR)</label>
-                    </div>
-                </label>
+            <div class="lens-option-card" onclick="selectLensCard(this)">
+                <input type="radio" name="lens_choice" value="essilor-espace" data-price="600" id="essilor-espace">
+                <div class="lens-header">
+                    <h4>Essilor Espace 1.56 Crizal Easy Pro</h4>
+                    <span class="price">600 QAR</span>
+                </div>
+                <p class="index">Index: 1.56</p>
+                <ul class="features">
+                    <li>Wide vision area</li>
+                    <li>Clear distance and near vision</li>
+                    <li>Enhanced comfort</li>
+                </ul>
+                <div class="addons">
+                    <label><input type="radio" name="espace-addon" value="0" data-price="0" checked> Regular (0 QAR)</label>
+                    <label><input type="radio" name="espace-addon" value="blue-uv-160" data-price="400"> Blue UV + 1.60 Index (+400 QAR)</label>
+                    <label><input type="radio" name="espace-addon" value="transition-gen-s" data-price="630"> Transition Gen-S (+630 QAR)</label>
+                    <label><input type="radio" name="espace-addon" value="unbreakable" data-price="350"> 1.59 Unbreakable (+350 QAR)</label>
+                </div>
             </div>
             
-            <div class="lens-option-card">
-                <input type="radio" name="lens_choice" value="bifocal-ft28" id="bifocal-ft28">
-                <label for="bifocal-ft28">
-                    <div class="lens-header">
-                        <h4>Essilor FT28 / Kryptok 1.5 Bifocal Crizal Easy Pro</h4>
-                        <span class="price">450 QAR</span>
-                    </div>
-                    <p class="index">Index: 1.50</p>
-                    <ul class="features">
-                        <li>Clear near-far separation</li>
-                        <li>Anti-reflection</li>
-                        <li>Durable lens quality</li>
-                        <li>Easy adaptation</li>
-                    </ul>
-                    <div class="addons">
-                        <label><input type="radio" name="bifocal-addon" value="0" checked> Regular (0 QAR)</label>
-                        <label><input type="radio" name="bifocal-addon" value="250"> Blue UV Protection (+250 QAR)</label>
-                        <label><input type="radio" name="bifocal-addon" value="600"> Transition Gen-8 (+600 QAR)</label>
-                    </div>
-                </label>
+            <div class="lens-option-card" onclick="selectLensCard(this)">
+                <input type="radio" name="lens_choice" value="essilor-liberty" data-price="900" id="essilor-liberty">
+                <div class="lens-header">
+                    <h4>Essilor Liberty 3.0 1.56 Crizal Easy Pro</h4>
+                    <span class="price">900 QAR</span>
+                </div>
+                <p class="index">Index: 1.56</p>
+                <ul class="features">
+                    <li>Larger field of vision</li>
+                    <li>Sharp focus & better adaptation</li>
+                    <li>Power Range: up to ±7.00 / +5.00 (CYL up to ±4.00)</li>
+                </ul>
+                <div class="addons">
+                    <label><input type="radio" name="liberty-addon" value="0" data-price="0" checked> Regular (0 QAR)</label>
+                    <label><input type="radio" name="liberty-addon" value="blue-uv" data-price="220"> Blue UV Protection (+220 QAR)</label>
+                    <label><input type="radio" name="liberty-addon" value="transition-gen-s" data-price="650"> Transition Gen-S (+650 QAR)</label>
+                    <label><input type="radio" name="liberty-addon" value="unbreakable" data-price="400"> 1.59 Unbreakable (+400 QAR)</label>
+                </div>
+            </div>
+            
+            <div class="lens-option-card" onclick="selectLensCard(this)">
+                <input type="radio" name="lens_choice" value="bifocal-ft28" data-price="450" id="bifocal-ft28">
+                <div class="lens-header">
+                    <h4>Essilor FT28 / Kryptok 1.5 Bifocal Crizal Easy Pro</h4>
+                    <span class="price">450 QAR</span>
+                </div>
+                <p class="index">Index: 1.50</p>
+                <ul class="features">
+                    <li>Clear near-far separation</li>
+                    <li>Anti-reflection</li>
+                    <li>Durable lens quality</li>
+                    <li>Easy adaptation</li>
+                </ul>
+                <div class="addons">
+                    <label><input type="radio" name="bifocal-addon" value="0" data-price="0" checked> Regular (0 QAR)</label>
+                    <label><input type="radio" name="bifocal-addon" value="blue-uv" data-price="250"> Blue UV Protection (+250 QAR)</label>
+                    <label><input type="radio" name="bifocal-addon" value="transition-gen-8" data-price="600"> Transition Gen-8 (+600 QAR)</label>
+                </div>
             </div>
         </div>
         
@@ -876,16 +765,46 @@
             <h3>Reading Glasses</h3>
             <p>Select your reading power:</p>
             <div class="power-selection-grid">
-                <label><input type="radio" name="reading_power" value="0.75"> +0.75</label>
-                <label><input type="radio" name="reading_power" value="1.00"> +1.00</label>
-                <label><input type="radio" name="reading_power" value="1.25"> +1.25</label>
-                <label><input type="radio" name="reading_power" value="1.50"> +1.50</label>
-                <label><input type="radio" name="reading_power" value="1.75"> +1.75</label>
-                <label><input type="radio" name="reading_power" value="2.00"> +2.00</label>
-                <label><input type="radio" name="reading_power" value="2.25"> +2.25</label>
-                <label><input type="radio" name="reading_power" value="2.50"> +2.50</label>
-                <label><input type="radio" name="reading_power" value="2.75"> +2.75</label>
-                <label><input type="radio" name="reading_power" value="3.00"> +3.00</label>
+                <label>
+                    <input type="radio" name="reading_power" value="0.75" data-price="150">
+                    <span>+0.75</span>
+                </label>
+                <label>
+                    <input type="radio" name="reading_power" value="1.00" data-price="150">
+                    <span>+1.00</span>
+                </label>
+                <label>
+                    <input type="radio" name="reading_power" value="1.25" data-price="150">
+                    <span>+1.25</span>
+                </label>
+                <label>
+                    <input type="radio" name="reading_power" value="1.50" data-price="150">
+                    <span>+1.50</span>
+                </label>
+                <label>
+                    <input type="radio" name="reading_power" value="1.75" data-price="150">
+                    <span>+1.75</span>
+                </label>
+                <label>
+                    <input type="radio" name="reading_power" value="2.00" data-price="150">
+                    <span>+2.00</span>
+                </label>
+                <label>
+                    <input type="radio" name="reading_power" value="2.25" data-price="150">
+                    <span>+2.25</span>
+                </label>
+                <label>
+                    <input type="radio" name="reading_power" value="2.50" data-price="150">
+                    <span>+2.50</span>
+                </label>
+                <label>
+                    <input type="radio" name="reading_power" value="2.75" data-price="150">
+                    <span>+2.75</span>
+                </label>
+                <label>
+                    <input type="radio" name="reading_power" value="3.00" data-price="150">
+                    <span>+3.00</span>
+                </label>
             </div>
         </div>
         
@@ -893,54 +812,46 @@
         <div id="without" class="lens-category">
             <h3>Without Prescription Lenses</h3>
             
-            <div class="lens-option-card">
-                <input type="radio" name="lens_choice" value="clear-lens" id="clear-lens">
-                <label for="clear-lens">
-                    <div class="lens-header">
-                        <h4>Clear Lens</h4>
-                        <span class="price">100 QAR</span>
-                    </div>
-                    <p>Basic lens without power</p>
-                </label>
+            <div class="lens-option-card" onclick="selectLensCard(this)">
+                <input type="radio" name="lens_choice" value="clear-lens" data-price="100" id="clear-lens">
+                <div class="lens-header">
+                    <h4>Clear Lens</h4>
+                    <span class="price">100 QAR</span>
+                </div>
+                <p>Basic lens without power</p>
             </div>
             
-            <div class="lens-option-card">
-                <input type="radio" name="lens_choice" value="zero-blue" id="zero-blue">
-                <label for="zero-blue">
-                    <div class="lens-header">
-                        <h4>Zero Power Blue</h4>
-                        <span class="price">250 QAR</span>
-                    </div>
-                    <p>Blue light protection for screens</p>
-                </label>
+            <div class="lens-option-card" onclick="selectLensCard(this)">
+                <input type="radio" name="lens_choice" value="zero-blue" data-price="250" id="zero-blue">
+                <div class="lens-header">
+                    <h4>Zero Power Blue</h4>
+                    <span class="price">250 QAR</span>
+                </div>
+                <p>Blue light protection for screens</p>
             </div>
             
-            <div class="lens-option-card">
-                <input type="radio" name="lens_choice" value="crizal-premium" id="crizal-premium">
-                <label for="crizal-premium">
-                    <div class="lens-header">
-                        <h4>Essilor Crizal Premium</h4>
-                        <span class="price">470 QAR</span>
-                    </div>
-                    <p>Advanced blue-light filtration with Prevencia coating</p>
-                </label>
+            <div class="lens-option-card" onclick="selectLensCard(this)">
+                <input type="radio" name="lens_choice" value="crizal-premium" data-price="470" id="crizal-premium">
+                <div class="lens-header">
+                    <h4>Essilor Crizal Premium</h4>
+                    <span class="price">470 QAR</span>
+                </div>
+                <p>Advanced blue-light filtration with Prevencia coating</p>
             </div>
             
-            <div class="lens-option-card">
-                <input type="radio" name="lens_choice" value="tinted-lens" id="tinted-lens">
-                <label for="tinted-lens">
-                    <div class="lens-header">
-                        <h4>Tinted Lens</h4>
-                        <span class="price">250 QAR</span>
-                    </div>
-                    <p>Adds permanent color tint</p>
-                </label>
+            <div class="lens-option-card" onclick="selectLensCard(this)">
+                <input type="radio" name="lens_choice" value="tinted-lens" data-price="250" id="tinted-lens">
+                <div class="lens-header">
+                    <h4>Tinted Lens</h4>
+                    <span class="price">250 QAR</span>
+                </div>
+                <p>Adds permanent color tint</p>
             </div>
         </div>
         
         <!-- Prescription Input -->
         <div class="prescription-section">
-            <h3>Enter Your Prescription:</h3>
+            <h3>Enter Your Prescription (Optional):</h3>
             <div class="prescription-form">
                 <table>
                     <thead>
@@ -955,17 +866,17 @@
                     <tbody>
                         <tr>
                             <td>Right (OD)</td>
-                            <td><input type="number" step="0.25" name="right_sph"></td>
-                            <td><input type="number" step="0.25" name="right_cyl"></td>
-                            <td><input type="number" name="right_axis"></td>
-                            <td><input type="number" step="0.25" name="right_add"></td>
+                            <td><input type="number" step="0.25" name="right_sph" id="rightSph"></td>
+                            <td><input type="number" step="0.25" name="right_cyl" id="rightCyl"></td>
+                            <td><input type="number" name="right_axis" id="rightAxis" min="0" max="180"></td>
+                            <td><input type="number" step="0.25" name="right_add" id="rightAdd"></td>
                         </tr>
                         <tr>
                             <td>Left (OS)</td>
-                            <td><input type="number" step="0.25" name="left_sph"></td>
-                            <td><input type="number" step="0.25" name="left_cyl"></td>
-                            <td><input type="number" name="left_axis"></td>
-                            <td><input type="number" step="0.25" name="left_add"></td>
+                            <td><input type="number" step="0.25" name="left_sph" id="leftSph"></td>
+                            <td><input type="number" step="0.25" name="left_cyl" id="leftCyl"></td>
+                            <td><input type="number" name="left_axis" id="leftAxis" min="0" max="180"></td>
+                            <td><input type="number" step="0.25" name="left_add" id="leftAdd"></td>
                         </tr>
                     </tbody>
                 </table>
@@ -974,33 +885,190 @@
         
         <!-- Total Price -->
         <div class="total-price-section">
-            <h3>Total Price: <span id="totalPrice">{{ product.base_price }}</span> QAR</h3>
+            <h3>Total Lens Price: <span id="totalPrice">0</span> QAR</h3>
         </div>
         
-        <button class="btn-confirm-lens" onclick="confirmLensSelection()">Add to Cart</button>
+        <button class="btn-confirm-lens" onclick="confirmLensSelection()" id="confirmLensBtn">
+            Confirm Lens Selection
+        </button>
     </div>
 </div>
 
 <script>
+let basePrice = parseFloat("{{ product.base_price }}");
+let selectedLensOption = null;
+let selectedAddon = null;
+let lensPrice = 0;
+let addonPrice = 0;
+
 function openLensSelection() {
     document.getElementById('lensModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
 }
 
 function closeLensModal() {
     document.getElementById('lensModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
 }
 
-function showLensCategory(category) {
-    document.querySelectorAll('.lens-category').forEach(cat => cat.classList.remove('active'));
-    document.querySelectorAll('.lens-tab').forEach(tab => tab.classList.remove('active'));
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('lensModal');
+    if (event.target == modal) {
+        closeLensModal();
+    }
+}
+
+function showLensCategory(categoryId) {
+    // Hide all categories
+    document.querySelectorAll('.lens-category').forEach(cat => {
+        cat.classList.remove('active');
+    });
     
-    document.getElementById(category).classList.add('active');
+    // Remove active from all tabs
+    document.querySelectorAll('.lens-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected category
+    document.getElementById(categoryId).classList.add('active');
+    
+    // Activate clicked tab
     event.target.classList.add('active');
+    
+    // Reset selections
+    resetSelections();
+}
+
+function selectLensCard(card) {
+    // Remove selected class from all cards
+    document.querySelectorAll('.lens-option-card').forEach(c => {
+        c.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked card
+    card.classList.add('selected');
+    
+    // Check the radio button
+    const radio = card.querySelector('input[type="radio"][name="lens_choice"]');
+    if (radio) {
+        radio.checked = true;
+        selectedLensOption = radio.value;
+        lensPrice = parseFloat(radio.dataset.price) || 0;
+        
+        // Reset addon selection for this lens
+        const addonGroup = radio.value.replace('-', '_') + '_addon';
+        const addonRadios = card.querySelectorAll('input[type="radio"][name$="-addon"]');
+        if (addonRadios.length > 0) {
+            addonRadios[0].checked = true;
+            addonPrice = 0;
+        }
+        
+        updateTotalPrice();
+    }
+}
+
+// Handle addon selection
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('input[type="radio"][name$="-addon"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            addonPrice = parseFloat(this.dataset.price) || 0;
+            selectedAddon = this.value;
+            updateTotalPrice();
+        });
+    });
+    
+    // Handle reading power selection
+    document.querySelectorAll('input[name="reading_power"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            selectedLensOption = 'reading-' + this.value;
+            lensPrice = parseFloat(this.dataset.price) || 150;
+            addonPrice = 0;
+            updateTotalPrice();
+        });
+    });
+});
+
+function updateTotalPrice() {
+    const total = lensPrice + addonPrice;
+    document.getElementById('totalPrice').textContent = total;
+}
+
+function resetSelections() {
+    selectedLensOption = null;
+    selectedAddon = null;
+    lensPrice = 0;
+    addonPrice = 0;
+    updateTotalPrice();
+    
+    document.querySelectorAll('.lens-option-card').forEach(card => {
+        card.classList.remove('selected');
+    });
 }
 
 function confirmLensSelection() {
-    alert('Product with selected lenses added to cart!');
+    if (!selectedLensOption) {
+        alert('Please select a lens option');
+        return;
+    }
+    
+    // Save lens selection to hidden form fields
+    document.getElementById('selectedLensOption').value = selectedLensOption;
+    document.getElementById('selectedLensAddon').value = selectedAddon || '';
+    document.getElementById('totalLensPrice').value = lensPrice + addonPrice;
+    
+    // Save prescription data
+    document.getElementById('hiddenRightSph').value = document.getElementById('rightSph').value || '';
+    document.getElementById('hiddenRightCyl').value = document.getElementById('rightCyl').value || '';
+    document.getElementById('hiddenRightAxis').value = document.getElementById('rightAxis').value || '';
+    document.getElementById('hiddenRightAdd').value = document.getElementById('rightAdd').value || '';
+    
+    document.getElementById('hiddenLeftSph').value = document.getElementById('leftSph').value || '';
+    document.getElementById('hiddenLeftCyl').value = document.getElementById('leftCyl').value || '';
+    document.getElementById('hiddenLeftAxis').value = document.getElementById('leftAxis').value || '';
+    document.getElementById('hiddenLeftAdd').value = document.getElementById('leftAdd').value || '';
+    
+    // Update main product price display
+    const totalPrice = basePrice + lensPrice + addonPrice;
+    document.getElementById('productPrice').textContent = 'QAR ' + totalPrice.toFixed(2);
+    
+    // Close modal
     closeLensModal();
+    
+    // Show success message
+    alert('Lens selection confirmed! Total: QAR ' + totalPrice.toFixed(2));
+}
+
+function addToCart() {
+    // Submit the form
+    const form = document.getElementById('product_form_{{ product.id }}');
+    
+    // Create FormData
+    const formData = new FormData(form);
+    
+    // Send AJAX request
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Product added to cart!');
+            // Optionally redirect to cart
+            // window.location.href = '/cart/';
+        } else {
+            alert('Error: ' + (data.message || 'Unable to add to cart'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
 }
 </script>
+
 {% endblock %}
