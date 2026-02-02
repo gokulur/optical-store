@@ -71,7 +71,7 @@ def checkout(request):
         'total': total,
     }
     
-    return render(request, 'orders/checkout.html', context)
+    return render(request, 'checkout.html', context)
 
 
 @login_required
