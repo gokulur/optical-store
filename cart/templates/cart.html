@@ -330,10 +330,10 @@
                                                                             <button class="xo-btn xo-btn--dark xo-btn--link xo-btn--slide-up remove-item-btn"
                                                                                 style="cursor: pointer;"
                                                                                 data-item-id="{{ item.id }}"
-                                                                                data-url=""
+                                                                                data-url="{% url 'cart:remove_from_cart' item.id %}"
                                                                                 aria-label="Remove {{ item.product.name }}">
                                                                                 <span class="xo-btn__content">
-                                                                                    <span class="xo-btn__text" data-text="Delete">Delete</span>
+                                                                                    <span class="xo-btn__text" data-text="Delete">Remove</span>
                                                                                 </span>
                                                                                 <span class="xo-btn__loading">
                                                                                     <div class="xo-loader-3"
@@ -636,51 +636,51 @@ document.addEventListener("click", function (e) {
         return;
     }
 
-    // Remove Item
-    const removeBtn = e.target.closest(".remove-item-btn");
-    if (removeBtn) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        
-        if (!confirm('Remove this item from cart?')) {
+   const removeBtn = e.target.closest(".remove-item-btn");
+    if (!removeBtn) return;
+
+    e.preventDefault();
+
+    if (!confirm("Remove this item from cart?")) return;
+
+    let itemID = removeBtn.dataset.itemId;
+    let url = removeBtn.dataset.url;
+
+    fetch(url, {
+        method: "POST",   // ✅ FIXED
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": "{{ csrf_token }}",  // ✅ needed for POST
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (!data.success) {
+            alert(data.message || "Error removing item");
             return;
         }
-        
-        let itemID = removeBtn.dataset.itemId;
-        let url = removeBtn.dataset.url;
 
-        fetch(url, {
-            method: "GET",
-            headers: { 
-                "X-Requested-With": "XMLHttpRequest",
-                "X-CSRFToken": "{{ csrf_token }}"
+        const row = document.getElementById("cart-row-" + itemID);
+
+        row.style.transition = "0.25s";
+        row.style.opacity = "0";
+
+        setTimeout(() => {
+            row.remove();
+
+            // Update total
+            document.getElementById("cart-total").innerHTML = "QAR " + data.cart_total;
+
+            // Reload if empty
+            if (data.cart_count === 0) {
+                location.reload();
             }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const row = document.getElementById("cart-row-" + itemID);
-                row.style.opacity = "0";
-                setTimeout(() => {
-                    row.remove();
-                    
-                    // Reload if cart is empty
-                    if (data.cart_count === 0) {
-                        location.reload();
-                    } else {
-                        // Update cart total
-                        document.getElementById("cart-total").innerHTML = "QAR " + data.cart_total;
-                    }
-                }, 250);
-            } else {
-                alert(data.message || 'Error removing item');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
-        });
-    }
+
+        }, 250);
+
+    })
+    .catch(() => alert("Something went wrong"));
 });
 </script>
 {% endblock %}
