@@ -180,19 +180,21 @@
                                                                 xo-product-id="{{ item.product.id }}"
                                                                 xo-line="{{ forloop.counter }}">
                                                                 <div class="xo-cart-item">
-                                                                    <a href="{% url 'product_detail' item.product.slug %}" class="xo-cart-item__image">
-                                                                        {% if item.product.image %}
-                                                                        <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                                            <img src="{{ item.product.image.url }}"
+                                                                    <a href="" class="xo-cart-item__image">
+                                                                        {% if item.product.images.first %}
+                                                                        <div class="xo-image"
+                                                                            style="--xo-ratio-percent: 1/1; --x-pos: %; --y-pos: %;">
+                                                                            <img src="{{ item.product.images.first.image.url }}"
                                                                                 alt="{{ item.product.name }}"
                                                                                 width="860" height="860" loading="lazy"
                                                                                 is="xo-lazyload" sizes="100vw"
                                                                                 fetchpriority="auto"
-                                                                                xo-loaded="">
+                                                                                xo-intrinsic-width="860"
+                                                                                xo-intrinsic-height="860" xo-loaded="">
                                                                         </div>
                                                                         {% else %}
                                                                         <div class="xo-image">
-                                                                            <img src="{% static 'images/no-image.png' %}"
+                                                                            <img src="/static/no-image.png"
                                                                                 alt="No Image">
                                                                         </div>
                                                                         {% endif %}
@@ -415,7 +417,7 @@
 
                                 <!-- Cart Summary Sidebar -->
                                 <div style="--md: 12; --lg: 4" class="xo-cart__right">
-                                    <!-- Free Shipping Progress -->
+                                  
                                     <xo-cart-free-shipping-custom
                                         xo-free-shipping-notice="Congrats! You are eligible for FREE Shipping"
                                         xo-free-shipping-progress="Buy {{ money }} more to enjoy FREE shipping">
@@ -438,13 +440,13 @@
 
                                     <div class="xo-space xo-space--vertical" style="--space: 2rem"></div>
 
-                                    <!-- Cart Totals -->
+                        
                                     <xo-cart-will-change class="xo-cart-totals">
                                         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                                             <span>Subtotal:</span>
                                             <span>QAR {{ subtotal }}</span>
                                         </div>
-                                        {% if shipping > 0 %}
+                                        <!-- {% if shipping > 0 %}
                                         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                                             <span>Shipping:</span>
                                             <span>QAR {{ shipping }}</span>
@@ -462,8 +464,23 @@
                                             <div class="xo-cart-table__price" id="cart-total">
                                                 QAR {{ total }}
                                             </div>
-                                        </div>
+                                        </div> -->
                                     </xo-cart-will-change>
+                                    {% if shipping > 0 %}
+                                    <xo-cart-will-change class="xo-cart-totals">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                            <span>Shipping:</span>
+                                            <span> QAR {{ shipping }}</span>
+                                        </div>
+                                    
+                                    </xo-cart-will-change>
+                                    {% endif %}
+                                     <div style="display: flex; justify-content: space-between; font-size: 20px; font-weight: bold;">
+                                            <div class="xo-cart-totals__subtotal">Total</div>
+                                            <div class="xo-cart-table__price" id="cart-total">
+                                                QAR {{ total }}
+                                            </div>
+                                        </div>  
 
                                     <xo-cart-will-change xo-unique-id="xo-cart-tax-note" class="xo-cart-tax-note">
                                         <div class="xo-space xo-space--vertical" style="--space: 1rem"></div>
@@ -474,7 +491,7 @@
                                         <div class="xo-space xo-space--vertical" style="--space: 1rem"></div>
                                     </xo-cart-will-change>
 
-                                    <!-- Checkout Button -->
+                                   
                                     <xo-cart-will-change xo-unique-id="xo-actions" class="xo-actions">
                                         <a href=" ">
                                             <button class="xo-btn xo-btn--dark xo-btn--secondary xo-btn--md xo-btn--slide-up xo-btn--block
@@ -497,7 +514,7 @@
 
                                     <div class="xo-space xo-space--vertical" style="--space: 2rem"></div>
 
-                                    <!-- Shopping Benefits -->
+                              
                                     <div style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
                                         <h3 style="font-size: 16px; margin-bottom: 15px;">Shopping Benefits</h3>
                                         <ul style="list-style: none; padding: 0; margin: 0;">
