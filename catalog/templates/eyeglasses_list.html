@@ -328,10 +328,18 @@
                                                         <xo-product-media xo-type="auto">
                                                             <div class="xo-product-image">
                                                                 <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                                    {% if product.image %}
-                                                                    <img alt="{{ product.name }}" src="{{ product.image.url }}" width="1000" height="1000" loading="lazy" />
+                                                                    {% if product.images.all %}
+                                                                    {% with first_image=product.images.first %}
+                                                                    {% if first_image %}
+                                                                    <img alt="{{ product.name }}" src="{{ first_image.image.url }}" width="1000" height="1000" loading="lazy" />
+                                                                    {% endif %}
+                                                                    {% endwith %}
+                                                                    {% elif product.image %}
+                                                                     <img alt="{{ product.name }}" src="{{ product.image.url }}"
+                                                                        width="1000" height="1000" loading="lazy" />
                                                                     {% else %}
-                                                                    <img alt="No Image" src="{% static 'images/no-image.jpg' %}" width="1000" height="1000" loading="lazy" />
+                                                                    <img alt="No Image" src="/static/img/no-image.jpg" width="1000"
+                                                                        height="1000" loading="lazy" />
                                                                     {% endif %}
                                                                 </div>
                                                             </div>
