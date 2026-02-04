@@ -1,240 +1,710 @@
-
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}{{ product.name }} - Contact Lenses{% endblock %}
 
 {% block content %}
-<div class="product-detail-page contact-lens-page">
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-        <a href="{% url 'catalog:home' %}">Home</a> / 
-        <a href="{% url 'catalog:contact_lenses_list' %}">Contact Lenses</a> / 
-        <span>{{ product.name }}</span>
-    </div>
+<style>
+    /* Power Selection Modal Styles */
+    .power-modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.6);
+    }
     
-    <div class="product-detail-container">
-        <!-- Product Images -->
-        <div class="product-images">
-            <div class="main-image">
-                {% if images.first %}
-                <img src="{{ images.first.image.url }}" alt="{{ product.name }}" id="mainImage">
-                {% endif %}
-            </div>
-            <div class="thumbnail-images">
-                {% for image in images %}
-                <img src="{{ image.image.url }}" alt="{{ product.name }}" 
-                     onclick="changeMainImage('{{ image.image.url }}')">
+    .power-modal-content {
+        background-color: #fefefe;
+        margin: 3% auto;
+        padding: 30px;
+        border: 1px solid #888;
+        width: 95%;
+        max-width: 800px;
+        border-radius: 10px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .power-modal-content .close {
+        float: right;
+        font-size: 32px;
+        font-weight: bold;
+        color: #666;
+        cursor: pointer;
+        line-height: 20px;
+    }
+    
+    .power-modal-content .close:hover {
+        color: #000;
+    }
+    
+    .power-modal-content h2 {
+        margin-bottom: 20px;
+        clear: both;
+    }
+    
+    .color-selection-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+    }
+    
+    .color-option {
+        border: 3px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: center;
+    }
+    
+    .color-option:hover {
+        border-color: #999;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .color-option.selected {
+        border-color: #000;
+        background-color: #f9f9f9;
+    }
+    
+    .color-option img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    
+    .color-option p {
+        margin: 5px 0;
+        font-weight: 600;
+    }
+    
+    .color-option .plano-only {
+        display: inline-block;
+        padding: 4px 8px;
+        background: #ff9800;
+        color: white;
+        border-radius: 4px;
+        font-size: 11px;
+        margin-top: 5px;
+    }
+    
+    .color-option .with-power {
+        display: inline-block;
+        padding: 4px 8px;
+        background: #4caf50;
+        color: white;
+        border-radius: 4px;
+        font-size: 11px;
+        margin-top: 5px;
+    }
+    
+    .power-selection-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+    }
+    
+    .power-selection-section h3 {
+        margin-bottom: 15px;
+    }
+    
+    .eye-power-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .eye-section {
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+    }
+    
+    .eye-section h4 {
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #000;
+    }
+    
+    .eye-section select,
+    .eye-section input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+    
+    .eye-section label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .same-power-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 20px 0;
+        padding: 15px;
+        background: #fff3cd;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    
+    .same-power-checkbox input {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+    
+    .notify-section {
+        margin-top: 20px;
+        padding: 20px;
+        background: #e8f5e9;
+        border-radius: 8px;
+    }
+    
+    .notify-section input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    
+    .btn-notify {
+        width: 100%;
+        padding: 12px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    
+    .btn-notify:hover {
+        background: #45a049;
+    }
+    
+    .btn-confirm-power {
+        width: 100%;
+        padding: 18px;
+        background: #000;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: background 0.3s;
+    }
+    
+    .btn-confirm-power:hover {
+        background: #333;
+    }
+    
+    .selected-info-box {
+        margin: 20px 0;
+        padding: 15px;
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        border-radius: 4px;
+    }
+    
+    .selected-info-box strong {
+        color: #1976d2;
+    }
+    
+    @media (max-width: 768px) {
+        .power-modal-content {
+            width: 98%;
+            margin: 2% auto;
+            padding: 20px;
+        }
+        
+        .color-selection-grid {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        }
+        
+        .eye-power-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- Main Product Section -->
+<main class="content-for-layout focus-none" id="xo-main-content" role="main" tabindex="-1">
+    <!-- Breadcrumb -->
+    <section class="shopify-section section">
+        <div class="xo-section color-background-1" style="--margin: 0;--pt: 15;--pb: 15;">
+            <xo-container class="xo-container--box">
+                <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+                    <ol class="breadcrumb__list" style="--justify:flex-start">
+                        <li class="breadcrumb__item">
+                            <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                            <span class="breadcrumb__separator">/</span>
+                        </li>
+                        <li class="breadcrumb__item">
+                            <a class="breadcrumb__link" href="{% url 'catalog:contact_lenses_list' %}">Contact Lenses</a>
+                            <span class="breadcrumb__separator">/</span>
+                        </li>
+                        <li class="breadcrumb__item breadcrumb__item--current">
+                            <a aria-current="page" class="breadcrumb__link breadcrumb--current">{{ product.name }}</a>
+                        </li>
+                    </ol>
+                </nav>
+            </xo-container>
+        </div>
+    </section>
+
+    <!-- Product Detail Section -->
+    <section class="shopify-section section">
+        <div class="xo-section color-background-1" style="--margin: 0;--pt: 0;--pb: 0;">
+            <xo-container class="xo-container--box">
+                <xo-grid>
+                    <!-- Product Images -->
+                    <xo-animate style="--xs: 12; --md: 7">
+                        <div class="xo-product-info-media-style3" style="position: sticky; top: 9.3rem;">
+                            <xo-gallery aria-label="Gallery Viewer">
+                                <xo-carousel xo-name="product-information-desktop">
+                                    <div class="xo-product-info-media-style3__top">
+                                        <xo-carousel-inner>
+                                            <xo-carousel-list aria-label="Slider" role="list">
+                                                <!-- Main Product Image -->
+                                                {% if product.image %}
+                                                <xo-carousel-slide class="xo-product-info-media-style3__slide">
+                                                    <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
+                                                        <xo-gallery-item>
+                                                            <div class="xo-product-info-media-style3__image">
+                                                                <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                                        <img alt="{{ product.name }}" 
+                                                                             src="{{ product.image.url }}" 
+                                                                             loading="lazy" 
+                                                                             id="mainProductImage"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </xo-gallery-item>
+                                                    </xo-image-zoom>
+                                                </xo-carousel-slide>
+                                                {% endif %}
+
+                                                <!-- Gallery Images -->
+                                                {% for image in images %}
+                                                <xo-carousel-slide class="xo-product-info-media-style3__slide">
+                                                    <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
+                                                        <xo-gallery-item>
+                                                            <div class="xo-product-info-media-style3__image">
+                                                                <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                                        <img alt="{{ product.name }}" 
+                                                                             src="{{ image.image.url }}" 
+                                                                             loading="lazy"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </xo-gallery-item>
+                                                    </xo-image-zoom>
+                                                </xo-carousel-slide>
+                                                {% endfor %}
+                                            </xo-carousel-list>
+                                        </xo-carousel-inner>
+                                        
+                                        <!-- Desktop Thumbnails -->
+                                        <xo-carousel-thumbnail class="xo-product-info-media-style3__thumbnails" xo-gap="10" xo-per-view="5">
+                                            <xo-carousel-inner>
+                                                <xo-carousel-list>
+                                                    {% if product.image %}
+                                                    <xo-carousel-slide class="xo-product-info-media-style3__thumb-slide">
+                                                        <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                            <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                                <img src="{{ product.image.url }}" alt="thumbnail"/>
+                                                            </div>
+                                                        </div>
+                                                    </xo-carousel-slide>
+                                                    {% endif %}
+                                                    {% for image in images %}
+                                                    <xo-carousel-slide class="xo-product-info-media-style3__thumb-slide">
+                                                        <div class="xo-media" style="--media-aspect-ratio: 1/1">
+                                                            <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                                                <img src="{{ image.image.url }}" alt="thumbnail"/>
+                                                            </div>
+                                                        </div>
+                                                    </xo-carousel-slide>
+                                                    {% endfor %}
+                                                </xo-carousel-list>
+                                            </xo-carousel-inner>
+                                        </xo-carousel-thumbnail>
+                                    </div>
+                                </xo-carousel>
+                            </xo-gallery>
+                        </div>
+                    </xo-animate>
+
+                    <!-- Product Info -->
+                    <xo-animate class="main-product__right" style="--xs: 12; --md: 5">
+                        <div class="xo-product-info-content" style="position: sticky; top: 9.3rem">
+                            <!-- Product Title -->
+                            <div class="xo-product-info-content__header">
+                                <h1 class="xo-product-info-content__title" style="--fz:2.4rem">
+                                    {{ product.name }}
+                                </h1>
+                                <button class="wishlist-btn circle-btn" data-product-id="{{ product.id }}">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
+                                        <path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Brand & SKU -->
+                            {% if product.brand %}
+                            <p style="margin: 10px 0; font-size: 14px; color: #666;">
+                                Brand: <strong>{{ product.brand.name }}</strong>
+                            </p>
+                            {% endif %}
+                            
+                            <p style="margin: 10px 0; font-size: 13px; color: #999;">
+                                SKU: {{ product.sku }}
+                            </p>
+
+                            <!-- Price -->
+                            <div class="xo-product-info-content__price" style="padding: 20px 0;">
+                                <div class="xo-price xo-price--larger">
+                                    <div class="xo-price__container">
+                                        <div class="xo-price__sale">
+                                            <span class="xo-price__item xo-price__item--accent" id="productPrice">
+                                                QAR {{ product.base_price }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p style="font-size: 14px; color: #666; margin-top: 10px;">
+                                    Pack of {{ contact_lens.package_size }} lenses
+                                </p>
+                            </div>
+
+                            <!-- Short Description -->
+                            {% if product.short_description %}
+                            <p class="xo-product-info-content__description" style="padding-bottom: 20px;">
+                                {{ product.short_description }}
+                            </p>
+                            {% endif %}
+
+                            <!-- Product Details Table -->
+                            <div style="padding: 20px 0; border-top: 1px solid #e0e0e0; border-bottom: 1px solid #e0e0e0;">
+                                <table style="width: 100%; font-size: 14px;">
+                                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                                        <td style="padding: 10px 0; color: #666;">Lens Type</td>
+                                        <td style="padding: 10px 0; font-weight: 600;">{{ contact_lens.get_lens_type_display|upper }}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                                        <td style="padding: 10px 0; color: #666;">Replacement</td>
+                                        <td style="padding: 10px 0; font-weight: 600;">{{ contact_lens.get_replacement_schedule_display }}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                                        <td style="padding: 10px 0; color: #666;">Diameter</td>
+                                        <td style="padding: 10px 0; font-weight: 600;">{{ contact_lens.diameter }} MM</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                                        <td style="padding: 10px 0; color: #666;">Base Curve</td>
+                                        <td style="padding: 10px 0; font-weight: 600;">{{ contact_lens.base_curve }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 0; color: #666;">Water Content</td>
+                                        <td style="padding: 10px 0; font-weight: 600;">{{ contact_lens.water_content }}%</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Product Form -->
+                            <form method="POST" id="product_form_{{ product.id }}" action="{% url 'cart:add_contact_lens_to_cart' %}" style="padding-top: 20px;">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <input type="hidden" name="selected_color" id="selectedColorId">
+                                <input type="hidden" name="left_power" id="hiddenLeftPower">
+                                <input type="hidden" name="right_power" id="hiddenRightPower">
+
+                                <!-- Quantity -->
+                                <xo-cart-quantity class="xo-quantity-style2" style="--width: 13.5rem; --height: 5rem">
+                                    <xo-cart-quantity-minus class="xo-quantity-style2__button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" viewBox="0 0 10 2">
+                                            <path fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 110 1H1A.5.5 0 01.5 1z" fill="currentColor"/>
+                                        </svg>
+                                    </xo-cart-quantity-minus>
+                                    <input class="xo-quantity-style2__number" 
+                                           type="number" 
+                                           name="quantity" 
+                                           value="1" 
+                                           min="1" 
+                                           max="{{ product.stock }}"
+                                           id="quantity">
+                                    <xo-cart-quantity-plus class="xo-quantity-style2__button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" viewBox="0 0 10 10">
+                                            <path fill-rule="evenodd" d="M1 4.51a.5.5 0 000 1h3.5l.01 3.5a.5.5 0 001-.01V5.5l3.5-.01a.5.5 0 00-.01-1H5.5L5.49.99a.5.5 0 00-1 .01v3.5l-3.5.01H1z" fill="currentColor"/>
+                                        </svg>
+                                    </xo-cart-quantity-plus>
+                                </xo-cart-quantity>
+
+                                <div class="xo-space xo-space--vertical" style="--space: 2.5rem"></div>
+
+                                <!-- Select Color/Power Button -->
+                                <button type="button" 
+                                        class="xo-btn xo-btn--light xo-btn--primary xo-btn--block"
+                                        onclick="openPowerSelection()"
+                                        style="margin-bottom: 15px;">
+                                    <span class="xo-btn__content">
+                                        <span class="xo-btn__text">
+                                            {% if contact_lens.lens_type == 'color' %}Select Color & Power{% else %}Select Power{% endif %}
+                                        </span>
+                                    </span>
+                                </button>
+
+                                <!-- Add to Cart -->
+                                <button type="button" 
+                                        class="xo-btn xo-btn--light xo-btn--primary xo-btn--block"
+                                        onclick="addToCart()"
+                                        id="addToCartBtn">
+                                    <span class="xo-btn__content">
+                                        <span class="xo-btn__text">Add to Cart</span>
+                                    </span>
+                                </button>
+
+                                <div class="xo-space xo-space--vertical" style="--space: 1.5rem"></div>
+
+                                <!-- Buy Now -->
+                                <button type="submit" 
+                                        class="shopify-payment-button__button"
+                                        style="background: #000;">
+                                    Buy it now
+                                </button>
+                            </form>
+
+                            <!-- Shipping Info -->
+                            <div class="shipping" style="margin-top: 30px;">
+                                <div class="shipping_item" style="display: flex; gap: 15px; margin-bottom: 15px;">
+                                    <svg height="27" width="24" viewBox="0 0 150 150">
+                                        <path d="M139.75,121.3c-0.34,0.71-0.59,1.47-1.03,2.12..." fill="currentColor"/>
+                                    </svg>
+                                    <p style="margin: 0;">Estimate delivery: <strong>12-26 days</strong> (International), <strong>3-6 days</strong> Local.</p>
+                                </div>
+                                <div class="shipping_item" style="display: flex; gap: 15px;">
+                                    <svg height="27" width="22" viewBox="0 0 150 150">
+                                        <path d="M94.51,19.67c0,0.77,0,1.36,0,1.96..." fill="currentColor"/>
+                                    </svg>
+                                    <p style="margin: 0;">Return within <strong>30 days</strong> of purchase.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </xo-animate>
+                </xo-grid>
+            </xo-container>
+        </div>
+    </section>
+
+    <!-- Product Description -->
+    {% if product.description %}
+    <section class="shopify-section section">
+        <div class="xo-section color-background-1" style="--pt: 50; --pb: 50;">
+            <xo-container class="xo-container--box">
+                <h2 style="font-size: 28px; margin-bottom: 20px;">Product Description</h2>
+                <div style="line-height: 1.8;">
+                    {{ product.description|safe }}
+                </div>
+            </xo-container>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <section class="shopify-section section">
+        <div class="xo-section color-background-1" style="--pt: 50; --pb: 50;">
+            <xo-container class="xo-container--box">
+                <h2 style="font-size: 28px; margin-bottom: 30px; text-align: center;">You May Also Like</h2>
+                <xo-grid style="--xs: 2; --sm: 2; --md: 3; --lg: 4">
+                    {% for related in related_products %}
+                    <xo-product>
+                        <xo-animate class="xo-product-card xo-product-card--style9 color-background-1">
+                            <div class="xo-product-card__header">
+                                <a href="{% url 'catalog:contact_lens_detail' related.slug %}">
+                                    <div class="xo-product-image">
+                                        <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                            {% if related.image %}
+                                            <img alt="{{ related.name }}" src="{{ related.image.url }}" loading="lazy"/>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="xo-product-card__information">
+                                {% if related.brand %}
+                                <div style="font-size: 12px; color: #999; text-transform: uppercase;">{{ related.brand.name }}</div>
+                                {% endif %}
+                                <h3 class="xo-product-card__title">
+                                    <a href="{% url 'catalog:contact_lens_detail' related.slug %}">{{ related.name }}</a>
+                                </h3>
+                                <div class="xo-product-card__price">
+                                    <span class="xo-price__item">QAR {{ related.base_price }}</span>
+                                </div>
+                            </div>
+                        </xo-animate>
+                    </xo-product>
+                    {% endfor %}
+                </xo-grid>
+            </xo-container>
+        </div>
+    </section>
+    {% endif %}
+</main>
+
+<!-- POWER SELECTION MODAL -->
+<div id="powerModal" class="power-modal">
+    <div class="power-modal-content">
+        <span class="close" onclick="closePowerModal()">&times;</span>
+        <h2>{% if contact_lens.lens_type == 'color' %}Select Color & Power{% else %}Select Power{% endif %}</h2>
+        
+        <!-- Color Selection (for color lenses) -->
+        {% if contact_lens.lens_type == 'color' %}
+        <div class="color-selection">
+            <h3 style="margin-bottom: 15px;">Select Color:</h3>
+            <div class="color-selection-grid">
+                {% for color in colors %}
+                <div class="color-option" 
+                     data-color-id="{{ color.id }}" 
+                     data-power-enabled="{{ color.power_enabled }}"
+                     onclick="selectColor({{ color.id }}, '{{ color.name }}', {{ color.power_enabled|lower }})">
+                    <img src="{{ color.image.url }}" alt="{{ color.name }}">
+                    <p>{{ color.name }}</p>
+                    {% if not color.power_enabled %}
+                    <span class="plano-only">Plano Only</span>
+                    {% else %}
+                    <span class="with-power">With Power</span>
+                    {% endif %}
+                </div>
                 {% endfor %}
             </div>
+            
+            <div class="selected-info-box" id="selectedColorBox" style="display: none;">
+                <p style="margin: 0;">Selected Color: <strong id="selectedColorName">-</strong></p>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Power Selection -->
+        <div class="power-selection-section" id="powerSection" {% if contact_lens.lens_type == 'color' %}style="display:none;"{% endif %}>
+            <h3>Select Power:</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                Powers outside the available range will be placed as special order or cancelled.
+            </p>
+            
+            <div class="eye-power-grid">
+                <div class="eye-section">
+                    <h4>Left Eye</h4>
+                    <label>Power (SPH):</label>
+                    <select name="left_power" id="leftPower">
+                        <option value="0.00">Plano (0.00)</option>
+                        {% for power in power_ranges %}
+                        <option value="{{ power }}">{{ power }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="eye-section">
+                    <h4>Right Eye</h4>
+                    <label>Power (SPH):</label>
+                    <select name="right_power" id="rightPower">
+                        <option value="0.00">Plano (0.00)</option>
+                        {% for power in power_ranges %}
+                        <option value="{{ power }}">{{ power }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <label class="same-power-checkbox">
+                <input type="checkbox" id="samePower" onchange="lockSamePower()">
+                Use same power for both eyes
+            </label>
         </div>
         
-        <!-- Product Info -->
-        <div class="product-info">
-            <p class="brand">{{ product.brand.name }}</p>
-            <h1 class="product-name">{{ product.name }}</h1>
-            <p class="sku">SKU: {{ product.sku }}</p>
-            
-            <div class="price-section">
-                <span class="current-price">{{ product.base_price }} QAR</span>
-                <p class="package-info">Pack of {{ contact_lens.package_size }} lenses</p>
-            </div>
-            
-            <div class="short-description">
-                <p>{{ product.short_description }}</p>
-            </div>
-            
-            <!-- Color Selection (for color lenses) -->
-            {% if contact_lens.lens_type == 'color' %}
-            <div class="color-selection">
-                <h3>Select Color:</h3>
-                <div class="color-options-grid">
-                    {% for color in colors %}
-                    <div class="color-option" data-color-id="{{ color.id }}" 
-                         data-power-enabled="{{ color.power_enabled }}"
-                         onclick="selectColor({{ color.id }}, '{{ color.name }}', {{ color.power_enabled|lower }})">
-                        <img src="{{ color.image.url }}" alt="{{ color.name }}">
-                        <p>{{ color.name }}</p>
-                        {% if not color.power_enabled %}
-                        <span class="plano-only">Plano Only</span>
-                        {% else %}
-                        <span class="with-power">With Power</span>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-                <p class="selected-color-name">Selected: <span id="selectedColorName">-</span></p>
-            </div>
-            
-            <!-- Power Selection -->
-            <div class="power-selection" id="powerSection" style="display:none;">
-                <h3>Select Power:</h3>
-                <p class="power-note">Powers outside the available range will either be placed as a special order or cancelled.</p>
-                
-                <div class="eye-power-selection">
-                    <div class="eye-section">
-                        <h4>Left Eye</h4>
-                        <select name="left_power" id="leftPower">
-                            <option value="0.00">Plano (0.00)</option>
-                            {% for power in power_ranges %}
-                            <option value="{{ power }}">{{ power }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="eye-section">
-                        <h4>Right Eye</h4>
-                        <select name="right_power" id="rightPower">
-                            <option value="0.00">Plano (0.00)</option>
-                            {% for power in power_ranges %}
-                            <option value="{{ power }}">{{ power }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                
-                <label class="same-power-checkbox">
-                    <input type="checkbox" id="samePower" onchange="lockSamePower()">
-                    Use same power for both eyes
-                </label>
-            </div>
-            {% else %}
-            <!-- For clear lenses, show power selection directly -->
-            <div class="power-selection">
-                <h3>Select Power:</h3>
-                
-                <div class="eye-power-selection">
-                    <div class="eye-section">
-                        <h4>Left Eye</h4>
-                        <label>SPH: <input type="number" step="0.25" name="left_sph"></label>
-                        <label>CYL: <input type="number" step="0.25" name="left_cyl"></label>
-                        <label>AXIS: <input type="number" name="left_axis"></label>
-                    </div>
-                    
-                    <div class="eye-section">
-                        <h4>Right Eye</h4>
-                        <label>SPH: <input type="number" step="0.25" name="right_sph"></label>
-                        <label>CYL: <input type="number" step="0.25" name="right_cyl"></label>
-                        <label>AXIS: <input type="number" name="right_axis"></label>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-            
-            <!-- Out of Stock Notification -->
-            <div class="notify-section">
-                <p>Don't see your power? Get notified when it's available:</p>
-                <input type="text" placeholder="Enter your required power" id="notifyPower">
-                <input type="email" placeholder="Your email address" id="notifyEmail">
-                <button class="btn-notify">Notify Me</button>
-            </div>
-            
-            <!-- Add to Cart Section -->
-            <div class="cart-section">
-                <div class="quantity-selector">
-                    <label>Quantity:</label>
-                    <button onclick="decreaseQty()">-</button>
-                    <input type="number" id="quantity" value="1" min="1">
-                    <button onclick="increaseQty()">+</button>
-                </div>
-                <button class="btn-add-to-cart" onclick="addToCart()">Add to Cart</button>
-            </div>
-            
-            <div class="wishlist-section">
-                <button class="add-to-wishlist">Add to Wishlist ♡</button>
-            </div>
-            
-            <!-- Product Details -->
-            <div class="product-details-table">
-                <h3>About the Product</h3>
-                <table>
-                    <tr>
-                        <td>Brand</td>
-                        <td>{{ product.brand.name }}</td>
-                    </tr>
-                    <tr>
-                        <td>Package Size</td>
-                        <td>Pack of {{ contact_lens.package_size }} lenses</td>
-                    </tr>
-                    <tr>
-                        <td>Replacement Schedule</td>
-                        <td>{{ contact_lens.get_replacement_schedule_display }}</td>
-                    </tr>
-                    <tr>
-                        <td>Lens Type</td>
-                        <td>{{ contact_lens.get_lens_type_display|upper }} CONTACT LENS</td>
-                    </tr>
-                    <tr>
-                        <td>Intended Use</td>
-                        <td>{{ contact_lens.intended_use }}</td>
-                    </tr>
-                    <tr>
-                        <td>Diameter</td>
-                        <td>{{ contact_lens.diameter }} MM</td>
-                    </tr>
-                    <tr>
-                        <td>Base Curve</td>
-                        <td>{{ contact_lens.base_curve }}</td>
-                    </tr>
-                    <tr>
-                        <td>Water Content</td>
-                        <td>{{ contact_lens.water_content }}%</td>
-                    </tr>
-                </table>
-            </div>
+        <!-- Out of Stock Notification -->
+        <div class="notify-section">
+            <p style="font-weight: 600; margin-bottom: 10px;">Don't see your power?</p>
+            <p style="font-size: 14px; margin-bottom: 10px;">Get notified when it's available:</p>
+            <input type="text" placeholder="Enter your required power" id="notifyPower">
+            <input type="email" placeholder="Your email address" id="notifyEmail">
+            <button class="btn-notify" onclick="submitNotification()">Notify Me</button>
         </div>
-    </div>
-    
-    <!-- Product Description -->
-    <div class="product-description">
-        <h2>Product Description</h2>
-        <div>{{ product.description|safe }}</div>
-    </div>
-    
-    <!-- Related Products -->
-    <div class="related-products">
-        <h2>You May Also Like</h2>
-        <div class="products-grid">
-            {% for related in related_products %}
-            <div class="product-card">
-                <a href="{% url 'catalog:contact_lens_detail' related.slug %}">
-                    {% if related.images.first %}
-                    <img src="{{ related.images.first.image.url }}" alt="{{ related.name }}">
-                    {% endif %}
-                    <p class="brand">{{ related.brand.name }}</p>
-                    <h3>{{ related.name }}</h3>
-                    <p class="price">{{ related.base_price }} QAR</p>
-                </a>
-            </div>
-            {% endfor %}
-        </div>
+        
+        <button class="btn-confirm-power" onclick="confirmPowerSelection()" id="confirmPowerBtn">
+            Confirm Selection
+        </button>
     </div>
 </div>
 
 <script>
 let selectedColorId = null;
+let selectedColorName = '';
 let selectedColorPowerEnabled = false;
 
-function changeMainImage(url) {
-    document.getElementById('mainImage').src = url;
+function openPowerSelection() {
+    document.getElementById('powerModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
 }
 
+function closePowerModal() {
+    document.getElementById('powerModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('powerModal');
+    if (event.target == modal) {
+        closePowerModal();
+    }
+}
+
+{% if contact_lens.lens_type == 'color' %}
 function selectColor(colorId, colorName, powerEnabled) {
     selectedColorId = colorId;
+    selectedColorName = colorName;
     selectedColorPowerEnabled = powerEnabled;
     
+    // Update selected color display
     document.getElementById('selectedColorName').textContent = colorName;
+    document.getElementById('selectedColorBox').style.display = 'block';
     
     // Highlight selected color
     document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
     event.currentTarget.classList.add('selected');
     
     // Show/hide power section based on color
+    const powerSection = document.getElementById('powerSection');
     if (powerEnabled) {
-        document.getElementById('powerSection').style.display = 'block';
+        powerSection.style.display = 'block';
     } else {
-        document.getElementById('powerSection').style.display = 'none';
+        powerSection.style.display = 'none';
     }
 }
+{% endif %}
 
 function lockSamePower() {
     const samePower = document.getElementById('samePower').checked;
@@ -260,19 +730,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function decreaseQty() {
-    const qtyInput = document.getElementById('quantity');
-    if (qtyInput.value > 1) {
-        qtyInput.value = parseInt(qtyInput.value) - 1;
-    }
-}
-
-function increaseQty() {
-    const qtyInput = document.getElementById('quantity');
-    qtyInput.value = parseInt(qtyInput.value) + 1;
-}
-
-function addToCart() {
+function confirmPowerSelection() {
     {% if contact_lens.lens_type == 'color' %}
     if (!selectedColorId) {
         alert('Please select a color first');
@@ -282,12 +740,95 @@ function addToCart() {
     if (selectedColorPowerEnabled) {
         const leftPower = document.getElementById('leftPower').value;
         const rightPower = document.getElementById('rightPower').value;
-        console.log('Adding to cart with powers:', leftPower, rightPower);
+        
+        // Save to hidden fields
+        document.getElementById('selectedColorId').value = selectedColorId;
+        document.getElementById('hiddenLeftPower').value = leftPower;
+        document.getElementById('hiddenRightPower').value = rightPower;
+        
+        alert(`Selected: ${selectedColorName}\nLeft: ${leftPower} | Right: ${rightPower}`);
+    } else {
+        // Plano only
+        document.getElementById('selectedColorId').value = selectedColorId;
+        document.getElementById('hiddenLeftPower').value = '0.00';
+        document.getElementById('hiddenRightPower').value = '0.00';
+        
+        alert(`Selected: ${selectedColorName} (Plano)`);
+    }
+    {% else %}
+    // For clear lenses
+    const leftPower = document.getElementById('leftPower').value;
+    const rightPower = document.getElementById('rightPower').value;
+    
+    document.getElementById('hiddenLeftPower').value = leftPower;
+    document.getElementById('hiddenRightPower').value = rightPower;
+    
+    alert(`Power selected\nLeft: ${leftPower} | Right: ${rightPower}`);
+    {% endif %}
+    
+    closePowerModal();
+}
+
+function submitNotification() {
+    const power = document.getElementById('notifyPower').value;
+    const email = document.getElementById('notifyEmail').value;
+    
+    if (!power || !email) {
+        alert('Please enter both power and email');
+        return;
+    }
+    
+    alert(`Thank you! We'll notify you at ${email} when power ${power} is available.`);
+    
+    // Reset fields
+    document.getElementById('notifyPower').value = '';
+    document.getElementById('notifyEmail').value = '';
+}
+
+function addToCart() {
+    {% if contact_lens.lens_type == 'color' %}
+    if (!selectedColorId) {
+        alert('Please select a color and power first');
+        openPowerSelection();
+        return;
+    }
+    {% else %}
+    const leftPower = document.getElementById('hiddenLeftPower').value;
+    const rightPower = document.getElementById('hiddenRightPower').value;
+    
+    if (!leftPower || !rightPower) {
+        alert('Please select power first');
+        openPowerSelection();
+        return;
     }
     {% endif %}
     
-    const quantity = document.getElementById('quantity').value;
-    alert(`Added ${quantity} pack(s) to cart!`);
+    const form = document.getElementById('product_form_{{ product.id }}');
+    const formData = new FormData(form);
+    
+    // Send AJAX request
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Product added to cart!');
+            // Optionally redirect to cart
+            // window.location.href = '/cart/';
+        } else {
+            alert('Error: ' + (data.message || 'Unable to add to cart'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
 }
 </script>
+
 {% endblock %}
