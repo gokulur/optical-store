@@ -493,7 +493,7 @@
 
                                    
                                     <xo-cart-will-change xo-unique-id="xo-actions" class="xo-actions">
-                                        <a href=" ">
+                                        <a href="{% url 'orders:checkout' %}">
                                             <button class="xo-btn xo-btn--dark xo-btn--secondary xo-btn--md xo-btn--slide-up xo-btn--block
                                                 {% if total == 0 %}disabled{% endif %}"
                                                 {% if total == 0 %}disabled{% endif %}>

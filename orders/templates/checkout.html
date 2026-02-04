@@ -874,7 +874,7 @@
 
         <!-- LEFT SECTION - Checkout Form -->
         <div class="checkout-form-section">
-            <form method="POST" action="{% url 'place_order' %}" id="checkoutForm">
+            <form method="POST" action="{% url 'orders:place_order' %}" id="checkoutForm">
                 {% csrf_token %}
 
                 <!-- Section 1: Shipping Address -->
