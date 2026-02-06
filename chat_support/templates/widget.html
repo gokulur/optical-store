@@ -1,0 +1,272 @@
+{% load static %}
+
+<!-- Chat Widget -->
+<div id="chatWidget">
+    <!-- Chat Button -->
+    <div id="chatButton" onclick="toggleChat()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+        </svg>
+        <span id="unreadBadge" style="display:none;">0</span>
+    </div>
+    
+    <!-- Chat Window -->
+    <div id="chatWindow" style="display:none;">
+        <div id="chatHeader">
+            <div>
+                <h4>Live Chat Support</h4>
+                <p id="statusText">
+                    {% if is_online %}
+                    <span style="color:#4caf50;">● Online</span>
+                    {% else %}
+                    <span style="color:#f44336;">● Offline</span>
+                    {% endif %}
+                </p>
+            </div>
+            <button onclick="closeChat()">&times;</button>
+        </div>
+        
+        <div id="chatBody">
+            {% if is_online %}
+            <!-- Start Chat Form -->
+            <div id="startForm">
+                <p style="margin-bottom:15px;">How can we help you today?</p>
+                <input type="text" id="guestName" placeholder="Your Name" required>
+                <input type="email" id="guestEmail" placeholder="Your Email" required>
+                <input type="text" id="chatSubject" placeholder="Subject" value="General Inquiry">
+                <textarea id="chatMessage" placeholder="Your message..." rows="3" required></textarea>
+                <button onclick="startChat()" class="btn-primary">Start Chat</button>
+            </div>
+            {% else %}
+            <!-- Offline Form -->
+            <div id="offlineForm">
+                <p style="margin-bottom:15px;">We're offline. Leave a message!</p>
+                <input type="text" id="offlineName" placeholder="Your Name" required>
+                <input type="email" id="offlineEmail" placeholder="Your Email" required>
+                <input type="text" id="offlineSubject" placeholder="Subject" required>
+                <textarea id="offlineMessage" placeholder="Your message..." rows="4" required></textarea>
+                <button onclick="sendOfflineMessage()" class="btn-primary">Send Message</button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+#chatWidget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+#chatButton {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: transform 0.3s;
+    position: relative;
+}
+
+#chatButton:hover {
+    transform: scale(1.1);
+}
+
+#unreadBadge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #f44336;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+#chatWindow {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 350px;
+    height: 500px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#chatHeader {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#chatHeader h4 {
+    margin: 0;
+    font-size: 16px;
+}
+
+#chatHeader p {
+    margin: 5px 0 0 0;
+    font-size: 12px;
+}
+
+#chatHeader button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+#chatHeader button:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+#chatBody {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+#chatBody input,
+#chatBody textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+#chatBody input:focus,
+#chatBody textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 480px) {
+    #chatWindow {
+        width: calc(100vw - 40px);
+        height: calc(100vh - 100px);
+    }
+}
+</style>
+
+<script>
+function toggleChat() {
+    const window = document.getElementById('chatWindow');
+    window.style.display = window.style.display === 'none' ? 'flex' : 'none';
+}
+
+function closeChat() {
+    document.getElementById('chatWindow').style.display = 'none';
+}
+
+function startChat() {
+    const name = document.getElementById('guestName').value;
+    const email = document.getElementById('guestEmail').value;
+    const subject = document.getElementById('chatSubject').value;
+    const message = document.getElementById('chatMessage').value;
+    
+    if (!name || !email || !message) {
+        alert('Please fill all fields');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    formData.append('guest_name', name);
+    formData.append('guest_email', email);
+    formData.append('subject', subject);
+    formData.append('message', message);
+    
+    fetch('{% url "chat:start_chat" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = data.redirect_url;
+        }
+    });
+}
+
+function sendOfflineMessage() {
+    const name = document.getElementById('offlineName').value;
+    const email = document.getElementById('offlineEmail').value;
+    const subject = document.getElementById('offlineSubject').value;
+    const message = document.getElementById('offlineMessage').value;
+    
+    if (!name || !email || !subject || !message) {
+        alert('Please fill all fields');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('subject', subject);
+    formData.append('message', message);
+    
+    fetch('{% url "chat:offline_message" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            closeChat();
+        }
+    });
+}
+</script>
