@@ -20,6 +20,7 @@ urlpatterns = [
     path('promotions/', include('promotions.urls')),
     path('search/', include('search.urls')),
     path('core/', include('core.urls')),
+    path('chat_support/', include('chat_support.urls')),
 ]
 
 if settings.DEBUG:

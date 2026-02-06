@@ -51,6 +51,9 @@ INSTALLED_APPS = [
     'notifications',
     'promotions',
     'search',
+    'chat_support',
+
+    
 ]
 
 
