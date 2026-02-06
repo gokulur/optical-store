@@ -42,7 +42,7 @@ def assign_to_agent(conversation):
 def chat_widget(request):
     """Chat widget"""
     is_online = AgentStatus.objects.filter(status='online').exists()
-    return render(request, 'chat_support/widget.html', {'is_online': is_online})
+    return render(request, 'widget.html', {'is_online': is_online})
 
 
 def start_chat(request):
@@ -85,7 +85,7 @@ def start_chat(request):
         
         return redirect('chat:conversation', conversation_id=conv.conversation_id)
     
-    return render(request, 'chat_support/start_chat.html')
+    return render(request, 'start_chat.html')
 
 
 def chat_conversation(request, conversation_id):
@@ -99,7 +99,7 @@ def chat_conversation(request, conversation_id):
     
     messages = conversation.messages.all()
     
-    return render(request, 'chat_support/conversation.html', {
+    return render(request, 'conversation.html', {
         'conversation': conversation,
         'messages': messages
     })
@@ -198,7 +198,7 @@ def offline_message(request):
         
         return redirect('chat:start_chat')
     
-    return render(request, 'chat_support/offline_form.html')
+    return render(request, 'offline_form.html')
 
 
 # AGENT VIEWS
@@ -243,7 +243,7 @@ def agent_dashboard(request):
         'unassigned': ChatConversation.objects.filter(assigned_to__isnull=True).count()
     }
     
-    return render(request, 'chat_support/agent_dashboard.html', {
+    return render(request, 'agent_dashboard.html', {
         'conversations': page,
         'stats': stats
     })
@@ -261,7 +261,7 @@ def agent_conversation(request, conversation_id):
     messages = conversation.messages.all()
     quick_replies = ChatQuickReply.objects.filter(is_active=True)[:10]
     
-    return render(request, 'chat_support/agent_conversation.html', {
+    return render(request, 'agent_conversation.html', {
         'conversation': conversation,
         'messages': messages,
         'quick_replies': quick_replies
