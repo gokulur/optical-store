@@ -993,7 +993,7 @@ Scheme 2: Scheme 4`,
 
                           {% if not user.is_authenticated %}
                           <!-- Register -->
-                          <a class="menu-hamburger-drawer-mobile__utility" href=" ">
+                          <a class="menu-hamburger-drawer-mobile__utility" href="{% url 'users:register' %}">
                             <svg fill="currentColor" height="18" version="1.1" viewBox="0 0 400 400" width="18"
                               xmlns="http://www.w3.org/2000/svg">
                               <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)">
@@ -1011,7 +1011,7 @@ Scheme 2: Scheme 4`,
                           </a>
 
                           <!-- Login -->
-                          <a class="menu-hamburger-drawer-mobile__utility" href=" ">
+                          <a class="menu-hamburger-drawer-mobile__utility" href="{% url 'users:login' %}">
                             <svg fill="currentColor" height="18" version="1.1" viewBox="0 0 400 400" width="18"
                               xmlns="http://www.w3.org/2000/svg">
                               <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)">
@@ -1044,7 +1044,7 @@ Scheme 2: Scheme 4`,
                           </a>
 
                           <!-- Logout -->
-                          <a class="menu-hamburger-drawer-mobile__utility" href="{% url 'logout_action' %}">
+                          <a class="menu-hamburger-drawer-mobile__utility" href="{% url 'users:logout' %}">
                             <svg fill="currentColor" height="18" viewBox="0 0 400 400" width="18"
                               xmlns="http://www.w3.org/2000/svg">
                               <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)">
@@ -1088,22 +1088,22 @@ Scheme 2: Scheme 4`,
                   <div class="header-v24__utilities">
                     {% if not user.is_authenticated %}
                     <xo-tooltip class="header-v24__account-text" xo-placement="bottom-center" xo-title="Register">
-                      <a href=" ">Register</a>
+                      <a href="{% url 'users:register' %}">Register</a>
                     </xo-tooltip>
 
                     <xo-tooltip class="header-v24__account-text" xo-placement="bottom-center" xo-title="Login">
-                      <a href=" ">Login</a>
+                      <a href="{% url 'users:login' %}">Login</a>
                     </xo-tooltip>
                     {% else %}
                     <xo-tooltip class="header-v24__account-text" xo-placement="bottom-center" xo-title="My Account">
-                      <a href=" ">Order</a>
+                      <a href="{% url 'orders:order_list' %}">Order</a>
                     </xo-tooltip>
                     <xo-tooltip class="header-v24__account-text" xo-placement="bottom-center" xo-title="My Account">
-                      <a href=" ">My Account</a>
+                      <a href="{% url 'users:profile' %}">My Account</a>
                     </xo-tooltip>
 
                     <xo-tooltip class="header-v24__account-text" xo-placement="bottom-center" xo-title="Logout">
-                      <a href=" ">Logout</a>
+                      <a href="{% url 'users:logout' %}">Logout</a>
                     </xo-tooltip>
                     {% endif %}
 
