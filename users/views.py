@@ -404,7 +404,7 @@ def change_password(request):
         messages.success(request, 'Password changed successfully!')
         return redirect('users:dashboard')
     
-    return render(request, 'users/change_password.html')
+    return render(request, 'change_password.html')
 
 
 # ==================== ADDRESSES ====================
