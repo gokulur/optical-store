@@ -1,0 +1,634 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Profile - Optical Store{% endblock %}
+
+{% block content %}
+<style>
+    /* Profile Wrapper - Isolated Styles */
+    .profile-wrapper {
+        background: #ffffff;
+        min-height: 100vh;
+        padding: 40px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .profile-wrapper * {
+        box-sizing: border-box;
+    }
+
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .profile-title {
+        font-size: 32px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 30px;
+        letter-spacing: -0.5px;
+    }
+
+    /* Messages */
+    .profile-messages {
+        margin-bottom: 20px;
+    }
+
+    .profile-alert {
+        padding: 16px 20px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .profile-alert-success {
+        background: #e8f5e9;
+        border: 1px solid #4caf50;
+        color: #2e7d32;
+    }
+
+    .profile-alert-error {
+        background: #ffebee;
+        border: 1px solid #f44336;
+        color: #c62828;
+    }
+
+    .profile-alert-warning {
+        background: #fff8e6;
+        border: 1px solid #ffd966;
+        color: #7a5a00;
+    }
+
+    /* Card Layout */
+    .profile-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        border: 1px solid #e8e8e8;
+    }
+
+    .profile-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        min-height: 600px;
+    }
+
+    /* Sidebar Navigation */
+    .profile-sidebar {
+        background: #fafafa;
+        border-right: 1px solid #e8e8e8;
+        padding: 0;
+    }
+
+    .profile-nav {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .profile-nav-item {
+        display: block;
+        padding: 16px 24px;
+        color: #4a4a4a;
+        text-decoration: none;
+        border-bottom: 1px solid #e8e8e8;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .profile-nav-item:hover {
+        background: #f0f0f0;
+        color: #1a1a1a;
+        text-decoration: none;
+    }
+
+    .profile-nav-item.active {
+        background: #ffffff;
+        color: #1a1a1a;
+        font-weight: 600;
+        border-left: 3px solid #1a1a1a;
+    }
+
+    /* Avatar Section */
+    .profile-avatar-section {
+        padding: 40px;
+        border-bottom: 1px solid #e8e8e8;
+        text-align: center;
+    }
+
+    .profile-avatar-wrapper {
+        display: inline-block;
+        position: relative;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #f0f0f0;
+    }
+
+    .profile-avatar-upload {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 40px;
+        height: 40px;
+        background: #1a1a1a;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 3px solid #ffffff;
+    }
+
+    .profile-avatar-upload:hover {
+        background: #000000;
+    }
+
+    .profile-avatar-input {
+        display: none;
+    }
+
+    .profile-user-name {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-top: 16px;
+        margin-bottom: 4px;
+    }
+
+    .profile-user-email {
+        font-size: 14px;
+        color: #6a6a6a;
+    }
+
+    /* Form Section */
+    .profile-section {
+        padding: 40px;
+    }
+
+    .profile-section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e8e8e8;
+    }
+
+    .profile-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .profile-form-group {
+        margin-bottom: 20px;
+    }
+
+    .profile-form-group-full {
+        grid-column: 1 / -1;
+    }
+
+    .profile-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+    }
+
+    .profile-input,
+    .profile-select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e8e8e8;
+        border-radius: 8px;
+        font-size: 15px;
+        color: #1a1a1a;
+        transition: all 0.2s ease;
+        background: #ffffff;
+    }
+
+    .profile-input:focus,
+    .profile-select:focus {
+        outline: none;
+        border-color: #1a1a1a;
+        box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+    }
+
+    .profile-input::placeholder {
+        color: #999;
+    }
+
+    /* Toggle Switch */
+    .profile-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .profile-toggle:last-child {
+        border-bottom: none;
+    }
+
+    .profile-toggle-label {
+        font-size: 15px;
+        color: #1a1a1a;
+        font-weight: 500;
+    }
+
+    .profile-toggle-desc {
+        font-size: 13px;
+        color: #6a6a6a;
+        margin-top: 4px;
+    }
+
+    .profile-switch {
+        position: relative;
+        display: inline-block;
+        width: 48px;
+        height: 26px;
+    }
+
+    .profile-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .profile-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #e8e8e8;
+        transition: 0.3s;
+        border-radius: 13px;
+    }
+
+    .profile-slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    input:checked + .profile-slider {
+        background-color: #1a1a1a;
+    }
+
+    input:checked + .profile-slider:before {
+        transform: translateX(22px);
+    }
+
+    /* Buttons */
+    .profile-actions {
+        margin-top: 32px;
+        padding-top: 32px;
+        border-top: 1px solid #e8e8e8;
+        display: flex;
+        gap: 12px;
+    }
+
+    .profile-btn {
+        display: inline-block;
+        padding: 14px 32px;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        text-decoration: none;
+        text-align: center;
+    }
+
+    .profile-btn-primary {
+        background: #1a1a1a;
+        color: #ffffff;
+        border: 2px solid #1a1a1a;
+    }
+
+    .profile-btn-primary:hover {
+        background: #000000;
+        border-color: #000000;
+        transform: translateY(-1px);
+    }
+
+    .profile-btn-outline {
+        background: transparent;
+        color: #1a1a1a;
+        border: 2px solid #e8e8e8;
+    }
+
+    .profile-btn-outline:hover {
+        border-color: #1a1a1a;
+        background: #fafafa;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .profile-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-sidebar {
+            border-right: none;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .profile-nav {
+            display: flex;
+            overflow-x: auto;
+        }
+
+        .profile-nav-item {
+            white-space: nowrap;
+            border-bottom: none;
+            border-right: 1px solid #e8e8e8;
+        }
+
+        .profile-nav-item.active {
+            border-left: none;
+            border-bottom: 3px solid #1a1a1a;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .profile-wrapper {
+            padding: 20px 10px;
+        }
+
+        .profile-title {
+            font-size: 24px;
+        }
+
+        .profile-section {
+            padding: 24px;
+        }
+
+        .profile-avatar-section {
+            padding: 24px;
+        }
+
+        .profile-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-actions {
+            flex-direction: column;
+        }
+
+        .profile-btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="profile-wrapper">
+    <div class="profile-container">
+        <h1 class="profile-title">Account Settings</h1>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="profile-messages">
+            {% for message in messages %}
+            <div class="profile-alert profile-alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="profile-card">
+            <div class="profile-layout">
+                <!-- Sidebar Navigation -->
+                <div class="profile-sidebar">
+                    <nav class="profile-nav">
+                        <a href="#" class="profile-nav-item active">General</a>
+                        <a href="{% url 'orders:order_list' %}" class="profile-nav-item">My Orders</a>
+                        <a href="{% url 'users:change_password' %}" class="profile-nav-item">Change Password</a>
+                    </nav>
+                </div>
+
+                <!-- Main Content -->
+                <div class="profile-content">
+                    <!-- Avatar Section -->
+                    <div class="profile-avatar-section">
+                        <div class="profile-avatar-wrapper">
+                            <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.get_full_name|urlencode }}&size=120&background=1a1a1a&color=fff{% endif %}" 
+                                 alt="{{ user.get_full_name }}" 
+                                 class="profile-avatar"
+                                 id="avatarPreview">
+                            <label for="avatarInput" class="profile-avatar-upload">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                                    <path d="M9 13h6v6h-6v-6zm0-8h6v6h-6V5zm8 8h6v6h-6v-6zm0-8h6v6h-6V5z"/>
+                                </svg>
+                            </label>
+                            <input type="file" id="avatarInput" class="profile-avatar-input" accept="image/*">
+                        </div>
+                        <div class="profile-user-name">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="profile-user-email">{{ user.email }}</div>
+                    </div>
+
+                    <!-- Profile Form -->
+                    <form method="POST" action="{% url 'users:profile' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="profile-section">
+                            <h2 class="profile-section-title">Personal Information</h2>
+                            
+                            <div class="profile-form-grid">
+                                <div class="profile-form-group">
+                                    <label class="profile-label">First Name</label>
+                                    <input type="text" name="first_name" class="profile-input" 
+                                           value="{{ user.first_name }}" placeholder="Enter first name">
+                                </div>
+
+                                <div class="profile-form-group">
+                                    <label class="profile-label">Last Name</label>
+                                    <input type="text" name="last_name" class="profile-input" 
+                                           value="{{ user.last_name }}" placeholder="Enter last name">
+                                </div>
+
+                                <div class="profile-form-group">
+                                    <label class="profile-label">Email Address</label>
+                                    <input type="email" name="email" class="profile-input" 
+                                           value="{{ user.email }}" readonly style="background:#f5f5f5;">
+                                </div>
+
+                                <div class="profile-form-group">
+                                    <label class="profile-label">Phone Number</label>
+                                    <input type="tel" name="phone" class="profile-input" 
+                                           value="{{ user.phone }}" placeholder="+974 XXXX XXXX">
+                                </div>
+
+                                <div class="profile-form-group">
+                                    <label class="profile-label">Date of Birth</label>
+                                    <input type="date" name="date_of_birth" class="profile-input" 
+                                           value="{{ profile.date_of_birth|date:'Y-m-d' }}">
+                                </div>
+
+                                <div class="profile-form-group">
+                                    <label class="profile-label">Gender</label>
+                                    <select name="gender" class="profile-select">
+                                        <option value="">Select Gender</option>
+                                        <option value="male" {% if profile.gender == 'male' %}selected{% endif %}>Male</option>
+                                        <option value="female" {% if profile.gender == 'female' %}selected{% endif %}>Female</option>
+                                        <option value="other" {% if profile.gender == 'other' %}selected{% endif %}>Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-section" style="border-top: 1px solid #e8e8e8;">
+                            <h2 class="profile-section-title">Location</h2>
+                            
+                            <div class="profile-form-grid">
+                                <div class="profile-form-group">
+                                    <label class="profile-label">City</label>
+                                    <input type="text" name="city" class="profile-input" 
+                                           value="{{ user.city }}" placeholder="Enter city">
+                                </div>
+
+                                <div class="profile-form-group">
+                                    <label class="profile-label">State/Region</label>
+                                    <input type="text" name="state" class="profile-input" 
+                                           value="{{ user.state }}" placeholder="Enter state/region">
+                                </div>
+
+                                <div class="profile-form-group">
+                                    <label class="profile-label">Country</label>
+                                    <select name="country" class="profile-select">
+                                        <option value="Qatar" {% if user.country == 'Qatar' %}selected{% endif %}>Qatar</option>
+                                        <option value="UAE" {% if user.country == 'UAE' %}selected{% endif %}>United Arab Emirates</option>
+                                        <option value="Saudi Arabia" {% if user.country == 'Saudi Arabia' %}selected{% endif %}>Saudi Arabia</option>
+                                        <option value="Kuwait" {% if user.country == 'Kuwait' %}selected{% endif %}>Kuwait</option>
+                                        <option value="Bahrain" {% if user.country == 'Bahrain' %}selected{% endif %}>Bahrain</option>
+                                        <option value="Oman" {% if user.country == 'Oman' %}selected{% endif %}>Oman</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-section" style="border-top: 1px solid #e8e8e8;">
+                            <h2 class="profile-section-title">Preferences</h2>
+                            
+                            <div class="profile-form-grid">
+                                <div class="profile-form-group">
+                                    <label class="profile-label">Preferred Language</label>
+                                    <select name="preferred_language" class="profile-select">
+                                        <option value="en" {% if user.preferred_language == 'en' %}selected{% endif %}>English</option>
+                                        <option value="ar" {% if user.preferred_language == 'ar' %}selected{% endif %}>Arabic</option>
+                                    </select>
+                                </div>
+
+                                <div class="profile-form-group">
+                                    <label class="profile-label">Preferred Currency</label>
+                                    <select name="preferred_currency" class="profile-select">
+                                        <option value="QAR" {% if user.preferred_currency == 'QAR' %}selected{% endif %}>QAR (Qatari Riyal)</option>
+                                        <option value="USD" {% if user.preferred_currency == 'USD' %}selected{% endif %}>USD (US Dollar)</option>
+                                        <option value="EUR" {% if user.preferred_currency == 'EUR' %}selected{% endif %}>EUR (Euro)</option>
+                                    </select>
+                                </div>
+
+                                <div class="profile-form-group">
+                                    <label class="profile-label">Preferred Contact Method</label>
+                                    <select name="preferred_contact_method" class="profile-select">
+                                        <option value="email" {% if profile.preferred_contact_method == 'email' %}selected{% endif %}>Email</option>
+                                        <option value="phone" {% if profile.preferred_contact_method == 'phone' %}selected{% endif %}>Phone</option>
+                                        <option value="sms" {% if profile.preferred_contact_method == 'sms' %}selected{% endif %}>SMS</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-section" style="border-top: 1px solid #e8e8e8;">
+                            <h2 class="profile-section-title">Notifications</h2>
+                            
+                            <div class="profile-toggle">
+                                <div>
+                                    <div class="profile-toggle-label">Email Notifications</div>
+                                    <div class="profile-toggle-desc">Receive updates and offers via email</div>
+                                </div>
+                                <label class="profile-switch">
+                                    <input type="checkbox" name="email_notifications" {% if user.email_notifications %}checked{% endif %}>
+                                    <span class="profile-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="profile-toggle">
+                                <div>
+                                    <div class="profile-toggle-label">SMS Notifications</div>
+                                    <div class="profile-toggle-desc">Receive order updates via SMS</div>
+                                </div>
+                                <label class="profile-switch">
+                                    <input type="checkbox" name="sms_notifications" {% if user.sms_notifications %}checked{% endif %}>
+                                    <span class="profile-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="profile-section" style="border-top: 1px solid #e8e8e8;">
+                            <div class="profile-actions">
+                                <button type="submit" class="profile-btn profile-btn-primary">
+                                    Save Changes
+                                </button>
+                                <a href="{% url 'catalog:home' %}" class="profile-btn profile-btn-outline">
+                                    Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Avatar Preview
+document.getElementById('avatarInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('avatarPreview').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Auto-hide messages after 5 seconds
+setTimeout(function() {
+    const messages = document.querySelectorAll('.profile-alert');
+    messages.forEach(function(message) {
+        message.style.transition = 'opacity 0.5s';
+        message.style.opacity = '0';
+        setTimeout(function() {
+            message.remove();
+        }, 500);
+    });
+}, 5000);
+</script>
+
+{% endblock %}

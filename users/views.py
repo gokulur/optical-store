@@ -365,7 +365,7 @@ def profile_view(request):
         'profile': profile,
     }
     
-    return render(request, 'users/profile.html', context)
+    return render(request, 'profile.html', context)
 
 
 # ==================== CHANGE PASSWORD ====================
