@@ -255,7 +255,7 @@ def order_list(request):
         'order_statuses': Order.ORDER_STATUS,
     }
     
-    return render(request, 'orders/order_list.html', context)
+    return render(request, 'order_list.html', context)
 
 
 @login_required
