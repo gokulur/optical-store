@@ -1,1195 +1,813 @@
- 
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Al Ameen Optics - Your Vision Matters More</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<style>
-    :root {
-        --font-heading: 'Cormorant Garamond', serif;
-        --font-body: 'Inter', sans-serif;
-        --color-primary: #1a1a1a;
-        --color-accent: #c9a961;
-        --color-text: #333;
-        --color-light: #f8f8f8;
-    }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #ffffff;
+        }
 
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
 
-    body {
-        font-family: var(--font-body);
-        color: var(--color-text);
-        overflow-x: hidden;
-    }
+        /* Navbar */
+        .navbar {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 15px 0;
+        }
 
-    /* ==================== HERO CAROUSEL ==================== */
-    .hero-section {
-        position: relative;
-        height: 100vh;
-        min-height: 700px;
-        overflow: hidden;
-    }
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    .hero-carousel {
-        height: 100%;
-    }
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e3a8a;
+            text-decoration: none;
+        }
 
-    .carousel-item {
-        height: 100vh;
-        min-height: 700px;
-    }
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 35px;
+            align-items: center;
+        }
 
-    .hero-slide {
-        height: 100%;
-        position: relative;
-        display: flex;
-        align-items: center;
-        background-size: cover;
-        background-position: center;
-    }
+        .nav-menu a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            font-size: 15px;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
 
-    .hero-slide::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 100%);
-        z-index: 1;
-    }
+        .nav-menu a:hover {
+            color: #1e3a8a;
+        }
 
-    .hero-content {
-        position: relative;
-        z-index: 2;
-        color: white;
-        animation: fadeInUp 1s ease-out;
-    }
+        .btn-book {
+            background: #f97316;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
 
-    @keyframes fadeInUp {
-        from {
+        .btn-book:hover {
+            background: #ea580c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(249, 115, 22, 0.4);
+        }
+
+        .mobile-toggle {
+            display: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Hero Carousel */
+        .hero-carousel {
+            position: relative;
+            height: 600px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .hero-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
             opacity: 0;
-            transform: translateY(30px);
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            align-items: center;
         }
-        to {
+
+        .hero-slide.active {
             opacity: 1;
-            transform: translateY(0);
         }
-    }
 
-    .hero-title {
-        font-family: var(--font-heading);
-        font-size: clamp(3rem, 8vw, 7rem);
-        font-weight: 300;
-        line-height: 1.1;
-        margin-bottom: 1.5rem;
-        letter-spacing: -0.02em;
-    }
+        .hero-slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 58, 138, 0.3);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            color: white;
+            max-width: 600px;
+            padding: 0 50px;
+        }
+
+        .hero-content h1 {
+            font-size: 56px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .hero-content p {
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+
+        .btn-hero {
+            background: #f97316;
+            color: white;
+            padding: 16px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-hero:hover {
+            background: #ea580c;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(249, 115, 22, 0.4);
+        }
+
+        .carousel-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .carousel-dot.active {
+            background: white;
+            width: 30px;
+            border-radius: 6px;
+        }
+
+        /* Categories Section */
+        .categories-section {
+            padding: 80px 0;
+            background: #f8fafc;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 42px;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 50px;
+        }
 
-    .hero-subtitle {
-        font-size: clamp(1.1rem, 2vw, 1.5rem);
-        font-weight: 300;
-        margin-bottom: 2.5rem;
-        max-width: 600px;
-        opacity: 0.95;
-        line-height: 1.6;
-    }
-
-    .hero-btn {
-        display: inline-block;
-        padding: 18px 45px;
-        background: white;
-        color: var(--color-primary);
-        text-decoration: none;
-        font-weight: 600;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        font-size: 0.875rem;
-        border: 2px solid white;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .hero-btn::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: var(--color-accent);
-        transform: translateX(-100%);
-        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: -1;
-    }
-
-    .hero-btn:hover {
-        color: white;
-        border-color: var(--color-accent);
-    }
-
-    .hero-btn:hover::before {
-        transform: translateX(0);
-    }
-
-    /* Featured Product Integration */
-    .hero-featured-product {
-        margin-top: 3rem;
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        animation: fadeInUp 1s ease-out 0.3s both;
-    }
-
-    .hero-product-price {
-        font-size: 1.8rem;
-        font-weight: 600;
-        color: var(--color-accent);
-    }
-
-    .hero-product-link {
-        color: white;
-        text-decoration: none;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        border-bottom: 1px solid white;
-        transition: all 0.3s;
-    }
-
-    .hero-product-link:hover {
-        color: var(--color-accent);
-        border-color: var(--color-accent);
-    }
-
-    /* Carousel Controls */
-    .carousel-control-prev,
-    .carousel-control-next {
-        width: 70px;
-        height: 70px;
-        background: rgba(255,255,255,0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 50%;
-        top: 50%;
-        transform: translateY(-50%);
-        opacity: 1;
-        transition: all 0.3s;
-        border: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .carousel-control-prev {
-        left: 40px;
-    }
-
-    .carousel-control-next {
-        right: 40px;
-    }
-
-    .carousel-control-prev:hover,
-    .carousel-control-next:hover {
-        background: rgba(255,255,255,0.2);
-    }
-
-    .carousel-indicators {
-        bottom: 40px;
-        gap: 10px;
-    }
-
-    .carousel-indicators button {
-        width: 50px;
-        height: 3px;
-        border: none;
-        border-radius: 0;
-        background: rgba(255,255,255,0.4);
-        transition: all 0.3s;
-    }
-
-    .carousel-indicators button.active {
-        background: white;
-        width: 80px;
-    }
-
-    /* ==================== CATEGORIES SECTION ==================== */
-    .categories-section {
-        padding: 120px 0;
-        background: white;
-    }
-
-    .section-header {
-        text-align: center;
-        margin-bottom: 80px;
-    }
-
-    .section-title {
-        font-family: var(--font-heading);
-        font-size: clamp(2.5rem, 5vw, 4rem);
-        font-weight: 400;
-        margin-bottom: 1rem;
-        color: var(--color-primary);
-    }
-
-    .section-subtitle {
-        font-size: 1.1rem;
-        color: #666;
-        font-weight: 300;
-    }
-
-    .categories-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-    }
-
-    .category-card {
-        position: relative;
-        height: 450px;
-        overflow: hidden;
-        text-decoration: none;
-        display: block;
-        cursor: pointer;
-    }
-
-    .category-card::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 100%);
-        z-index: 2;
-        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .category-card:hover::before {
-        background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 100%);
-    }
-
-    .category-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .category-card:hover .category-image {
-        transform: scale(1.08);
-    }
-
-    .category-content {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 40px 30px;
-        z-index: 3;
-        color: white;
-        transform: translateY(0);
-        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .category-card:hover .category-content {
-        transform: translateY(-10px);
-    }
-
-    .category-name {
-        font-family: var(--font-heading);
-        font-size: 2rem;
-        font-weight: 400;
-        margin-bottom: 0.5rem;
-    }
-
-    .category-description {
-        font-size: 0.95rem;
-        opacity: 0.9;
-        font-weight: 300;
-    }
-
-    .category-card .explore-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 15px;
-        font-size: 0.875rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        opacity: 0;
-        transform: translateX(-10px);
-        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .category-card:hover .explore-link {
-        opacity: 1;
-        transform: translateX(0);
-    }
-
-    /* ==================== FEATURED PRODUCTS ==================== */
-    .featured-section {
-        padding: 120px 0;
-        background: var(--color-light);
-    }
-
-    .section-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        margin-bottom: 60px;
-    }
-
-    .view-all-link {
-        color: var(--color-primary);
-        text-decoration: none;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.875rem;
-        letter-spacing: 1px;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        transition: all 0.3s;
-    }
-
-    .view-all-link:hover {
-        color: var(--color-accent);
-        gap: 15px;
-    }
-
-    .products-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 30px;
-    }
-
-    .product-card {
-        background: white;
-        text-decoration: none;
-        display: block;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid transparent;
-    }
-
-    .product-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-        border-color: #e0e0e0;
-    }
-
-    .product-image-wrapper {
-        position: relative;
-        aspect-ratio: 1;
-        background: #fafafa;
-        overflow: hidden;
-    }
-
-    .product-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        padding: 30px;
-        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .product-card:hover .product-image {
-        transform: scale(1.05);
-    }
-
-    .product-badge {
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        background: var(--color-accent);
-        color: white;
-        padding: 6px 14px;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-weight: 600;
-    }
-
-    .wishlist-btn {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        width: 45px;
-        height: 45px;
-        background: white;
-        border: none;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        opacity: 0;
-        transform: scale(0.8);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    .product-card:hover .wishlist-btn {
-        opacity: 1;
-        transform: scale(1);
-    }
-
-    .wishlist-btn:hover {
-        background: var(--color-accent);
-        color: white;
-    }
-
-    .product-info {
-        padding: 25px 20px;
-    }
-
-    .product-brand {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        color: #999;
-        margin-bottom: 8px;
-        font-weight: 500;
-    }
-
-    .product-name {
-        font-size: 1.1rem;
-        color: var(--color-primary);
-        margin-bottom: 12px;
-        font-weight: 500;
-        line-height: 1.4;
-    }
-
-    .product-price {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 20px;
-    }
-
-    .current-price {
-        font-size: 1.3rem;
-        font-weight: 600;
-        color: var(--color-primary);
-    }
-
-    .original-price {
-        font-size: 1rem;
-        color: #999;
-        text-decoration: line-through;
-    }
-
-    .add-to-cart-btn {
-        width: 100%;
-        padding: 14px;
-        background: var(--color-primary);
-        color: white;
-        border: 2px solid var(--color-primary);
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.8rem;
-        letter-spacing: 1px;
-        cursor: pointer;
-        transition: all 0.3s;
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    .product-card:hover .add-to-cart-btn {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    .add-to-cart-btn:hover {
-        background: white;
-        color: var(--color-primary);
-    }
-
-    /* ==================== BRANDS SECTION ==================== */
-    .brands-section {
-        padding: 120px 0;
-        background: white;
-    }
-
-    .brands-grid {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 30px;
-        margin-bottom: 60px;
-    }
-
-    .brand-card {
-        aspect-ratio: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #e0e0e0;
-        text-decoration: none;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        background: white;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .brand-card::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: var(--color-primary);
-        transform: translateY(100%);
-        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .brand-card:hover {
-        border-color: var(--color-primary);
-        transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(0,0,0,0.1);
-    }
-
-    .brand-card:hover::before {
-        transform: translateY(0);
-    }
-
-    .brand-logo {
-        max-width: 70%;
-        max-height: 50px;
-        object-fit: contain;
-        filter: grayscale(100%) opacity(0.6);
-        transition: all 0.4s;
-        position: relative;
-        z-index: 2;
-    }
-
-    .brand-card:hover .brand-logo {
-        filter: grayscale(0%) opacity(1) brightness(0) invert(1);
-    }
-
-    .brand-name {
-        font-weight: 600;
-        color: var(--color-primary);
-        text-transform: uppercase;
-        font-size: 0.9rem;
-        letter-spacing: 1px;
-        position: relative;
-        z-index: 2;
-        transition: color 0.4s;
-    }
-
-    .brand-card:hover .brand-name {
-        color: white;
-    }
-
-    /* ==================== EYE TEST BANNER ==================== */
-    .eye-test-section {
-        position: relative;
-        padding: 150px 0;
-        background-image: url('https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=1920');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-    }
-
-    .eye-test-section::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(26,26,26,0.9) 0%, rgba(26,26,26,0.7) 100%);
-    }
-
-    .eye-test-content {
-        position: relative;
-        z-index: 2;
-        text-align: center;
-        color: white;
-    }
-
-    .eye-test-title {
-        font-family: var(--font-heading);
-        font-size: clamp(2.5rem, 5vw, 4.5rem);
-        font-weight: 400;
-        margin-bottom: 1.5rem;
-    }
-
-    .eye-test-description {
-        font-size: 1.2rem;
-        font-weight: 300;
-        margin-bottom: 3rem;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-        opacity: 0.95;
-    }
-
-    .book-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 12px;
-        padding: 20px 50px;
-        background: var(--color-accent);
-        color: white;
-        text-decoration: none;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.875rem;
-        letter-spacing: 1.5px;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 2px solid var(--color-accent);
-    }
-
-    .book-btn:hover {
-        background: transparent;
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(201, 169, 97, 0.3);
-    }
-
-    /* ==================== NEWSLETTER ==================== */
-    .newsletter-section {
-        padding: 100px 0;
-        background: var(--color-light);
-    }
-
-    .newsletter-content {
-        max-width: 600px;
-        margin: 0 auto;
-        text-align: center;
-    }
-
-    .newsletter-title {
-        font-family: var(--font-heading);
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        color: var(--color-primary);
-    }
-
-    .newsletter-description {
-        color: #666;
-        margin-bottom: 2.5rem;
-        font-size: 1.05rem;
-    }
-
-    .newsletter-form {
-        display: flex;
-        gap: 15px;
-        max-width: 500px;
-        margin: 0 auto;
-    }
-
-    .newsletter-input {
-        flex: 1;
-        padding: 18px 25px;
-        border: 2px solid #e0e0e0;
-        font-size: 1rem;
-        transition: all 0.3s;
-        font-family: var(--font-body);
-    }
-
-    .newsletter-input:focus {
-        outline: none;
-        border-color: var(--color-primary);
-    }
-
-    .newsletter-submit {
-        padding: 18px 40px;
-        background: var(--color-primary);
-        color: white;
-        border: 2px solid var(--color-primary);
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.875rem;
-        letter-spacing: 1px;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-
-    .newsletter-submit:hover {
-        background: white;
-        color: var(--color-primary);
-    }
-
-    /* ==================== CHAT SUPPORT ==================== */
-    .chat-widget {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        z-index: 1000;
-    }
-
-    .chat-button {
-        width: 65px;
-        height: 65px;
-        background: var(--color-accent);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        cursor: pointer;
-        box-shadow: 0 8px 25px rgba(201, 169, 97, 0.4);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-    }
-
-    .chat-button:hover {
-        transform: scale(1.1) rotate(10deg);
-        box-shadow: 0 12px 35px rgba(201, 169, 97, 0.5);
-    }
-
-    /* ==================== RESPONSIVE ==================== */
-    @media (max-width: 1200px) {
         .categories-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-        .products-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-        .brands-grid {
+            display: grid;
             grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
         }
-    }
 
-    @media (max-width: 768px) {
-        .hero-section {
-            min-height: 600px;
-        }
-        
-        .carousel-item {
-            min-height: 600px;
-        }
-        
-        .categories-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        
         .category-card {
-            height: 350px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            cursor: pointer;
         }
-        
-        .products-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-        
-        .brands-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-        
-        .carousel-control-prev,
-        .carousel-control-next {
-            width: 50px;
-            height: 50px;
-        }
-        
-        .carousel-control-prev {
-            left: 20px;
-        }
-        
-        .carousel-control-next {
-            right: 20px;
-        }
-        
-        .section-top {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 20px;
-        }
-        
-        .newsletter-form {
-            flex-direction: column;
-        }
-    }
 
-    @media (max-width: 480px) {
-        .categories-grid,
-        .products-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .brands-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    /* ==================== ANIMATIONS ==================== */
-    @keyframes float {
-        0%, 100% {
-            transform: translateY(0);
-        }
-        50% {
+        .category-card:hover {
             transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
         }
-    }
 
-    .scroll-reveal {
-        opacity: 0;
-        transform: translateY(30px);
-        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+        .category-image {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            color: white;
+        }
 
-    .scroll-reveal.revealed {
-        opacity: 1;
-        transform: translateY(0);
-    }
-</style>
- 
-<!-- ==================== HERO CAROUSEL ==================== -->
-<section class="hero-section">
-    <div id="heroCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel" data-bs-interval="6000">
-        <div class="carousel-indicators">
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+        .category-title {
+            padding: 25px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e3a8a;
+        }
+
+        /* SALE Divider */
+        .sale-divider {
+            background: linear-gradient(90deg, #f97316 0%, #ea580c 100%);
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .sale-divider h2 {
+            font-size: 72px;
+            font-weight: 900;
+            color: white;
+            letter-spacing: 10px;
+            text-transform: uppercase;
+        }
+
+        /* Blog Section */
+        .blog-section {
+            padding: 80px 0;
+        }
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 35px;
+            margin-top: 50px;
+        }
+
+        .blog-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .blog-image {
+            width: 100%;
+            height: 280px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .blog-content {
+            padding: 30px;
+        }
+
+        .blog-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .blog-description {
+            font-size: 15px;
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .btn-read-more {
+            color: #f97316;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: gap 0.3s;
+        }
+
+        .btn-read-more:hover {
+            gap: 12px;
+        }
+
+        /* Promotional Banner */
+        .promo-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            padding: 120px 0;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .promo-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.03)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .promo-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .promo-banner h2 {
+            font-size: 64px;
+            font-weight: 900;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .promo-banner p {
+            font-size: 32px;
+            margin-bottom: 35px;
+            font-weight: 600;
+        }
+
+        .btn-shop-now {
+            background: #f97316;
+            color: white;
+            padding: 18px 50px;
+            border-radius: 35px;
+            text-decoration: none;
+            font-weight: 700;
+            display: inline-block;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-size: 18px;
+        }
+
+        .btn-shop-now:hover {
+            background: #ea580c;
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(249, 115, 22, 0.4);
+        }
+
+        /* Footer */
+        .footer {
+            background: #1e293b;
+            color: white;
+            padding: 60px 0 30px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-column h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #f97316;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 12px;
+        }
+
+        .footer-column ul li a {
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-column ul li a:hover {
+            color: white;
+        }
+
+        .footer-column p {
+            color: #cbd5e1;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-icons a {
+            width: 40px;
+            height: 40px;
+            background: #334155;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .social-icons a:hover {
+            background: #f97316;
+            transform: translateY(-3px);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #334155;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .categories-grid,
+            .blog-grid,
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .hero-content h1 {
+                font-size: 42px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed;
+                left: -100%;
+                top: 70px;
+                flex-direction: column;
+                background: white;
+                width: 100%;
+                text-align: center;
+                transition: 0.3s;
+                box-shadow: 0 10px 27px rgba(0,0,0,0.05);
+                padding: 20px 0;
+                gap: 0;
+            }
+
+            .nav-menu.active {
+                left: 0;
+            }
+
+            .nav-menu li {
+                padding: 15px 0;
+                width: 100%;
+            }
+
+            .mobile-toggle {
+                display: block;
+            }
+
+            .hero-carousel {
+                height: 500px;
+            }
+
+            .hero-content {
+                padding: 0 30px;
+            }
+
+            .hero-content h1 {
+                font-size: 32px;
+            }
+
+            .hero-content p {
+                font-size: 16px;
+            }
+
+            .categories-grid,
+            .blog-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .sale-divider h2 {
+                font-size: 48px;
+                letter-spacing: 5px;
+            }
+
+            .promo-banner h2 {
+                font-size: 42px;
+            }
+
+            .promo-banner p {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="#" class="logo">Al Ameen Optics</a>
+            
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#new-arrivals">New Arrivals</a></li>
+                <li><a href="#categories">Categories</a></li>
+                <li><a href="#sunglasses">Sunglasses</a></li>
+                <li><a href="#eyeglasses">Eyeglasses</a></li>
+                <li><a href="#contact-lenses">Contact Lenses</a></li>
+                <li><a href="#kids">Kids</a></li>
+                <li><a href="#accessories">Accessories</a></li>
+                <li><a href="#book-test" class="btn-book">Book Free Eye Test</a></li>
+            </ul>
+
+            <div class="mobile-toggle" id="mobileToggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Carousel -->
+    <section class="hero-carousel">
+        <div class="hero-slide active">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>Your Vision Matters More</h1>
+                    <p>Discover Advanced Eye Care at Al Ameen Optics. Prepare for an exceptional eye care experience with our comprehensive vision assessment and expert optical services, designed to keep your eyes healthy and your vision crystal clear—only at Al Ameen Optics.</p>
+                    <a href="#" class="btn-hero">Read More</a>
+                </div>
+            </div>
         </div>
         
-        <div class="carousel-inner">
-            <!-- Slide 1: New Arrivals -->
-            <div class="carousel-item active">
-                <div class="hero-slide" style="background-image: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1509695507497-903c140c43b0?w=1920');">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-lg-7">
-                                <div class="hero-content">
-                                    <h1 class="hero-title">New Arrivals<br>2025 Collection</h1>
-                                    <p class="hero-subtitle">Discover the latest in premium eyewear design. Handcrafted frames that blend timeless elegance with contemporary style.</p>
-                                    <a href=" " class="hero-btn">Explore Collection</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <div class="hero-slide">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>Premium Eyewear Collection</h1>
+                    <p>Explore our curated selection of designer frames and sunglasses. From classic styles to the latest trends, find the perfect eyewear that complements your unique style and personality.</p>
+                    <a href="#" class="btn-hero">Shop Now</a>
                 </div>
             </div>
-
-            <!-- Slide 2: Designer Sunglasses -->
-            <div class="carousel-item">
-                <div class="hero-slide" style="background-image: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1556306535-0f09a537f0a3?w=1920');">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-lg-7">
-                                <div class="hero-content">
-                                    <h1 class="hero-title">Designer<br>Sunglasses</h1>
-                                    <p class="hero-subtitle">Elevate your style with luxury eyewear from world-renowned brands. UV protection meets unparalleled sophistication.</p>
-                                    <a href="{% url 'catalog:sunglasses_list' %}" class="hero-btn">Shop Sunglasses</a>
-                                    
-                                    <!-- Featured Product Integration -->
-                                    <div class="hero-featured-product">
-                                        <span class="hero-product-price">From 899 QAR</span>
-                                        <a href="{% url 'catalog:brand_detail' 'ray-ban' %}" class="hero-product-link">View Ray-Ban Collection →</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Slide 3: Sale -->
-            <div class="carousel-item">
-                <div class="hero-slide" style="background-image: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=1920');">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-lg-7">
-                                <div class="hero-content">
-                                    <h1 class="hero-title">Summer Sale<br>Up to 50% Off</h1>
-                                    <p class="hero-subtitle">Limited time offer on selected designer frames and sunglasses. Exceptional quality at extraordinary prices.</p>
-                                    <a href=" " class="hero-btn">Shop Sale</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        </div>
+        
+        <div class="hero-slide">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>Expert Eye Care Services</h1>
+                    <p>Our certified optometrists provide comprehensive eye examinations using state-of-the-art technology. Book your free eye test today and experience professional care you can trust.</p>
+                    <a href="#" class="btn-hero">Book Now</a>
                 </div>
             </div>
         </div>
 
-        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
-    </div>
-</section>
+        <div class="carousel-controls">
+            <div class="carousel-dot active" data-slide="0"></div>
+            <div class="carousel-dot" data-slide="1"></div>
+            <div class="carousel-dot" data-slide="2"></div>
+        </div>
+    </section>
 
-<!-- ==================== CATEGORIES ==================== -->
-<section class="categories-section">
-    <div class="container">
-        <div class="section-header scroll-reveal">
+    <!-- Categories Section -->
+    <section class="categories-section" id="categories">
+        <div class="container">
             <h2 class="section-title">Shop by Category</h2>
-            <p class="section-subtitle">Find your perfect eyewear across our curated collections</p>
-        </div>
-
-        <div class="categories-grid">
-            <!-- New Arrivals -->
-            <a href=" " class="category-card scroll-reveal">
-                <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800" alt="New Arrivals" class="category-image">
-                <div class="category-content">
-                    <h3 class="category-name">New Arrivals</h3>
-                    <p class="category-description">Latest collection</p>
-                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
-                </div>
-            </a>
-
-            <!-- Sunglasses -->
-            <a href="{% url 'catalog:sunglasses_list' %}" class="category-card scroll-reveal">
-                <img src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800" alt="Sunglasses" class="category-image">
-                <div class="category-content">
-                    <h3 class="category-name">Sunglasses</h3>
-                    <p class="category-description">UV protection in style</p>
-                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
-                </div>
-            </a>
-
-            <!-- Eyeglasses -->
-            <a href="{% url 'catalog:eyeglasses_list' %}" class="category-card scroll-reveal">
-                <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=800" alt="Eyeglasses" class="category-image">
-                <div class="category-content">
-                    <h3 class="category-name">Eyeglasses</h3>
-                    <p class="category-description">Vision meets design</p>
-                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
-                </div>
-            </a>
-
-            <!-- Contact Lenses -->
-            <a href="{% url 'catalog:contact_lenses_list' %}" class="category-card scroll-reveal">
-                <img src="https://images.unsplash.com/photo-1588200908342-23b585c03e26?w=800" alt="Contact Lenses" class="category-image">
-                <div class="category-content">
-                    <h3 class="category-name">Contact Lenses</h3>
-                    <p class="category-description">Comfort & clarity</p>
-                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
-                </div>
-            </a>
-
-            <!-- Accessories -->
-            <a href=" " class="category-card scroll-reveal">
-                <img src="https://images.unsplash.com/photo-1584308972272-9e4e7685e80f?w=800" alt="Accessories" class="category-image">
-                <div class="category-content">
-                    <h3 class="category-name">Accessories</h3>
-                    <p class="category-description">Complete your look</p>
-                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
-                </div>
-            </a>
-
-            <!-- Brands -->
-            <a href="{% url 'catalog:brand_list' %}" class="category-card scroll-reveal">
-                <img src="https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=800" alt="Brands" class="category-image">
-                <div class="category-content">
-                    <h3 class="category-name">Brands</h3>
-                    <p class="category-description">Designer collections</p>
-                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
-                </div>
-            </a>
-
-            <!-- Sale -->
-            <a href=" " class="category-card scroll-reveal">
-                <img src="https://images.unsplash.com/photo-1556306535-0f09a537f0a3?w=800" alt="Sale" class="category-image">
-                <div class="category-content">
-                    <h3 class="category-name">Sale</h3>
-                    <p class="category-description">Up to 50% off</p>
-                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
-                </div>
-            </a>
-
-            <!-- Kids -->
-            <a href=" " class="category-card scroll-reveal">
-                <img src="https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?w=800" alt="Kids Eyewear" class="category-image">
-                <div class="category-content">
-                    <h3 class="category-name">Kids Eyewear</h3>
-                    <p class="category-description">Durable & fun</p>
-                    <span class="explore-link">Explore <i class="fas fa-arrow-right"></i></span>
-                </div>
-            </a>
-        </div>
-    </div>
-</section>
-
-<!-- ==================== FEATURED PRODUCTS ==================== -->
-<section class="featured-section">
-    <div class="container">
-        <div class="section-top scroll-reveal">
-            <div>
-                <h2 class="section-title">Featured Products</h2>
-                <p class="section-subtitle">Curated selection of our bestsellers</p>
-            </div>
-            <a href="{% url 'catalog:sunglasses_list' %}" class="view-all-link">
-                View All Products <i class="fas fa-arrow-right"></i>
-            </a>
-        </div>
-
-        <div class="products-grid">
-            {% for product in featured_products|slice:":8" %}
-            <a href="{% url 'catalog:product_detail' product.slug %}" class="product-card scroll-reveal">
-                <div class="product-image-wrapper">
-                    {% if product.images.first %}
-                    <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="product-image">
-                    {% else %}
-                    <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600" alt="{{ product.name }}" class="product-image">
-                    {% endif %}
-                    
-                    {% if product.compare_at_price %}
-                    <span class="product-badge">Sale</span>
-                    {% endif %}
-                    
-                    <button class="wishlist-btn" onclick="event.preventDefault(); toggleWishlist({{ product.id }})">
-                        <i class="far fa-heart"></i>
-                    </button>
+            <div class="categories-grid">
+                <div class="category-card">
+                    <div class="category-image">
+                        <i class="fas fa-glasses"></i>
+                    </div>
+                    <div class="category-title">Sunglasses</div>
                 </div>
                 
-                <div class="product-info">
-                    <div class="product-brand">{{ product.brand.name }}</div>
-                    <h3 class="product-name">{{ product.name|truncatewords:6 }}</h3>
-                    <div class="product-price">
-                        <span class="current-price">{{ product.base_price }} QAR</span>
-                        {% if product.compare_at_price %}
-                        <span class="original-price">{{ product.compare_at_price }} QAR</span>
-                        {% endif %}
+                <div class="category-card">
+                    <div class="category-image">
+                        <i class="fas fa-eye"></i>
                     </div>
-                    <button class="add-to-cart-btn" onclick="event.preventDefault(); addToCart({{ product.id }})">
-                        <i class="fas fa-shopping-bag"></i> Add to Cart
-                    </button>
+                    <div class="category-title">Prescription Glasses</div>
                 </div>
-            </a>
-            {% endfor %}
+                
+                <div class="category-card">
+                    <div class="category-image">
+                        <i class="fas fa-circle"></i>
+                    </div>
+                    <div class="category-title">Contact Lenses</div>
+                </div>
+                
+                <div class="category-card">
+                    <div class="category-image">
+                        <i class="fas fa-child"></i>
+                    </div>
+                    <div class="category-title">Kids</div>
+                </div>
+            </div>
         </div>
+    </section>
+
+    <!-- SALE Divider -->
+    <div class="sale-divider">
+        <h2>SALE</h2>
     </div>
-</section>
 
-<!-- ==================== BRANDS ==================== -->
-<section class="brands-section">
-    <div class="container">
-        <div class="section-header scroll-reveal">
-            <h2 class="section-title">Shop by Brand</h2>
-            <p class="section-subtitle">Discover our premium eyewear collections</p>
+    <!-- Blog Section -->
+    <section class="blog-section">
+        <div class="container">
+            <h2 class="section-title">AL AMEEN OPTICS BLOG</h2>
+            
+            <div class="blog-grid">
+                <div class="blog-card">
+                    <div class="blog-image">Blog Image 1</div>
+                    <div class="blog-content">
+                        <h3 class="blog-title">Your Vision Matters More: Discover Advanced Eye Care at Al Ameen Optics</h3>
+                        <p class="blog-description">Prepare for an exceptional eye care experience with our comprehensive vision assessment and expert optical services, designed to keep your eyes healthy and your vision crystal clear—only at Al Ameen Optics.</p>
+                        <a href="#" class="btn-read-more">
+                            Read More <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="blog-card">
+                    <div class="blog-image">Blog Image 2</div>
+                    <div class="blog-content">
+                        <h3 class="blog-title">Your Vision Matters More: Discover Advanced Eye Care at Al Ameen Optics</h3>
+                        <p class="blog-description">Prepare for an exceptional eye care experience with our comprehensive vision assessment and expert optical services, designed to keep your eyes healthy and your vision crystal clear—only at Al Ameen Optics.</p>
+                        <a href="#" class="btn-read-more">
+                            Read More <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="blog-card">
+                    <div class="blog-image">Blog Image 3</div>
+                    <div class="blog-content">
+                        <h3 class="blog-title">Your Vision Matters More: Discover Advanced Eye Care at Al Ameen Optics</h3>
+                        <p class="blog-description">Prepare for an exceptional eye care experience with our comprehensive vision assessment and expert optical services, designed to keep your eyes healthy and your vision crystal clear—only at Al Ameen Optics.</p>
+                        <a href="#" class="btn-read-more">
+                            Read More <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
+    </section>
 
-        <div class="brands-grid">
-            <a href="{% url 'catalog:brand_detail' 'ray-ban' %}" class="brand-card scroll-reveal">
-                <span class="brand-name">Ray-Ban</span>
-            </a>
-            <a href="{% url 'catalog:brand_detail' 'oakley' %}" class="brand-card scroll-reveal">
-                <span class="brand-name">Oakley</span>
-            </a>
-            <a href="{% url 'catalog:brand_detail' 'gucci' %}" class="brand-card scroll-reveal">
-                <span class="brand-name">Gucci</span>
-            </a>
-            <a href="{% url 'catalog:brand_detail' 'prada' %}" class="brand-card scroll-reveal">
-                <span class="brand-name">Prada</span>
-            </a>
-            <a href="{% url 'catalog:brand_detail' 'versace' %}" class="brand-card scroll-reveal">
-                <span class="brand-name">Versace</span>
-            </a>
-            <a href="{% url 'catalog:brand_detail' 'vogue' %}" class="brand-card scroll-reveal">
-                <span class="brand-name">Vogue</span>
-            </a>
-            <a href="{% url 'catalog:brand_detail' 'burberry' %}" class="brand-card scroll-reveal">
-                <span class="brand-name">Burberry</span>
-            </a>
-            <a href="{% url 'catalog:brand_detail' 'carrera' %}" class="brand-card scroll-reveal">
-                <span class="brand-name">Carrera</span>
-            </a>
-            <a href="{% url 'catalog:brand_detail' 'emporio-armani' %}" class="brand-card scroll-reveal">
-                <span class="brand-name">Emporio Armani</span>
-            </a>
-            <a href="{% url 'catalog:brand_detail' 'michael-kors' %}" class="brand-card scroll-reveal">
-                <span class="brand-name">Michael Kors</span>
-            </a>
-            <a href="{% url 'catalog:brand_detail' 'tom-ford' %}" class="brand-card scroll-reveal">
-                <span class="brand-name">Tom Ford</span>
-            </a>
-            <a href="{% url 'catalog:brand_detail' 'dolce-gabbana' %}" class="brand-card scroll-reveal">
-                <span class="brand-name">Dolce & Gabbana</span>
-            </a>
+    <!-- Promotional Banner -->
+    <section class="promo-banner">
+        <div class="container">
+            <div class="promo-content">
+                <h2>Plastic Fantastic SALE</h2>
+                <p>Up to 50% OFF</p>
+                <a href="#" class="btn-shop-now">Shop Now</a>
+            </div>
         </div>
+    </section>
 
-        <div class="text-center scroll-reveal">
-            <a href="{% url 'catalog:brand_list' %}" class="view-all-link">
-                View All Brands <i class="fas fa-arrow-right"></i>
-            </a>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h3>Useful Links</h3>
+                    <ul>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#blog">Blog</a></li>
+                        <li><a href="#careers">Careers</a></li>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms & Conditions</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Shop</h3>
+                    <ul>
+                        <li><a href="#sunglasses">Sunglasses</a></li>
+                        <li><a href="#eyeglasses">Eyeglasses</a></li>
+                        <li><a href="#contact-lenses">Contact Lenses</a></li>
+                        <li><a href="#kids">Kids Eyewear</a></li>
+                        <li><a href="#accessories">Accessories</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Customer Service</h3>
+                    <ul>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="#shipping">Shipping & Delivery</a></li>
+                        <li><a href="#returns">Returns & Exchange</a></li>
+                        <li><a href="#warranty">Warranty</a></li>
+                        <li><a href="#support">Support</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Contact Info</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> Doha, Qatar</p>
+                    <p><i class="fas fa-phone"></i> +974 XXXX XXXX</p>
+                    <p><i class="fas fa-envelope"></i> info@alameenoptics.com</p>
+                    
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Al Ameen Optics. All rights reserved.</p>
+            </div>
         </div>
-    </div>
-</section>
+    </footer>
 
-<!-- ==================== EYE TEST BANNER ==================== -->
-<section class="eye-test-section">
-    <div class="container">
-        <div class="eye-test-content scroll-reveal">
-            <h2 class="eye-test-title">Book Your Free Eye Test</h2>
-            <p class="eye-test-description">Visit our clinics for a comprehensive eye examination by certified optometrists. Professional care for your vision health.</p>
-            <a href=" " class="book-btn">
-                <i class="fas fa-calendar-check"></i> Book Appointment
-            </a>
-        </div>
-    </div>
-</section>
+    <script>
+        // Mobile Menu Toggle
+        const mobileToggle = document.getElementById('mobileToggle');
+        const navMenu = document.getElementById('navMenu');
 
-<!-- ==================== NEWSLETTER ==================== -->
-<section class="newsletter-section">
-    <div class="container">
-        <div class="newsletter-content scroll-reveal">
-            <h2 class="newsletter-title">Stay Connected</h2>
-            <p class="newsletter-description">Subscribe to receive exclusive offers, new arrivals, and eyewear insights</p>
-            <form method="post" action=" " class="newsletter-form">
-                {% csrf_token %}
-                <input type="email" name="email" class="newsletter-input" placeholder="Enter your email address" required>
-                <button type="submit" class="newsletter-submit">Subscribe</button>
-            </form>
-        </div>
-    </div>
-</section>
-
-<!-- ==================== CHAT SUPPORT ==================== -->
-<div class="chat-widget">
-    <button class="chat-button" onclick="openChat()">
-        <i class="fas fa-comments"></i>
-    </button>
-</div>
-
- 
-<script>
-    // Scroll Reveal Animation
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('revealed');
-            }
+        mobileToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
         });
-    }, observerOptions);
 
-    document.querySelectorAll('.scroll-reveal').forEach(el => {
-        observer.observe(el);
-    });
+        // Hero Carousel
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.hero-slide');
+        const dots = document.querySelectorAll('.carousel-dot');
 
-    // Wishlist Toggle
-    function toggleWishlist(productId) {
-        const icon = event.currentTarget.querySelector('i');
-        icon.classList.toggle('far');
-        icon.classList.toggle('fas');
-        
-        // Add your wishlist API call here
-        console.log('Toggle wishlist for product:', productId);
-    }
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            currentSlide = n;
+            if (currentSlide >= slides.length) currentSlide = 0;
+            if (currentSlide < 0) currentSlide = slides.length - 1;
+            
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }
 
-    // Add to Cart
-    function addToCart(productId) {
-        // Add your cart API call here
-        console.log('Add to cart product:', productId);
-        
-        // Show notification
-        alert('Product added to cart!');
-    }
+        // Auto slide every 5 seconds
+        setInterval(() => {
+            showSlide(currentSlide + 1);
+        }, 5000);
 
-    // Chat Widget
-    function openChat() {
-        // Implement your chat functionality here
-        console.log('Opening chat...');
-    }
-
-    // Smooth scroll for anchors
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
+        // Dot navigation
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                showSlide(index);
+            });
         });
-    });
-</script>
- 
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
