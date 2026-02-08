@@ -561,4 +561,3 @@ def merge_guest_cart_on_login(user, session_key):
         print(f"Error merging cart: {str(e)}")
 
 
- 
