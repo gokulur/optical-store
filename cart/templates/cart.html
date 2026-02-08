@@ -585,102 +585,254 @@
     {% endif %}
 </main>
 
+<!-- Add this JavaScript at the bottom of cart.html template -->
 <script>
-document.addEventListener("click", function (e) {
-    // Increase / Decrease Quantity
-    const qtyBtn = e.target.closest(".increase-qty, .decrease-qty");
-    if (qtyBtn) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-
-        let itemID = qtyBtn.dataset.itemId;
-        let url = qtyBtn.dataset.url;
-
-        fetch(url, {
-            method: "GET",
-            headers: { 
-                "X-Requested-With": "XMLHttpRequest",
-                "X-CSRFToken": "{{ csrf_token }}"
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("🛒 Cart page loaded");
+    
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
             }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                if (data.deleted) {
-                    document.getElementById("cart-row-" + itemID).remove();
-                    
-                    // Reload if cart is empty
-                    if (data.cart_count === 0) {
-                        location.reload();
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+    
+    // Update all totals
+    function updateTotals(data) {
+        console.log("📊 Updating totals:", data);
+        
+        // Update subtotal
+        const subtotalEl = document.querySelector('.xo-cart-totals');
+        if (subtotalEl && subtotalEl.querySelector('span:last-child')) {
+            subtotalEl.querySelector('span:last-child').textContent = 'QAR ' + data.subtotal;
+        }
+        
+        // Update shipping
+        if (data.shipping && parseFloat(data.shipping) > 0) {
+            const shippingEl = document.querySelector('.xo-cart-totals:nth-of-type(2)');
+            if (shippingEl && shippingEl.querySelector('span:last-child')) {
+                shippingEl.querySelector('span:last-child').textContent = 'QAR ' + data.shipping;
+            }
+        }
+        
+        // Update total
+        const totalEl = document.getElementById('cart-total');
+        if (totalEl) {
+            totalEl.textContent = 'QAR ' + data.cart_total;
+        }
+        
+        // Update header cart count
+        const countEls = document.querySelectorAll('.header-v24__cart-count, #cart-count');
+        countEls.forEach(el => {
+            el.textContent = data.cart_count;
+            // Add bounce animation
+            el.style.transform = 'scale(1.3)';
+            setTimeout(() => {
+                el.style.transform = 'scale(1)';
+            }, 300);
+        });
+    }
+    
+    // Handle quantity buttons
+    document.addEventListener("click", function(e) {
+        
+        // QUANTITY BUTTONS (+ and -)
+        const qtyBtn = e.target.closest(".increase-qty, .decrease-qty");
+        if (qtyBtn) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            
+            const itemId = qtyBtn.dataset.itemId;
+            const action = qtyBtn.classList.contains('increase-qty') ? 'increase' : 'decrease';
+            const url = `/cart/update/${itemId}/${action}/`;
+            
+            console.log(`${action === 'increase' ? '➕' : '➖'} Updating quantity for item ${itemId}`);
+            
+            // Disable buttons during request
+            const allBtns = document.querySelectorAll(`[data-item-id="${itemId}"]`);
+            allBtns.forEach(btn => btn.style.pointerEvents = 'none');
+            
+            fetch(url, {
+                method: "GET",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": csrftoken
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log("✅ Quantity update response:", data);
+                
+                if (data.success) {
+                    if (data.deleted) {
+                        // Item removed (quantity went to 0)
+                        const row = document.getElementById("cart-row-" + itemId);
+                        if (row) {
+                            row.style.transition = "opacity 0.3s ease";
+                            row.style.opacity = "0";
+                            
+                            setTimeout(() => {
+                                row.remove();
+                                
+                                // Reload if cart is empty
+                                if (data.cart_count === 0) {
+                                    console.log("🔄 Cart empty, reloading...");
+                                    location.reload();
+                                } else {
+                                    updateTotals(data);
+                                }
+                            }, 300);
+                        }
+                    } else {
+                        // Update quantity displays
+                        document.querySelectorAll(".item-quantity-" + itemId).forEach(input => {
+                            input.value = data.quantity;
+                        });
+                        
+                        // Update item total
+                        const itemTotalEl = document.querySelector(".item-total-" + itemId);
+                        if (itemTotalEl) {
+                            itemTotalEl.textContent = "QAR " + data.item_total;
+                            
+                            // Add pulse animation
+                            itemTotalEl.style.transition = "color 0.3s ease";
+                            itemTotalEl.style.color = "#4caf50";
+                            setTimeout(() => {
+                                itemTotalEl.style.color = "";
+                            }, 500);
+                        }
+                        
+                        // Update all totals
+                        updateTotals(data);
                     }
                 } else {
-                    // Update Quantity
-                    document.querySelectorAll(".item-quantity-" + itemID)
-                        .forEach(el => el.value = data.quantity);
-
-                    // Update item total
-                    document.querySelector(".item-total-" + itemID).innerHTML = "QAR " + data.item_total;
-                    
-                    // Update cart total
-                    document.getElementById("cart-total").innerHTML = "QAR " + data.cart_total;
+                    alert(data.message || 'Error updating quantity');
                 }
-            } else {
-                alert(data.message || 'Error updating cart');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
-        });
-
-        return;
-    }
-
-   const removeBtn = e.target.closest(".remove-item-btn");
-    if (!removeBtn) return;
-
-    e.preventDefault();
-
-    if (!confirm("Remove this item from cart?")) return;
-
-    let itemID = removeBtn.dataset.itemId;
-    let url = removeBtn.dataset.url;
-
-    fetch(url, {
-        method: "POST",   // ✅ FIXED
-        headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            "X-CSRFToken": "{{ csrf_token }}",  // ✅ needed for POST
-        }
-    })
-    .then(res => res.json())
-    .then(data => {
-
-        if (!data.success) {
-            alert(data.message || "Error removing item");
+            })
+            .catch(error => {
+                console.error('❌ Error:', error);
+                alert('An error occurred. Please try again.');
+            })
+            .finally(() => {
+                // Re-enable buttons
+                allBtns.forEach(btn => btn.style.pointerEvents = '');
+            });
+            
             return;
         }
-
-        const row = document.getElementById("cart-row-" + itemID);
-
-        row.style.transition = "0.25s";
-        row.style.opacity = "0";
-
-        setTimeout(() => {
-            row.remove();
-
-            // Update total
-            document.getElementById("cart-total").innerHTML = "QAR " + data.cart_total;
-
-            // Reload if empty
-            if (data.cart_count === 0) {
-                location.reload();
-            }
-
-        }, 250);
-
-    })
-    .catch(() => alert("Something went wrong"));
+        
+        // REMOVE BUTTON
+        const removeBtn = e.target.closest(".remove-item-btn");
+        if (removeBtn) {
+            e.preventDefault();
+            
+            if (!confirm("Remove this item from cart?")) return;
+            
+            const itemId = removeBtn.dataset.itemId;
+            const url = removeBtn.dataset.url;
+            
+            console.log("🗑️ Removing item:", itemId);
+            
+            // Disable button
+            removeBtn.disabled = true;
+            
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": csrftoken
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log("✅ Remove response:", data);
+                
+                if (data.success) {
+                    const row = document.getElementById("cart-row-" + itemId);
+                    if (row) {
+                        row.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+                        row.style.opacity = "0";
+                        row.style.transform = "translateX(50px)";
+                        
+                        setTimeout(() => {
+                            row.remove();
+                            
+                            // Update totals
+                            updateTotals(data);
+                            
+                            // Reload if cart is empty
+                            if (data.cart_count === 0) {
+                                console.log("🔄 Cart empty, reloading...");
+                                setTimeout(() => location.reload(), 500);
+                            }
+                        }, 300);
+                    }
+                } else {
+                    alert(data.message || "Error removing item");
+                    removeBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error:', error);
+                alert("Something went wrong");
+                removeBtn.disabled = false;
+            });
+            
+            return;
+        }
+    });
 });
 </script>
+
+<style>
+/* Enhanced quantity button styles */
+.xo-quantity-style2__button {
+    transition: all 0.2s ease;
+}
+
+.xo-quantity-style2__button:hover {
+    background-color: #f0f0f0;
+    transform: scale(1.1);
+}
+
+.xo-quantity-style2__button:active {
+    transform: scale(0.95);
+}
+
+/* Item total animation */
+.xo-cart-table__price {
+    transition: color 0.3s ease;
+}
+
+/* Remove button hover effect */
+.remove-item-btn:hover {
+    color: #dc3545;
+}
+
+/* Row removal animation */
+.xo-table__body-row {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Cart count badge animation */
+.header-v24__cart-count {
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.35);
+}
+
+/* Loading state for quantity buttons */
+.xo-quantity-style2__button[style*="pointer-events: none"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+</style>
 {% endblock %}
