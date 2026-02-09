@@ -1,18 +1,29 @@
+# orders/views.py - COMPLETE WITH PAYMENT INTEGRATION
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.db import transaction
+from django.urls import reverse
 from decimal import Decimal
 import random
 import string
+import json
 
-from .models import Order, OrderItem, OrderItemLensAddOn, OrderStatusHistory
+from .models import Order, OrderItem, OrderItemLensAddOn, OrderStatusHistory, PaymentTransaction
 from cart.models import Cart, CartItem
 from users.models import Address
 from cart.views import get_or_create_cart
+from .payment_services import (
+    StripePaymentService,
+    RazorpayPaymentService,
+    PayPalPaymentService,
+    PaymentGatewayFactory,
+    PaymentGatewayError
+)
 
 
 def generate_order_number():
@@ -20,6 +31,13 @@ def generate_order_number():
     timestamp = timezone.now().strftime('%Y%m%d')
     random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
     return f"ORD-{timestamp}-{random_str}"
+
+
+def generate_transaction_id():
+    """Generate unique transaction ID"""
+    timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
+    random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    return f"TXN-{timestamp}-{random_str}"
 
 
 @login_required
@@ -50,7 +68,7 @@ def checkout(request):
         subtotal += item_total
     
     # Calculate tax and shipping
-    tax_rate = Decimal('0.00')  # Adjust as needed
+    tax_rate = Decimal('0.00')
     tax = subtotal * tax_rate
     
     shipping = Decimal('0.00')
@@ -69,6 +87,9 @@ def checkout(request):
         'tax': tax,
         'shipping': shipping,
         'total': total,
+        # Payment gateway keys (for frontend)
+        'stripe_publishable_key': getattr(settings, 'STRIPE_PUBLISHABLE_KEY', ''),
+        'razorpay_key_id': getattr(settings, 'RAZORPAY_KEY_ID', ''),
     }
     
     return render(request, 'checkout.html', context)
@@ -78,7 +99,7 @@ def checkout(request):
 @require_POST
 @transaction.atomic
 def place_order(request):
-    """Place order from cart"""
+    """Place order from cart - handles payment initiation"""
     try:
         cart = get_or_create_cart(request)
         cart_items = cart.items.all()
@@ -88,20 +109,54 @@ def place_order(request):
             return redirect('cart:cart_view')
         
         # Get form data
-        shipping_address_id = request.POST.get('shipping_address_id')
-        billing_address_id = request.POST.get('billing_address_id')
         payment_method = request.POST.get('payment_method')
         customer_notes = request.POST.get('customer_notes', '')
         
-        # Get addresses
-        shipping_address = get_object_or_404(Address, id=shipping_address_id, user=request.user)
-        
-        if billing_address_id and billing_address_id != shipping_address_id:
-            billing_address = get_object_or_404(Address, id=billing_address_id, user=request.user)
-            billing_same = False
+        # Get or create address from form
+        if request.POST.get('shipping_address_id'):
+            shipping_address = get_object_or_404(Address, id=request.POST.get('shipping_address_id'), user=request.user)
+            
+            shipping_info = {
+                'line1': shipping_address.address_line1,
+                'line2': shipping_address.address_line2,
+                'city': shipping_address.city,
+                'state': shipping_address.state,
+                'country': shipping_address.country,
+                'postal_code': shipping_address.postal_code,
+                'phone': shipping_address.phone,
+                'name': shipping_address.full_name,
+            }
         else:
-            billing_address = shipping_address
-            billing_same = True
+            # Manual address entry
+            shipping_info = {
+                'line1': request.POST.get('address_line1', ''),
+                'line2': request.POST.get('address_line2', ''),
+                'city': request.POST.get('city', ''),
+                'state': request.POST.get('state', ''),
+                'country': request.POST.get('country', 'India'),
+                'postal_code': request.POST.get('postal_code', ''),
+                'phone': request.POST.get('phone', ''),
+                'name': request.POST.get('full_name', request.user.get_full_name()),
+            }
+        
+        # Get location coordinates
+        delivery_latitude = request.POST.get('delivery_latitude')
+        delivery_longitude = request.POST.get('delivery_longitude')
+        
+        # Billing address
+        billing_same = request.POST.get('same_as_shipping') == 'on'
+        if billing_same:
+            billing_info = shipping_info.copy()
+        else:
+            billing_address = get_object_or_404(Address, id=request.POST.get('billing_address_id'), user=request.user)
+            billing_info = {
+                'line1': billing_address.address_line1,
+                'line2': billing_address.address_line2,
+                'city': billing_address.city,
+                'state': billing_address.state,
+                'country': billing_address.country,
+                'postal_code': billing_address.postal_code,
+            }
         
         # Calculate totals
         subtotal = Decimal('0.00')
@@ -113,9 +168,7 @@ def place_order(request):
                 item_total += addon.price * item.quantity
             subtotal += item_total
         
-        tax_rate = Decimal('0.00')
-        tax = subtotal * tax_rate
-        
+        tax = Decimal('0.00')
         shipping_amount = Decimal('0.00')
         if subtotal < Decimal('200.00'):
             shipping_amount = Decimal('20.00')
@@ -135,21 +188,23 @@ def place_order(request):
             discount_amount=Decimal('0.00'),
             total_amount=total,
             customer_email=request.user.email,
-            customer_phone=request.user.phone or shipping_address.phone,
-            customer_name=request.user.get_full_name() or shipping_address.full_name,
-            shipping_address_line1=shipping_address.address_line1,
-            shipping_address_line2=shipping_address.address_line2,
-            shipping_city=shipping_address.city,
-            shipping_state=shipping_address.state,
-            shipping_country=shipping_address.country,
-            shipping_postal_code=shipping_address.postal_code,
+            customer_phone=shipping_info['phone'],
+            customer_name=shipping_info['name'],
+            shipping_address_line1=shipping_info['line1'],
+            shipping_address_line2=shipping_info['line2'],
+            shipping_city=shipping_info['city'],
+            shipping_state=shipping_info['state'],
+            shipping_country=shipping_info['country'],
+            shipping_postal_code=shipping_info['postal_code'],
+            delivery_latitude=Decimal(delivery_latitude) if delivery_latitude else None,
+            delivery_longitude=Decimal(delivery_longitude) if delivery_longitude else None,
             billing_same_as_shipping=billing_same,
-            billing_address_line1=billing_address.address_line1,
-            billing_address_line2=billing_address.address_line2,
-            billing_city=billing_address.city,
-            billing_state=billing_address.state,
-            billing_country=billing_address.country,
-            billing_postal_code=billing_address.postal_code,
+            billing_address_line1=billing_info['line1'],
+            billing_address_line2=billing_info['line2'],
+            billing_city=billing_info['city'],
+            billing_state=billing_info['state'],
+            billing_country=billing_info['country'],
+            billing_postal_code=billing_info['postal_code'],
             payment_method=payment_method,
             payment_status='pending',
             customer_notes=customer_notes
@@ -192,11 +247,6 @@ def place_order(request):
                     addon_name=addon_item.addon.name,
                     price=addon_item.price
                 )
-                item_subtotal += addon_item.price * cart_item.quantity
-            
-            # Update order item subtotal
-            order_item.subtotal = item_subtotal
-            order_item.save()
         
         # Create status history
         OrderStatusHistory.objects.create(
@@ -206,22 +256,342 @@ def place_order(request):
             changed_by=request.user
         )
         
-        # Clear cart
-        cart.items.all().delete()
-        
-        # Process payment (placeholder)
+        # Route to appropriate payment handler
         if payment_method == 'cash_on_delivery':
-            order.payment_status = 'pending'
-            order.save()
-        # Add other payment methods here
+            # Clear cart
+            cart.items.all().delete()
+            messages.success(request, 'Order placed successfully! Pay when you receive your order.')
+            return redirect('orders:order_confirmation', order_number=order.order_number)
         
-        messages.success(request, 'Order placed successfully!')
-        return redirect('orders:order_confirmation', order_number=order.order_number)
+        elif payment_method == 'stripe':
+            return redirect('orders:stripe_payment', order_number=order.order_number)
+        
+        elif payment_method == 'razorpay':
+            return redirect('orders:razorpay_payment', order_number=order.order_number)
+        
+        elif payment_method == 'paypal':
+            return redirect('orders:paypal_payment', order_number=order.order_number)
+        
+        else:
+            messages.error(request, 'Invalid payment method selected.')
+            return redirect('orders:checkout')
         
     except Exception as e:
         messages.error(request, f'Error placing order: {str(e)}')
         return redirect('orders:checkout')
 
+
+# ============================================
+# STRIPE PAYMENT VIEWS
+# ============================================
+
+@login_required
+def stripe_payment(request, order_number):
+    """Stripe payment page"""
+    order = get_object_or_404(Order, order_number=order_number, customer=request.user)
+    
+    if order.payment_status == 'completed':
+        messages.info(request, 'This order has already been paid.')
+        return redirect('orders:order_confirmation', order_number=order.order_number)
+    
+    try:
+        # Create Stripe payment intent
+        result = StripePaymentService.create_payment_intent(order)
+        
+        if result['success']:
+            # Store payment gateway info
+            order.payment_gateway = 'stripe'
+            order.payment_transaction_id = result['payment_intent_id']
+            order.save()
+            
+            context = {
+                'order': order,
+                'client_secret': result['client_secret'],
+                'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY,
+            }
+            return render(request, 'orders/stripe_payment.html', context)
+        else:
+            messages.error(request, f"Payment error: {result.get('error')}")
+            return redirect('orders:checkout')
+    
+    except Exception as e:
+        messages.error(request, f'Error initializing payment: {str(e)}')
+        return redirect('orders:checkout')
+
+
+@login_required
+@require_POST
+def stripe_payment_confirm(request, order_number):
+    """Confirm Stripe payment"""
+    order = get_object_or_404(Order, order_number=order_number, customer=request.user)
+    
+    try:
+        payment_intent_id = request.POST.get('payment_intent_id')
+        
+        result = StripePaymentService.confirm_payment(payment_intent_id)
+        
+        if result['success']:
+            # Update order
+            order.payment_status = 'completed'
+            order.payment_gateway_response = result
+            order.paid_at = timezone.now()
+            order.status = 'confirmed'
+            order.confirmed_at = timezone.now()
+            order.save()
+            
+            # Create payment transaction record
+            PaymentTransaction.objects.create(
+                order=order,
+                transaction_id=generate_transaction_id(),
+                gateway_transaction_id=payment_intent_id,
+                transaction_type='payment',
+                status='completed',
+                amount=order.total_amount,
+                currency=order.currency,
+                payment_gateway='stripe',
+                payment_method='card',
+                gateway_response=result,
+                completed_at=timezone.now()
+            )
+            
+            # Clear cart
+            cart = get_or_create_cart(request)
+            cart.items.all().delete()
+            
+            # Create status history
+            OrderStatusHistory.objects.create(
+                order=order,
+                from_status='pending',
+                to_status='confirmed',
+                notes='Payment confirmed via Stripe',
+                changed_by=request.user
+            )
+            
+            return JsonResponse({'success': True, 'redirect_url': reverse('orders:order_confirmation', args=[order.order_number])})
+        else:
+            return JsonResponse({'success': False, 'error': result.get('error')})
+    
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+# ============================================
+# RAZORPAY PAYMENT VIEWS
+# ============================================
+
+@login_required
+def razorpay_payment(request, order_number):
+    """Razorpay payment page"""
+    order = get_object_or_404(Order, order_number=order_number, customer=request.user)
+    
+    if order.payment_status == 'completed':
+        messages.info(request, 'This order has already been paid.')
+        return redirect('orders:order_confirmation', order_number=order.order_number)
+    
+    try:
+        # Create Razorpay order
+        result = RazorpayPaymentService.create_order(order)
+        
+        if result['success']:
+            # Store payment gateway info
+            order.payment_gateway = 'razorpay'
+            order.payment_transaction_id = result['razorpay_order_id']
+            order.save()
+            
+            context = {
+                'order': order,
+                'razorpay_order_id': result['razorpay_order_id'],
+                'razorpay_key_id': result['key_id'],
+                'amount': result['amount'],
+                'currency': result['currency'],
+            }
+            return render(request, 'orders/razorpay_payment.html', context)
+        else:
+            messages.error(request, f"Payment error: {result.get('error')}")
+            return redirect('orders:checkout')
+    
+    except Exception as e:
+        messages.error(request, f'Error initializing payment: {str(e)}')
+        return redirect('orders:checkout')
+
+
+@csrf_exempt
+@require_POST
+def razorpay_payment_verify(request):
+    """Verify Razorpay payment webhook"""
+    try:
+        data = json.loads(request.body)
+        
+        razorpay_order_id = data.get('razorpay_order_id')
+        razorpay_payment_id = data.get('razorpay_payment_id')
+        razorpay_signature = data.get('razorpay_signature')
+        
+        # Find order
+        order = Order.objects.get(payment_transaction_id=razorpay_order_id)
+        
+        # Verify signature
+        result = RazorpayPaymentService.verify_payment(
+            razorpay_order_id,
+            razorpay_payment_id,
+            razorpay_signature
+        )
+        
+        if result['success']:
+            # Update order
+            order.payment_status = 'completed'
+            order.payment_gateway_response = result
+            order.paid_at = timezone.now()
+            order.status = 'confirmed'
+            order.confirmed_at = timezone.now()
+            order.save()
+            
+            # Create payment transaction
+            PaymentTransaction.objects.create(
+                order=order,
+                transaction_id=generate_transaction_id(),
+                gateway_transaction_id=razorpay_payment_id,
+                transaction_type='payment',
+                status='completed',
+                amount=order.total_amount,
+                currency=order.currency,
+                payment_gateway='razorpay',
+                payment_method=result.get('method', 'card'),
+                card_last4=result.get('card_last4', ''),
+                card_brand=result.get('card_network', ''),
+                gateway_response=result,
+                completed_at=timezone.now()
+            )
+            
+            # Clear cart
+            cart = Cart.objects.filter(customer=order.customer).first()
+            if cart:
+                cart.items.all().delete()
+            
+            # Create status history
+            OrderStatusHistory.objects.create(
+                order=order,
+                from_status='pending',
+                to_status='confirmed',
+                notes='Payment confirmed via Razorpay',
+                changed_by=order.customer
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'redirect_url': reverse('orders:order_confirmation', args=[order.order_number])
+            })
+        else:
+            order.payment_status = 'failed'
+            order.save()
+            return JsonResponse({'success': False, 'error': result.get('error')})
+    
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+# ============================================
+# PAYPAL PAYMENT VIEWS
+# ============================================
+
+@login_required
+def paypal_payment(request, order_number):
+    """PayPal payment page"""
+    order = get_object_or_404(Order, order_number=order_number, customer=request.user)
+    
+    if order.payment_status == 'completed':
+        messages.info(request, 'This order has already been paid.')
+        return redirect('orders:order_confirmation', order_number=order.order_number)
+    
+    try:
+        # Create PayPal payment
+        return_url = request.build_absolute_uri(reverse('orders:paypal_execute', args=[order.order_number]))
+        cancel_url = request.build_absolute_uri(reverse('orders:checkout'))
+        
+        result = PayPalPaymentService.create_payment(order, return_url, cancel_url)
+        
+        if result['success']:
+            # Store payment gateway info
+            order.payment_gateway = 'paypal'
+            order.payment_transaction_id = result['payment_id']
+            order.save()
+            
+            # Redirect to PayPal approval URL
+            return redirect(result['approval_url'])
+        else:
+            messages.error(request, f"Payment error: {result.get('error')}")
+            return redirect('orders:checkout')
+    
+    except Exception as e:
+        messages.error(request, f'Error initializing payment: {str(e)}')
+        return redirect('orders:checkout')
+
+
+@login_required
+def paypal_execute(request, order_number):
+    """Execute PayPal payment after approval"""
+    order = get_object_or_404(Order, order_number=order_number, customer=request.user)
+    
+    try:
+        payment_id = request.GET.get('paymentId')
+        payer_id = request.GET.get('PayerID')
+        
+        if not payment_id or not payer_id:
+            messages.error(request, 'Payment cancelled or invalid.')
+            return redirect('orders:checkout')
+        
+        result = PayPalPaymentService.execute_payment(payment_id, payer_id)
+        
+        if result['success']:
+            # Update order
+            order.payment_status = 'completed'
+            order.payment_gateway_response = result
+            order.paid_at = timezone.now()
+            order.status = 'confirmed'
+            order.confirmed_at = timezone.now()
+            order.save()
+            
+            # Create payment transaction
+            PaymentTransaction.objects.create(
+                order=order,
+                transaction_id=generate_transaction_id(),
+                gateway_transaction_id=payment_id,
+                transaction_type='payment',
+                status='completed',
+                amount=order.total_amount,
+                currency=order.currency,
+                payment_gateway='paypal',
+                payment_method='paypal',
+                gateway_response=result,
+                completed_at=timezone.now()
+            )
+            
+            # Clear cart
+            cart = get_or_create_cart(request)
+            cart.items.all().delete()
+            
+            # Create status history
+            OrderStatusHistory.objects.create(
+                order=order,
+                from_status='pending',
+                to_status='confirmed',
+                notes='Payment confirmed via PayPal',
+                changed_by=request.user
+            )
+            
+            messages.success(request, 'Payment successful!')
+            return redirect('orders:order_confirmation', order_number=order.order_number)
+        else:
+            messages.error(request, f"Payment failed: {result.get('error')}")
+            return redirect('orders:checkout')
+    
+    except Exception as e:
+        messages.error(request, f'Error processing payment: {str(e)}')
+        return redirect('orders:checkout')
+
+
+# ============================================
+# ORDER CONFIRMATION & MANAGEMENT
+# ============================================
 
 @login_required
 def order_confirmation(request, order_number):
@@ -255,7 +625,7 @@ def order_list(request):
         'order_statuses': Order.ORDER_STATUS,
     }
     
-    return render(request, 'order_list.html', context)
+    return render(request, 'orders/order_list.html', context)
 
 
 @login_required
@@ -274,10 +644,14 @@ def order_detail(request, order_number):
     # Get status history
     status_history = order.status_history.all()
     
+    # Get payment transactions
+    payment_transactions = order.payment_transactions.all()
+    
     context = {
         'order': order,
         'order_items': order_items,
         'status_history': status_history,
+        'payment_transactions': payment_transactions,
     }
     
     return render(request, 'orders/order_detail.html', context)
@@ -292,7 +666,7 @@ def track_order(request, order_number):
         customer=request.user
     )
     
-    # Get status timeline
+    # Get status history
     status_history = order.status_history.all()
     
     # Define status progression
@@ -327,7 +701,7 @@ def cancel_order(request, order_number):
     )
     
     # Can only cancel pending/confirmed orders
-    if order.status not in ['pending', 'confirmed']:
+    if not order.can_be_cancelled:
         messages.error(request, 'This order cannot be cancelled.')
         return redirect('orders:order_detail', order_number=order_number)
     
@@ -349,41 +723,7 @@ def cancel_order(request, order_number):
     return redirect('orders:order_detail', order_number=order_number)
 
 
-@login_required
-def reorder(request, order_number):
-    """Reorder - add items from previous order to cart"""
-    order = get_object_or_404(
-        Order,
-        order_number=order_number,
-        customer=request.user
-    )
-    
-    cart = get_or_create_cart(request)
-    
-    # Add order items to cart
-    for order_item in order.items.all():
-        # Check if product still active
-        if not order_item.product.is_active:
-            continue
-        
-        cart_item = CartItem.objects.create(
-            cart=cart,
-            product=order_item.product,
-            variant=order_item.variant,
-            quantity=order_item.quantity,
-            unit_price=order_item.product.base_price,  # Use current price
-            requires_prescription=order_item.requires_prescription,
-            lens_option=order_item.lens_option,
-            lens_price=order_item.lens_price,
-            prescription_data=order_item.prescription_data,
-            special_instructions=order_item.special_instructions
-        )
-    
-    messages.success(request, 'Items added to cart from previous order!')
-    return redirect('cart:cart_view')
-
-
-# AJAX endpoints
+# AJAX endpoint
 @login_required
 def get_order_status(request, order_number):
     """Get order status (AJAX)"""
@@ -397,8 +737,7 @@ def get_order_status(request, order_number):
         'order_number': order.order_number,
         'status': order.status,
         'status_display': order.get_status_display(),
+        'payment_status': order.payment_status,
         'tracking_number': order.tracking_number,
         'carrier': order.carrier,
-        'shipped_at': order.shipped_at.isoformat() if order.shipped_at else None,
-        'delivered_at': order.delivered_at.isoformat() if order.delivered_at else None,
     })
