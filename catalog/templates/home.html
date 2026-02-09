@@ -1,813 +1,686 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Al Ameen Optics - Your Vision Matters More</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: #ffffff;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Navbar */
-        .navbar {
-            background: #fff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            padding: 15px 0;
-        }
-
-        .navbar .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 28px;
-            font-weight: 700;
-            color: #1e3a8a;
-            text-decoration: none;
-        }
-
-        .nav-menu {
-            display: flex;
-            list-style: none;
-            gap: 35px;
-            align-items: center;
-        }
-
-        .nav-menu a {
-            text-decoration: none;
-            color: #333;
-            font-weight: 500;
-            font-size: 15px;
-            text-transform: uppercase;
-            transition: color 0.3s;
-        }
-
-        .nav-menu a:hover {
-            color: #1e3a8a;
-        }
-
-        .btn-book {
-            background: #f97316;
-            color: white;
-            padding: 12px 28px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            font-size: 14px;
-        }
-
-        .btn-book:hover {
-            background: #ea580c;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(249, 115, 22, 0.4);
-        }
-
-        .mobile-toggle {
-            display: none;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        /* Hero Carousel */
-        .hero-carousel {
-            position: relative;
-            height: 600px;
-            overflow: hidden;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .hero-slide {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
-            display: flex;
-            align-items: center;
-        }
-
-        .hero-slide.active {
-            opacity: 1;
-        }
-
-        .hero-slide::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(30, 58, 138, 0.3);
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 2;
-            color: white;
-            max-width: 600px;
-            padding: 0 50px;
-        }
-
-        .hero-content h1 {
-            font-size: 56px;
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 20px;
-        }
-
-        .hero-content p {
-            font-size: 18px;
-            line-height: 1.8;
-            margin-bottom: 30px;
-            opacity: 0.95;
-        }
-
-        .btn-hero {
-            background: #f97316;
-            color: white;
-            padding: 16px 40px;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: 600;
-            display: inline-block;
-            transition: all 0.3s;
-            text-transform: uppercase;
-        }
-
-        .btn-hero:hover {
-            background: #ea580c;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(249, 115, 22, 0.4);
-        }
-
-        .carousel-controls {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 12px;
-            z-index: 10;
-        }
-
-        .carousel-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.5);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .carousel-dot.active {
-            background: white;
-            width: 30px;
-            border-radius: 6px;
-        }
-
-        /* Categories Section */
-        .categories-section {
-            padding: 80px 0;
-            background: #f8fafc;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 42px;
-            font-weight: 700;
-            color: #1e3a8a;
-            margin-bottom: 50px;
-        }
-
-        .categories-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 30px;
-        }
-
-        .category-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .category-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-        }
-
-        .category-image {
-            width: 100%;
-            height: 250px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 80px;
-            color: white;
-        }
-
-        .category-title {
-            padding: 25px;
-            text-align: center;
-            font-size: 20px;
-            font-weight: 600;
-            color: #1e3a8a;
-        }
-
-        /* SALE Divider */
-        .sale-divider {
-            background: linear-gradient(90deg, #f97316 0%, #ea580c 100%);
-            padding: 40px 0;
-            text-align: center;
-        }
-
-        .sale-divider h2 {
-            font-size: 72px;
-            font-weight: 900;
-            color: white;
-            letter-spacing: 10px;
-            text-transform: uppercase;
-        }
-
-        /* Blog Section */
-        .blog-section {
-            padding: 80px 0;
-        }
-
-        .blog-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 35px;
-            margin-top: 50px;
-        }
-
-        .blog-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-            transition: all 0.3s;
-        }
-
-        .blog-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-        }
-
-        .blog-image {
-            width: 100%;
-            height: 280px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            font-weight: 600;
-        }
-
-        .blog-content {
-            padding: 30px;
-        }
-
-        .blog-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: #1e3a8a;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-
-        .blog-description {
-            font-size: 15px;
-            color: #666;
-            line-height: 1.8;
-            margin-bottom: 20px;
-        }
-
-        .btn-read-more {
-            color: #f97316;
-            text-decoration: none;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: gap 0.3s;
-        }
-
-        .btn-read-more:hover {
-            gap: 12px;
-        }
-
-        /* Promotional Banner */
-        .promo-banner {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-            padding: 120px 0;
-            text-align: center;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .promo-banner::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.03)"/></svg>');
-            opacity: 0.3;
-        }
-
-        .promo-content {
-            position: relative;
-            z-index: 2;
-        }
-
-        .promo-banner h2 {
-            font-size: 64px;
-            font-weight: 900;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-        }
-
-        .promo-banner p {
-            font-size: 32px;
-            margin-bottom: 35px;
-            font-weight: 600;
-        }
-
-        .btn-shop-now {
-            background: #f97316;
-            color: white;
-            padding: 18px 50px;
-            border-radius: 35px;
-            text-decoration: none;
-            font-weight: 700;
-            display: inline-block;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            font-size: 18px;
-        }
-
-        .btn-shop-now:hover {
-            background: #ea580c;
-            transform: scale(1.05);
-            box-shadow: 0 15px 40px rgba(249, 115, 22, 0.4);
-        }
-
-        /* Footer */
-        .footer {
-            background: #1e293b;
-            color: white;
-            padding: 60px 0 30px;
-        }
-
-        .footer-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 40px;
-            margin-bottom: 40px;
-        }
-
-        .footer-column h3 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #f97316;
-        }
-
-        .footer-column ul {
-            list-style: none;
-        }
-
-        .footer-column ul li {
-            margin-bottom: 12px;
-        }
-
-        .footer-column ul li a {
-            color: #cbd5e1;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .footer-column ul li a:hover {
-            color: white;
-        }
-
-        .footer-column p {
-            color: #cbd5e1;
-            line-height: 1.8;
-            margin-bottom: 10px;
-        }
-
-        .social-icons {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .social-icons a {
-            width: 40px;
-            height: 40px;
-            background: #334155;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            transition: all 0.3s;
-        }
-
-        .social-icons a:hover {
-            background: #f97316;
-            transform: translateY(-3px);
-        }
-
-        .footer-bottom {
-            text-align: center;
-            padding-top: 30px;
-            border-top: 1px solid #334155;
-            color: #94a3b8;
-            font-size: 14px;
-        }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .categories-grid,
-            .blog-grid,
-            .footer-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .hero-content h1 {
-                font-size: 42px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .nav-menu {
-                position: fixed;
-                left: -100%;
-                top: 70px;
-                flex-direction: column;
-                background: white;
-                width: 100%;
-                text-align: center;
-                transition: 0.3s;
-                box-shadow: 0 10px 27px rgba(0,0,0,0.05);
-                padding: 20px 0;
-                gap: 0;
-            }
-
-            .nav-menu.active {
-                left: 0;
-            }
-
-            .nav-menu li {
-                padding: 15px 0;
-                width: 100%;
-            }
-
-            .mobile-toggle {
-                display: block;
-            }
-
-            .hero-carousel {
-                height: 500px;
-            }
-
-            .hero-content {
-                padding: 0 30px;
-            }
-
-            .hero-content h1 {
-                font-size: 32px;
-            }
-
-            .hero-content p {
-                font-size: 16px;
-            }
-
-            .categories-grid,
-            .blog-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-grid {
-                grid-template-columns: 1fr;
-                gap: 30px;
-            }
-
-            .sale-divider h2 {
-                font-size: 48px;
-                letter-spacing: 5px;
-            }
-
-            .promo-banner h2 {
-                font-size: 42px;
-            }
-
-            .promo-banner p {
-                font-size: 24px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="container">
-            <a href="#" class="logo">Al Ameen Optics</a>
-            
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="#new-arrivals">New Arrivals</a></li>
-                <li><a href="#categories">Categories</a></li>
-                <li><a href="#sunglasses">Sunglasses</a></li>
-                <li><a href="#eyeglasses">Eyeglasses</a></li>
-                <li><a href="#contact-lenses">Contact Lenses</a></li>
-                <li><a href="#kids">Kids</a></li>
-                <li><a href="#accessories">Accessories</a></li>
-                <li><a href="#book-test" class="btn-book">Book Free Eye Test</a></li>
-            </ul>
-
-            <div class="mobile-toggle" id="mobileToggle">
-                <i class="fas fa-bars"></i>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Carousel -->
-    <section class="hero-carousel">
-        <div class="hero-slide active">
-            <div class="container">
-                <div class="hero-content">
-                    <h1>Your Vision Matters More</h1>
-                    <p>Discover Advanced Eye Care at Al Ameen Optics. Prepare for an exceptional eye care experience with our comprehensive vision assessment and expert optical services, designed to keep your eyes healthy and your vision crystal clear—only at Al Ameen Optics.</p>
-                    <a href="#" class="btn-hero">Read More</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="hero-slide">
-            <div class="container">
-                <div class="hero-content">
-                    <h1>Premium Eyewear Collection</h1>
-                    <p>Explore our curated selection of designer frames and sunglasses. From classic styles to the latest trends, find the perfect eyewear that complements your unique style and personality.</p>
-                    <a href="#" class="btn-hero">Shop Now</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="hero-slide">
-            <div class="container">
-                <div class="hero-content">
-                    <h1>Expert Eye Care Services</h1>
-                    <p>Our certified optometrists provide comprehensive eye examinations using state-of-the-art technology. Book your free eye test today and experience professional care you can trust.</p>
-                    <a href="#" class="btn-hero">Book Now</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="carousel-controls">
-            <div class="carousel-dot active" data-slide="0"></div>
-            <div class="carousel-dot" data-slide="1"></div>
-            <div class="carousel-dot" data-slide="2"></div>
-        </div>
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Al Ameen Optics - Your Vision Matters More{% endblock %}
+
+{% block content %}
+<!-- Hero Banner Carousel -->
+<section class="shopify-section section">
+    <section class="xo-section--slideshow">
+        <xo-carousel xo-render-bullet="<span></span>" xo-type="nature" xo-speed="400" xo-loop="" xo-hover-pause=""
+            style="--xo-per-view: 1; --xo-gap: 0px; --xo-speed: 400ms; --xo-pagination-progress: 0%; --xo-mask: url('https://raw.githubusercontent.com/long-hp/storage/main/nature-sprite.png');"
+            xo-mask-initialized="" xo-initialized="">
+            <xo-carousel-inner style="overflow: hidden; height: 700px; transition: height 400ms;">
+                <xo-carousel-list role="list" aria-label="Slider" style="touch-action: none; outline: none;">
+
+                    <!-- Slide 1 -->
+                    <xo-carousel-slide aria-roledescription="Slide" aria-label="1 / 3" xo-carousel-slide=""
+                        role="tabpanel" xo-active="" xo-center="" xo-visible="">
+                        <div class="xo-slideshow color-inverse" style="--margin: 0;">
+                            <xo-animate class="slideshow-bg" xo-disabled="" xo-duration="1000"
+                                style="--img-desktop: url('{% static "cdn/shop/files/optical-banner-1.jpg" %}'); --img-mobile: url('{% static "cdn/shop/files/optical-banner-1.jpg" %}');">
+                                <div class="slideshow-bg-image__item">
+                                    <div class="slideshow-bg-image__url xo-background-lazyload"
+                                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    </div>
+                                </div>
+                            </xo-animate>
+
+                            <xo-container class="xo-container--box">
+                                <xo-grid style="--height-desktop: 700; --height-mobile: 500; --pt: 0; --pb: 0;"
+                                    class="slideshow-v56__content">
+                                    <div style="--xs: 12; --md: 6; --start-md: 7; --align-items: center; --text-align: center;"
+                                        class="slideshow-v56__text">
+                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="3">
+                                            <h2 class="slideshow-v56__title" style="--fontsize: 6; --fontweight: 500">
+                                                {% trans "Your Vision Matters More" %}
+                                            </h2>
+                                        </xo-animate>
+
+                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="5">
+                                            <p class="slideshow-v56__description"
+                                                style="--fontsize: 1.6; --fontweight: 400">
+                                                {% trans "Discover Advanced Eye Care at Al Ameen Optics. Prepare for an exceptional eye care experience with our comprehensive vision assessment and expert optical services." %}
+                                            </p>
+                                        </xo-animate>
+
+                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="7" xo-strength="3">
+                                            <a class="xo-btn xo-btn--light xo-btn--tertiary xo-btn--sm xo-btn--slide-up"
+                                                style="border-radius: 0.8rem; padding-left: 1.4rem; padding-right: 1.4rem;"
+                                                href="{% url 'about' %}">
+                                                <span class="xo-btn__content">
+                                                    <span class="xo-btn__text" data-text="{% trans 'Read More' %}">
+                                                        {% trans "Read More" %}
+                                                    </span>
+                                                </span>
+                                                <span class="xo-btn__loading">
+                                                    <div class="xo-loader-3"
+                                                        style="--size: 8; --color: currentColor; --duration: 1000;">
+                                                        <div></div>
+                                                    </div>
+                                                </span>
+                                            </a>
+                                        </xo-animate>
+                                    </div>
+
+                                    <div class="carousel-pagination-style3 slideshow-v56__pagination">
+                                        <div class="carousel-pagination-style3__pagination-wrap">
+                                            <xo-carousel-pagination class="carousel-pagination-style3__pagination">
+                                                <xo-carousel-bullet xo-index="0" xo-page="1" role="button" tabindex="0"
+                                                    aria-label="Bullet 1" xo-active="">
+                                                    <span></span>
+                                                </xo-carousel-bullet>
+                                                <xo-carousel-bullet xo-index="1" xo-page="2" role="button" tabindex="0"
+                                                    aria-label="Bullet 2">
+                                                    <span></span>
+                                                </xo-carousel-bullet>
+                                                <xo-carousel-bullet xo-index="2" xo-page="3" role="button" tabindex="0"
+                                                    aria-label="Bullet 3">
+                                                    <span></span>
+                                                </xo-carousel-bullet>
+                                            </xo-carousel-pagination>
+                                            <xo-carousel-pagination-bullet-active
+                                                xo-carousel-bullet-selector=".carousel-pagination-style3__pagination xo-carousel-bullet"
+                                                xo-duration="100"
+                                                style="--xo-duration: 100ms; opacity: 1; height: 8px; left: 0px; width: 8px;">
+                                            </xo-carousel-pagination-bullet-active>
+                                        </div>
+                                    </div>
+                                </xo-grid>
+                            </xo-container>
+
+                            <div class="slideshow-v56__arrows">
+                                <xo-carousel-prev class="carousel-navigation-style3" aria-label="Slide left">
+                                    <div
+                                        class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--left">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <polyline points="15 18 9 12 15 6"></polyline>
+                                        </svg>
+                                    </div>
+                                    <div
+                                        class="carousel-navigation-style3__icon-after carousel-navigation-style3__icon-after--left">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <polyline points="15 18 9 12 15 6"></polyline>
+                                        </svg>
+                                    </div>
+                                </xo-carousel-prev>
+                                <xo-carousel-next class="carousel-navigation-style3" aria-label="Slide right">
+                                    <div
+                                        class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--right">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <polyline points="9 18 15 12 9 6"></polyline>
+                                        </svg>
+                                    </div>
+                                    <div
+                                        class="carousel-navigation-style3__icon-after carousel-navigation-style3__icon-after--right">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <polyline points="9 18 15 12 9 6"></polyline>
+                                        </svg>
+                                    </div>
+                                </xo-carousel-next>
+                            </div>
+                        </div>
+                    </xo-carousel-slide>
+
+                    <!-- Slide 2 -->
+                    <xo-carousel-slide aria-roledescription="Slide" aria-label="2 / 3" xo-carousel-slide=""
+                        role="tabpanel" xo-next="">
+                        <div class="xo-slideshow color-inverse" style="--margin: 0;">
+                            <xo-animate class="slideshow-bg" xo-disabled="" xo-duration="1000"
+                                style="--img-desktop: url('{% static "cdn/shop/files/optical-banner-2.jpg" %}'); --img-mobile: url('{% static "cdn/shop/files/optical-banner-2.jpg" %}');">
+                                <div class="slideshow-bg-image__item">
+                                    <div class="slideshow-bg-image__url xo-background-lazyload"
+                                        style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                    </div>
+                                </div>
+                            </xo-animate>
+
+                            <xo-container class="xo-container--box">
+                                <xo-grid style="--height-desktop: 700; --height-mobile: 500; --pt: 0; --pb: 0;"
+                                    class="slideshow-v56__content">
+                                    <div style="--xs: 12; --md: 6; --start-md: 7; --align-items: center; --text-align: center;"
+                                        class="slideshow-v56__text">
+                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="3">
+                                            <h2 class="slideshow-v56__title" style="--fontsize: 6; --fontweight: 500">
+                                                {% trans "Premium Eyewear Collection" %}
+                                            </h2>
+                                        </xo-animate>
+
+                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="5">
+                                            <p class="slideshow-v56__description"
+                                                style="--fontsize: 1.6; --fontweight: 400">
+                                                {% trans "Explore our curated selection of designer frames and sunglasses from world-renowned brands. Find the perfect eyewear that complements your unique style." %}
+                                            </p>
+                                        </xo-animate>
+
+                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="7" xo-strength="3">
+                                            <a class="xo-btn xo-btn--light xo-btn--tertiary xo-btn--sm xo-btn--slide-up"
+                                                style="border-radius: 0.8rem; padding-left: 1.4rem; padding-right: 1.4rem;"
+                                                href=" ">
+                                                <span class="xo-btn__content">
+                                                    <span class="xo-btn__text" data-text="{% trans 'Shop Now' %}">
+                                                        {% trans "Shop Now" %}
+                                                    </span>
+                                                </span>
+                                                <span class="xo-btn__loading">
+                                                    <div class="xo-loader-3"
+                                                        style="--size: 8; --color: currentColor; --duration: 1000;">
+                                                        <div></div>
+                                                    </div>
+                                                </span>
+                                            </a>
+                                        </xo-animate>
+                                    </div>
+                                </xo-grid>
+                            </xo-container>
+                        </div>
+                    </xo-carousel-slide>
+
+                    <!-- Slide 3 -->
+                    <xo-carousel-slide aria-roledescription="Slide" aria-label="3 / 3" xo-carousel-slide=""
+                        role="tabpanel">
+                        <div class="xo-slideshow color-inverse" style="--margin: 0;">
+                            <xo-animate class="slideshow-bg" xo-disabled="" xo-duration="1000"
+                                style="--img-desktop: url('{% static "cdn/shop/files/optical-banner-3.jpg" %}'); --img-mobile: url('{% static "cdn/shop/files/optical-banner-3.jpg" %}');">
+                                <div class="slideshow-bg-image__item">
+                                    <div class="slideshow-bg-image__url xo-background-lazyload"
+                                        style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                    </div>
+                                </div>
+                            </xo-animate>
+
+                            <xo-container class="xo-container--box">
+                                <xo-grid style="--height-desktop: 700; --height-mobile: 500; --pt: 0; --pb: 0;"
+                                    class="slideshow-v56__content">
+                                    <div style="--xs: 12; --md: 6; --start-md: 7; --align-items: center; --text-align: center;"
+                                        class="slideshow-v56__text">
+                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="3">
+                                            <h2 class="slideshow-v56__title" style="--fontsize: 6; --fontweight: 500">
+                                                {% trans "Expert Eye Care Services" %}
+                                            </h2>
+                                        </xo-animate>
+
+                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="5">
+                                            <p class="slideshow-v56__description"
+                                                style="--fontsize: 1.6; --fontweight: 400">
+                                                {% trans "Our certified optometrists provide comprehensive eye examinations using state-of-the-art technology. Book your free eye test today." %}
+                                            </p>
+                                        </xo-animate>
+
+                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="7" xo-strength="3">
+                                            <a class="xo-btn xo-btn--light xo-btn--tertiary xo-btn--sm xo-btn--slide-up"
+                                                style="border-radius: 0.8rem; padding-left: 1.4rem; padding-right: 1.4rem;"
+                                                href=" ">
+                                                <span class="xo-btn__content">
+                                                    <span class="xo-btn__text" data-text="{% trans 'Book Free Eye Test' %}">
+                                                        {% trans "Book Free Eye Test" %}
+                                                    </span>
+                                                </span>
+                                                <span class="xo-btn__loading">
+                                                    <div class="xo-loader-3"
+                                                        style="--size: 8; --color: currentColor; --duration: 1000;">
+                                                        <div></div>
+                                                    </div>
+                                                </span>
+                                            </a>
+                                        </xo-animate>
+                                    </div>
+                                </xo-grid>
+                            </xo-container>
+                        </div>
+                    </xo-carousel-slide>
+
+                </xo-carousel-list>
+            </xo-carousel-inner>
+        </xo-carousel>
     </section>
+</section>
 
-    <!-- Categories Section -->
-    <section class="categories-section" id="categories">
-        <div class="container">
-            <h2 class="section-title">Shop by Category</h2>
-            <div class="categories-grid">
-                <div class="category-card">
-                    <div class="category-image">
-                        <i class="fas fa-glasses"></i>
-                    </div>
-                    <div class="category-title">Sunglasses</div>
-                </div>
-                
-                <div class="category-card">
-                    <div class="category-image">
-                        <i class="fas fa-eye"></i>
-                    </div>
-                    <div class="category-title">Prescription Glasses</div>
-                </div>
-                
-                <div class="category-card">
-                    <div class="category-image">
-                        <i class="fas fa-circle"></i>
-                    </div>
-                    <div class="category-title">Contact Lenses</div>
-                </div>
-                
-                <div class="category-card">
-                    <div class="category-image">
-                        <i class="fas fa-child"></i>
-                    </div>
-                    <div class="category-title">Kids</div>
-                </div>
-            </div>
-        </div>
+<!-- Categories Section -->
+<section class="shopify-section section">
+    <section class="xo-section xo-section--categories color-background-1" style="--margin: 0; --pt: 50; --pb: 50;">
+        <xo-animate class="xo-section-bg" xo-disabled="" xo-duration="1000">
+            <xo-parallax class="xo-section-bg-image__item" xo-lerp-ease="0.4">
+                <xo-parallax-scroll class="xo-section-bg-image__url xo-background-lazyload"
+                    xo-keyframes="{'0%': { backgroundPositionY: '200px' },'100%': { backgroundPositionY: '-200px' }}">
+                </xo-parallax-scroll>
+            </xo-parallax>
+        </xo-animate>
+
+        <xo-container class="xo-container--wide">
+            <xo-animate xo-cascade="">
+                <h2 class="collection-v6__title" style="text-align: center; margin-bottom: 4rem; font-size: 4.2rem; font-weight: 500;">
+                    {% trans "CATEGORIES" %}
+                </h2>
+            </xo-animate>
+
+            <xo-carousel xo-breakpoints='{"1200": {"perView": 5}, "992": {"perView": 4}, "768": {"perView": 3}, "576": {"perView": 2}}'
+                xo-gap="30" xo-per-view="6" xo-render-bullet="<span></span>" xo-speed="400">
+                <xo-carousel-inner>
+                    <xo-carousel-list aria-label="Slider" role="list">
+
+                        <!-- Sunglasses -->
+                        <xo-carousel-slide class="collection-v1">
+                            <xo-animate class="collection-v6__item" xo-cascade="">
+                                <a class="hover-style--scale-up" href=" ">
+                                    <div class="xo-image" style="--xo-ratio-percent: 1/1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                        <i class="fas fa-sun" style="font-size: 6rem; color: white;"></i>
+                                    </div>
+                                </a>
+                                <a class="collection-v6__item-label" href=" ">
+                                    <h3 class="collection-v6__item-title">{% trans "SUNGLASSES" %}</h3>
+                                </a>
+                            </xo-animate>
+                        </xo-carousel-slide>
+
+                        <!-- Eyeglasses -->
+                        <xo-carousel-slide class="collection-v1">
+                            <xo-animate class="collection-v6__item" xo-cascade="">
+                                <a class="hover-style--scale-up" href=" ">
+                                    <div class="xo-image" style="--xo-ratio-percent: 1/1; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                        <i class="fas fa-glasses" style="font-size: 6rem; color: white;"></i>
+                                    </div>
+                                </a>
+                                <a class="collection-v6__item-label" href=" ">
+                                    <h3 class="collection-v6__item-title">{% trans "EYEGLASSES" %}</h3>
+                                </a>
+                            </xo-animate>
+                        </xo-carousel-slide>
+
+                        <!-- Contact Lenses -->
+                        <xo-carousel-slide class="collection-v1">
+                            <xo-animate class="collection-v6__item" xo-cascade="">
+                                <a class="hover-style--scale-up" href=" ">
+                                    <div class="xo-image" style="--xo-ratio-percent: 1/1; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                        <i class="fas fa-eye" style="font-size: 6rem; color: white;"></i>
+                                    </div>
+                                </a>
+                                <a class="collection-v6__item-label" href=" ">
+                                    <h3 class="collection-v6__item-title">{% trans "CONTACT LENSES" %}</h3>
+                                </a>
+                            </xo-animate>
+                        </xo-carousel-slide>
+
+                        <!-- Kids -->
+                        <xo-carousel-slide class="collection-v1">
+                            <xo-animate class="collection-v6__item" xo-cascade="">
+                                <a class="hover-style--scale-up" href=" ">
+                                    <div class="xo-image" style="--xo-ratio-percent: 1/1; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                        <i class="fas fa-child" style="font-size: 6rem; color: white;"></i>
+                                    </div>
+                                </a>
+                                <a class="collection-v6__item-label" href=" ">
+                                    <h3 class="collection-v6__item-title">{% trans "KIDS" %}</h3>
+                                </a>
+                            </xo-animate>
+                        </xo-carousel-slide>
+
+                        <!-- Accessories -->
+                        <xo-carousel-slide class="collection-v1">
+                            <xo-animate class="collection-v6__item" xo-cascade="">
+                                <a class="hover-style--scale-up" href=" ">
+                                    <div class="xo-image" style="--xo-ratio-percent: 1/1; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                        <i class="fas fa-box" style="font-size: 6rem; color: white;"></i>
+                                    </div>
+                                </a>
+                                <a class="collection-v6__item-label" href=" ">
+                                    <h3 class="collection-v6__item-title">{% trans "ACCESSORIES" %}</h3>
+                                </a>
+                            </xo-animate>
+                        </xo-carousel-slide>
+
+                        <!-- Medical Lenses -->
+                        <xo-carousel-slide class="collection-v1">
+                            <xo-animate class="collection-v6__item" xo-cascade="">
+                                <a class="hover-style--scale-up" href=" ">
+                                    <div class="xo-image" style="--xo-ratio-percent: 1/1; background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                        <i class="fas fa-microscope" style="font-size: 6rem; color: white;"></i>
+                                    </div>
+                                </a>
+                                <a class="collection-v6__item-label" href=" ">
+                                    <h3 class="collection-v6__item-title">{% trans "MEDICAL LENSES" %}</h3>
+                                </a>
+                            </xo-animate>
+                        </xo-carousel-slide>
+
+                    </xo-carousel-list>
+                </xo-carousel-inner>
+            </xo-carousel>
+        </xo-container>
     </section>
+</section>
 
-    <!-- SALE Divider -->
-    <div class="sale-divider">
-        <h2>SALE</h2>
+<!-- SALE Banner -->
+<div class="banner-v270" style="--bg_custom: #f97316; --height-bg: 50%">
+    <div class="xo-section xo-section--sale-banner color-inverse" style="--margin: 0; --pt: 60; --pb: 60;">
+        <xo-container class="xo-container--wide">
+            <div class="banner-v270__heading" style="text-align: center;">
+                <xo-animate xo-duration="700" xo-order="1" xo-strength="3" xo-type="fade-up">
+                    <h2 class="banner-v270__title" style="font-size: 8rem; font-weight: 900; letter-spacing: 1.2rem; color: white; margin-bottom: 1rem;">
+                        {% trans "SALE" %}
+                    </h2>
+                </xo-animate>
+                <xo-animate xo-duration="700" xo-order="3" xo-strength="3" xo-type="fade-up">
+                    <div class="banner-v270__description" style="font-size: 2.8rem; color: white; font-weight: 600;">
+                        {% trans "Up to 50% OFF on Selected Items" %}
+                    </div>
+                </xo-animate>
+            </div>
+        </xo-container>
     </div>
+</div>
 
-    <!-- Blog Section -->
-    <section class="blog-section">
-        <div class="container">
-            <h2 class="section-title">AL AMEEN OPTICS BLOG</h2>
-            
-            <div class="blog-grid">
-                <div class="blog-card">
-                    <div class="blog-image">Blog Image 1</div>
-                    <div class="blog-content">
-                        <h3 class="blog-title">Your Vision Matters More: Discover Advanced Eye Care at Al Ameen Optics</h3>
-                        <p class="blog-description">Prepare for an exceptional eye care experience with our comprehensive vision assessment and expert optical services, designed to keep your eyes healthy and your vision crystal clear—only at Al Ameen Optics.</p>
-                        <a href="#" class="btn-read-more">
-                            Read More <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="blog-card">
-                    <div class="blog-image">Blog Image 2</div>
-                    <div class="blog-content">
-                        <h3 class="blog-title">Your Vision Matters More: Discover Advanced Eye Care at Al Ameen Optics</h3>
-                        <p class="blog-description">Prepare for an exceptional eye care experience with our comprehensive vision assessment and expert optical services, designed to keep your eyes healthy and your vision crystal clear—only at Al Ameen Optics.</p>
-                        <a href="#" class="btn-read-more">
-                            Read More <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="blog-card">
-                    <div class="blog-image">Blog Image 3</div>
-                    <div class="blog-content">
-                        <h3 class="blog-title">Your Vision Matters More: Discover Advanced Eye Care at Al Ameen Optics</h3>
-                        <p class="blog-description">Prepare for an exceptional eye care experience with our comprehensive vision assessment and expert optical services, designed to keep your eyes healthy and your vision crystal clear—only at Al Ameen Optics.</p>
-                        <a href="#" class="btn-read-more">
-                            Read More <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+<!-- Brands Section -->
+<section class="shopify-section section">
+    <section class="xo-section xo-section--brands color-background-1" style="--margin: 0; --pt: 50; --pb: 50;">
+        <xo-container class="xo-container--wide">
+            <xo-animate xo-cascade="">
+                <h2 class="collection-v6__title" style="text-align: center; margin-bottom: 4rem; font-size: 4.2rem; font-weight: 500;">
+                    {% trans "Shop By Brand" %}
+                </h2>
+            </xo-animate>
+
+            <xo-carousel xo-breakpoints='{"1200": {"perView": 5}, "992": {"perView": 4}, "768": {"perView": 2}, "576": {"perView": 1}}'
+                xo-gap="30" xo-per-view="6" xo-render-bullet="<span></span>" xo-speed="400">
+                <xo-carousel-inner>
+                    <xo-carousel-list aria-label="Slider" role="list">
+                        {% for brand in brands %}
+                        <xo-carousel-slide class="collection-v1">
+                            <xo-animate class="collection-v6__item" xo-cascade="">
+                                <a class="hover-style--scale-up" href=" ">
+                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                        <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" width="400" height="400"
+                                            loading="lazy" />
+                                    </div>
+                                </a>
+                                <a class="collection-v6__item-label" href=" ">
+                                    <h3 class="collection-v6__item-title">{{ brand.name }}</h3>
+                                </a>
+                            </xo-animate>
+                        </xo-carousel-slide>
+                        {% endfor %}
+                    </xo-carousel-list>
+                </xo-carousel-inner>
+            </xo-carousel>
+        </xo-container>
     </section>
+</section>
 
-    <!-- Promotional Banner -->
-    <section class="promo-banner">
-        <div class="container">
-            <div class="promo-content">
-                <h2>Plastic Fantastic SALE</h2>
-                <p>Up to 50% OFF</p>
-                <a href="#" class="btn-shop-now">Shop Now</a>
-            </div>
-        </div>
-    </section>
+<!-- Featured Products Section -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--featured-products color-background-1" style="--margin: 0; --pt: 50; --pb: 50; z-index: 98">
+        <xo-animate class="xo-section-bg" xo-disabled="" xo-duration="1000">
+            <xo-parallax class="xo-section-bg-image__item" xo-lerp-ease="0.4">
+                <xo-parallax-scroll class="xo-section-bg-image__url xo-background-lazyload"
+                    xo-keyframes="{'0%': { backgroundPositionY: '200px' },'100%': { backgroundPositionY: '-200px' }}">
+                </xo-parallax-scroll>
+            </xo-parallax>
+        </xo-animate>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-column">
-                    <h3>Useful Links</h3>
-                    <ul>
-                        <li><a href="#about">About Us</a></li>
-                        <li><a href="#blog">Blog</a></li>
-                        <li><a href="#careers">Careers</a></li>
-                        <li><a href="#privacy">Privacy Policy</a></li>
-                        <li><a href="#terms">Terms & Conditions</a></li>
-                    </ul>
+        <xo-container class="xo-container--wide">
+            <xo-animate class="product-v1__heading" xo-cascade="">
+                <div class="product-v1__title-wrap">
+                    <h2 class="product-v1__title" style="text-align: center; margin-bottom: 4rem; font-size: 4.2rem; font-weight: 500;">
+                        {% trans "Featured Products" %}
+                    </h2>
                 </div>
-                
-                <div class="footer-column">
-                    <h3>Shop</h3>
-                    <ul>
-                        <li><a href="#sunglasses">Sunglasses</a></li>
-                        <li><a href="#eyeglasses">Eyeglasses</a></li>
-                        <li><a href="#contact-lenses">Contact Lenses</a></li>
-                        <li><a href="#kids">Kids Eyewear</a></li>
-                        <li><a href="#accessories">Accessories</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-column">
-                    <h3>Customer Service</h3>
-                    <ul>
-                        <li><a href="#faq">FAQ</a></li>
-                        <li><a href="#shipping">Shipping & Delivery</a></li>
-                        <li><a href="#returns">Returns & Exchange</a></li>
-                        <li><a href="#warranty">Warranty</a></li>
-                        <li><a href="#support">Support</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-column">
-                    <h3>Contact Info</h3>
-                    <p><i class="fas fa-map-marker-alt"></i> Doha, Qatar</p>
-                    <p><i class="fas fa-phone"></i> +974 XXXX XXXX</p>
-                    <p><i class="fas fa-envelope"></i> info@alameenoptics.com</p>
-                    
-                    <div class="social-icons">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-youtube"></i></a>
+            </xo-animate>
+
+            <xo-grid style="--xs: 1; --sm: 2; --xl: 4">
+                {% for product in featured_products %}
+                <xo-product xo-product-id="{{ product.id }}" xo-section-id="template--main-collection">
+                    <xo-animate class="xo-product-card xo-product-card--style9 color-background-1" xo-cascade="">
+                        <div class="xo-product-card__header xo-product-card__header--style9">
+                            <a href="{{ product.get_absolute_url }}">
+                                <xo-product-media style="--xo-auto-play: 1500ms" xo-binding="img"
+                                    xo-carousel-active-index="0" xo-carousel-autoplay="1500"
+                                    xo-carousel-bullet-content="<span class='xo-product-card__bullet'></span>"
+                                    xo-carousel-pagination-enabled="" xo-type="auto">
+                                    <div class="xo-product-image">
+                                        <div class="xo-image" style="--xo-ratio-percent: 1/1; --x-pos: %; --y-pos: %;">
+                                            {% if product.images.all %}
+                                            {% with first_image=product.images.first %}
+                                            {% if first_image %}
+                                            <img alt="{{ product.name }}" src="{{ first_image.image.url }}" width="1000"
+                                                height="1000" loading="lazy" />
+                                            {% endif %}
+                                            {% endwith %}
+                                            {% elif product.image %}
+                                            <img alt="{{ product.name }}" src="{{ product.image.url }}" width="1000"
+                                                height="1000" loading="lazy" />
+                                            {% else %}
+                                            <img alt="No Image" src="/static/img/no-image.jpg" width="1000" height="1000"
+                                                loading="lazy" />
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </xo-product-media>
+                            </a>
+
+                            <div class="xo-product-card__badge">
+                                {% if product.stock == 0 or not product.available %}
+                                <div class="xo-badge-sold-out">
+                                    <span class="xo-badge-sold-out__title">{% trans "Sold out" %}</span>
+                                </div>
+                                {% else %}
+                                <div class="xo-badge-sale">{% trans "Sale" %}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="xo-product-card__actions xo-product-card__actions--style9">
+                                <xo-tooltip class="xo-product-card__icon" xo-title="{% trans 'Add to Cart' %}">
+                                    <form method="POST" action=" "
+                                        class="add-to-cart-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="button"
+                                            class="xo-btn xo-btn--light xo-btn--primary xo-btn--circle xo-btn--sm xo-btn--slide-up circle add-to-cart-grid-btn"
+                                            data-product-id="{{ product.id }}"
+                                            data-url=" ">
+                                            <span class="xo-btn__content">
+                                                <span class="xo-btn__icon">
+                                                    <svg height="20" viewBox="0 0 24 24" width="20">
+                                                        <path
+                                                            d="M12,0C9.1,0,6.7,2.4,6.7,5.3v1h10.5v-1C17.2,2.4,14.9,0,12,0z M12,1.8c1.6,0,3,1.1,3.4,2.7H8.6C9,2.9,10.4,1.8,12,1.8"
+                                                            fill="currentColor"></path>
+                                                        <g>
+                                                            <path
+                                                                d="M17.6,6.2c0.9,0,1.6,0.7,1.6,1.6v12.9c0,0.9-0.7,1.6-1.6,1.6H6.4c-0.9,0-1.6-0.7-1.6-1.6V7.8c0-0.9,0.7-1.6,1.6-1.6H17.6 M17.6,4.5H6.4C4.5,4.5,3,6,3,7.8v12.9C3,22.5,4.5,24,6.4,24h11.3c1.8,0,3.3-1.5,3.3-3.3V7.8C21,6,19.5,4.5,17.6,4.5L17.6,4.5z"
+                                                                fill="currentColor"></path>
+                                                        </g>
+                                                        <path
+                                                            d="M14.8,8.8H9.2c-0.4,0-0.7-0.3-0.7-0.7v0c0-0.4,0.3-0.7,0.7-0.7h5.7c0.4,0,0.7,0.3,0.7,0.7v0C15.5,8.5,15.2,8.8,14.8,8.8z"
+                                                            fill="currentColor"></path>
+                                                    </svg>
+                                                </span>
+                                            </span>
+                                            <span class="xo-btn__loading">
+                                                <div class="xo-loader-3"
+                                                    style="--size: 8; --color: currentColor; --duration: 1000;">
+                                                    <div></div>
+                                                </div>
+                                            </span>
+                                        </button>
+                                    </form>
+                                </xo-tooltip>
+
+                                <xo-tooltip class="xo-product-card__icon" xo-title="{% trans 'Add to wishlist' %}">
+                                    <button class="wishlist-btn circle-btn" data-product-id="{{ product.id }}">
+                                        {% if product in request.user.wishlist.products.all %}
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="red">
+                                            <path
+                                                d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" />
+                                        </svg>
+                                        {% else %}
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black"
+                                            stroke-width="2">
+                                            <path
+                                                d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" />
+                                        </svg>
+                                        {% endif %}
+                                    </button>
+                                </xo-tooltip>
+                            </div>
+                        </div>
+
+                        <div class="xo-product-card__information">
+                            <h2 class="xo-product-card__title">
+                                <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                            </h2>
+                            <div class="xo-product-card__price">
+                                <div class="xo-product-card__price-inner">
+                                    <div class="xo-price">
+                                        <div class="xo-price__container">
+                                            <div class="xo-price__sale xo-price__sale--column">
+                                                <span class="xo-price__item xo-price__item--accent">
+                                                    ₹{{ product.price }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </xo-animate>
+                </xo-product>
+                {% endfor %}
+            </xo-grid>
+        </xo-container>
+    </div>
+</section>
+
+<!-- Blog Section -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--blog color-background-1" style="--margin: 0; --pt: 100; --pb: 50;">
+        <xo-container class="xo-container--wide">
+            <div class="banner-v270__heading">
+                <xo-animate xo-duration="700" xo-order="1" xo-strength="3" xo-type="fade-up">
+                    <h2 class="banner-v270__title" style="text-align: center; margin-bottom: 1.5rem; font-size: 4.2rem; font-weight: 500;">
+                        {% trans "AL AMEEN OPTICS BLOG" %}
+                    </h2>
+                </xo-animate>
+                <xo-animate xo-duration="700" xo-order="3" xo-strength="3" xo-type="fade-up">
+                    <div class="banner-v270__description" style="text-align: center; margin-bottom: 4rem; font-size: 1.8rem; color: var(--color-foreground);">
+                        {% trans "Latest News, Tips & Eye Care Insights" %}
                     </div>
-                </div>
+                </xo-animate>
             </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; 2024 Al Ameen Optics. All rights reserved.</p>
+
+            <div class="banner-v270__gallery">
+                <xo-grid style="--xs: 1; --lg: 3; gap: 30px;">
+                    <xo-animate xo-duration="700" xo-order="1" xo-strength="3" xo-type="fade-up">
+                        <a class="banner-v270__item hover-style--scale-up" href=" ">
+                            <div class="xo-image" style="--xo-ratio-percent: 4/3; --x-pos: 50%; --y-pos: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                <span style="font-size: 2.4rem; font-weight: 600; color: white;">{% trans "Eye Care Excellence" %}</span>
+                            </div>
+                            <h4 class="banner-v270__title-item" style="margin-top: 1.5rem; font-size: 2rem; font-weight: 600;">
+                                {% trans "Your Vision Matters More: Discover Advanced Eye Care at Al Ameen Optics" %}
+                            </h4>
+                        </a>
+                    </xo-animate>
+
+                    <xo-animate xo-duration="700" xo-order="2" xo-strength="3" xo-type="fade-up">
+                        <a class="banner-v270__item hover-style--scale-up" href=" ">
+                            <div class="xo-image" style="--xo-ratio-percent: 4/3; --x-pos: 50%; --y-pos: 50%; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                <span style="font-size: 2.4rem; font-weight: 600; color: white;">{% trans "Fashion Forward" %}</span>
+                            </div>
+                            <h4 class="banner-v270__title-item" style="margin-top: 1.5rem; font-size: 2rem; font-weight: 600;">
+                                {% trans "2024 Eyewear Trends: Find Your Perfect Style" %}
+                            </h4>
+                        </a>
+                    </xo-animate>
+
+                    <xo-animate xo-duration="700" xo-order="3" xo-strength="3" xo-type="fade-up">
+                        <a class="banner-v270__item hover-style--scale-up" href=" ">
+                            <div class="xo-image" style="--xo-ratio-percent: 4/3; --x-pos: 50%; --y-pos: 50%; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                <span style="font-size: 2.4rem; font-weight: 600; color: white;">{% trans "Lens Care Tips" %}</span>
+                            </div>
+                            <h4 class="banner-v270__title-item" style="margin-top: 1.5rem; font-size: 2rem; font-weight: 600;">
+                                {% trans "Complete Guide to Contact Lens Care and Maintenance" %}
+                            </h4>
+                        </a>
+                    </xo-animate>
+                </xo-grid>
             </div>
-        </div>
-    </footer>
+        </xo-container>
+    </div>
+</section>
 
-    <script>
-        // Mobile Menu Toggle
-        const mobileToggle = document.getElementById('mobileToggle');
-        const navMenu = document.getElementById('navMenu');
+<!-- Promotional Banners -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--promo color-background-1" style="--bg-color: #f3ede6; --margin: 0; --pt: 50; --pb: 50;">
+        <xo-container class="xo-container--fullwidth" style="--padding: 30">
+            <xo-grid class="banner-v124" style="--xs: 1; --md: 2; --xo-grid-col-gap: 30px; --xo-grid-row-gap: 30px">
+                <xo-animate class="banner-v124__item" xo-cascade="">
+                    <a class="banner-v124__img hover-style--scale-up" href=" ">
+                        <div class="xo-image" style="--xo-ratio-percent: 1.0; --x-pos: 50.0%; --y-pos: 50.0%;">
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                <i class="fas fa-sun" style="font-size: 8rem; color: white; opacity: 0.3;"></i>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="banner-v124__content">
+                        <h3 class="banner-v124__title">{% trans "Premium Sunglasses" %}</h3>
+                        <div class="banner-v124__subtitle">
+                            {% trans "Protect your eyes with style. Discover our collection of UV-protected designer sunglasses." %}
+                        </div>
+                        <a class="xo-btn xo-btn--dark xo-btn--link xo-btn--sm xo-btn--slide-up"
+                            href=" " style="border-radius: 0.8rem;">
+                            <span class="xo-btn__content">
+                                <span class="xo-btn__text" data-text="{% trans 'SHOP NOW' %}">
+                                    {% trans "SHOP NOW" %}
+                                </span>
+                            </span>
+                            <span class="xo-btn__loading">
+                                <div class="xo-loader-3" style="--size: 8; --color: currentColor; --duration: 1000;">
+                                    <div></div>
+                                </div>
+                            </span>
+                        </a>
+                    </div>
+                </xo-animate>
 
-        mobileToggle.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-        });
+                <xo-animate class="banner-v124__item" xo-cascade="">
+                    <a class="banner-v124__img hover-style--scale-up" href=" ">
+                        <div class="xo-image" style="--xo-ratio-percent: 1.0; --x-pos: 50.0%; --y-pos: 50.0%;">
+                            <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                <i class="fas fa-eye" style="font-size: 8rem; color: white; opacity: 0.3;"></i>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="banner-v124__content">
+                        <h3 class="banner-v124__title">{% trans "Contact Lenses" %}</h3>
+                        <div class="banner-v124__subtitle">
+                            {% trans "Clear vision, ultimate comfort. Browse our range of daily and monthly contact lenses." %}
+                        </div>
+                        <a class="xo-btn xo-btn--dark xo-btn--link xo-btn--sm xo-btn--slide-up"
+                            href=" " style="border-radius: 0.8rem;">
+                            <span class="xo-btn__content">
+                                <span class="xo-btn__text" data-text="{% trans 'SHOP NOW' %}">
+                                    {% trans "SHOP NOW" %}
+                                </span>
+                            </span>
+                            <span class="xo-btn__loading">
+                                <div class="xo-loader-3" style="--size: 8; --color: currentColor; --duration: 1000;">
+                                    <div></div>
+                                </div>
+                            </span>
+                        </a>
+                    </div>
+                </xo-animate>
+            </xo-grid>
+        </xo-container>
+    </div>
+</section>
 
-        // Hero Carousel
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.hero-slide');
-        const dots = document.querySelectorAll('.carousel-dot');
-
-        function showSlide(n) {
-            slides.forEach(slide => slide.classList.remove('active'));
-            dots.forEach(dot => dot.classList.remove('active'));
-            
-            currentSlide = n;
-            if (currentSlide >= slides.length) currentSlide = 0;
-            if (currentSlide < 0) currentSlide = slides.length - 1;
-            
-            slides[currentSlide].classList.add('active');
-            dots[currentSlide].classList.add('active');
-        }
-
-        // Auto slide every 5 seconds
-        setInterval(() => {
-            showSlide(currentSlide + 1);
-        }, 5000);
-
-        // Dot navigation
-        dots.forEach((dot, index) => {
-            dot.addEventListener('click', () => {
-                showSlide(index);
-            });
-        });
-
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
