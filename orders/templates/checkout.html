@@ -1,1408 +1,250 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Checkout{% endblock %}
+
+{% block title %}Stripe Payment - Order {{ order.order_number }}{% endblock %}
 
 {% block content %}
-<!-- BOOTSTRAP 4.5.2 CSS -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-<!-- Leaflet CSS for Map -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
 <style>
-    /* Wrapper to isolate all styles */
-    .checkout-wrapper {
-        background: #f8f8f8;
-        min-height: 100vh;
-        padding: 40px 20px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    }
-
-    .checkout-wrapper * {
-        box-sizing: border-box;
-    }
-
-    .checkout-container-custom {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: 1fr 420px;
-        gap: 30px;
-    }
-
-    /* Page Title */
-    .checkout-page-title {
-        text-align: center;
-        margin-bottom: 40px;
-    }
-
-    .checkout-page-title h1 {
-        font-size: 32px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 10px;
-        letter-spacing: -0.5px;
-    }
-
-    .checkout-page-title p {
-        font-size: 15px;
-        color: #6a6a6a;
-    }
-
-    /* LEFT SECTION - Form */
-    .checkout-form-section {
-        background: #ffffff;
-        border-radius: 12px;
+    .payment-container {
+        max-width: 600px;
+        margin: 50px auto;
         padding: 40px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        border: 1px solid #e8e8e8;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     }
-
-    .checkout-section-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 8px;
-    }
-
-    .checkout-section-subtitle {
-        font-size: 14px;
-        color: #6a6a6a;
+    
+    .payment-header {
+        text-align: center;
         margin-bottom: 30px;
     }
-
-    .checkout-form-group {
-        margin-bottom: 24px;
+    
+    .payment-header h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
     }
-
-    .checkout-label {
-        display: block;
-        font-size: 13px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 8px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+    
+    .payment-header p {
+        color: #666;
     }
-
-    .checkout-input {
-        width: 100%;
-        padding: 14px 16px;
-        border: 2px solid #e8e8e8;
-        border-radius: 8px;
-        font-size: 15px;
-        color: #1a1a1a;
-        transition: all 0.2s ease;
-        background: #ffffff;
-    }
-
-    .checkout-input:focus {
-        outline: none;
-        border-color: #1a1a1a;
-        box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
-    }
-
-    .checkout-input::placeholder {
-        color: #b0b0b0;
-    }
-
-    .checkout-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
-
-    .checkout-divider {
-        height: 1px;
-        background: #e8e8e8;
-        margin: 30px 0;
-    }
-
-    /* Location Picker Button */
-    .location-picker-btn {
-        width: 100%;
-        padding: 14px 16px;
-        background: #ffffff;
-        border: 2px solid #1a1a1a;
-        border-radius: 8px;
-        font-size: 15px;
-        font-weight: 600;
-        color: #1a1a1a;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        transition: all 0.2s ease;
-        margin-bottom: 24px;
-    }
-
-    .location-picker-btn:hover {
-        background: #1a1a1a;
-        color: #ffffff;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .location-picker-btn svg {
-        width: 20px;
-        height: 20px;
-    }
-
-    /* Selected Location Display */
-    .selected-location-display {
-        background: #e8f5e9;
-        border: 2px solid #4caf50;
-        border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 24px;
-        display: none;
-    }
-
-    .selected-location-display.active {
-        display: block;
-    }
-
-    .location-display-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: #2e7d32;
-        margin-bottom: 8px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .location-display-address {
-        font-size: 15px;
-        color: #1a1a1a;
-        line-height: 1.5;
-        margin-bottom: 8px;
-    }
-
-    .location-display-coords {
-        font-size: 13px;
-        color: #6a6a6a;
-        font-family: monospace;
-    }
-
-    /* Address Selection Cards */
-    .address-select {
-        margin-bottom: 20px;
-    }
-
-    .address-option {
-        display: block;
-        margin-bottom: 15px;
-        cursor: pointer;
-    }
-
-    .address-option input[type="radio"] {
-        display: none;
-    }
-
-    .address-card {
-        padding: 16px 20px;
-        border: 2px solid #e8e8e8;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-        background: #ffffff;
-    }
-
-    .address-option input[type="radio"]:checked + .address-card,
-    .address-option.selected .address-card {
-        border-color: #1a1a1a;
+    
+    .order-summary {
         background: #f9f9f9;
-    }
-
-    .address-card:hover {
-        border-color: #999;
-    }
-
-    .address-card strong {
-        display: block;
-        font-size: 15px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 8px;
-    }
-
-    .address-card p {
-        font-size: 14px;
-        color: #6a6a6a;
-        margin: 4px 0;
-    }
-
-    /* Payment Methods */
-    .payment-methods {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .payment-option {
-        display: flex;
-        align-items: center;
-        padding: 16px 20px;
-        border: 2px solid #e8e8e8;
+        padding: 20px;
         border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        background: #ffffff;
+        margin-bottom: 30px;
     }
-
-    .payment-option:hover {
-        border-color: #999;
-    }
-
-    .payment-option input[type="radio"] {
-        margin-right: 12px;
-        width: 20px;
-        height: 20px;
-    }
-
-    .payment-option input[type="radio"]:checked {
-        accent-color: #1a1a1a;
-    }
-
-    .payment-option span {
-        font-size: 15px;
-        font-weight: 500;
-        color: #1a1a1a;
-    }
-
-    /* Checkbox */
-    .checkbox {
-        display: flex;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .checkbox input[type="checkbox"] {
-        margin-right: 10px;
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-    }
-
-    .checkbox label {
-        font-size: 14px;
-        color: #1a1a1a;
-        cursor: pointer;
-    }
-
-    /* Textarea */
-    textarea {
-        width: 100%;
-        padding: 14px 16px;
-        border: 2px solid #e8e8e8;
-        border-radius: 8px;
-        font-size: 15px;
-        color: #1a1a1a;
-        font-family: inherit;
-        resize: vertical;
-        transition: all 0.2s ease;
-    }
-
-    textarea:focus {
-        outline: none;
-        border-color: #1a1a1a;
-        box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
-    }
-
-    /* RIGHT SECTION - Order Summary */
-    .checkout-summary-section {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 30px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        border: 1px solid #e8e8e8;
-        height: fit-content;
-        position: sticky;
-        top: 20px;
-    }
-
-    .checkout-summary-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 24px;
-        padding-bottom: 16px;
-        border-bottom: 2px solid #e8e8e8;
-    }
-
-    .checkout-order-item {
-        display: flex;
-        gap: 16px;
-        margin-bottom: 20px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #f0f0f0;
-    }
-
-    .checkout-order-item:last-of-type {
-        margin-bottom: 24px;
-    }
-
-    .checkout-item-image {
-        width: 80px;
-        height: 80px;
-        object-fit: cover;
-        border-radius: 8px;
-        border: 1px solid #e8e8e8;
-        flex-shrink: 0;
-    }
-
-    .checkout-item-details {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .checkout-item-name {
-        font-size: 15px;
-        font-weight: 600;
-        color: #1a1a1a;
-        line-height: 1.4;
-        margin-bottom: 6px;
-    }
-
-    .checkout-item-price {
-        font-size: 14px;
-        color: #6a6a6a;
-        font-weight: 500;
-    }
-
-    .checkout-item-qty {
-        font-size: 13px;
-        color: #999;
-        margin-top: 4px;
-    }
-
-    .checkout-summary-row {
+    
+    .summary-row {
         display: flex;
         justify-content: space-between;
-        padding: 12px 0;
-        font-size: 15px;
+        margin-bottom: 10px;
     }
-
-    .checkout-summary-row span:first-child {
-        color: #6a6a6a;
+    
+    .summary-row.total {
+        border-top: 2px solid #ddd;
+        padding-top: 15px;
+        margin-top: 10px;
+        font-size: 20px;
+        font-weight: bold;
     }
-
-    .checkout-summary-row span:last-child {
-        font-weight: 600;
-        color: #1a1a1a;
+    
+    #card-element {
+        padding: 15px;
+        border: 2px solid #e8e8e8;
+        border-radius: 8px;
+        background: white;
+        margin-bottom: 20px;
     }
-
-    .checkout-summary-total {
-        border-top: 2px solid #1a1a1a;
-        margin-top: 16px;
-        padding-top: 16px;
+    
+    #card-errors {
+        color: #dc3545;
+        margin-bottom: 15px;
+        font-size: 14px;
     }
-
-    .checkout-summary-total span {
-        font-size: 18px;
-        font-weight: 700;
-        color: #1a1a1a;
-    }
-
-    .checkout-submit-btn {
+    
+    .payment-button {
         width: 100%;
         padding: 16px;
         background: #1a1a1a;
-        color: #ffffff;
-        border: 2px solid #1a1a1a;
+        color: white;
+        border: none;
         border-radius: 8px;
-        font-size: 15px;
-        font-weight: 600;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 24px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .checkout-submit-btn:hover {
-        background: #000000;
-        border-color: #000000;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .checkout-secure-badge {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        margin-top: 16px;
-        font-size: 13px;
-        color: #6a6a6a;
-    }
-
-    .checkout-secure-icon {
         font-size: 16px;
-    }
-
-    /* Progress Steps */
-    .checkout-progress {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 40px;
-        padding: 20px;
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        border: 1px solid #e8e8e8;
-    }
-
-    .checkout-progress-step {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .checkout-progress-circle {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: #e8e8e8;
-        color: #999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 14px;
-    }
-
-    .checkout-progress-step.active .checkout-progress-circle {
-        background: #1a1a1a;
-        color: #ffffff;
-    }
-
-    .checkout-progress-step.completed .checkout-progress-circle {
-        background: #1a1a1a;
-        color: #ffffff;
-    }
-
-    .checkout-progress-text {
-        font-size: 14px;
-        color: #999;
-        font-weight: 500;
-    }
-
-    .checkout-progress-step.active .checkout-progress-text {
-        color: #1a1a1a;
-        font-weight: 600;
-    }
-
-    .checkout-progress-arrow {
-        color: #d0d0d0;
-        font-size: 18px;
-    }
-
-    /* Map Modal Overlay */
-    .map-modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        z-index: 100000;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        animation: mapFadeIn 0.3s ease;
-    }
-
-    .map-modal-overlay.active {
-        display: flex;
-    }
-
-    @keyframes mapFadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    /* Map Modal Container */
-    .map-modal-container {
-        width: 95%;
-        max-width: 1000px;
-        height: 90vh;
-        max-height: 700px;
-        background: #ffffff;
-        border-radius: 16px;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        animation: mapSlideUp 0.3s ease;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    }
-
-    @keyframes mapSlideUp {
-        from {
-            opacity: 0;
-            transform: translateY(50px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* Map Modal Header */
-    .map-modal-header {
-        background: #1a1a1a;
-        color: #ffffff;
-        padding: 20px 24px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .map-modal-title {
-        font-size: 20px;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .map-modal-close {
-        background: none;
-        border: none;
-        color: #ffffff;
-        cursor: pointer;
-        padding: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-    }
-
-    .map-modal-close:hover {
-        background: rgba(255, 255, 255, 0.1);
-    }
-
-    /* Search Box */
-    .map-search-container {
-        padding: 16px 24px;
-        background: #f8f8f8;
-        border-bottom: 1px solid #e8e8e8;
-    }
-
-    .map-search-box {
-        position: relative;
-        display: flex;
-        gap: 10px;
-    }
-
-    .map-search-input {
-        flex: 1;
-        padding: 12px 16px 12px 44px;
-        border: 2px solid #e8e8e8;
-        border-radius: 8px;
-        font-size: 15px;
-        transition: all 0.2s ease;
-    }
-
-    .map-search-input:focus {
-        outline: none;
-        border-color: #1a1a1a;
-        box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
-    }
-
-    .map-search-icon {
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #6a6a6a;
-    }
-
-    .map-current-location-btn {
-        padding: 12px 20px;
-        background: #1a1a1a;
-        color: #ffffff;
-        border: none;
-        border-radius: 8px;
-        font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.2s ease;
-        white-space: nowrap;
+        transition: all 0.3s;
     }
-
-    .map-current-location-btn:hover {
-        background: #000000;
-        transform: translateY(-2px);
+    
+    .payment-button:hover {
+        background: #000;
     }
-
-    /* Map Container */
-    .map-container {
-        flex: 1;
-        position: relative;
-    }
-
-    #deliveryMap {
-        width: 100%;
-        height: 100%;
-    }
-
-    /* Selected Location Info */
-    .map-selected-info {
-        background: #ffffff;
-        padding: 20px 24px;
-        border-top: 1px solid #e8e8e8;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-    }
-
-    .map-selected-details {
-        flex: 1;
-    }
-
-    .map-selected-label {
-        font-size: 13px;
-        font-weight: 600;
-        color: #6a6a6a;
-        margin-bottom: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .map-selected-address {
-        font-size: 15px;
-        color: #1a1a1a;
-        line-height: 1.5;
-        margin-bottom: 4px;
-    }
-
-    .map-selected-coords {
-        font-size: 13px;
-        color: #6a6a6a;
-        font-family: monospace;
-    }
-
-    .map-confirm-btn {
-        padding: 14px 32px;
-        background: #1a1a1a;
-        color: #ffffff;
-        border: none;
-        border-radius: 8px;
-        font-size: 15px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
-
-    .map-confirm-btn:hover {
-        background: #000000;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .map-confirm-btn:disabled {
-        background: #e8e8e8;
-        color: #b0b0b0;
+    
+    .payment-button:disabled {
+        background: #ccc;
         cursor: not-allowed;
-        transform: none;
     }
-
-    /* Loading Spinner */
-    .map-loading {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(255, 255, 255, 0.95);
-        padding: 20px 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    
+    .secure-badge {
+        text-align: center;
+        margin-top: 20px;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .loading-spinner {
         display: none;
-        align-items: center;
-        gap: 12px;
-        z-index: 1000;
+        text-align: center;
+        margin: 20px 0;
     }
-
-    .map-loading.active {
-        display: flex;
-    }
-
-    .map-spinner {
-        width: 24px;
-        height: 24px;
-        border: 3px solid #e8e8e8;
-        border-top-color: #1a1a1a;
+    
+    .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #1a1a1a;
         border-radius: 50%;
-        animation: spin 0.8s linear infinite;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
     }
-
+    
     @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    /* Responsive */
-    @media (max-width: 992px) {
-        .checkout-container-custom {
-            grid-template-columns: 1fr;
-        }
-
-        .checkout-summary-section {
-            position: relative;
-            top: 0;
-        }
-
-        .checkout-row {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .checkout-wrapper {
-            padding: 20px 10px;
-        }
-
-        .checkout-page-title h1 {
-            font-size: 24px;
-        }
-
-        .checkout-form-section,
-        .checkout-summary-section {
-            padding: 24px;
-        }
-
-        .checkout-progress {
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .checkout-progress-arrow {
-            transform: rotate(90deg);
-        }
-
-        .checkout-item-image {
-            width: 70px;
-            height: 70px;
-        }
-
-        .map-modal-container {
-            width: 100%;
-            height: 100vh;
-            max-height: 100vh;
-            border-radius: 0;
-        }
-
-        .map-search-box {
-            flex-direction: column;
-        }
-
-        .map-current-location-btn {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .map-selected-info {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .map-confirm-btn {
-            width: 100%;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .checkout-form-section,
-        .checkout-summary-section {
-            padding: 20px;
-        }
-
-        .checkout-section-title {
-            font-size: 18px;
-        }
-
-        .checkout-input {
-            padding: 12px 14px;
-            font-size: 14px;
-        }
-
-        .checkout-item-name {
-            font-size: 14px;
-        }
-
-        .checkout-item-image {
-            width: 60px;
-            height: 60px;
-        }
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 </style>
 
-<div class="checkout-wrapper">
-    <div class="checkout-container-custom" style="max-width: 1200px; margin: 0 auto;">
+<div class="payment-container">
+    <div class="payment-header">
+        <h1>💳 Complete Payment</h1>
+        <p>Order #{{ order.order_number }}</p>
+    </div>
 
-        <!-- Page Title -->
-        <div class="checkout-page-title" style="grid-column: 1 / -1;">
-            <h1>Secure Checkout</h1>
-            <p>Complete your order safely and securely</p>
+    <div class="order-summary">
+        <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>{{ order.currency }} {{ order.subtotal }}</span>
         </div>
-
-        <!-- Progress Steps -->
-        <div class="checkout-progress" style="grid-column: 1 / -1;">
-            <div class="checkout-progress-step completed">
-                <div class="checkout-progress-circle">✓</div>
-                <span class="checkout-progress-text">Cart</span>
-            </div>
-            <div class="checkout-progress-arrow">→</div>
-            <div class="checkout-progress-step active">
-                <div class="checkout-progress-circle">2</div>
-                <span class="checkout-progress-text">Checkout</span>
-            </div>
-            <div class="checkout-progress-arrow">→</div>
-            <div class="checkout-progress-step">
-                <div class="checkout-progress-circle">3</div>
-                <span class="checkout-progress-text">Confirmation</span>
-            </div>
+        <div class="summary-row">
+            <span>Shipping:</span>
+            <span>{{ order.currency }} {{ order.shipping_amount }}</span>
         </div>
-
-        <!-- LEFT SECTION - Checkout Form -->
-        <div class="checkout-form-section">
-            <form method="POST" action="{% url 'orders:place_order' %}" id="checkoutForm">
-                {% csrf_token %}
-
-                <!-- Section 1: Shipping Address -->
-                <div class="checkout-section-title">1. Shipping Address</div>
-                <div class="checkout-section-subtitle">Select or add your delivery address</div>
-
-                {% if shipping_addresses %}
-                <div class="address-select">
-                    {% for address in shipping_addresses %}
-                    <label class="address-option {% if address == default_shipping %}selected{% endif %}">
-                        <input type="radio" name="shipping_address_id" value="{{ address.id }}" 
-                               {% if address == default_shipping %}checked{% endif %} required>
-                        <div class="address-card">
-                            <strong>{{ address.full_name }}</strong>
-                            <p>{{ address.address_line1 }}</p>
-                            {% if address.address_line2 %}
-                            <p>{{ address.address_line2 }}</p>
-                            {% endif %}
-                            <p>{{ address.city }}, {{ address.state }} {{ address.postal_code }}</p>
-                            <p>Phone: {{ address.phone }}</p>
-                        </div>
-                    </label>
-                    {% endfor %}
-                </div>
-                <a href="{% url 'address_create' %}?next={{ request.path }}" 
-                   style="display: inline-block; padding: 10px 20px; background: #f0f0f0; border-radius: 6px; text-decoration: none; color: #1a1a1a; font-weight: 600; font-size: 14px;">
-                    + Add New Address
-                </a>
-                {% else %}
-                <!-- Location Picker Button -->
-                <button type="button" class="location-picker-btn" onclick="openMapModal()">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                    <span>Select Delivery Location on Map</span>
-                </button>
-
-                <!-- Selected Location Display -->
-                <div id="selectedLocationDisplay" class="selected-location-display">
-                    <div class="location-display-title">📍 Selected Delivery Location</div>
-                    <div class="location-display-address" id="displayAddress">No location selected</div>
-                    <div class="location-display-coords" id="displayCoords"></div>
-                </div>
-
-                <!-- Hidden Inputs for Lat/Lng -->
-                <input type="hidden" id="delivery_latitude" name="delivery_latitude" value="">
-                <input type="hidden" id="delivery_longitude" name="delivery_longitude" value="">
-
-                <div class="checkout-row">
-                    <div class="checkout-form-group">
-                        <label class="checkout-label">Full Name</label>
-                        <input class="checkout-input" type="text" name="full_name"
-                            value="{% if user.is_authenticated %}{{ user.get_full_name }}{% endif %}" 
-                            placeholder="John Doe" required>
-                    </div>
-
-                    <div class="checkout-form-group">
-                        <label class="checkout-label">Phone Number</label>
-                        <input class="checkout-input" type="tel" name="phone" 
-                            placeholder="+91 98765 43210" required>
-                    </div>
-                </div>
-
-                <div class="checkout-form-group">
-                    <label class="checkout-label">Email Address</label>
-                    <input class="checkout-input" type="email" name="email" 
-                        value="{% if user.is_authenticated %}{{ user.email }}{% endif %}"
-                        placeholder="john@example.com" required>
-                </div>
-
-                <div class="checkout-divider"></div>
-
-                <div class="checkout-form-group">
-                    <label class="checkout-label">Street Address</label>
-                    <input class="checkout-input" type="text" name="address_line1" id="address_line"
-                        placeholder="123 Main Street, Apartment 4B" required>
-                </div>
-
-                <div class="checkout-row">
-                    <div class="checkout-form-group">
-                        <label class="checkout-label">City</label>
-                        <input class="checkout-input" type="text" name="city" id="city" 
-                            placeholder="Kochi" required>
-                    </div>
-
-                    <div class="checkout-form-group">
-                        <label class="checkout-label">Postal Code</label>
-                        <input class="checkout-input" type="text" name="postal_code" id="postal_code"
-                            placeholder="682001" required>
-                    </div>
-                </div>
-
-                <div class="checkout-row">
-                    <div class="checkout-form-group">
-                        <label class="checkout-label">State/Province</label>
-                        <input class="checkout-input" type="text" name="state" 
-                            placeholder="Kerala" required>
-                    </div>
-
-                    <div class="checkout-form-group">
-                        <label class="checkout-label">Country</label>
-                        <input class="checkout-input" type="text" name="country" value="India" required>
-                    </div>
-                </div>
-                {% endif %}
-
-                <div class="checkout-divider"></div>
-
-                <!-- Section 2: Billing Address -->
-                <div class="checkout-section-title">2. Billing Address</div>
-                <div class="checkout-section-subtitle">Payment and billing information</div>
-
-                <div class="checkbox">
-                    <input type="checkbox" id="sameAsShipping" name="same_as_shipping" checked onchange="toggleBilling()">
-                    <label for="sameAsShipping">Same as shipping address</label>
-                </div>
-
-                <div id="billingSection" style="display:none;">
-                    {% if shipping_addresses %}
-                    <div class="address-select">
-                        {% for address in shipping_addresses %}
-                        <label class="address-option">
-                            <input type="radio" name="billing_address_id" value="{{ address.id }}">
-                            <div class="address-card">
-                                <strong>{{ address.full_name }}</strong>
-                                <p>{{ address.address_line1 }}, {{ address.city }}</p>
-                            </div>
-                        </label>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
-
-                <div class="checkout-divider"></div>
-
-                <!-- Section 3: Payment Method -->
-                <div class="checkout-section-title">3. Payment Method</div>
-                <div class="checkout-section-subtitle">Choose your payment option</div>
-
-                <div class="payment-methods">
-                    <label class="payment-option">
-                        <input type="radio" name="payment_method" value="cash_on_delivery" checked required>
-                        <span>💵 Cash on Delivery</span>
-                    </label>
-                    <label class="payment-option">
-                        <input type="radio" name="payment_method" value="credit_card">
-                        <span>💳 Credit/Debit Card</span>
-                    </label>
-                    <label class="payment-option">
-                        <input type="radio" name="payment_method" value="bank_transfer">
-                        <span>🏦 Bank Transfer</span>
-                    </label>
-                </div>
-
-                <div class="checkout-divider"></div>
-
-                <!-- Section 4: Order Notes -->
-                <div class="checkout-section-title">4. Order Notes (Optional)</div>
-                <div class="checkout-section-subtitle">Any special instructions for your order</div>
-
-                <textarea name="customer_notes" placeholder="E.g., Please ring the doorbell twice..." rows="3"></textarea>
-
-                <button type="submit" class="checkout-submit-btn">
-                    Place Order
-                </button>
-
-                <div class="checkout-secure-badge">
-                    <span class="checkout-secure-icon">🔒</span>
-                    <span>Secure Checkout - Your information is protected</span>
-                </div>
-            </form>
+        <div class="summary-row">
+            <span>Tax:</span>
+            <span>{{ order.currency }} {{ order.tax_amount }}</span>
         </div>
-
-        <!-- RIGHT SECTION - Order Summary -->
-        <div class="checkout-summary-section">
-            <h3 class="checkout-summary-title">Order Summary</h3>
-
-            {% for item in cart_items %}
-            <div class="checkout-order-item">
-                {% if item.product.image %}
-                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}"
-                    class="checkout-item-image">
-                {% endif %}
-
-                <div class="checkout-item-details">
-                    <div>
-                        <div class="checkout-item-name">{{ item.product.name }}</div>
-                        <div class="checkout-item-price">QAR {{ item.unit_price }}</div>
-                        <div class="checkout-item-qty">Qty: {{ item.quantity }}</div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-
-            <div class="checkout-summary-row">
-                <span>Subtotal</span>
-                <span>QAR {{ subtotal }}</span>
-            </div>
-
-            <div class="checkout-summary-row">
-                <span>Shipping</span>
-                <span>{% if shipping == 0 %}FREE{% else %}QAR {{ shipping }}{% endif %}</span>
-            </div>
-
-            <div class="checkout-summary-row">
-                <span>Tax</span>
-                <span>QAR {{ tax }}</span>
-            </div>
-
-            <div class="checkout-summary-row checkout-summary-total">
-                <span>Total</span>
-                <span>QAR {{ total }}</span>
-            </div>
+        <div class="summary-row total">
+            <span>Total:</span>
+            <span>{{ order.currency }} {{ order.total_amount }}</span>
         </div>
+    </div>
 
+    <form id="payment-form">
+        {% csrf_token %}
+        
+        <div id="card-element"></div>
+        
+        <div id="card-errors"></div>
+        
+        <button type="submit" id="submit-button" class="payment-button">
+            Pay {{ order.currency }} {{ order.total_amount }}
+        </button>
+    </form>
+
+    <div class="loading-spinner" id="loading">
+        <div class="spinner"></div>
+        <p>Processing payment...</p>
+    </div>
+
+    <div class="secure-badge">
+        <p>🔒 Secured by Stripe | Your payment information is encrypted</p>
     </div>
 </div>
 
-<!-- Map Modal -->
-<div id="mapModal" class="map-modal-overlay">
-    <div class="map-modal-container">
-        <!-- Header -->
-        <div class="map-modal-header">
-            <h3 class="map-modal-title">Select Delivery Location</h3>
-            <button type="button" class="map-modal-close" onclick="closeMapModal()">
-                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        </div>
-
-        <!-- Search Box -->
-        <div class="map-search-container">
-            <div class="map-search-box">
-                <span class="map-search-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                </span>
-                <input type="text" id="mapSearchInput" class="map-search-input" placeholder="Search for a location...">
-                <button type="button" class="map-current-location-btn" onclick="getCurrentLocation()">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                    </svg>
-                    Current Location
-                </button>
-            </div>
-        </div>
-
-        <!-- Map Container -->
-        <div class="map-container">
-            <div id="deliveryMap"></div>
-            <div id="mapLoading" class="map-loading">
-                <div class="map-spinner"></div>
-                <span>Loading map...</span>
-            </div>
-        </div>
-
-        <!-- Selected Location Info -->
-        <div class="map-selected-info">
-            <div class="map-selected-details">
-                <div class="map-selected-label">Selected Location</div>
-                <div class="map-selected-address" id="selectedAddress">Click on the map to select a location</div>
-                <div class="map-selected-coords" id="selectedCoords"></div>
-            </div>
-            <button type="button" class="map-confirm-btn" id="confirmLocationBtn" onclick="confirmLocation()" disabled>
-                Confirm Location
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+<script src="https://js.stripe.com/v3/"></script>
 <script>
-// Map functionality
-let map;
-let marker;
-let accuracyCircle;
-let selectedLat = null;
-let selectedLng = null;
-let selectedAddressText = '';
-
-// Custom Marker Icon
-const customIcon = L.divIcon({
-    className: 'custom-marker',
-    html: '<div style="width: 40px; height: 40px; background: #1a1a1a; border: 3px solid #ffffff; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); display: flex; align-items: center; justify-content: center;"><div style="width: 12px; height: 12px; background: #ffffff; border-radius: 50%; transform: rotate(45deg);"></div></div>',
-    iconSize: [40, 40],
-    iconAnchor: [20, 40]
-});
-
-function openMapModal() {
-    document.getElementById('mapModal').classList.add('active');
-    document.body.style.overflow = 'hidden';
+    const stripe = Stripe('{{ stripe_publishable_key }}');
+    const elements = stripe.elements();
     
-    setTimeout(() => {
-        initializeMap();
-    }, 300);
-}
-
-function closeMapModal() {
-    document.getElementById('mapModal').classList.remove('active');
-    document.body.style.overflow = '';
-}
-
-function initializeMap() {
-    if (map) {
-        map.remove();
-    }
-    
-    document.getElementById('mapLoading').classList.add('active');
-    
-    let defaultLat = 9.9312;
-    let defaultLng = 76.2673;
-    
-    map = L.map('deliveryMap', {
-        center: [defaultLat, defaultLng],
-        zoom: 13,
-        zoomControl: true,
-        maxZoom: 19,
-        minZoom: 3
+    // Create card element
+    const cardElement = elements.create('card', {
+        style: {
+            base: {
+                fontSize: '16px',
+                color: '#1a1a1a',
+                '::placeholder': {
+                    color: '#aab7c4',
+                },
+            },
+        },
     });
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
-    }).addTo(map);
+    cardElement.mount('#card-element');
     
-    map.on('click', function(e) {
-        selectedLat = e.latlng.lat;
-        selectedLng = e.latlng.lng;
-        
-        if (marker) map.removeLayer(marker);
-        if (accuracyCircle) map.removeLayer(accuracyCircle);
-        
-        marker = L.marker([selectedLat, selectedLng], { icon: customIcon }).addTo(map);
-        
-        reverseGeocode(selectedLat, selectedLng);
-        
-        document.getElementById('confirmLocationBtn').disabled = false;
-    });
-    
-    document.getElementById('mapLoading').classList.remove('active');
-}
-
-function getCurrentLocation() {
-    if (!navigator.geolocation) {
-        alert('❌ Geolocation is not supported by your browser');
-        return;
-    }
-    
-    document.getElementById('mapLoading').classList.add('active');
-    
-    const highAccuracyOptions = {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
-    };
-    
-    navigator.geolocation.getCurrentPosition(
-        function(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            const accuracy = position.coords.accuracy;
-            
-            if (marker) map.removeLayer(marker);
-            if (accuracyCircle) map.removeLayer(accuracyCircle);
-            
-            map.setView([lat, lng], 18);
-            
-            selectedLat = lat;
-            selectedLng = lng;
-            
-            marker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
-            
-            accuracyCircle = L.circle([lat, lng], {
-                radius: accuracy,
-                color: '#4285F4',
-                fillColor: '#4285F4',
-                fillOpacity: 0.2,
-                weight: 2
-            }).addTo(map);
-            
-            reverseGeocode(lat, lng);
-            
-            document.getElementById('confirmLocationBtn').disabled = false;
-            document.getElementById('mapLoading').classList.remove('active');
-        },
-        function(error) {
-            alert('Unable to get location');
-            document.getElementById('mapLoading').classList.remove('active');
-        },
-        highAccuracyOptions
-    );
-}
-
-function reverseGeocode(lat, lng) {
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
-        .then(response => response.json())
-        .then(data => {
-            let addressParts = [];
-            
-            if (data.address) {
-                if (data.address.house_number) addressParts.push(data.address.house_number);
-                if (data.address.road) addressParts.push(data.address.road);
-                if (data.address.neighbourhood) addressParts.push(data.address.neighbourhood);
-                
-                const city = data.address.city || data.address.town || data.address.village || '';
-                if (city) addressParts.push(city);
-                
-                if (data.address.state) addressParts.push(data.address.state);
-                if (data.address.postcode) addressParts.push(data.address.postcode);
-            }
-            
-            selectedAddressText = addressParts.length > 0 
-                ? addressParts.join(', ') 
-                : data.display_name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-            
-            document.getElementById('selectedAddress').textContent = selectedAddressText;
-            document.getElementById('selectedCoords').textContent = `📍 Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
-            
-            // Auto-fill form fields
-            if (data.address) {
-                let streetParts = [];
-                if (data.address.house_number) streetParts.push(data.address.house_number);
-                if (data.address.road) streetParts.push(data.address.road);
-                if (data.address.neighbourhood) streetParts.push(data.address.neighbourhood);
-                
-                if (streetParts.length > 0) {
-                    document.getElementById('address_line').value = streetParts.join(', ');
-                }
-                
-                const city = data.address.city || data.address.town || data.address.village || '';
-                if (city) {
-                    document.getElementById('city').value = city;
-                }
-                
-                if (data.address.postcode) {
-                    document.getElementById('postal_code').value = data.address.postcode;
-                }
-            }
-        })
-        .catch(error => {
-            selectedAddressText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-            document.getElementById('selectedAddress').textContent = selectedAddressText;
-        });
-}
-
-function confirmLocation() {
-    if (!selectedLat || !selectedLng) {
-        alert('❌ Please select a location on the map first');
-        return;
-    }
-    
-    document.getElementById('delivery_latitude').value = selectedLat;
-    document.getElementById('delivery_longitude').value = selectedLng;
-    
-    document.getElementById('displayAddress').textContent = selectedAddressText;
-    document.getElementById('displayCoords').textContent = `📍 Lat: ${selectedLat.toFixed(6)}, Lng: ${selectedLng.toFixed(6)}`;
-    document.getElementById('selectedLocationDisplay').classList.add('active');
-    
-    closeMapModal();
-}
-
-// Search functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('mapSearchInput');
-    
-    if (searchInput) {
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const query = this.value.trim();
-                if (!query) return;
-                
-                document.getElementById('mapLoading').classList.add('active');
-                
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data && data.length > 0) {
-                            const result = data[0];
-                            const lat = parseFloat(result.lat);
-                            const lng = parseFloat(result.lon);
-                            
-                            if (marker) map.removeLayer(marker);
-                            if (accuracyCircle) map.removeLayer(accuracyCircle);
-                            
-                            map.setView([lat, lng], 18);
-                            
-                            selectedLat = lat;
-                            selectedLng = lng;
-                            
-                            marker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
-                            
-                            reverseGeocode(lat, lng);
-                            
-                            document.getElementById('confirmLocationBtn').disabled = false;
-                        } else {
-                            alert('❌ Location not found');
-                        }
-                        document.getElementById('mapLoading').classList.remove('active');
-                    })
-                    .catch(error => {
-                        alert('❌ Search failed');
-                        document.getElementById('mapLoading').classList.remove('active');
-                    });
-            }
-        });
-    }
-});
-
-// Toggle billing address
-function toggleBilling() {
-    const billingSection = document.getElementById('billingSection');
-    const sameAsShipping = document.getElementById('sameAsShipping');
-    billingSection.style.display = sameAsShipping.checked ? 'none' : 'block';
-}
-
-// Escape key to close modal
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        if (document.getElementById('mapModal').classList.contains('active')) {
-            closeMapModal();
+    // Handle real-time validation errors
+    cardElement.on('change', function(event) {
+        const displayError = document.getElementById('card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+        } else {
+            displayError.textContent = '';
         }
-    }
-});
+    });
+    
+    // Handle form submission
+    const form = document.getElementById('payment-form');
+    const submitButton = document.getElementById('submit-button');
+    const loading = document.getElementById('loading');
+    
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        
+        submitButton.disabled = true;
+        loading.style.display = 'block';
+        
+        const {error, paymentIntent} = await stripe.confirmCardPayment(
+            '{{ client_secret }}',
+            {
+                payment_method: {
+                    card: cardElement,
+                    billing_details: {
+                        name: '{{ order.customer_name }}',
+                        email: '{{ order.customer_email }}',
+                    }
+                }
+            }
+        );
+        
+        if (error) {
+            // Show error
+            document.getElementById('card-errors').textContent = error.message;
+            submitButton.disabled = false;
+            loading.style.display = 'none';
+        } else {
+            // Payment successful - confirm with backend
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            const response = await fetch('{% url "orders:stripe_payment_confirm" order.order_number %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken,
+                },
+                body: new URLSearchParams({
+                    'payment_intent_id': paymentIntent.id
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                alert('Payment confirmation failed: ' + data.error);
+                submitButton.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+    });
 </script>
-
 {% endblock %}

@@ -12,7 +12,7 @@ from decimal import Decimal
 import random
 import string
 import json
-
+from django.conf import settings
 from .models import Order, OrderItem, OrderItemLensAddOn, OrderStatusHistory, PaymentTransaction
 from cart.models import Cart, CartItem
 from users.models import Address

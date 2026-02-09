@@ -214,3 +214,42 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
+
+
+
+
+
+
+
+# Add to your settings.py
+
+# ============================================
+# PAYMENT GATEWAY SETTINGS
+# ============================================
+
+# Stripe Configuration
+STRIPE_PUBLISHABLE_KEY = 'pk_test_your_publishable_key_here'
+STRIPE_SECRET_KEY = 'sk_test_your_secret_key_here'
+
+# Razorpay Configuration (Popular in India/Middle East)
+RAZORPAY_KEY_ID = 'rzp_test_your_key_id_here'
+RAZORPAY_KEY_SECRET = 'your_secret_key_here'
+
+# PayPal Configuration
+PAYPAL_MODE = 'sandbox'  # Change to 'live' for production
+PAYPAL_CLIENT_ID = 'your_client_id_here'
+PAYPAL_CLIENT_SECRET = 'your_client_secret_here'
+
+# ============================================
+# REQUIRED PACKAGES
+# ============================================
+# Add these to your requirements.txt:
+#
+# stripe>=5.0.0
+# razorpay>=1.3.0
+# paypalrestsdk>=1.13.1
+
+# ============================================
+# INSTALLATION COMMANDS
+# ============================================
+# pip install stripe razorpay paypalrestsdk
