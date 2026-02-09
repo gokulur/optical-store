@@ -101,6 +101,63 @@
         color: #666;
         margin-bottom: 30px;
     }
+
+    /* Enhanced quantity button styles */
+    .xo-quantity-style2__button {
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+
+    .xo-quantity-style2__button:hover:not(.disabled) {
+        background-color: #f0f0f0;
+        transform: scale(1.05);
+    }
+
+    .xo-quantity-style2__button:active:not(.disabled) {
+        transform: scale(0.95);
+    }
+
+    .xo-quantity-style2__button.disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Item total animation */
+    .xo-cart-table__price {
+        transition: all 0.3s ease;
+    }
+
+    .xo-cart-table__price.updating {
+        color: #4caf50;
+        transform: scale(1.05);
+    }
+
+    /* Remove button hover effect */
+    .remove-item-btn:hover {
+        color: #dc3545;
+    }
+
+    /* Row removal animation */
+    .xo-table__body-row {
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .xo-table__body-row.removing {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+
+    /* Cart count badge animation */
+    .header-v24__cart-count {
+        transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.35);
+    }
+
+    /* Loading state for quantity buttons */
+    .xo-quantity-style2.loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
 </style>
 
 <main id="xo-main-content" class="content-for-layout focus-none" role="main" tabindex="-1">
@@ -125,7 +182,7 @@
                         <h1 class="xo-page-heading__title">Your Shopping Cart</h1>
                         <div class="xo-page-heading__description">
                             {% if cart_items %}
-                            <p>{{ cart_items|length }} item(s) in your cart</p>
+                            <p><span id="cart-items-count">{{ cart_items|length }}</span> item(s) in your cart</p>
                             {% endif %}
                         </div>
                     </div>
@@ -161,7 +218,7 @@
                             <xo-grid>
                                 <div style="--xs: 12; --sm: 12; --md: 12; --lg: 8;" class="xo-cart__left">
                                     <div class="xo-cart-table">
-                                        <form action=" " method="post" id="cart">
+                                        <form action="" method="post" id="cart">
                                             {% csrf_token %}
                                             <table role="table" class="xo-table">
                                                 <thead role="rowgroup">
@@ -171,7 +228,7 @@
                                                         <th role="columnheader">Total</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
+                                                <tbody id="cart-tbody">
                                                     {% for item in cart_items %}
                                                     <tr role="row" class="xo-table__body-row"
                                                         data-item-id="{{ item.id }}" id="cart-row-{{ item.id }}">
@@ -219,18 +276,16 @@
                                                                                     <xo-cart-quantity class="xo-quantity-style2"
                                                                                         style="--width: 10rem; --height: 4rem"
                                                                                         data-item-id="{{ item.id }}">
-                                                                                        <a href="?action=decrease"
+                                                                                        <button type="button"
                                                                                             class="xo-quantity-style2__button decrease-qty"
-                                                                                            data-item-id="{{ item.id }}"
-                                                                                            data-url="?action=decrease">–</a>
+                                                                                            data-item-id="{{ item.id }}">–</button>
 
                                                                                         <input type="text" value="{{ item.quantity }}" readonly
                                                                                             class="xo-quantity-style2__number item-quantity-{{ item.id }}">
 
-                                                                                        <a href="?action=increase"
+                                                                                        <button type="button"
                                                                                             class="xo-quantity-style2__button increase-qty"
-                                                                                            data-item-id="{{ item.id }}"
-                                                                                            data-url="?action=increase">+</a>
+                                                                                            data-item-id="{{ item.id }}">+</button>
                                                                                     </xo-cart-quantity>
                                                                                 </div>
                                                                             </div>
@@ -327,10 +382,9 @@
 
                                                                         <!-- Remove Button -->
                                                                         <xo-cart-remove>
-                                                                            <button class="xo-btn xo-btn--dark xo-btn--link xo-btn--slide-up remove-item-btn"
+                                                                            <button type="button" class="xo-btn xo-btn--dark xo-btn--link xo-btn--slide-up remove-item-btn"
                                                                                 style="cursor: pointer;"
                                                                                 data-item-id="{{ item.id }}"
-                                                                                data-url="{% url 'cart:remove_from_cart' item.id %}"
                                                                                 aria-label="Remove {{ item.product.name }}">
                                                                                 <span class="xo-btn__content">
                                                                                     <span class="xo-btn__text" data-text="Delete">Remove</span>
@@ -364,18 +418,16 @@
                                                                     <xo-cart-quantity class="xo-quantity-style2"
                                                                         style="--width: 10rem; --height: 4rem"
                                                                         data-item-id="{{ item.id }}">
-                                                                        <a href="?action=decrease"
+                                                                        <button type="button"
                                                                             class="xo-quantity-style2__button decrease-qty"
-                                                                            data-item-id="{{ item.id }}"
-                                                                            data-url="?action=decrease">–</a>
+                                                                            data-item-id="{{ item.id }}">–</button>
 
                                                                         <input type="text" value="{{ item.quantity }}" readonly
                                                                             class="xo-quantity-style2__number item-quantity-{{ item.id }}">
 
-                                                                        <a href="?action=increase"
+                                                                        <button type="button"
                                                                             class="xo-quantity-style2__button increase-qty"
-                                                                            data-item-id="{{ item.id }}"
-                                                                            data-url="?action=increase">+</a>
+                                                                            data-item-id="{{ item.id }}">+</button>
                                                                     </xo-cart-quantity>
                                                                 </div>
                                                             </xo-product>
@@ -422,14 +474,14 @@
                                         xo-free-shipping-notice="Congrats! You are eligible for FREE Shipping"
                                         xo-free-shipping-progress="Buy {{ money }} more to enjoy FREE shipping">
                                         <div class="xo-cart-free-shipping">
-                                            <div class="xo-cart-free-shipping__position">
+                                            <div class="xo-cart-free-shipping__position" id="shipping-message">
                                                 {% if shipping == 0 %}
                                                 <div class="xo-cart-free-shipping__text" style="color: #4caf50; font-weight: bold;">
                                                     ✓ You qualify for FREE shipping!
                                                 </div>
                                                 {% else %}
                                                 <div class="xo-cart-free-shipping__text">
-                                                    Add QAR {{ free_shipping_remaining }} more for FREE shipping
+                                                    Add QAR <span id="free-shipping-remaining">{{ free_shipping_remaining }}</span> more for FREE shipping
                                                 </div>
                                                 <div class="xo-cart-free-shipping__progress" style="--progress: {{ shipping_progress }}%;">
                                                 </div>
@@ -444,47 +496,27 @@
                                     <xo-cart-will-change class="xo-cart-totals">
                                         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                                             <span>Subtotal:</span>
-                                            <span>QAR {{ subtotal }}</span>
+                                            <span id="subtotal-display">QAR {{ subtotal }}</span>
                                         </div>
-                                        <!-- {% if shipping > 0 %}
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                            <span>Shipping:</span>
-                                            <span>QAR {{ shipping }}</span>
-                                        </div>
-                                        {% endif %}
-                                        {% if tax > 0 %}
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                            <span>Tax:</span>
-                                            <span>QAR {{ tax }}</span>
-                                        </div>
-                                        {% endif %}
-                                        <div class="xo-space xo-space--vertical" style="--space: 1rem"></div>
-                                        <div style="display: flex; justify-content: space-between; font-size: 20px; font-weight: bold;">
-                                            <div class="xo-cart-totals__subtotal">Total</div>
-                                            <div class="xo-cart-table__price" id="cart-total">
-                                                QAR {{ total }}
-                                            </div>
-                                        </div> -->
                                     </xo-cart-will-change>
-                                    {% if shipping > 0 %}
-                                    <xo-cart-will-change class="xo-cart-totals">
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                            <span>Shipping:</span>
-                                            <span> QAR {{ shipping }}</span>
-                                        </div>
                                     
+                                    <xo-cart-will-change class="xo-cart-totals" id="shipping-row" {% if shipping == 0 %}style="display: none;"{% endif %}>
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                            <span>Shipping:</span>
+                                            <span id="shipping-display">QAR {{ shipping }}</span>
+                                        </div>
                                     </xo-cart-will-change>
-                                    {% endif %}
-                                     <div style="display: flex; justify-content: space-between; font-size: 20px; font-weight: bold;">
-                                            <div class="xo-cart-totals__subtotal">Total</div>
-                                            <div class="xo-cart-table__price" id="cart-total">
-                                                QAR {{ total }}
-                                            </div>
-                                        </div>  
+                                    
+                                    <div style="display: flex; justify-content: space-between; font-size: 20px; font-weight: bold;">
+                                        <div class="xo-cart-totals__subtotal">Total</div>
+                                        <div class="xo-cart-table__price" id="cart-total">
+                                            QAR {{ total }}
+                                        </div>
+                                    </div>  
 
                                     <xo-cart-will-change xo-unique-id="xo-cart-tax-note" class="xo-cart-tax-note">
                                         <div class="xo-space xo-space--vertical" style="--space: 1rem"></div>
-                                        Taxes and <a href=" ">shipping</a> calculated at checkout
+                                        Taxes and <a href="">shipping</a> calculated at checkout
                                     </xo-cart-will-change>
 
                                     <xo-cart-will-change xo-unique-id="xo-space-2">
@@ -585,10 +617,12 @@
     {% endif %}
 </main>
 
-<!-- Add this JavaScript at the bottom of cart.html template -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    console.log("🛒 Cart page loaded");
+    console.log("🛒 Cart page loaded - Fixed version");
+    
+    const FREE_SHIPPING_THRESHOLD = 200;
+    const SHIPPING_COST = 20;
     
     // Get CSRF token
     function getCookie(name) {
@@ -607,32 +641,41 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     const csrftoken = getCookie('csrftoken');
     
-    // Update all totals
+    // Update all totals and UI
     function updateTotals(data) {
         console.log("📊 Updating totals:", data);
         
         // Update subtotal
-        const subtotalEl = document.querySelector('.xo-cart-totals');
-        if (subtotalEl && subtotalEl.querySelector('span:last-child')) {
-            subtotalEl.querySelector('span:last-child').textContent = 'QAR ' + data.subtotal;
+        const subtotalEl = document.getElementById('subtotal-display');
+        if (subtotalEl) {
+            subtotalEl.textContent = 'QAR ' + parseFloat(data.subtotal).toFixed(2);
         }
         
         // Update shipping
-        if (data.shipping && parseFloat(data.shipping) > 0) {
-            const shippingEl = document.querySelector('.xo-cart-totals:nth-of-type(2)');
-            if (shippingEl && shippingEl.querySelector('span:last-child')) {
-                shippingEl.querySelector('span:last-child').textContent = 'QAR ' + data.shipping;
+        const shippingRow = document.getElementById('shipping-row');
+        const shippingEl = document.getElementById('shipping-display');
+        const shipping = parseFloat(data.shipping);
+        
+        if (shipping > 0) {
+            shippingRow.style.display = 'block';
+            if (shippingEl) {
+                shippingEl.textContent = 'QAR ' + shipping.toFixed(2);
             }
+        } else {
+            shippingRow.style.display = 'none';
         }
         
         // Update total
         const totalEl = document.getElementById('cart-total');
         if (totalEl) {
-            totalEl.textContent = 'QAR ' + data.cart_total;
+            totalEl.textContent = 'QAR ' + parseFloat(data.cart_total).toFixed(2);
         }
         
-        // Update header cart count
-        const countEls = document.querySelectorAll('.header-v24__cart-count, #cart-count');
+        // Update shipping message
+        updateShippingMessage(parseFloat(data.subtotal));
+        
+        // Update cart count in header
+        const countEls = document.querySelectorAll('.header-v24__cart-count, #cart-count, #cart-items-count');
         countEls.forEach(el => {
             el.textContent = data.cart_count;
             // Add bounce animation
@@ -643,24 +686,45 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
-    // Handle quantity buttons
-    document.addEventListener("click", function(e) {
+    // Update shipping message
+    function updateShippingMessage(subtotal) {
+        const shippingMessageEl = document.getElementById('shipping-message');
+        if (!shippingMessageEl) return;
         
-        // QUANTITY BUTTONS (+ and -)
-        const qtyBtn = e.target.closest(".increase-qty, .decrease-qty");
-        if (qtyBtn) {
+        if (subtotal >= FREE_SHIPPING_THRESHOLD) {
+            shippingMessageEl.innerHTML = `
+                <div class="xo-cart-free-shipping__text" style="color: #4caf50; font-weight: bold;">
+                    ✓ You qualify for FREE shipping!
+                </div>
+            `;
+        } else {
+            const remaining = (FREE_SHIPPING_THRESHOLD - subtotal).toFixed(2);
+            const progress = (subtotal / FREE_SHIPPING_THRESHOLD * 100).toFixed(0);
+            
+            shippingMessageEl.innerHTML = `
+                <div class="xo-cart-free-shipping__text">
+                    Add QAR <span id="free-shipping-remaining">${remaining}</span> more for FREE shipping
+                </div>
+                <div class="xo-cart-free-shipping__progress" style="--progress: ${progress}%;"></div>
+            `;
+        }
+    }
+    
+    // INCREASE QUANTITY
+    document.addEventListener("click", function(e) {
+        const increaseBtn = e.target.closest(".increase-qty");
+        if (increaseBtn) {
             e.preventDefault();
-            e.stopImmediatePropagation();
+            e.stopPropagation();
             
-            const itemId = qtyBtn.dataset.itemId;
-            const action = qtyBtn.classList.contains('increase-qty') ? 'increase' : 'decrease';
-            const url = `/cart/update/${itemId}/${action}/`;
+            const itemId = increaseBtn.dataset.itemId;
+            const url = `/cart/update/${itemId}/increase/`;
             
-            console.log(`${action === 'increase' ? '➕' : '➖'} Updating quantity for item ${itemId}`);
+            console.log(`➕ Increasing quantity for item ${itemId}`);
             
-            // Disable buttons during request
-            const allBtns = document.querySelectorAll(`[data-item-id="${itemId}"]`);
-            allBtns.forEach(btn => btn.style.pointerEvents = 'none');
+            // Disable buttons
+            const qtyContainer = increaseBtn.closest('.xo-quantity-style2');
+            qtyContainer.classList.add('loading');
             
             fetch(url, {
                 method: "GET",
@@ -671,52 +735,36 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(res => res.json())
             .then(data => {
-                console.log("✅ Quantity update response:", data);
+                console.log("✅ Increase response:", data);
                 
                 if (data.success) {
                     if (data.deleted) {
-                        // Item removed (quantity went to 0)
-                        const row = document.getElementById("cart-row-" + itemId);
-                        if (row) {
-                            row.style.transition = "opacity 0.3s ease";
-                            row.style.opacity = "0";
-                            
-                            setTimeout(() => {
-                                row.remove();
-                                
-                                // Reload if cart is empty
-                                if (data.cart_count === 0) {
-                                    console.log("🔄 Cart empty, reloading...");
-                                    location.reload();
-                                } else {
-                                    updateTotals(data);
-                                }
-                            }, 300);
-                        }
+                        // Item was removed
+                        removeItemRow(itemId, data);
                     } else {
-                        // Update quantity displays
-                        document.querySelectorAll(".item-quantity-" + itemId).forEach(input => {
+                        // Update quantity
+                        document.querySelectorAll(`.item-quantity-${itemId}`).forEach(input => {
                             input.value = data.quantity;
                         });
                         
-                        // Update item total
-                        const itemTotalEl = document.querySelector(".item-total-" + itemId);
+                        // Update item total with animation
+                        const itemTotalEl = document.querySelector(`.item-total-${itemId}`);
                         if (itemTotalEl) {
-                            itemTotalEl.textContent = "QAR " + data.item_total;
-                            
-                            // Add pulse animation
-                            itemTotalEl.style.transition = "color 0.3s ease";
-                            itemTotalEl.style.color = "#4caf50";
-                            setTimeout(() => {
-                                itemTotalEl.style.color = "";
-                            }, 500);
+                            itemTotalEl.textContent = "QAR " + parseFloat(data.item_total).toFixed(2);
+                            itemTotalEl.classList.add('updating');
+                            setTimeout(() => itemTotalEl.classList.remove('updating'), 300);
                         }
                         
                         // Update all totals
                         updateTotals(data);
                     }
                 } else {
-                    alert(data.message || 'Error updating quantity');
+                    // Show error message
+                    if (data.limit_reached) {
+                        alert(data.message || 'Maximum stock reached!');
+                    } else {
+                        alert(data.message || 'Error updating quantity');
+                    }
                 }
             })
             .catch(error => {
@@ -724,14 +772,84 @@ document.addEventListener("DOMContentLoaded", function() {
                 alert('An error occurred. Please try again.');
             })
             .finally(() => {
-                // Re-enable buttons
-                allBtns.forEach(btn => btn.style.pointerEvents = '');
+                qtyContainer.classList.remove('loading');
             });
             
             return;
         }
-        
-        // REMOVE BUTTON
+    });
+    
+    // DECREASE QUANTITY
+    document.addEventListener("click", function(e) {
+        const decreaseBtn = e.target.closest(".decrease-qty");
+        if (decreaseBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const itemId = decreaseBtn.dataset.itemId;
+            const url = `/cart/update/${itemId}/decrease/`;
+            
+            console.log(`➖ Decreasing quantity for item ${itemId}`);
+            
+            // Disable buttons
+            const qtyContainer = decreaseBtn.closest('.xo-quantity-style2');
+            qtyContainer.classList.add('loading');
+            
+            fetch(url, {
+                method: "GET",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": csrftoken
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log("✅ Decrease response:", data);
+                
+                if (data.success) {
+                    if (data.deleted) {
+                        // Item was removed
+                        removeItemRow(itemId, data);
+                    } else {
+                        // Update quantity
+                        document.querySelectorAll(`.item-quantity-${itemId}`).forEach(input => {
+                            input.value = data.quantity;
+                        });
+                        
+                        // Update item total with animation
+                        const itemTotalEl = document.querySelector(`.item-total-${itemId}`);
+                        if (itemTotalEl) {
+                            itemTotalEl.textContent = "QAR " + parseFloat(data.item_total).toFixed(2);
+                            itemTotalEl.classList.add('updating');
+                            setTimeout(() => itemTotalEl.classList.remove('updating'), 300);
+                        }
+                        
+                        // Update all totals
+                        updateTotals(data);
+                    }
+                } else {
+                    // Show error message
+                    if (data.block) {
+                        alert(data.message || 'Minimum quantity is 1');
+                    } else {
+                        alert(data.message || 'Error updating quantity');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error:', error);
+                alert('An error occurred. Please try again.');
+            })
+            .finally(() => {
+                qtyContainer.classList.remove('loading');
+            });
+            
+            return;
+        }
+    });
+    
+    // REMOVE ITEM
+    document.addEventListener("click", function(e) {
         const removeBtn = e.target.closest(".remove-item-btn");
         if (removeBtn) {
             e.preventDefault();
@@ -739,7 +857,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (!confirm("Remove this item from cart?")) return;
             
             const itemId = removeBtn.dataset.itemId;
-            const url = removeBtn.dataset.url;
+            const url = `/cart/remove/${itemId}/`;
             
             console.log("🗑️ Removing item:", itemId);
             
@@ -758,25 +876,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 console.log("✅ Remove response:", data);
                 
                 if (data.success) {
-                    const row = document.getElementById("cart-row-" + itemId);
-                    if (row) {
-                        row.style.transition = "opacity 0.3s ease, transform 0.3s ease";
-                        row.style.opacity = "0";
-                        row.style.transform = "translateX(50px)";
-                        
-                        setTimeout(() => {
-                            row.remove();
-                            
-                            // Update totals
-                            updateTotals(data);
-                            
-                            // Reload if cart is empty
-                            if (data.cart_count === 0) {
-                                console.log("🔄 Cart empty, reloading...");
-                                setTimeout(() => location.reload(), 500);
-                            }
-                        }, 300);
-                    }
+                    removeItemRow(itemId, data);
                 } else {
                     alert(data.message || "Error removing item");
                     removeBtn.disabled = false;
@@ -791,48 +891,28 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
     });
+    
+    // Remove item row with animation
+    function removeItemRow(itemId, data) {
+        const row = document.getElementById("cart-row-" + itemId);
+        if (row) {
+            row.classList.add('removing');
+            
+            setTimeout(() => {
+                row.remove();
+                
+                // Update totals
+                updateTotals(data);
+                
+                // Reload if cart is empty
+                if (data.cart_count === 0) {
+                    console.log("🔄 Cart empty, reloading...");
+                    setTimeout(() => location.reload(), 500);
+                }
+            }, 300);
+        }
+    }
 });
 </script>
 
-<style>
-/* Enhanced quantity button styles */
-.xo-quantity-style2__button {
-    transition: all 0.2s ease;
-}
-
-.xo-quantity-style2__button:hover {
-    background-color: #f0f0f0;
-    transform: scale(1.1);
-}
-
-.xo-quantity-style2__button:active {
-    transform: scale(0.95);
-}
-
-/* Item total animation */
-.xo-cart-table__price {
-    transition: color 0.3s ease;
-}
-
-/* Remove button hover effect */
-.remove-item-btn:hover {
-    color: #dc3545;
-}
-
-/* Row removal animation */
-.xo-table__body-row {
-    transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-/* Cart count badge animation */
-.header-v24__cart-count {
-    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.35);
-}
-
-/* Loading state for quantity buttons */
-.xo-quantity-style2__button[style*="pointer-events: none"] {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-</style>
 {% endblock %}

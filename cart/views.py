@@ -169,40 +169,56 @@ def cart_view(request):
 
 
 # ============================================
-# UPDATE QUANTITY (AJAX)
+# UPDATE QUANTITY - SIMPLIFIED (AJAX)
 # ============================================
 
 def update_cart_quantity(request, item_id, action):
-    """Update cart item quantity via AJAX"""
+    """Update cart item quantity via AJAX - FIXED VERSION"""
     try:
         cart = get_or_create_cart(request)
         cart_item = get_object_or_404(CartItem, id=item_id, cart=cart)
         
+        # Get product stock (if available)
+        product = cart_item.product
+        stock_limit = getattr(product, 'stock', 999)  # Default high if no stock field
+        
         if action == 'increase':
+            # Check stock limit
+            if cart_item.quantity >= stock_limit:
+                return JsonResponse({
+                    'success': False,
+                    'limit_reached': True,
+                    'quantity': cart_item.quantity,
+                    'message': f'Maximum stock ({stock_limit}) reached!',
+                    'item_total': str(calculate_item_total(cart_item)),
+                    'cart_count': cart.items.count()
+                })
+            
+            # Increase quantity
             cart_item.quantity += 1
             cart_item.save()
             
         elif action == 'decrease':
-            if cart_item.quantity > 1:
-                cart_item.quantity -= 1
-                cart_item.save()
-            else:
-                # Remove item if quantity becomes 0
-                cart_item.delete()
-                
-                # Get updated totals after deletion
-                totals = get_cart_totals(cart)
-                
+            # Check minimum quantity
+            if cart_item.quantity <= 1:
                 return JsonResponse({
-                    'success': True,
-                    'deleted': True,
-                    'message': 'Item removed from cart',
-                    'cart_count': totals['item_count'],
-                    'subtotal': str(totals['subtotal']),
-                    'shipping': str(totals['shipping']),
-                    'tax': str(totals['tax']),
-                    'cart_total': str(totals['total'])
+                    'success': False,
+                    'block': True,
+                    'quantity': cart_item.quantity,
+                    'message': 'Minimum quantity is 1. Use Remove button to delete item.',
+                    'item_total': str(calculate_item_total(cart_item)),
+                    'cart_count': cart.items.count()
                 })
+            
+            # Decrease quantity
+            cart_item.quantity -= 1
+            cart_item.save()
+        
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid action'
+            }, status=400)
         
         # Calculate new item total
         item_total = calculate_item_total(cart_item)
@@ -222,6 +238,11 @@ def update_cart_quantity(request, item_id, action):
             'cart_count': totals['item_count']
         })
         
+    except CartItem.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Item not found in cart'
+        }, status=404)
     except Exception as e:
         print(f"Update quantity error: {e}")
         return JsonResponse({

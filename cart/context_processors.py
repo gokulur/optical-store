@@ -1,8 +1,8 @@
+# cart/context_processors.py
 """
 Context processor to make cart available in all templates
 Add this to settings.py TEMPLATES['OPTIONS']['context_processors']
 """
-
 from .models import Cart
 
 
@@ -22,12 +22,12 @@ def cart_processor(request):
         
         if cart:
             cart_count = cart.items.count()
-    except:
+    except Exception as e:
+        # Silently fail to avoid breaking the site
+        print(f"Cart context processor error: {e}")
         pass
     
     return {
         'cart': cart,
         'cart_count': cart_count,
     }
-
-
