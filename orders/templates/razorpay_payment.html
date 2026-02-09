@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Razorpay Payment - Order {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<style>
+    .payment-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 40px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .payment-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .payment-header h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+    
+    .order-summary {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    
+    .summary-row.total {
+        border-top: 2px solid #ddd;
+        padding-top: 15px;
+        margin-top: 10px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    
+    .payment-button {
+        width: 100%;
+        padding: 16px;
+        background: #528FF0;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .payment-button:hover {
+        background: #3b7dd8;
+    }
+    
+    .secure-badge {
+        text-align: center;
+        margin-top: 20px;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .payment-methods {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin: 20px 0;
+    }
+    
+    .payment-method-icon {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 12px;
+        color: #666;
+    }
+</style>
+
+<div class="payment-container">
+    <div class="payment-header">
+        <h1>💳 Complete Payment</h1>
+        <p>Order #{{ order.order_number }}</p>
+    </div>
+
+    <div class="order-summary">
+        <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>{{ order.currency }} {{ order.subtotal }}</span>
+        </div>
+        <div class="summary-row">
+            <span>Shipping:</span>
+            <span>{{ order.currency }} {{ order.shipping_amount }}</span>
+        </div>
+        <div class="summary-row">
+            <span>Tax:</span>
+            <span>{{ order.currency }} {{ order.tax_amount }}</span>
+        </div>
+        <div class="summary-row total">
+            <span>Total:</span>
+            <span>{{ order.currency }} {{ order.total_amount }}</span>
+        </div>
+    </div>
+
+    <div class="payment-methods">
+        <div class="payment-method-icon">💳 Cards</div>
+        <div class="payment-method-icon">📱 UPI</div>
+        <div class="payment-method-icon">🏦 NetBanking</div>
+        <div class="payment-method-icon">💰 Wallets</div>
+    </div>
+
+    <button id="razorpay-button" class="payment-button">
+        Pay {{ order.currency }} {{ order.total_amount }}
+    </button>
+
+    <div class="secure-badge">
+        <p>🔒 Secured by Razorpay | Your payment information is encrypted</p>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    document.getElementById('razorpay-button').onclick = function(e) {
+        e.preventDefault();
+        
+        var options = {
+            "key": "{{ razorpay_key_id }}",
+            "amount": {{ amount|floatformat:2 }} * 100, // Amount in paise
+            "currency": "{{ currency }}",
+            "name": "Your Store Name",
+            "description": "Order #{{ order.order_number }}",
+            "order_id": "{{ razorpay_order_id }}",
+            "handler": function (response) {
+                // Payment successful - verify on backend
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
+                fetch('{% url "orders:razorpay_payment_verify" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken,
+                    },
+                    body: JSON.stringify({
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        alert('Payment verification failed: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error);
+                });
+            },
+            "prefill": {
+                "name": "{{ order.customer_name }}",
+                "email": "{{ order.customer_email }}",
+                "contact": "{{ order.customer_phone }}"
+            },
+            "theme": {
+                "color": "#528FF0"
+            }
+        };
+        
+        var rzp = new Razorpay(options);
+        rzp.open();
+    };
+</script>
+
+<form style="display: none;">
+    {% csrf_token %}
+</form>
+{% endblock %}

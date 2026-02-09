@@ -625,7 +625,7 @@ def order_list(request):
         'order_statuses': Order.ORDER_STATUS,
     }
     
-    return render(request, 'orders/order_list.html', context)
+    return render(request, 'order_list.html', context)
 
 
 @login_required
@@ -654,7 +654,7 @@ def order_detail(request, order_number):
         'payment_transactions': payment_transactions,
     }
     
-    return render(request, 'orders/order_detail.html', context)
+    return render(request, 'order_detail.html', context)
 
 
 @login_required
@@ -687,7 +687,7 @@ def track_order(request, order_number):
         'current_status_index': current_status_index,
     }
     
-    return render(request, 'orders/track_order.html', context)
+    return render(request, 'track_order.html', context)
 
 
 @login_required
