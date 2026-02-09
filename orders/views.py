@@ -309,7 +309,7 @@ def stripe_payment(request, order_number):
                 'client_secret': result['client_secret'],
                 'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY,
             }
-            return render(request, 'orders/stripe_payment.html', context)
+            return render(request, 'stripe_payment.html', context)
         else:
             messages.error(request, f"Payment error: {result.get('error')}")
             return redirect('orders:checkout')

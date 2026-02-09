@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Stripe Payment - Order {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<style>
+    .payment-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 40px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .payment-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .payment-header h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+    
+    .payment-header p {
+        color: #666;
+    }
+    
+    .order-summary {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    
+    .summary-row.total {
+        border-top: 2px solid #ddd;
+        padding-top: 15px;
+        margin-top: 10px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    
+    #card-element {
+        padding: 15px;
+        border: 2px solid #e8e8e8;
+        border-radius: 8px;
+        background: white;
+        margin-bottom: 20px;
+    }
+    
+    #card-errors {
+        color: #dc3545;
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+    
+    .payment-button {
+        width: 100%;
+        padding: 16px;
+        background: #1a1a1a;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .payment-button:hover {
+        background: #000;
+    }
+    
+    .payment-button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+    
+    .secure-badge {
+        text-align: center;
+        margin-top: 20px;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        margin: 20px 0;
+    }
+    
+    .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #1a1a1a;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+<div class="payment-container">
+    <div class="payment-header">
+        <h1>💳 Complete Payment</h1>
+        <p>Order #{{ order.order_number }}</p>
+    </div>
+
+    <div class="order-summary">
+        <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>{{ order.currency }} {{ order.subtotal }}</span>
+        </div>
+        <div class="summary-row">
+            <span>Shipping:</span>
+            <span>{{ order.currency }} {{ order.shipping_amount }}</span>
+        </div>
+        <div class="summary-row">
+            <span>Tax:</span>
+            <span>{{ order.currency }} {{ order.tax_amount }}</span>
+        </div>
+        <div class="summary-row total">
+            <span>Total:</span>
+            <span>{{ order.currency }} {{ order.total_amount }}</span>
+        </div>
+    </div>
+
+    <form id="payment-form">
+        {% csrf_token %}
+        
+        <div id="card-element"></div>
+        
+        <div id="card-errors"></div>
+        
+        <button type="submit" id="submit-button" class="payment-button">
+            Pay {{ order.currency }} {{ order.total_amount }}
+        </button>
+    </form>
+
+    <div class="loading-spinner" id="loading">
+        <div class="spinner"></div>
+        <p>Processing payment...</p>
+    </div>
+
+    <div class="secure-badge">
+        <p>🔒 Secured by Stripe | Your payment information is encrypted</p>
+    </div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    const stripe = Stripe('{{ stripe_publishable_key }}');
+    const elements = stripe.elements();
+    
+    // Create card element
+    const cardElement = elements.create('card', {
+        style: {
+            base: {
+                fontSize: '16px',
+                color: '#1a1a1a',
+                '::placeholder': {
+                    color: '#aab7c4',
+                },
+            },
+        },
+    });
+    
+    cardElement.mount('#card-element');
+    
+    // Handle real-time validation errors
+    cardElement.on('change', function(event) {
+        const displayError = document.getElementById('card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+        } else {
+            displayError.textContent = '';
+        }
+    });
+    
+    // Handle form submission
+    const form = document.getElementById('payment-form');
+    const submitButton = document.getElementById('submit-button');
+    const loading = document.getElementById('loading');
+    
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        
+        submitButton.disabled = true;
+        loading.style.display = 'block';
+        
+        const {error, paymentIntent} = await stripe.confirmCardPayment(
+            '{{ client_secret }}',
+            {
+                payment_method: {
+                    card: cardElement,
+                    billing_details: {
+                        name: '{{ order.customer_name }}',
+                        email: '{{ order.customer_email }}',
+                    }
+                }
+            }
+        );
+        
+        if (error) {
+            // Show error
+            document.getElementById('card-errors').textContent = error.message;
+            submitButton.disabled = false;
+            loading.style.display = 'none';
+        } else {
+            // Payment successful - confirm with backend
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            const response = await fetch('{% url "orders:stripe_payment_confirm" order.order_number %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken,
+                },
+                body: new URLSearchParams({
+                    'payment_intent_id': paymentIntent.id
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                alert('Payment confirmation failed: ' + data.error);
+                submitButton.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+    });
+</script>
+{% endblock %}
