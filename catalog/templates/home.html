@@ -1074,6 +1074,537 @@
     box-sizing: border-box;
 }
 </style>
+
+
+
+<style>
+/* ============================================
+   CHAT SUPPORT WIDGET - PROFESSIONAL DESIGN
+   ============================================ */
+
+.chat-support-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Chat Button */
+.chat-support-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.chat-support-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
+}
+
+.chat-support-button:active {
+    transform: scale(0.95);
+}
+
+.chat-support-button .chat-icon,
+.chat-support-button .close-icon {
+    width: 28px;
+    height: 28px;
+    color: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.chat-support-button .close-icon {
+    display: none;
+    position: absolute;
+}
+
+.chat-support-button.active .chat-icon {
+    display: none;
+}
+
+.chat-support-button.active .close-icon {
+    display: block;
+}
+
+/* Notification Badge */
+.chat-notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff3b30;
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    border: 2px solid #fff;
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Chat Window */
+.chat-support-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 380px;
+    max-width: calc(100vw - 40px);
+    height: 600px;
+    max-height: calc(100vh - 120px);
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+}
+
+.chat-support-window.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    visibility: visible;
+}
+
+/* Chat Header */
+.chat-header {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 16px 16px 0 0;
+}
+
+.chat-header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.chat-avatar {
+    position: relative;
+    width: 40px;
+    height: 40px;
+}
+
+.chat-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.online-status {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    background: #4CAF50;
+    border-radius: 50%;
+    border: 2px solid #1a1a1a;
+    animation: pulse-status 2s infinite;
+}
+
+@keyframes pulse-status {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(76, 175, 80, 0);
+    }
+}
+
+.chat-header-info {
+    flex: 1;
+}
+
+.chat-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 4px 0;
+}
+
+.chat-status {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    background: #4CAF50;
+    border-radius: 50%;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.chat-minimize-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.chat-minimize-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.chat-minimize-btn svg {
+    width: 20px;
+    height: 20px;
+    color: #ffffff;
+}
+
+/* Chat Messages */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+/* Chat Message */
+.chat-message {
+    display: flex;
+    gap: 10px;
+    animation: slideInMessage 0.3s ease;
+}
+
+@keyframes slideInMessage {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message-avatar {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.message-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+.message-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.message-bubble {
+    background: #ffffff;
+    padding: 12px 16px;
+    border-radius: 12px 12px 12px 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    max-width: 85%;
+}
+
+.message-bubble p {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+    line-height: 1.5;
+}
+
+.message-bubble p + p {
+    margin-top: 8px;
+}
+
+.message-time {
+    font-size: 11px;
+    color: #999;
+    padding: 0 8px;
+}
+
+/* User Message */
+.user-message {
+    flex-direction: row-reverse;
+}
+
+.user-message .message-content {
+    align-items: flex-end;
+}
+
+.user-message .message-bubble {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+    color: #ffffff;
+    border-radius: 12px 12px 4px 12px;
+}
+
+.user-message .message-bubble p {
+    color: #ffffff;
+}
+
+/* Quick Options */
+.quick-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.quick-option-btn {
+    background: #ffffff;
+    border: 1.5px solid #e0e0e0;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.quick-option-btn:hover {
+    border-color: #1a1a1a;
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.quick-option-btn:active {
+    transform: translateY(0);
+}
+
+/* Typing Indicator */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 20px;
+    background: #f8f9fa;
+}
+
+.typing-dot {
+    width: 8px;
+    height: 8px;
+    background: #999;
+    border-radius: 50%;
+    animation: typing 1.4s infinite;
+}
+
+.typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+    30% {
+        transform: translateY(-10px);
+        opacity: 1;
+    }
+}
+
+/* Chat Input */
+.chat-input-container {
+    padding: 16px;
+    background: #ffffff;
+    border-top: 1px solid #e0e0e0;
+}
+
+.chat-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8f9fa;
+    border-radius: 24px;
+    padding: 8px 12px;
+    border: 1.5px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.chat-input-wrapper:focus-within {
+    border-color: #1a1a1a;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+}
+
+.chat-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 8px 4px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+}
+
+.chat-input::placeholder {
+    color: #999;
+}
+
+.chat-attachment-btn,
+.chat-emoji-btn,
+.chat-send-btn {
+    background: transparent;
+    border: none;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.chat-attachment-btn:hover,
+.chat-emoji-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.chat-attachment-btn svg,
+.chat-emoji-btn svg {
+    width: 20px;
+    height: 20px;
+    color: #666;
+}
+
+.chat-send-btn {
+    background: #1a1a1a;
+}
+
+.chat-send-btn:hover {
+    background: #333;
+    transform: scale(1.1);
+}
+
+.chat-send-btn:active {
+    transform: scale(0.95);
+}
+
+.chat-send-btn svg {
+    width: 18px;
+    height: 18px;
+    color: #ffffff;
+}
+
+/* Chat Footer */
+.chat-footer {
+    padding: 12px;
+    text-align: center;
+    background: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+}
+
+.chat-footer p {
+    margin: 0;
+    font-size: 11px;
+    color: #999;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .chat-support-window {
+        width: calc(100vw - 40px);
+        height: calc(100vh - 100px);
+        bottom: 70px;
+    }
+
+    .quick-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Pulse Animation for Button */
+@keyframes pulse-chat-button {
+    0% {
+        box-shadow: 0 0 0 0 rgba(26, 26, 26, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(26, 26, 26, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(26, 26, 26, 0);
+    }
+}
+
+.chat-support-button.has-notification {
+    animation: pulse-chat-button 2s infinite;
+}
+</style>
+
 <!-- Hero Banner Carousel -->
 <section class="shopify-section section">
     <section class="xo-section--slideshow">
@@ -2425,7 +2956,122 @@
     </div>
 </section>
 
- 
+ <!-- Chat Support Widget -->
+<div class="chat-support-widget">
+    <!-- Chat Button (Always Visible) -->
+    <button class="chat-support-button" id="chatSupportBtn" aria-label="Open Chat Support">
+        <svg class="chat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        <span class="chat-notification-badge">1</span>
+    </button>
+
+    <!-- Chat Window -->
+    <div class="chat-support-window" id="chatSupportWindow">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <div class="chat-header-content">
+                <div class="chat-avatar">
+                    <img src="https://ui-avatars.com/api/?name=Al+Ameen&background=1a1a1a&color=fff&size=40" alt="Support">
+                    <span class="online-status"></span>
+                </div>
+                <div class="chat-header-info">
+                    <h4 class="chat-title">Al Ameen Support</h4>
+                    <p class="chat-status">
+                        <span class="status-dot"></span>
+                        Online - We reply instantly
+                    </p>
+                </div>
+            </div>
+            <button class="chat-minimize-btn" id="chatMinimizeBtn" aria-label="Minimize Chat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chatMessages">
+            <!-- Welcome Message -->
+            <div class="chat-message bot-message">
+                <div class="message-avatar">
+                    <img src="https://ui-avatars.com/api/?name=Support&background=4A90E2&color=fff&size=32" alt="Bot">
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <p>👋 Welcome to Al Ameen Optics!</p>
+                        <p>How can we help you today?</p>
+                    </div>
+                    <span class="message-time">Just now</span>
+                </div>
+            </div>
+
+            <!-- Quick Options -->
+            <div class="quick-options">
+                <button class="quick-option-btn" data-message="I need help with my order">
+                    📦 Track Order
+                </button>
+                <button class="quick-option-btn" data-message="I want to book an eye test">
+                    👁️ Book Eye Test
+                </button>
+                <button class="quick-option-btn" data-message="I have a question about products">
+                    🛍️ Product Info
+                </button>
+                <button class="quick-option-btn" data-message="I need prescription help">
+                    📋 Prescription Help
+                </button>
+            </div>
+        </div>
+
+        <!-- Typing Indicator -->
+        <div class="typing-indicator" id="typingIndicator" style="display: none;">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <button class="chat-attachment-btn" aria-label="Attach File">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                    </svg>
+                </button>
+                <input 
+                    type="text" 
+                    class="chat-input" 
+                    id="chatInput" 
+                    placeholder="Type your message..."
+                    autocomplete="off"
+                />
+                <button class="chat-emoji-btn" aria-label="Add Emoji">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                        <line x1="9" y1="9" x2="9.01" y2="9"/>
+                        <line x1="15" y1="9" x2="15.01" y2="9"/>
+                    </svg>
+                </button>
+                <button class="chat-send-btn" id="chatSendBtn" aria-label="Send Message">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Powered By -->
+        <div class="chat-footer">
+            <p>Powered by Al Ameen Optics Support</p>
+        </div>
+    </div>
+</div>
 <script>
 // ============================================
 // AL AMEEN OPTICS - COMPLETE JAVASCRIPT
@@ -2974,6 +3620,192 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+</script>
+
+
+<script>
+// ============================================
+// CHAT SUPPORT WIDGET JAVASCRIPT
+// ============================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    const chatBtn = document.getElementById('chatSupportBtn');
+    const chatWindow = document.getElementById('chatSupportWindow');
+    const chatMinimizeBtn = document.getElementById('chatMinimizeBtn');
+    const chatInput = document.getElementById('chatInput');
+    const chatSendBtn = document.getElementById('chatSendBtn');
+    const chatMessages = document.getElementById('chatMessages');
+    const typingIndicator = document.getElementById('typingIndicator');
+    const quickOptions = document.querySelectorAll('.quick-option-btn');
+    const notificationBadge = document.querySelector('.chat-notification-badge');
+
+    // Toggle Chat Window
+    function toggleChat() {
+        chatWindow.classList.toggle('active');
+        chatBtn.classList.toggle('active');
+        
+        if (chatWindow.classList.contains('active')) {
+            chatInput.focus();
+            // Hide notification badge when opened
+            if (notificationBadge) {
+                notificationBadge.style.display = 'none';
+            }
+        }
+    }
+
+    chatBtn.addEventListener('click', toggleChat);
+    chatMinimizeBtn.addEventListener('click', toggleChat);
+
+    // Send Message Function
+    function sendMessage(messageText) {
+        if (!messageText.trim()) return;
+
+        // Create user message
+        const userMessage = createMessageElement(messageText, 'user');
+        chatMessages.appendChild(userMessage);
+        
+        // Clear input
+        chatInput.value = '';
+        
+        // Scroll to bottom
+        scrollToBottom();
+        
+        // Show typing indicator
+        showTypingIndicator();
+        
+        // Simulate bot response (replace with actual API call)
+        setTimeout(() => {
+            hideTypingIndicator();
+            const botResponse = getBotResponse(messageText);
+            const botMessage = createMessageElement(botResponse, 'bot');
+            chatMessages.appendChild(botMessage);
+            scrollToBottom();
+        }, 1500);
+    }
+
+    // Create Message Element
+    function createMessageElement(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${sender}-message`;
+        
+        const currentTime = new Date().toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit' 
+        });
+        
+        if (sender === 'bot') {
+            messageDiv.innerHTML = `
+                <div class="message-avatar">
+                    <img src="https://ui-avatars.com/api/?name=Support&background=4A90E2&color=fff&size=32" alt="Bot">
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <p>${text}</p>
+                    </div>
+                    <span class="message-time">${currentTime}</span>
+                </div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="message-avatar">
+                    <img src="https://ui-avatars.com/api/?name=You&background=1a1a1a&color=fff&size=32" alt="You">
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <p>${text}</p>
+                    </div>
+                    <span class="message-time">${currentTime}</span>
+                </div>
+            `;
+        }
+        
+        return messageDiv;
+    }
+
+    // Bot Response Logic (customize based on your needs)
+    function getBotResponse(userMessage) {
+        const message = userMessage.toLowerCase();
+        
+        if (message.includes('order') || message.includes('track')) {
+            return 'I can help you track your order! Please provide your order number, and I\'ll check the status for you.';
+        } else if (message.includes('eye test') || message.includes('appointment')) {
+            return 'Great! I can help you book an eye test. Would you prefer to visit our store or have a virtual consultation?';
+        } else if (message.includes('product') || message.includes('glasses')) {
+            return 'We have a wide range of eyeglasses and sunglasses. What type of frames are you looking for? We can help you find the perfect pair!';
+        } else if (message.includes('prescription')) {
+            return 'I can assist with prescription-related questions. Do you have your current prescription, or would you like to book an eye exam?';
+        } else if (message.includes('price') || message.includes('cost')) {
+            return 'Our prices vary depending on the frame and lens type. Could you tell me more about what you\'re looking for?';
+        } else if (message.includes('hours') || message.includes('open')) {
+            return 'We\'re open Monday-Saturday: 9:00 AM - 8:00 PM, Sunday: 10:00 AM - 6:00 PM. How can we help you today?';
+        } else {
+            return 'Thank you for your message! A support representative will be with you shortly. Is there anything specific I can help you with right now?';
+        }
+    }
+
+    // Show/Hide Typing Indicator
+    function showTypingIndicator() {
+        typingIndicator.style.display = 'flex';
+        scrollToBottom();
+    }
+
+    function hideTypingIndicator() {
+        typingIndicator.style.display = 'none';
+    }
+
+    // Scroll to Bottom
+    function scrollToBottom() {
+        setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 100);
+    }
+
+    // Send Button Click
+    chatSendBtn.addEventListener('click', () => {
+        sendMessage(chatInput.value);
+    });
+
+    // Enter Key to Send
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage(chatInput.value);
+        }
+    });
+
+    // Quick Option Buttons
+    quickOptions.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const message = btn.getAttribute('data-message');
+            sendMessage(message);
+            
+            // Remove quick options after selection
+            document.querySelector('.quick-options').style.display = 'none';
+        });
+    });
+
+    // Show notification badge after 5 seconds (demo)
+    setTimeout(() => {
+        if (!chatWindow.classList.contains('active')) {
+            if (notificationBadge) {
+                notificationBadge.style.display = 'flex';
+                chatBtn.classList.add('has-notification');
+            }
+        }
+    }, 5000);
+
+    // Close chat when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!chatWindow.contains(e.target) && 
+            !chatBtn.contains(e.target) && 
+            chatWindow.classList.contains('active')) {
+            // Uncomment to enable click-outside-to-close
+            // toggleChat();
+        }
+    });
+
+    console.log('💬 Chat Support Widget Loaded!');
+});
 </script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
