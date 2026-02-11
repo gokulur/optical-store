@@ -578,6 +578,7 @@
     </style>
 </style>
 <style>
+
 /* Shop By Top Brands Section - Scoped Styles */
 .xo-section--top-brands {
     background: #000000;
@@ -769,6 +770,392 @@
         padding: 10px 25px;
         font-size: 0.85rem;
     }
+}
+</style>
+<style>
+/* Al Ameen Optics Blog Cards Section - Scoped Styles */
+.xo-section--blog-cards {
+    position: relative;
+    overflow: hidden;
+}
+
+.blog-cards-heading {
+    margin-bottom: 3rem;
+}
+
+.blog-cards-main-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.blog-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.blog-single-card {
+    display: block;
+}
+
+.blog-card-wrapper {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.blog-card-wrapper:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.blog-card-image-container {
+    position: relative;
+    aspect-ratio: 4/5;
+    overflow: hidden;
+    background: #f5f5f5;
+}
+
+.blog-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.blog-card-wrapper:hover .blog-card-img {
+    transform: scale(1.08);
+}
+
+.blog-card-content {
+    padding: 30px 25px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.blog-card-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.4;
+    margin: 0 0 15px 0;
+    min-height: 76px;
+}
+
+.blog-card-excerpt {
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.6;
+    margin: 0 0 20px 0;
+    flex-grow: 1;
+}
+
+.blog-read-more-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+    margin-top: auto;
+}
+
+.blog-read-more-link:hover {
+    color: #4A90E2;
+    gap: 12px;
+}
+
+.blog-arrow-icon {
+    transition: transform 0.3s ease;
+}
+
+.blog-read-more-link:hover .blog-arrow-icon {
+    transform: translateX(4px);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .blog-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+    
+    .blog-cards-main-title {
+        font-size: 3rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .xo-section--blog-cards {
+        padding-top: 60px !important;
+        padding-bottom: 60px !important;
+    }
+    
+    .blog-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+        padding: 0 15px;
+    }
+    
+    .blog-cards-main-title {
+        font-size: 2.5rem !important;
+        margin-bottom: 3rem !important;
+    }
+    
+    .blog-card-title {
+        font-size: 1.25rem;
+        min-height: auto;
+    }
+    
+    .blog-card-content {
+        padding: 25px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .blog-cards-main-title {
+        font-size: 2rem !important;
+        letter-spacing: 0.05em !important;
+    }
+    
+    .blog-card-title {
+        font-size: 1.15rem;
+    }
+    
+    .blog-card-excerpt {
+        font-size: 0.9rem;
+    }
+    
+    .blog-card-image-container {
+        aspect-ratio: 3/4;
+    }
+}
+
+/* Ensure no conflicts with existing styles */
+.xo-section--blog-cards * {
+    box-sizing: border-box;
+}
+
+/* Hover effect enhancement */
+@media (hover: hover) {
+    .blog-card-wrapper {
+        cursor: pointer;
+    }
+}
+</style>
+<style>
+/* Our Stores Section - Scoped Styles */
+.xo-section--our-stores {
+    position: relative;
+    overflow: hidden;
+}
+
+.our-stores-heading {
+    margin-bottom: 2rem;
+}
+
+.our-stores-main-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.our-stores-image-container {
+    max-width: 600px;
+    margin: 0 auto 3rem;
+}
+
+.store-image-wrapper {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.store-image-wrapper:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.store-front-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    aspect-ratio: 3/2;
+    object-fit: cover;
+}
+
+/* Find a Store Button */
+.our-stores-cta {
+    margin-bottom: 5rem;
+}
+
+.find-store-button-container {
+    text-align: center;
+}
+
+.find-store-btn {
+    display: inline-block;
+    background: #1a1a1a;
+    color: #ffffff;
+    padding: 16px 48px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.find-store-btn:hover {
+    background: #333;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Benefits Section */
+.benefits-title-container {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.benefits-main-title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.stores-benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.stores-benefit-item {
+    text-align: center;
+    padding: 20px;
+    transition: transform 0.3s ease;
+}
+
+.stores-benefit-item:hover {
+    transform: translateY(-5px);
+}
+
+.benefit-icon-wrapper {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.benefit-icon {
+    color: #1a1a1a;
+    transition: all 0.3s ease;
+}
+
+.stores-benefit-item:hover .benefit-icon {
+    color: #4A90E2;
+    transform: scale(1.1);
+}
+
+.benefit-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .stores-benefits-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 35px;
+    }
+    
+    .benefits-main-title {
+        font-size: 2.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .xo-section--our-stores {
+        padding-top: 60px !important;
+        padding-bottom: 60px !important;
+    }
+    
+    .our-stores-main-title {
+        font-size: 2.8rem !important;
+    }
+    
+    .stores-benefits-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+    }
+    
+    .benefits-main-title {
+        font-size: 1.8rem;
+    }
+    
+    .find-store-btn {
+        padding: 14px 36px;
+        font-size: 0.95rem;
+    }
+    
+    .our-stores-image-container {
+        margin-bottom: 2.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .our-stores-main-title {
+        font-size: 2.2rem !important;
+        margin-bottom: 2rem !important;
+    }
+    
+    .stores-benefits-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+    
+    .benefits-main-title {
+        font-size: 1.5rem;
+        margin-bottom: 3rem;
+    }
+    
+    .benefit-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .benefit-title {
+        font-size: 0.95rem;
+    }
+    
+    .find-store-btn {
+        padding: 12px 32px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Ensure no conflicts with existing styles */
+.xo-section--our-stores * {
+    box-sizing: border-box;
 }
 </style>
 <!-- Hero Banner Carousel -->
@@ -1999,7 +2386,96 @@
         </xo-container>
     </div>
 </section>
+<!-- Our Stores Section -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--our-stores color-background-1" style="--margin: 0; --pt: 80; --pb: 80; background: #f8f9fa;">
+        <xo-container class="xo-container--wide">
+            <!-- Section Title -->
+            <xo-animate class="our-stores-heading" xo-cascade="">
+                <div class="our-stores-title-wrap">
+                    <h2 class="our-stores-main-title" style="text-align: center; margin-bottom: 3rem; font-size: 3.5rem; font-weight: 700; color: #1a1a1a;">
+                        {% trans "Our Stores" %}
+                    </h2>
+                </div>
+            </xo-animate>
 
+            <!-- Store Image -->
+            <xo-animate class="our-stores-image-container" xo-cascade="">
+                <div class="store-image-wrapper">
+                    <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&h=800&fit=crop" 
+                         alt="{% trans 'Al Ameen Optics Store' %}" 
+                         class="store-front-image"
+                         loading="lazy">
+                </div>
+            </xo-animate>
+
+            <!-- Find a Store Button -->
+            <xo-animate class="our-stores-cta" xo-cascade="">
+                <div class="find-store-button-container">
+                    <a href="#" class="find-store-btn">
+                        {% trans "Find a Store" %}
+                    </a>
+                </div>
+            </xo-animate>
+
+            <!-- Benefits Title -->
+            <xo-animate class="benefits-title-container" xo-cascade="">
+                <h3 class="benefits-main-title">
+                    {% trans "Start Enjoying Al Ameen Benefits" %}
+                </h3>
+            </xo-animate>
+
+            <!-- Benefits Grid -->
+            <div class="stores-benefits-grid">
+                <!-- Benefit 1: Authentic Products -->
+                <xo-animate class="stores-benefit-item" xo-cascade="">
+                    <div class="benefit-icon-wrapper">
+                        <svg class="benefit-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M2 3h20v18H2z"/>
+                            <path d="M9 3v18M15 3v18"/>
+                            <circle cx="12" cy="12" r="2"/>
+                        </svg>
+                    </div>
+                    <h4 class="benefit-title">{% trans "100% Authentic Products" %}</h4>
+                </xo-animate>
+
+                <!-- Benefit 2: Secure Payment -->
+                <xo-animate class="stores-benefit-item" xo-cascade="">
+                    <div class="benefit-icon-wrapper">
+                        <svg class="benefit-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="2" y="5" width="20" height="14" rx="2"/>
+                            <path d="M2 10h20"/>
+                        </svg>
+                    </div>
+                    <h4 class="benefit-title">{% trans "Secure Payment" %}</h4>
+                </xo-animate>
+
+                <!-- Benefit 3: Extended Warranty -->
+                <xo-animate class="stores-benefit-item" xo-cascade="">
+                    <div class="benefit-icon-wrapper">
+                        <svg class="benefit-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            <path d="M9 12l2 2 4-4"/>
+                        </svg>
+                    </div>
+                    <h4 class="benefit-title">{% trans "Extended Warranty" %}</h4>
+                </xo-animate>
+
+                <!-- Benefit 4: Trusted Since 1927 -->
+                <xo-animate class="stores-benefit-item" xo-cascade="">
+                    <div class="benefit-icon-wrapper">
+                        <svg class="benefit-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M7 10v12M17 10v12M12 3v18"/>
+                            <circle cx="12" cy="3" r="2"/>
+                            <path d="M5 21h14"/>
+                        </svg>
+                    </div>
+                    <h4 class="benefit-title">{% trans "Trusted Since 1927" %}</h4>
+                </xo-animate>
+            </div>
+        </xo-container>
+    </div>
+</section>
 <!-- Promotional Banners -->
 <section class="shopify-section section">
     <div class="xo-section xo-section--promo color-background-1" style="--bg-color: #f3ede6; --margin: 0; --pt: 50; --pb: 50;">
