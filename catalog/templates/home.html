@@ -2427,53 +2427,553 @@
 
  
 <script>
-// Simple Brands Carousel Functionality
+// ============================================
+// AL AMEEN OPTICS - COMPLETE JAVASCRIPT
+// ============================================
+
 document.addEventListener('DOMContentLoaded', function() {
-    const track = document.querySelector('.our-brands-carousel-track');
-    const prevBtn = document.querySelector('.brands-carousel-prev');
-    const nextBtn = document.querySelector('.brands-carousel-next');
     
-    if (!track || !prevBtn || !nextBtn) return;
+    // ============================================
+    // 1. BRANDS CAROUSEL FUNCTIONALITY
+    // ============================================
+    const initBrandsCarousel = () => {
+        const track = document.querySelector('.our-brands-carousel-track');
+        const prevBtn = document.querySelector('.brands-carousel-prev');
+        const nextBtn = document.querySelector('.brands-carousel-next');
+        
+        if (!track || !prevBtn || !nextBtn) return;
+        
+        const items = track.querySelectorAll('.brand-carousel-item');
+        if (items.length === 0) return;
+        
+        const itemWidth = items[0].offsetWidth;
+        const gap = 60; // Match the gap in CSS
+        const scrollAmount = itemWidth + gap;
+        
+        let currentPosition = 0;
+        const maxScroll = -(scrollAmount * (items.length - 4)); // Show 4 items at a time
+        let autoScrollInterval;
+        
+        function updatePosition() {
+            track.style.transform = `translateX(${currentPosition}px)`;
+        }
+        
+        function scrollNext() {
+            if (currentPosition > maxScroll) {
+                currentPosition -= scrollAmount;
+            } else {
+                // Loop back to start
+                currentPosition = 0;
+            }
+            updatePosition();
+        }
+        
+        function scrollPrev() {
+            if (currentPosition < 0) {
+                currentPosition += scrollAmount;
+            } else {
+                // Loop to end
+                currentPosition = maxScroll;
+            }
+            updatePosition();
+        }
+        
+        // Button event listeners
+        nextBtn.addEventListener('click', () => {
+            scrollNext();
+            resetAutoScroll();
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            scrollPrev();
+            resetAutoScroll();
+        });
+        
+        // Auto-scroll functionality
+        function startAutoScroll() {
+            autoScrollInterval = setInterval(scrollNext, 3000);
+        }
+        
+        function stopAutoScroll() {
+            if (autoScrollInterval) {
+                clearInterval(autoScrollInterval);
+            }
+        }
+        
+        function resetAutoScroll() {
+            stopAutoScroll();
+            startAutoScroll();
+        }
+        
+        // Start auto-scroll on page load
+        startAutoScroll();
+        
+        // Pause on hover
+        track.addEventListener('mouseenter', stopAutoScroll);
+        track.addEventListener('mouseleave', startAutoScroll);
+        
+        // Handle window resize
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                const newItemWidth = items[0].offsetWidth;
+                const newScrollAmount = newItemWidth + gap;
+                // Recalculate position based on new width
+                currentPosition = 0;
+                updatePosition();
+            }, 250);
+        });
+    };
     
-    const items = track.querySelectorAll('.brand-carousel-item');
-    const itemWidth = items[0].offsetWidth;
-    const gap = 60; // Match the gap in CSS
-    const scrollAmount = itemWidth + gap;
+    // ============================================
+    // 2. WISHLIST FUNCTIONALITY
+    // ============================================
+    const initWishlist = () => {
+        const wishlistButtons = document.querySelectorAll('.product-wishlist, .wishlist-btn');
+        
+        wishlistButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const productId = this.getAttribute('data-product-id');
+                
+                // Toggle active state
+                this.classList.toggle('active');
+                
+                // Get SVG element
+                const svg = this.querySelector('svg');
+                if (svg) {
+                    if (this.classList.contains('active')) {
+                        svg.setAttribute('fill', 'red');
+                        svg.setAttribute('stroke', 'red');
+                    } else {
+                        svg.setAttribute('fill', 'none');
+                        svg.setAttribute('stroke', '#333');
+                    }
+                }
+                
+                // AJAX call to toggle wishlist (uncomment when backend is ready)
+                /*
+                fetch('/wishlist/toggle/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        product_id: productId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Wishlist updated:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    this.classList.toggle('active'); // Revert on error
+                });
+                */
+            });
+        });
+    };
     
-    let currentPosition = 0;
-    const maxScroll = -(scrollAmount * (items.length - 4)); // Show 4 items at a time
+    // ============================================
+    // 3. ADD TO CART FUNCTIONALITY
+    // ============================================
+    const initAddToCart = () => {
+        const addToCartButtons = document.querySelectorAll('.add-to-cart-grid-btn, .product-add-btn');
+        
+        addToCartButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const productId = this.getAttribute('data-product-id');
+                const form = this.closest('form');
+                const quantity = form ? form.querySelector('input[name="quantity"]')?.value : 1;
+                
+                // Add loading state
+                this.classList.add('loading');
+                this.disabled = true;
+                
+                // AJAX call to add to cart (uncomment when backend is ready)
+                /*
+                fetch('/cart/add/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        quantity: quantity
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        showNotification('Product added to cart!', 'success');
+                        // Update cart count
+                        updateCartCount(data.cart_count);
+                    } else {
+                        showNotification(data.message || 'Error adding to cart', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error adding to cart', 'error');
+                })
+                .finally(() => {
+                    this.classList.remove('loading');
+                    this.disabled = false;
+                });
+                */
+                
+                // Temporary success message (remove when backend is ready)
+                setTimeout(() => {
+                    this.classList.remove('loading');
+                    this.disabled = false;
+                    showNotification('Product added to cart!', 'success');
+                }, 500);
+            });
+        });
+    };
     
-    function updatePosition() {
-        track.style.transform = `translateX(${currentPosition}px)`;
+    // ============================================
+    // 4. COLOR VARIANT SELECTOR
+    // ============================================
+    const initColorSelector = () => {
+        const colorDots = document.querySelectorAll('.color-dot');
+        
+        colorDots.forEach(dot => {
+            dot.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Remove active class from siblings
+                const siblings = this.parentElement.querySelectorAll('.color-dot');
+                siblings.forEach(sibling => sibling.classList.remove('active'));
+                
+                // Add active class to clicked dot
+                this.classList.add('active');
+                
+                // Update product image based on color (implement when needed)
+                const colorValue = this.style.background;
+                console.log('Selected color:', colorValue);
+            });
+        });
+    };
+    
+    // ============================================
+    // 5. SMOOTH SCROLL FOR ANCHOR LINKS
+    // ============================================
+    const initSmoothScroll = () => {
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href === '#' || href === '') return;
+                
+                e.preventDefault();
+                const target = document.querySelector(href);
+                
+                if (target) {
+                    const headerOffset = 80;
+                    const elementPosition = target.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    };
+    
+    // ============================================
+    // 6. LAZY LOADING IMAGES
+    // ============================================
+    const initLazyLoading = () => {
+        const images = document.querySelectorAll('img[loading="lazy"]');
+        
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        if (img.dataset.src) {
+                            img.src = img.dataset.src;
+                            img.classList.add('loaded');
+                        }
+                        observer.unobserve(img);
+                    }
+                });
+            });
+            
+            images.forEach(img => imageObserver.observe(img));
+        }
+    };
+    
+    // ============================================
+    // 7. NOTIFICATION SYSTEM
+    // ============================================
+    const showNotification = (message, type = 'info') => {
+        // Remove existing notifications
+        const existing = document.querySelector('.notification-toast');
+        if (existing) existing.remove();
+        
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification-toast notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span class="notification-icon">${type === 'success' ? '✓' : '⚠'}</span>
+                <span class="notification-message">${message}</span>
+            </div>
+        `;
+        
+        // Add styles
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#4CAF50' : '#f44336'};
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    };
+    
+    // ============================================
+    // 8. CART COUNT UPDATE
+    // ============================================
+    const updateCartCount = (count) => {
+        const cartCountElements = document.querySelectorAll('.cart-count, .header-cart-count');
+        cartCountElements.forEach(element => {
+            element.textContent = count;
+            element.style.display = count > 0 ? 'inline-block' : 'none';
+        });
+    };
+    
+    // ============================================
+    // 9. GET CSRF TOKEN HELPER
+    // ============================================
+    const getCookie = (name) => {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    };
+    
+    // ============================================
+    // 10. PROMO WATCH BUTTON
+    // ============================================
+    const initPromoButton = () => {
+        const promoButtons = document.querySelectorAll('.promo-watch-btn');
+        
+        promoButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Add your video modal or redirect logic here
+                console.log('Watch promo clicked');
+                // Example: Open YouTube video in modal
+                // openVideoModal('your-video-id');
+            });
+        });
+    };
+    
+    // ============================================
+    // 11. CATEGORY CARD ANALYTICS
+    // ============================================
+    const initCategoryTracking = () => {
+        const categoryCards = document.querySelectorAll('.category-card');
+        
+        categoryCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const categoryName = this.querySelector('.category-title')?.textContent;
+                console.log('Category clicked:', categoryName);
+                // Add analytics tracking here
+                // gtag('event', 'category_click', { category: categoryName });
+            });
+        });
+    };
+    
+    // ============================================
+    // 12. ANIMATION ON SCROLL
+    // ============================================
+    const initScrollAnimations = () => {
+        const animateElements = document.querySelectorAll('[xo-cascade]');
+        
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animated');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+            
+            animateElements.forEach(element => observer.observe(element));
+        }
+    };
+    
+    // ============================================
+    // 13. MOBILE MENU TOGGLE (if needed)
+    // ============================================
+    const initMobileMenu = () => {
+        const menuToggle = document.querySelector('.mobile-menu-toggle');
+        const mobileMenu = document.querySelector('.mobile-menu');
+        
+        if (menuToggle && mobileMenu) {
+            menuToggle.addEventListener('click', () => {
+                mobileMenu.classList.toggle('active');
+                menuToggle.classList.toggle('active');
+                document.body.classList.toggle('menu-open');
+            });
+        }
+    };
+    
+    // ============================================
+    // 14. SEARCH FUNCTIONALITY (if needed)
+    // ============================================
+    const initSearch = () => {
+        const searchInput = document.querySelector('.search-input');
+        const searchButton = document.querySelector('.search-button');
+        
+        if (searchButton) {
+            searchButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                const query = searchInput?.value;
+                if (query) {
+                    window.location.href = `/search/?q=${encodeURIComponent(query)}`;
+                }
+            });
+        }
+        
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchButton?.click();
+                }
+            });
+        }
+    };
+    
+    // ============================================
+    // INITIALIZE ALL FUNCTIONALITY
+    // ============================================
+    initBrandsCarousel();
+    initWishlist();
+    initAddToCart();
+    initColorSelector();
+    initSmoothScroll();
+    initLazyLoading();
+    initPromoButton();
+    initCategoryTracking();
+    initScrollAnimations();
+    initMobileMenu();
+    initSearch();
+    
+    // ============================================
+    // PAGE LOADED EVENT
+    // ============================================
+    console.log('🎉 Al Ameen Optics - All scripts loaded successfully!');
+});
+
+// ============================================
+// CSS ANIMATIONS (add to your styles)
+// ============================================
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
     }
     
-    nextBtn.addEventListener('click', function() {
-        if (currentPosition > maxScroll) {
-            currentPosition -= scrollAmount;
-            updatePosition();
-        } else {
-            // Loop back to start
-            currentPosition = 0;
-            updatePosition();
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
         }
-    });
-    
-    prevBtn.addEventListener('click', function() {
-        if (currentPosition < 0) {
-            currentPosition += scrollAmount;
-            updatePosition();
-        } else {
-            // Loop to end
-            currentPosition = maxScroll;
-            updatePosition();
+        to {
+            transform: translateX(100%);
+            opacity: 0;
         }
-    });
+    }
     
-    // Optional: Auto-scroll
-    setInterval(function() {
-        nextBtn.click();
-    }, 3000); // Auto-scroll every 3 seconds
-});
+    .notification-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .notification-icon {
+        font-size: 20px;
+        font-weight: bold;
+    }
+    
+    .notification-message {
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .loading {
+        pointer-events: none;
+        opacity: 0.6;
+        cursor: not-allowed !important;
+    }
+    
+    [xo-cascade] {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    
+    [xo-cascade].animated {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .menu-open {
+        overflow: hidden;
+    }
+`;
+document.head.appendChild(style);
 </script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
