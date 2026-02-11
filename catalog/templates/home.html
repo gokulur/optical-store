@@ -6,22 +6,15 @@
 
 {% block content %}
 <style>
-    /* Categories Section Styles - Integrated with existing theme */
-/* Add this to your existing CSS file or include it separately */
+/* ============================================
+   CONSOLIDATED STYLES - NO DUPLICATES
+   ============================================ */
 
+/* Categories Section */
 .categories-section {
     max-width: 1400px;
     margin: 0 auto;
     padding: 50px 20px;
-}
-
-.categories-section .section-title {
-    font-size: clamp(3rem, 8vw, 4.2rem);
-    text-align: center;
-    margin-bottom: 4rem;
-    font-weight: 500;
-    color: var(--color-foreground, #1a1a1a);
-    letter-spacing: 0.05em;
 }
 
 .categories-grid {
@@ -114,7 +107,6 @@
     transform: translateY(0);
 }
 
-/* Special styling for SALE card */
 .category-card.sale-card {
     background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
 }
@@ -135,451 +127,368 @@
 }
 
 @keyframes subtle-pulse {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
-    .categories-grid {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 25px;
-    }
+/* Shop Prescription Glasses Section */
+.xo-section--prescription-shop {
+    position: relative;
+    overflow: hidden;
 }
 
-@media (max-width: 768px) {
-    .categories-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-    }
-
-    .categories-section .section-title {
-        margin-bottom: 3rem;
-    }
-
-    .category-title {
-        font-size: 1.5rem;
-    }
-
-    .category-label {
-        padding: 20px 15px;
-    }
-}
-
-@media (max-width: 480px) {
-    .categories-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-
-    .category-title {
-        font-size: 1.6rem;
-    }
-}
-
-/* Ensure compatibility with existing xo-container styles */
-.categories-section .xo-container--wide {
+.prescription-shop-wrapper {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0 20px;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
 }
-  .product-grid-section {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-        }
 
-        .product-grid-header {
-            padding: 30px;
-            background: #e8f4f8;
-        }
+.prescription-shop-header {
+    margin-bottom: 0;
+}
 
-        .product-grid-title {
-            font-size: 1.5rem;
-            font-weight: 500;
-            color: #1a1a1a;
-            margin-bottom: 15px;
-        }
+.prescription-header-inner {
+    padding: 30px;
+    background: #e8f4f8;
+}
 
-        .product-grid-actions {
-            display: flex;
-            gap: 12px;
-        }
+.prescription-shop-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #1a1a1a;
+    margin: 0 0 15px 0;
+}
 
-        .btn {
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            border: none;
-        }
+.prescription-header-actions {
+    display: flex;
+    gap: 12px;
+}
 
-        .btn-primary {
-            background: #1a1a1a;
-            color: #fff;
-        }
+.btn {
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+}
 
-        .btn-primary:hover {
-            background: #333;
-            transform: translateX(3px);
-        }
+.btn-primary {
+    background: #1a1a1a;
+    color: #fff;
+}
 
-        .btn-secondary {
-            background: #fff;
-            color: #1a1a1a;
-            border: 1.5px solid #d0d0d0;
-        }
+.btn-primary:hover {
+    background: #333;
+    transform: translateX(3px);
+}
 
-        .btn-secondary:hover {
-            border-color: #1a1a1a;
-        }
+.btn-secondary {
+    background: #fff;
+    color: #1a1a1a;
+    border: 1.5px solid #d0d0d0;
+}
 
-        .products-container {
-            display: grid;
-            grid-template-columns: 1fr 3fr;
-            gap: 0;
-        }
+.btn-secondary:hover {
+    border-color: #1a1a1a;
+}
 
-        /* Promotional Card */
-        .promo-card {
-            position: relative;
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 500px;
-        }
+.prescription-products-container {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    gap: 0;
+}
 
-        .promo-badge {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+.prescription-promo-wrapper {
+    display: block;
+}
 
-        .promo-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-            opacity: 0.8;
-        }
+.promo-card {
+    position: relative;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 500px;
+}
 
-        .promo-content {
-            position: relative;
-            z-index: 2;
-            margin-top: auto;
-        }
+.promo-badge {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
 
-        .promo-watch-btn {
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-        }
+.promo-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0.8;
+}
 
-        .promo-watch-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
+.promo-content {
+    position: relative;
+    z-index: 2;
+    margin-top: auto;
+}
 
-        /* Product Grid */
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1px;
-            background: #e5e5e5;
-        }
+.promo-watch-btn {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
 
-        .product-card {
-            background: #fff;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-            position: relative;
-        }
+.promo-watch-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
 
-        .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            z-index: 10;
-        }
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1px;
+    background: #e5e5e5;
+}
 
-        .product-badge-container {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            z-index: 3;
-        }
+.product-card {
+    background: #fff;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    position: relative;
+}
 
-        .product-badge {
-            background: rgba(255,255,255,0.95);
-            color: #1a1a1a;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    z-index: 10;
+}
 
-        .product-wishlist {
-            background: #fff;
-            border: 1.5px solid #e0e0e0;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+.product-badge-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 3;
+}
 
-        .product-wishlist:hover {
-            border-color: #ff3b30;
-        }
+.product-badge {
+    background: rgba(255,255,255,0.95);
+    color: #1a1a1a;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
 
-        .product-wishlist.active {
-            background: #ff3b30;
-            border-color: #ff3b30;
-        }
+.product-wishlist {
+    background: #fff;
+    border: 1.5px solid #e0e0e0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
 
-        .product-wishlist svg {
-            width: 16px;
-            height: 16px;
-            stroke: #333;
-            fill: none;
-            stroke-width: 2;
-        }
+.product-wishlist:hover {
+    border-color: #ff3b30;
+}
 
-        .product-wishlist.active svg {
-            stroke: #fff;
-            fill: #fff;
-        }
+.product-wishlist.active {
+    background: #ff3b30;
+    border-color: #ff3b30;
+}
 
-        .product-image-wrapper {
-            position: relative;
-            aspect-ratio: 1/1;
-            margin-bottom: 15px;
-            background: #f8f8f8;
-            border-radius: 8px;
-            overflow: hidden;
-        }
+.product-wishlist svg {
+    width: 16px;
+    height: 16px;
+    stroke: #333;
+    fill: none;
+    stroke-width: 2;
+}
 
-        .product-image {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            padding: 20px;
-        }
+.product-wishlist.active svg {
+    stroke: #fff;
+    fill: #fff;
+}
 
-        .product-colors {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 8px;
-        }
+.product-image-wrapper {
+    position: relative;
+    aspect-ratio: 1/1;
+    margin-bottom: 15px;
+    background: #f8f8f8;
+    border-radius: 8px;
+    overflow: hidden;
+}
 
-        .color-dot {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 2px solid #fff;
-            box-shadow: 0 0 0 1px #d0d0d0;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 20px;
+}
 
-        .color-dot:hover,
-        .color-dot.active {
-            transform: scale(1.15);
-            box-shadow: 0 0 0 2px #1a1a1a;
-        }
+.product-colors {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+}
 
-        .product-info {
-            margin-bottom: 12px;
-        }
+.color-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #d0d0d0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
 
-        .product-price-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
-        }
+.color-dot:hover,
+.color-dot.active {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 2px #1a1a1a;
+}
 
-        .product-code {
-            font-size: 0.85rem;
-            color: #666;
-            font-weight: 500;
-        }
+.product-info {
+    margin-bottom: 12px;
+}
 
-        .product-price {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #1a1a1a;
-        }
+.product-price-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
 
-        .product-price-old {
-            font-size: 0.9rem;
-            color: #999;
-            text-decoration: line-through;
-            margin-left: 4px;
-        }
+.product-code {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+}
 
-        .discount-badge {
-            background: #ff3b30;
-            color: #fff;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 700;
-        }
+.product-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
 
-        .product-name {
-            font-size: 0.85rem;
-            color: #666;
-            margin-bottom: 15px;
-        }
+.discount-badge {
+    background: #ff3b30;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
 
-        .product-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: auto;
-        }
+.product-name {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 15px;
+}
 
-        .product-try-btn {
-            flex: 1;
-            background: transparent;
-            border: 1.5px solid #1a1a1a;
-            color: #1a1a1a;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
+.product-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+}
 
-        .product-try-btn:hover {
-            background: #1a1a1a;
-            color: #fff;
-        }
+.product-try-btn {
+    flex: 1;
+    background: transparent;
+    border: 1.5px solid #1a1a1a;
+    color: #1a1a1a;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
 
-        .product-add-btn {
-            background: transparent;
-            border: 1.5px solid #e0e0e0;
-            width: 40px;
-            height: 40px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+.product-try-btn:hover {
+    background: #1a1a1a;
+    color: #fff;
+}
 
-        .product-add-btn:hover {
-            background: #1a1a1a;
-            border-color: #1a1a1a;
-        }
+.product-add-btn {
+    background: transparent;
+    border: 1.5px solid #e0e0e0;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
 
-        .product-add-btn:hover svg {
-            stroke: #fff;
-        }
+.product-add-btn:hover {
+    background: #1a1a1a;
+    border-color: #1a1a1a;
+}
 
-        /* Icons */
-        .icon {
-            width: 16px;
-            height: 16px;
-            stroke: currentColor;
-            stroke-width: 2;
-            fill: none;
-        }
+.product-add-btn:hover svg {
+    stroke: #fff;
+}
 
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .products-container {
-                grid-template-columns: 1fr;
-            }
+.icon {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+}
 
-            .promo-card {
-                min-height: 300px;
-            }
-
-            .product-grid {
-                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            }
-        }
-
-        @media (max-width: 768px) {
-            .product-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .product-grid-actions {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .product-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</style>
-<style>
-
-/* Shop By Top Brands Section - Scoped Styles */
+/* Shop By Top Brands Section */
 .xo-section--top-brands {
     background: #000000;
     position: relative;
@@ -701,90 +610,10 @@
     box-shadow: 0 5px 15px rgba(255,255,255,0.3);
 }
 
-/* Pagination Dots */
-.brand-pagination {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 40px;
-}
-
-.brand-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.3);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.brand-dot.active {
-    background: #ffffff;
-    width: 24px;
-    border-radius: 4px;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .top-brands-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 25px;
-    }
-    
-    .brand-logo h3 {
-        font-size: 3rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .xo-section--top-brands {
-        padding-top: 60px;
-        padding-bottom: 60px;
-    }
-    
-    .top-brands-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .product-v1__title {
-        font-size: 3.2rem !important;
-        margin-bottom: 3rem !important;
-    }
-    
-    .brand-logo h3 {
-        font-size: 2.5rem;
-    }
-    
-    .brand-logo p {
-        font-size: 1.2rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .brand-logo h3 {
-        font-size: 2rem;
-    }
-    
-    .brand-btn {
-        padding: 10px 25px;
-        font-size: 0.85rem;
-    }
-}
-</style>
-<style>
-/* Al Ameen Optics Blog Cards Section - Scoped Styles */
+/* Blog Cards Section */
 .xo-section--blog-cards {
     position: relative;
     overflow: hidden;
-}
-
-.blog-cards-heading {
-    margin-bottom: 3rem;
-}
-
-.blog-cards-main-title {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 .blog-cards-grid {
@@ -884,89 +713,10 @@
     transform: translateX(4px);
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
-    .blog-cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 25px;
-    }
-    
-    .blog-cards-main-title {
-        font-size: 3rem !important;
-    }
-}
-
-@media (max-width: 768px) {
-    .xo-section--blog-cards {
-        padding-top: 60px !important;
-        padding-bottom: 60px !important;
-    }
-    
-    .blog-cards-grid {
-        grid-template-columns: 1fr;
-        gap: 25px;
-        padding: 0 15px;
-    }
-    
-    .blog-cards-main-title {
-        font-size: 2.5rem !important;
-        margin-bottom: 3rem !important;
-    }
-    
-    .blog-card-title {
-        font-size: 1.25rem;
-        min-height: auto;
-    }
-    
-    .blog-card-content {
-        padding: 25px 20px;
-    }
-}
-
-@media (max-width: 480px) {
-    .blog-cards-main-title {
-        font-size: 2rem !important;
-        letter-spacing: 0.05em !important;
-    }
-    
-    .blog-card-title {
-        font-size: 1.15rem;
-    }
-    
-    .blog-card-excerpt {
-        font-size: 0.9rem;
-    }
-    
-    .blog-card-image-container {
-        aspect-ratio: 3/4;
-    }
-}
-
-/* Ensure no conflicts with existing styles */
-.xo-section--blog-cards * {
-    box-sizing: border-box;
-}
-
-/* Hover effect enhancement */
-@media (hover: hover) {
-    .blog-card-wrapper {
-        cursor: pointer;
-    }
-}
-</style>
-<style>
-/* Our Stores Section - Scoped Styles */
+/* Our Stores Section */
 .xo-section--our-stores {
     position: relative;
     overflow: hidden;
-}
-
-.our-stores-heading {
-    margin-bottom: 2rem;
-}
-
-.our-stores-main-title {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 .our-stores-image-container {
@@ -995,7 +745,6 @@
     object-fit: cover;
 }
 
-/* Find a Store Button */
 .our-stores-cta {
     margin-bottom: 5rem;
 }
@@ -1025,7 +774,6 @@
     box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
 }
 
-/* Benefits Section */
 .benefits-title-container {
     text-align: center;
     margin-bottom: 4rem;
@@ -1081,96 +829,10 @@
     line-height: 1.4;
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .stores-benefits-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 35px;
-    }
-    
-    .benefits-main-title {
-        font-size: 2.2rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .xo-section--our-stores {
-        padding-top: 60px !important;
-        padding-bottom: 60px !important;
-    }
-    
-    .our-stores-main-title {
-        font-size: 2.8rem !important;
-    }
-    
-    .stores-benefits-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 30px;
-    }
-    
-    .benefits-main-title {
-        font-size: 1.8rem;
-    }
-    
-    .find-store-btn {
-        padding: 14px 36px;
-        font-size: 0.95rem;
-    }
-    
-    .our-stores-image-container {
-        margin-bottom: 2.5rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .our-stores-main-title {
-        font-size: 2.2rem !important;
-        margin-bottom: 2rem !important;
-    }
-    
-    .stores-benefits-grid {
-        grid-template-columns: 1fr;
-        gap: 25px;
-    }
-    
-    .benefits-main-title {
-        font-size: 1.5rem;
-        margin-bottom: 3rem;
-    }
-    
-    .benefit-icon {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .benefit-title {
-        font-size: 0.95rem;
-    }
-    
-    .find-store-btn {
-        padding: 12px 32px;
-        font-size: 0.9rem;
-    }
-}
-
-/* Ensure no conflicts with existing styles */
-.xo-section--our-stores * {
-    box-sizing: border-box;
-}
-</style>
-<style>
-/* Our Brands Carousel Section - Scoped Styles */
+/* Our Brands Carousel Section */
 .xo-section--our-brands-carousel {
     position: relative;
     overflow: hidden;
-}
-
-.our-brands-carousel-heading {
-    margin-bottom: 2rem;
-}
-
-.our-brands-carousel-main-title {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 .our-brands-carousel-wrapper {
@@ -1235,7 +897,6 @@
     opacity: 1;
 }
 
-/* Navigation Buttons */
 .brands-carousel-nav {
     flex: 0 0 auto;
     width: 48px;
@@ -1261,101 +922,158 @@
     color: #2c2c2c;
 }
 
-.brands-carousel-prev {
-    margin-left: 0;
+/* ============================================
+   RESPONSIVE DESIGN - MOBILE FIRST
+   ============================================ */
+
+@media (max-width: 1200px) {
+    .categories-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+    }
+    
+    .blog-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
 }
 
-.brands-carousel-next {
-    margin-right: 0;
-}
-
-/* Responsive Design */
 @media (max-width: 1024px) {
-    .our-brands-carousel-track {
-        gap: 50px;
+    .prescription-products-container {
+        grid-template-columns: 1fr;
+    }
+
+    .promo-card {
+        min-height: 300px;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     }
     
-    .brand-carousel-item {
-        width: 160px;
+    .top-brands-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
     }
     
-    .brand-carousel-logo-wrapper {
-        height: 70px;
+    .stores-benefits-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 35px;
     }
 }
 
 @media (max-width: 768px) {
-    .xo-section--our-brands-carousel {
-        padding-top: 60px !important;
-        padding-bottom: 60px !important;
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .category-title {
+        font-size: 1.5rem;
+    }
+
+    .category-label {
+        padding: 20px 15px;
     }
     
-    .our-brands-carousel-main-title {
-        font-size: 2.5rem !important;
-        margin-bottom: 3rem !important;
+    .xo-section--prescription-shop {
+        padding-top: 40px !important;
+        padding-bottom: 40px !important;
+    }
+
+    .prescription-header-inner {
+        padding: 25px 20px;
+    }
+
+    .prescription-shop-title {
+        font-size: 1.3rem;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .prescription-header-actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
     }
     
-    .our-brands-carousel-wrapper {
+    .xo-section--top-brands {
+        padding-top: 60px;
+        padding-bottom: 60px;
+    }
+    
+    .top-brands-grid {
+        grid-template-columns: 1fr;
         gap: 20px;
     }
     
-    .our-brands-carousel-track {
-        gap: 40px;
+    .brand-logo h3 {
+        font-size: 2.5rem;
     }
     
-    .brand-carousel-item {
-        width: 140px;
+    .blog-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+        padding: 0 15px;
     }
     
-    .brand-carousel-logo-wrapper {
-        height: 60px;
+    .blog-card-title {
+        font-size: 1.25rem;
+        min-height: auto;
     }
     
-    .brands-carousel-nav {
-        width: 40px;
-        height: 40px;
+    .stores-benefits-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
     }
 }
 
 @media (max-width: 480px) {
-    .our-brands-carousel-main-title {
-        font-size: 2rem !important;
-        letter-spacing: 0.1em !important;
+    .categories-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .category-title {
+        font-size: 1.6rem;
     }
     
-    .our-brands-carousel-wrapper {
-        gap: 15px;
+    .prescription-shop-title {
+        font-size: 1.2rem;
+    }
+
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .promo-card {
+        min-height: 250px;
     }
     
-    .our-brands-carousel-track {
-        gap: 30px;
+    .brand-logo h3 {
+        font-size: 2rem;
     }
     
-    .brand-carousel-item {
-        width: 120px;
+    .blog-card-title {
+        font-size: 1.15rem;
     }
     
-    .brand-carousel-logo-wrapper {
-        height: 50px;
-    }
-    
-    .brands-carousel-nav {
-        width: 36px;
-        height: 36px;
-    }
-    
-    .brands-carousel-nav svg {
-        width: 20px;
-        height: 20px;
+    .stores-benefits-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
     }
 }
 
-/* Ensure no conflicts with existing styles */
-.xo-section--our-brands-carousel * {
+/* Ensure no conflicts */
+* {
     box-sizing: border-box;
 }
 </style>
-
 <!-- Hero Banner Carousel -->
 <section class="shopify-section section">
     <section class="xo-section--slideshow">
@@ -1970,192 +1688,208 @@
     </div>
 </section>
 
-<section>
-<div class="product-grid-section">
-        <!-- Header -->
-        <div class="product-grid-header">
-            <h2 class="product-grid-title">Shop prescription glasses online or in-store</h2>
-            <div class="product-grid-actions">
-                <a href="#" class="btn btn-primary">
-                    Book Free Eyetest
-                    <svg class="icon" viewBox="0 0 24 24">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
-                </a>
-                <a href="#" class="btn btn-secondary">
-                    Visit A Store
-                    <svg class="icon" viewBox="0 0 24 24">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
-                </a>
-            </div>
-        </div>
-
-        <div class="products-container">
-            <!-- Promotional Card -->
-            <div class="promo-card">
-                <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400&h=600&fit=crop" 
-                     alt="Book Free Eye Test" 
-                     class="promo-image">
-                <div class="promo-badge">BOOK A FREE EYE TEST</div>
-                <div class="promo-content">
-                    <button class="promo-watch-btn">
-                        <svg class="icon" viewBox="0 0 24 24">
-                            <path d="M5 3l14 9-14 9V3z" fill="currentColor"/>
-                        </svg>
-                        Watch now
-                    </button>
-                </div>
-            </div>
-
-            <!-- Product Grid -->
-            <div class="product-grid">
-                <!-- Product 1 -->
-                <div class="product-card">
-                    <div class="product-badge-container">
-                        <span class="product-badge">Online Exclusive</span>
-                        <button class="product-wishlist">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-                            </svg>
-                        </button>
-                    </div>
-                    
-                    <div class="product-image-wrapper">
-                        <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=300&h=300&fit=crop" 
-                             alt="Spectra" 
-                             class="product-image">
-                    </div>
-
-                    <div class="product-colors">
-                        <div class="color-dot active" style="background: #4A90E2;"></div>
-                        <div class="color-dot" style="background: #E8B4B8;"></div>
-                    </div>
-
-                    <div class="product-info">
-                        <div class="product-price-row">
-                            <span class="product-code">QAR1</span>
-                            <span class="product-price">OMR 68</span>
-                            <span class="discount-badge">-30%</span>
+ 
+<!-- Shop Prescription Glasses Section -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--prescription-shop color-background-1" style="--margin: 0; --pt: 50; --pb: 50;">
+        <xo-container class="xo-container--wide">
+            <div class="prescription-shop-wrapper">
+                <!-- Header Section -->
+                <xo-animate class="prescription-shop-header" xo-cascade="">
+                    <div class="prescription-header-inner">
+                        <h2 class="prescription-shop-title">{% trans "Shop prescription glasses online or in-store" %}</h2>
+                        <div class="prescription-header-actions">
+                            <a href="#" class="btn btn-primary">
+                                {% trans "Book Free Eyetest" %}
+                                <svg class="icon" viewBox="0 0 24 24">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="btn btn-secondary">
+                                {% trans "Visit A Store" %}
+                                <svg class="icon" viewBox="0 0 24 24">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </a>
                         </div>
-                        <div class="product-name">Spectra | Multi</div>
                     </div>
+                </xo-animate>
 
-                    <div class="product-actions">
-                        <button class="product-try-btn">
-                            <svg class="icon" viewBox="0 0 24 24">
-                                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                            TRY ON
-                        </button>
-                        <button class="product-add-btn">
-                            <svg class="icon" viewBox="0 0 24 24">
-                                <path d="M12 5v14M5 12h14"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Product 2 -->
-                <div class="product-card">
-                    <div class="product-badge-container">
-                        <span class="product-badge">Online Exclusive</span>
-                        <button class="product-wishlist">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-                            </svg>
-                        </button>
-                    </div>
-                    
-                    <div class="product-image-wrapper">
-                        <img src="https://images.unsplash.com/photo-1577803645773-f96470509666?w=300&h=300&fit=crop" 
-                             alt="Stanford" 
-                             class="product-image">
-                    </div>
-
-                    <div class="product-colors">
-                        <div class="color-dot active" style="background: #B8956A;"></div>
-                        <div class="color-dot" style="background: #8B7355;"></div>
-                        <div class="color-dot" style="background: #2C2C2C;"></div>
-                    </div>
-
-                    <div class="product-info">
-                        <div class="product-price-row">
-                            <span class="product-code">D | 1</span>
-                            <span class="product-price">OMR 45.9</span>
-                            <span class="discount-badge">-100%</span>
+                <!-- Products Container -->
+                <div class="prescription-products-container">
+                    <!-- Promotional Card -->
+                    <xo-animate class="prescription-promo-wrapper" xo-cascade="">
+                        <div class="promo-card">
+                            <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400&h=600&fit=crop" 
+                                 alt="{% trans 'Book Free Eye Test' %}" 
+                                 class="promo-image"
+                                 loading="lazy">
+                            <div class="promo-badge">{% trans "BOOK A FREE EYE TEST" %}</div>
+                            <div class="promo-content">
+                                <button class="promo-watch-btn">
+                                    <svg class="icon" viewBox="0 0 24 24">
+                                        <path d="M5 3l14 9-14 9V3z" fill="currentColor"/>
+                                    </svg>
+                                    {% trans "Watch now" %}
+                                </button>
+                            </div>
                         </div>
-                        <div class="product-name">Spectra | STANFORD</div>
-                    </div>
+                    </xo-animate>
 
-                    <div class="product-actions">
-                        <button class="product-try-btn">
-                            <svg class="icon" viewBox="0 0 24 24">
-                                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                            TRY ON
-                        </button>
-                        <button class="product-add-btn">
-                            <svg class="icon" viewBox="0 0 24 24">
-                                <path d="M12 5v14M5 12h14"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+                    <!-- Product Grid -->
+                    <div class="product-grid">
+                        <!-- Product 1 -->
+                        <xo-animate class="product-card" xo-cascade="">
+                            <div class="product-badge-container">
+                                <span class="product-badge">{% trans "Online Exclusive" %}</span>
+                                <button class="product-wishlist">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <div class="product-image-wrapper">
+                                <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=300&h=300&fit=crop" 
+                                     alt="Spectra" 
+                                     class="product-image"
+                                     loading="lazy">
+                            </div>
 
-                <!-- Product 3 -->
-                <div class="product-card">
-                    <div class="product-badge-container">
-                        <span class="product-badge">Online Exclusive</span>
-                        <button class="product-wishlist">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-                            </svg>
-                        </button>
-                    </div>
-                    
-                    <div class="product-image-wrapper">
-                        <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=300&h=300&fit=crop" 
-                             alt="Fusion" 
-                             class="product-image">
-                    </div>
+                            <div class="product-colors">
+                                <div class="color-dot active" style="background: #4A90E2;"></div>
+                                <div class="color-dot" style="background: #E8B4B8;"></div>
+                            </div>
 
-                    <div class="product-colors">
-                        <div class="color-dot active" style="background: #87CEEB;"></div>
-                        <div class="color-dot" style="background: #FFB6C1;"></div>
-                        <div class="color-dot" style="background: #2C3E50;"></div>
-                    </div>
+                            <div class="product-info">
+                                <div class="product-price-row">
+                                    <span class="product-code">QAR1</span>
+                                    <span class="product-price">OMR 68</span>
+                                    <span class="discount-badge">-30%</span>
+                                </div>
+                                <div class="product-name">Spectra | Multi</div>
+                            </div>
 
-                    <div class="product-info">
-                        <div class="product-price-row">
-                            <span class="product-code">D | 1</span>
-                            <span class="product-price">OMR 45.9</span>
-                            <span class="discount-badge">-100%</span>
-                        </div>
-                        <div class="product-name">Spectra | FUSION</div>
-                    </div>
+                            <div class="product-actions">
+                                <button class="product-try-btn">
+                                    <svg class="icon" viewBox="0 0 24 24">
+                                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                    {% trans "TRY ON" %}
+                                </button>
+                                <button class="product-add-btn">
+                                    <svg class="icon" viewBox="0 0 24 24">
+                                        <path d="M12 5v14M5 12h14"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </xo-animate>
 
-                    <div class="product-actions">
-                        <button class="product-try-btn">
-                            <svg class="icon" viewBox="0 0 24 24">
-                                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                            TRY ON
-                        </button>
-                        <button class="product-add-btn">
-                            <svg class="icon" viewBox="0 0 24 24">
-                                <path d="M12 5v14M5 12h14"/>
-                            </svg>
-                        </button>
+                        <!-- Product 2 -->
+                        <xo-animate class="product-card" xo-cascade="">
+                            <div class="product-badge-container">
+                                <span class="product-badge">{% trans "Online Exclusive" %}</span>
+                                <button class="product-wishlist">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <div class="product-image-wrapper">
+                                <img src="https://images.unsplash.com/photo-1577803645773-f96470509666?w=300&h=300&fit=crop" 
+                                     alt="Stanford" 
+                                     class="product-image"
+                                     loading="lazy">
+                            </div>
+
+                            <div class="product-colors">
+                                <div class="color-dot active" style="background: #B8956A;"></div>
+                                <div class="color-dot" style="background: #8B7355;"></div>
+                                <div class="color-dot" style="background: #2C2C2C;"></div>
+                            </div>
+
+                            <div class="product-info">
+                                <div class="product-price-row">
+                                    <span class="product-code">D | 1</span>
+                                    <span class="product-price">OMR 45.9</span>
+                                    <span class="discount-badge">-100%</span>
+                                </div>
+                                <div class="product-name">Spectra | STANFORD</div>
+                            </div>
+
+                            <div class="product-actions">
+                                <button class="product-try-btn">
+                                    <svg class="icon" viewBox="0 0 24 24">
+                                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                    {% trans "TRY ON" %}
+                                </button>
+                                <button class="product-add-btn">
+                                    <svg class="icon" viewBox="0 0 24 24">
+                                        <path d="M12 5v14M5 12h14"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </xo-animate>
+
+                        <!-- Product 3 -->
+                        <xo-animate class="product-card" xo-cascade="">
+                            <div class="product-badge-container">
+                                <span class="product-badge">{% trans "Online Exclusive" %}</span>
+                                <button class="product-wishlist">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <div class="product-image-wrapper">
+                                <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=300&h=300&fit=crop" 
+                                     alt="Fusion" 
+                                     class="product-image"
+                                     loading="lazy">
+                            </div>
+
+                            <div class="product-colors">
+                                <div class="color-dot active" style="background: #87CEEB;"></div>
+                                <div class="color-dot" style="background: #FFB6C1;"></div>
+                                <div class="color-dot" style="background: #2C3E50;"></div>
+                            </div>
+
+                            <div class="product-info">
+                                <div class="product-price-row">
+                                    <span class="product-code">D | 1</span>
+                                    <span class="product-price">OMR 45.9</span>
+                                    <span class="discount-badge">-100%</span>
+                                </div>
+                                <div class="product-name">Spectra | FUSION</div>
+                            </div>
+
+                            <div class="product-actions">
+                                <button class="product-try-btn">
+                                    <svg class="icon" viewBox="0 0 24 24">
+                                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                    {% trans "TRY ON" %}
+                                </button>
+                                <button class="product-add-btn">
+                                    <svg class="icon" viewBox="0 0 24 24">
+                                        <path d="M12 5v14M5 12h14"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </xo-animate>
                     </div>
                 </div>
             </div>
-        </div>
+        </xo-container>
     </div>
 </section>
+
 <br><br><br>
 <!-- Shop By Top Brands Section -->
 <section class="shopify-section section">
@@ -2254,40 +1988,111 @@
     </div>
 </div>
 
-<!-- Brands Section -->
+<!-- Our Brands Carousel Section -->
 <section class="shopify-section section">
-    <section class="xo-section xo-section--brands color-background-1" style="--margin: 0; --pt: 50; --pb: 50;">
+    <div class="xo-section xo-section--our-brands-carousel color-background-1" style="--margin: 0; --pt: 80; --pb: 80; background: #ffffff;">
         <xo-container class="xo-container--wide">
-            <xo-animate xo-cascade="">
-                <h2 class="collection-v6__title" style="text-align: center; margin-bottom: 4rem; font-size: 4.2rem; font-weight: 500;">
-                    {% trans "Shop By Brand" %}
-                </h2>
+            <!-- Section Title -->
+            <xo-animate class="our-brands-carousel-heading" xo-cascade="">
+                <div class="our-brands-carousel-title-wrap">
+                    <h2 class="our-brands-carousel-main-title" style="text-align: center; margin-bottom: 5rem; font-size: 3rem; font-weight: 700; color: #2c2c2c; text-transform: uppercase; letter-spacing: 0.15em;">
+                        {% trans "OUR BRANDS" %}
+                    </h2>
+                </div>
             </xo-animate>
 
-            <xo-carousel xo-breakpoints='{"1200": {"perView": 5}, "992": {"perView": 4}, "768": {"perView": 2}, "576": {"perView": 1}}'
-                xo-gap="30" xo-per-view="6" xo-render-bullet="<span></span>" xo-speed="400">
-                <xo-carousel-inner>
-                    <xo-carousel-list aria-label="Slider" role="list">
-                        {% for brand in brands %}
-                        <xo-carousel-slide class="collection-v1">
-                            <xo-animate class="collection-v6__item" xo-cascade="">
-                                <a class="hover-style--scale-up" href=" ">
-                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                        <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" width="400" height="400"
-                                            loading="lazy" />
-                                    </div>
-                                </a>
-                                <a class="collection-v6__item-label" href=" ">
-                                    <h3 class="collection-v6__item-title">{{ brand.name }}</h3>
-                                </a>
-                            </xo-animate>
-                        </xo-carousel-slide>
-                        {% endfor %}
-                    </xo-carousel-list>
-                </xo-carousel-inner>
-            </xo-carousel>
+            <!-- Brands Carousel -->
+            <div class="our-brands-carousel-wrapper">
+                <button class="brands-carousel-nav brands-carousel-prev" aria-label="Previous brands">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+
+                <div class="our-brands-carousel-container">
+                    <div class="our-brands-carousel-track">
+                        <!-- Brand 1: Ray-Ban -->
+                        <div class="brand-carousel-item">
+                            <a href="#" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ray-Ban_logo.svg/2560px-Ray-Ban_logo.svg.png" 
+                                         alt="Ray-Ban" 
+                                         class="brand-carousel-logo"
+                                         loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Brand 2: Ray-Ban (duplicate for carousel effect) -->
+                        <div class="brand-carousel-item">
+                            <a href="#" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ray-Ban_logo.svg/2560px-Ray-Ban_logo.svg.png" 
+                                         alt="Ray-Ban" 
+                                         class="brand-carousel-logo"
+                                         loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Brand 3: Gucci -->
+                        <div class="brand-carousel-item">
+                            <a href="#" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Gucci_Logo.svg/2560px-Gucci_Logo.svg.png" 
+                                         alt="Gucci" 
+                                         class="brand-carousel-logo"
+                                         loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Brand 4: Prada -->
+                        <div class="brand-carousel-item">
+                            <a href="#" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Prada_logo.svg/2560px-Prada_logo.svg.png" 
+                                         alt="Prada" 
+                                         class="brand-carousel-logo"
+                                         loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Brand 5: Oakley -->
+                        <div class="brand-carousel-item">
+                            <a href="#" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Oakley_logo.svg/2560px-Oakley_logo.svg.png" 
+                                         alt="Oakley" 
+                                         class="brand-carousel-logo"
+                                         loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Brand 6: Ray-Ban (for smooth loop) -->
+                        <div class="brand-carousel-item">
+                            <a href="#" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ray-Ban_logo.svg/2560px-Ray-Ban_logo.svg.png" 
+                                         alt="Ray-Ban" 
+                                         class="brand-carousel-logo"
+                                         loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="brands-carousel-nav brands-carousel-next" aria-label="Next brands">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
         </xo-container>
-    </section>
+    </div>
 </section>
 <!-- Al Ameen Optics Blog Section -->
 <section class="shopify-section section">
@@ -2528,62 +2333,7 @@
     </div>
 </section>
 
-<!-- Blog Section -->
-<section class="shopify-section section">
-    <div class="xo-section xo-section--blog color-background-1" style="--margin: 0; --pt: 100; --pb: 50;">
-        <xo-container class="xo-container--wide">
-            <div class="banner-v270__heading">
-                <xo-animate xo-duration="700" xo-order="1" xo-strength="3" xo-type="fade-up">
-                    <h2 class="banner-v270__title" style="text-align: center; margin-bottom: 1.5rem; font-size: 4.2rem; font-weight: 500;">
-                        {% trans "AL AMEEN OPTICS BLOG" %}
-                    </h2>
-                </xo-animate>
-                <xo-animate xo-duration="700" xo-order="3" xo-strength="3" xo-type="fade-up">
-                    <div class="banner-v270__description" style="text-align: center; margin-bottom: 4rem; font-size: 1.8rem; color: var(--color-foreground);">
-                        {% trans "Latest News, Tips & Eye Care Insights" %}
-                    </div>
-                </xo-animate>
-            </div>
-
-            <div class="banner-v270__gallery">
-                <xo-grid style="--xs: 1; --lg: 3; gap: 30px;">
-                    <xo-animate xo-duration="700" xo-order="1" xo-strength="3" xo-type="fade-up">
-                        <a class="banner-v270__item hover-style--scale-up" href=" ">
-                            <div class="xo-image" style="--xo-ratio-percent: 4/3; --x-pos: 50%; --y-pos: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                                <span style="font-size: 2.4rem; font-weight: 600; color: white;">{% trans "Eye Care Excellence" %}</span>
-                            </div>
-                            <h4 class="banner-v270__title-item" style="margin-top: 1.5rem; font-size: 2rem; font-weight: 600;">
-                                {% trans "Your Vision Matters More: Discover Advanced Eye Care at Al Ameen Optics" %}
-                            </h4>
-                        </a>
-                    </xo-animate>
-
-                    <xo-animate xo-duration="700" xo-order="2" xo-strength="3" xo-type="fade-up">
-                        <a class="banner-v270__item hover-style--scale-up" href=" ">
-                            <div class="xo-image" style="--xo-ratio-percent: 4/3; --x-pos: 50%; --y-pos: 50%; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                                <span style="font-size: 2.4rem; font-weight: 600; color: white;">{% trans "Fashion Forward" %}</span>
-                            </div>
-                            <h4 class="banner-v270__title-item" style="margin-top: 1.5rem; font-size: 2rem; font-weight: 600;">
-                                {% trans "2024 Eyewear Trends: Find Your Perfect Style" %}
-                            </h4>
-                        </a>
-                    </xo-animate>
-
-                    <xo-animate xo-duration="700" xo-order="3" xo-strength="3" xo-type="fade-up">
-                        <a class="banner-v270__item hover-style--scale-up" href=" ">
-                            <div class="xo-image" style="--xo-ratio-percent: 4/3; --x-pos: 50%; --y-pos: 50%; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                                <span style="font-size: 2.4rem; font-weight: 600; color: white;">{% trans "Lens Care Tips" %}</span>
-                            </div>
-                            <h4 class="banner-v270__title-item" style="margin-top: 1.5rem; font-size: 2rem; font-weight: 600;">
-                                {% trans "Complete Guide to Contact Lens Care and Maintenance" %}
-                            </h4>
-                        </a>
-                    </xo-animate>
-                </xo-grid>
-            </div>
-        </xo-container>
-    </div>
-</section>
+ 
 <!-- Our Stores Section -->
 <section class="shopify-section section">
     <div class="xo-section xo-section--our-stores color-background-1" style="--margin: 0; --pt: 80; --pb: 80; background: #f8f9fa;">
@@ -2674,178 +2424,56 @@
         </xo-container>
     </div>
 </section>
-<!-- Our Brands Carousel Section -->
-<section class="shopify-section section">
-    <div class="xo-section xo-section--our-brands-carousel color-background-1" style="--margin: 0; --pt: 80; --pb: 80; background: #ffffff;">
-        <xo-container class="xo-container--wide">
-            <!-- Section Title -->
-            <xo-animate class="our-brands-carousel-heading" xo-cascade="">
-                <div class="our-brands-carousel-title-wrap">
-                    <h2 class="our-brands-carousel-main-title" style="text-align: center; margin-bottom: 5rem; font-size: 3rem; font-weight: 700; color: #2c2c2c; text-transform: uppercase; letter-spacing: 0.15em;">
-                        {% trans "OUR BRANDS" %}
-                    </h2>
-                </div>
-            </xo-animate>
 
-            <!-- Brands Carousel -->
-            <div class="our-brands-carousel-wrapper">
-                <button class="brands-carousel-nav brands-carousel-prev" aria-label="Previous brands">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                </button>
-
-                <div class="our-brands-carousel-container">
-                    <div class="our-brands-carousel-track">
-                        <!-- Brand 1: Ray-Ban -->
-                        <div class="brand-carousel-item">
-                            <a href="#" class="brand-carousel-link">
-                                <div class="brand-carousel-logo-wrapper">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ray-Ban_logo.svg/2560px-Ray-Ban_logo.svg.png" 
-                                         alt="Ray-Ban" 
-                                         class="brand-carousel-logo"
-                                         loading="lazy">
-                                </div>
-                            </a>
-                        </div>
-
-                        <!-- Brand 2: Ray-Ban (duplicate for carousel effect) -->
-                        <div class="brand-carousel-item">
-                            <a href="#" class="brand-carousel-link">
-                                <div class="brand-carousel-logo-wrapper">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ray-Ban_logo.svg/2560px-Ray-Ban_logo.svg.png" 
-                                         alt="Ray-Ban" 
-                                         class="brand-carousel-logo"
-                                         loading="lazy">
-                                </div>
-                            </a>
-                        </div>
-
-                        <!-- Brand 3: Gucci -->
-                        <div class="brand-carousel-item">
-                            <a href="#" class="brand-carousel-link">
-                                <div class="brand-carousel-logo-wrapper">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Gucci_Logo.svg/2560px-Gucci_Logo.svg.png" 
-                                         alt="Gucci" 
-                                         class="brand-carousel-logo"
-                                         loading="lazy">
-                                </div>
-                            </a>
-                        </div>
-
-                        <!-- Brand 4: Prada -->
-                        <div class="brand-carousel-item">
-                            <a href="#" class="brand-carousel-link">
-                                <div class="brand-carousel-logo-wrapper">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Prada_logo.svg/2560px-Prada_logo.svg.png" 
-                                         alt="Prada" 
-                                         class="brand-carousel-logo"
-                                         loading="lazy">
-                                </div>
-                            </a>
-                        </div>
-
-                        <!-- Brand 5: Oakley -->
-                        <div class="brand-carousel-item">
-                            <a href="#" class="brand-carousel-link">
-                                <div class="brand-carousel-logo-wrapper">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Oakley_logo.svg/2560px-Oakley_logo.svg.png" 
-                                         alt="Oakley" 
-                                         class="brand-carousel-logo"
-                                         loading="lazy">
-                                </div>
-                            </a>
-                        </div>
-
-                        <!-- Brand 6: Ray-Ban (for smooth loop) -->
-                        <div class="brand-carousel-item">
-                            <a href="#" class="brand-carousel-link">
-                                <div class="brand-carousel-logo-wrapper">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ray-Ban_logo.svg/2560px-Ray-Ban_logo.svg.png" 
-                                         alt="Ray-Ban" 
-                                         class="brand-carousel-logo"
-                                         loading="lazy">
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="brands-carousel-nav brands-carousel-next" aria-label="Next brands">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                </button>
-            </div>
-        </xo-container>
-    </div>
-</section>
-<!-- Promotional Banners -->
-<section class="shopify-section section">
-    <div class="xo-section xo-section--promo color-background-1" style="--bg-color: #f3ede6; --margin: 0; --pt: 50; --pb: 50;">
-        <xo-container class="xo-container--fullwidth" style="--padding: 30">
-            <xo-grid class="banner-v124" style="--xs: 1; --md: 2; --xo-grid-col-gap: 30px; --xo-grid-row-gap: 30px">
-                <xo-animate class="banner-v124__item" xo-cascade="">
-                    <a class="banner-v124__img hover-style--scale-up" href=" ">
-                        <div class="xo-image" style="--xo-ratio-percent: 1.0; --x-pos: 50.0%; --y-pos: 50.0%;">
-                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                                <i class="fas fa-sun" style="font-size: 8rem; color: white; opacity: 0.3;"></i>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="banner-v124__content">
-                        <h3 class="banner-v124__title">{% trans "Premium Sunglasses" %}</h3>
-                        <div class="banner-v124__subtitle">
-                            {% trans "Protect your eyes with style. Discover our collection of UV-protected designer sunglasses." %}
-                        </div>
-                        <a class="xo-btn xo-btn--dark xo-btn--link xo-btn--sm xo-btn--slide-up"
-                            href=" " style="border-radius: 0.8rem;">
-                            <span class="xo-btn__content">
-                                <span class="xo-btn__text" data-text="{% trans 'SHOP NOW' %}">
-                                    {% trans "SHOP NOW" %}
-                                </span>
-                            </span>
-                            <span class="xo-btn__loading">
-                                <div class="xo-loader-3" style="--size: 8; --color: currentColor; --duration: 1000;">
-                                    <div></div>
-                                </div>
-                            </span>
-                        </a>
-                    </div>
-                </xo-animate>
-
-                <xo-animate class="banner-v124__item" xo-cascade="">
-                    <a class="banner-v124__img hover-style--scale-up" href=" ">
-                        <div class="xo-image" style="--xo-ratio-percent: 1.0; --x-pos: 50.0%; --y-pos: 50.0%;">
-                            <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                                <i class="fas fa-eye" style="font-size: 8rem; color: white; opacity: 0.3;"></i>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="banner-v124__content">
-                        <h3 class="banner-v124__title">{% trans "Contact Lenses" %}</h3>
-                        <div class="banner-v124__subtitle">
-                            {% trans "Clear vision, ultimate comfort. Browse our range of daily and monthly contact lenses." %}
-                        </div>
-                        <a class="xo-btn xo-btn--dark xo-btn--link xo-btn--sm xo-btn--slide-up"
-                            href=" " style="border-radius: 0.8rem;">
-                            <span class="xo-btn__content">
-                                <span class="xo-btn__text" data-text="{% trans 'SHOP NOW' %}">
-                                    {% trans "SHOP NOW" %}
-                                </span>
-                            </span>
-                            <span class="xo-btn__loading">
-                                <div class="xo-loader-3" style="--size: 8; --color: currentColor; --duration: 1000;">
-                                    <div></div>
-                                </div>
-                            </span>
-                        </a>
-                    </div>
-                </xo-animate>
-            </xo-grid>
-        </xo-container>
-    </div>
-</section>
-
+ 
+<script>
+// Simple Brands Carousel Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const track = document.querySelector('.our-brands-carousel-track');
+    const prevBtn = document.querySelector('.brands-carousel-prev');
+    const nextBtn = document.querySelector('.brands-carousel-next');
+    
+    if (!track || !prevBtn || !nextBtn) return;
+    
+    const items = track.querySelectorAll('.brand-carousel-item');
+    const itemWidth = items[0].offsetWidth;
+    const gap = 60; // Match the gap in CSS
+    const scrollAmount = itemWidth + gap;
+    
+    let currentPosition = 0;
+    const maxScroll = -(scrollAmount * (items.length - 4)); // Show 4 items at a time
+    
+    function updatePosition() {
+        track.style.transform = `translateX(${currentPosition}px)`;
+    }
+    
+    nextBtn.addEventListener('click', function() {
+        if (currentPosition > maxScroll) {
+            currentPosition -= scrollAmount;
+            updatePosition();
+        } else {
+            // Loop back to start
+            currentPosition = 0;
+            updatePosition();
+        }
+    });
+    
+    prevBtn.addEventListener('click', function() {
+        if (currentPosition < 0) {
+            currentPosition += scrollAmount;
+            updatePosition();
+        } else {
+            // Loop to end
+            currentPosition = maxScroll;
+            updatePosition();
+        }
+    });
+    
+    // Optional: Auto-scroll
+    setInterval(function() {
+        nextBtn.click();
+    }, 3000); // Auto-scroll every 3 seconds
+});
+</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
