@@ -1158,6 +1158,204 @@
     box-sizing: border-box;
 }
 </style>
+<style>
+/* Our Brands Carousel Section - Scoped Styles */
+.xo-section--our-brands-carousel {
+    position: relative;
+    overflow: hidden;
+}
+
+.our-brands-carousel-heading {
+    margin-bottom: 2rem;
+}
+
+.our-brands-carousel-main-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.our-brands-carousel-wrapper {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.our-brands-carousel-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.our-brands-carousel-track {
+    display: flex;
+    gap: 60px;
+    transition: transform 0.5s ease;
+}
+
+.brand-carousel-item {
+    flex: 0 0 auto;
+    width: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brand-carousel-link {
+    display: block;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+}
+
+.brand-carousel-link:hover {
+    transform: scale(1.1);
+}
+
+.brand-carousel-logo-wrapper {
+    width: 100%;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.brand-carousel-logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: grayscale(100%);
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.brand-carousel-link:hover .brand-carousel-logo {
+    filter: grayscale(0%);
+    opacity: 1;
+}
+
+/* Navigation Buttons */
+.brands-carousel-nav {
+    flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid #d0d0d0;
+    background: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.brands-carousel-nav:hover {
+    border-color: #2c2c2c;
+    background: #f8f9fa;
+    transform: scale(1.05);
+}
+
+.brands-carousel-nav svg {
+    color: #2c2c2c;
+}
+
+.brands-carousel-prev {
+    margin-left: 0;
+}
+
+.brands-carousel-next {
+    margin-right: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .our-brands-carousel-track {
+        gap: 50px;
+    }
+    
+    .brand-carousel-item {
+        width: 160px;
+    }
+    
+    .brand-carousel-logo-wrapper {
+        height: 70px;
+    }
+}
+
+@media (max-width: 768px) {
+    .xo-section--our-brands-carousel {
+        padding-top: 60px !important;
+        padding-bottom: 60px !important;
+    }
+    
+    .our-brands-carousel-main-title {
+        font-size: 2.5rem !important;
+        margin-bottom: 3rem !important;
+    }
+    
+    .our-brands-carousel-wrapper {
+        gap: 20px;
+    }
+    
+    .our-brands-carousel-track {
+        gap: 40px;
+    }
+    
+    .brand-carousel-item {
+        width: 140px;
+    }
+    
+    .brand-carousel-logo-wrapper {
+        height: 60px;
+    }
+    
+    .brands-carousel-nav {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .our-brands-carousel-main-title {
+        font-size: 2rem !important;
+        letter-spacing: 0.1em !important;
+    }
+    
+    .our-brands-carousel-wrapper {
+        gap: 15px;
+    }
+    
+    .our-brands-carousel-track {
+        gap: 30px;
+    }
+    
+    .brand-carousel-item {
+        width: 120px;
+    }
+    
+    .brand-carousel-logo-wrapper {
+        height: 50px;
+    }
+    
+    .brands-carousel-nav {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .brands-carousel-nav svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* Ensure no conflicts with existing styles */
+.xo-section--our-brands-carousel * {
+    box-sizing: border-box;
+}
+</style>
+
 <!-- Hero Banner Carousel -->
 <section class="shopify-section section">
     <section class="xo-section--slideshow">
@@ -2472,6 +2670,112 @@
                     </div>
                     <h4 class="benefit-title">{% trans "Trusted Since 1927" %}</h4>
                 </xo-animate>
+            </div>
+        </xo-container>
+    </div>
+</section>
+<!-- Our Brands Carousel Section -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--our-brands-carousel color-background-1" style="--margin: 0; --pt: 80; --pb: 80; background: #ffffff;">
+        <xo-container class="xo-container--wide">
+            <!-- Section Title -->
+            <xo-animate class="our-brands-carousel-heading" xo-cascade="">
+                <div class="our-brands-carousel-title-wrap">
+                    <h2 class="our-brands-carousel-main-title" style="text-align: center; margin-bottom: 5rem; font-size: 3rem; font-weight: 700; color: #2c2c2c; text-transform: uppercase; letter-spacing: 0.15em;">
+                        {% trans "OUR BRANDS" %}
+                    </h2>
+                </div>
+            </xo-animate>
+
+            <!-- Brands Carousel -->
+            <div class="our-brands-carousel-wrapper">
+                <button class="brands-carousel-nav brands-carousel-prev" aria-label="Previous brands">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+
+                <div class="our-brands-carousel-container">
+                    <div class="our-brands-carousel-track">
+                        <!-- Brand 1: Ray-Ban -->
+                        <div class="brand-carousel-item">
+                            <a href="#" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ray-Ban_logo.svg/2560px-Ray-Ban_logo.svg.png" 
+                                         alt="Ray-Ban" 
+                                         class="brand-carousel-logo"
+                                         loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Brand 2: Ray-Ban (duplicate for carousel effect) -->
+                        <div class="brand-carousel-item">
+                            <a href="#" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ray-Ban_logo.svg/2560px-Ray-Ban_logo.svg.png" 
+                                         alt="Ray-Ban" 
+                                         class="brand-carousel-logo"
+                                         loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Brand 3: Gucci -->
+                        <div class="brand-carousel-item">
+                            <a href="#" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Gucci_Logo.svg/2560px-Gucci_Logo.svg.png" 
+                                         alt="Gucci" 
+                                         class="brand-carousel-logo"
+                                         loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Brand 4: Prada -->
+                        <div class="brand-carousel-item">
+                            <a href="#" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Prada_logo.svg/2560px-Prada_logo.svg.png" 
+                                         alt="Prada" 
+                                         class="brand-carousel-logo"
+                                         loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Brand 5: Oakley -->
+                        <div class="brand-carousel-item">
+                            <a href="#" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Oakley_logo.svg/2560px-Oakley_logo.svg.png" 
+                                         alt="Oakley" 
+                                         class="brand-carousel-logo"
+                                         loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Brand 6: Ray-Ban (for smooth loop) -->
+                        <div class="brand-carousel-item">
+                            <a href="#" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ray-Ban_logo.svg/2560px-Ray-Ban_logo.svg.png" 
+                                         alt="Ray-Ban" 
+                                         class="brand-carousel-logo"
+                                         loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="brands-carousel-nav brands-carousel-next" aria-label="Next brands">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
             </div>
         </xo-container>
     </div>
