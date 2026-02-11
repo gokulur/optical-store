@@ -5,6 +5,189 @@
 {% block title %}Al Ameen Optics - Your Vision Matters More{% endblock %}
 
 {% block content %}
+<style>
+    /* Categories Section Styles - Integrated with existing theme */
+/* Add this to your existing CSS file or include it separately */
+
+.categories-section {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 50px 20px;
+}
+
+.categories-section .section-title {
+    font-size: clamp(3rem, 8vw, 4.2rem);
+    text-align: center;
+    margin-bottom: 4rem;
+    font-weight: 500;
+    color: var(--color-foreground, #1a1a1a);
+    letter-spacing: 0.05em;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    padding: 0 20px;
+}
+
+.category-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 4/5;
+    cursor: pointer;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: block;
+    text-decoration: none;
+}
+
+.category-card:hover {
+    transform: translateY(-8px);
+    z-index: 10;
+}
+
+.category-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%);
+    z-index: 2;
+    opacity: 0.6;
+    transition: opacity 0.4s ease;
+}
+
+.category-card:hover::before {
+    opacity: 0.8;
+}
+
+.category-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.category-card:hover .category-image {
+    transform: scale(1.1);
+}
+
+.category-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 25px 20px;
+    z-index: 3;
+    transform: translateY(0);
+    transition: transform 0.4s ease;
+}
+
+.category-card:hover .category-label {
+    transform: translateY(-5px);
+}
+
+.category-title {
+    font-size: 1.8rem;
+    letter-spacing: 0.08em;
+    color: #ffffff;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.category-subtitle {
+    font-size: 0.85rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 0.03em;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s ease;
+}
+
+.category-card:hover .category-subtitle {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Special styling for SALE card */
+.category-card.sale-card {
+    background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+}
+
+.sale-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #ffffff;
+    color: #ee0979;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+    z-index: 4;
+    animation: subtle-pulse 2s ease-in-out infinite;
+    box-shadow: 0 3px 10px rgba(238, 9, 121, 0.3);
+}
+
+@keyframes subtle-pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .categories-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+    }
+}
+
+@media (max-width: 768px) {
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .categories-section .section-title {
+        margin-bottom: 3rem;
+    }
+
+    .category-title {
+        font-size: 1.5rem;
+    }
+
+    .category-label {
+        padding: 20px 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .categories-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .category-title {
+        font-size: 1.6rem;
+    }
+}
+
+/* Ensure compatibility with existing xo-container styles */
+.categories-section .xo-container--wide {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+</style>
 <!-- Hero Banner Carousel -->
 <section class="shopify-section section">
     <section class="xo-section--slideshow">
@@ -244,10 +427,9 @@
         </xo-carousel>
     </section>
 </section>
-
-<!-- Categories Section -->
+<!-- Featured Products Section -->
 <section class="shopify-section section">
-    <section class="xo-section xo-section--categories color-background-1" style="--margin: 0; --pt: 50; --pb: 50;">
+    <div class="xo-section xo-section--featured-products color-background-1" style="--margin: 0; --pt: 50; --pb: 50; z-index: 98">
         <xo-animate class="xo-section-bg" xo-disabled="" xo-duration="1000">
             <xo-parallax class="xo-section-bg-image__item" xo-lerp-ease="0.4">
                 <xo-parallax-scroll class="xo-section-bg-image__url xo-background-lazyload"
@@ -257,107 +439,369 @@
         </xo-animate>
 
         <xo-container class="xo-container--wide">
-            <xo-animate xo-cascade="">
-                <h2 class="collection-v6__title" style="text-align: center; margin-bottom: 4rem; font-size: 4.2rem; font-weight: 500;">
-                    {% trans "CATEGORIES" %}
-                </h2>
+            <xo-animate class="product-v1__heading" xo-cascade="">
+                <div class="product-v1__title-wrap">
+                    <h2 class="product-v1__title" style="text-align: center; margin-bottom: 4rem; font-size: 4.2rem; font-weight: 500;">
+                        {% trans "Featured Products" %}
+                    </h2>
+                </div>
             </xo-animate>
 
-            <xo-carousel xo-breakpoints='{"1200": {"perView": 5}, "992": {"perView": 4}, "768": {"perView": 3}, "576": {"perView": 2}}'
-                xo-gap="30" xo-per-view="6" xo-render-bullet="<span></span>" xo-speed="400">
-                <xo-carousel-inner>
-                    <xo-carousel-list aria-label="Slider" role="list">
-
-                        <!-- Sunglasses -->
-                        <xo-carousel-slide class="collection-v1">
-                            <xo-animate class="collection-v6__item" xo-cascade="">
-                                <a class="hover-style--scale-up" href=" ">
-                                    <div class="xo-image" style="--xo-ratio-percent: 1/1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                                        <i class="fas fa-sun" style="font-size: 6rem; color: white;"></i>
+            <xo-grid style="--xs: 1; --sm: 2; --xl: 4">
+                {% for product in featured_products %}
+                <xo-product xo-product-id="{{ product.id }}" xo-section-id="template--main-collection">
+                    <xo-animate class="xo-product-card xo-product-card--style9 color-background-1" xo-cascade="">
+                        <div class="xo-product-card__header xo-product-card__header--style9">
+                            <a href="{{ product.get_absolute_url }}">
+                                <xo-product-media style="--xo-auto-play: 1500ms" xo-binding="img"
+                                    xo-carousel-active-index="0" xo-carousel-autoplay="1500"
+                                    xo-carousel-bullet-content="<span class='xo-product-card__bullet'></span>"
+                                    xo-carousel-pagination-enabled="" xo-type="auto">
+                                    <div class="xo-product-image">
+                                        <div class="xo-image" style="--xo-ratio-percent: 1/1; --x-pos: %; --y-pos: %;">
+                                            {% if product.images.all %}
+                                            {% with first_image=product.images.first %}
+                                            {% if first_image %}
+                                            <img alt="{{ product.name }}" src="{{ first_image.image.url }}" width="1000"
+                                                height="1000" loading="lazy" />
+                                            {% endif %}
+                                            {% endwith %}
+                                            {% elif product.image %}
+                                            <img alt="{{ product.name }}" src="{{ product.image.url }}" width="1000"
+                                                height="1000" loading="lazy" />
+                                            {% else %}
+                                            <img alt="No Image" src="/static/img/no-image.jpg" width="1000" height="1000"
+                                                loading="lazy" />
+                                            {% endif %}
+                                        </div>
                                     </div>
-                                </a>
-                                <a class="collection-v6__item-label" href=" ">
-                                    <h3 class="collection-v6__item-title">{% trans "SUNGLASSES" %}</h3>
-                                </a>
-                            </xo-animate>
-                        </xo-carousel-slide>
+                                </xo-product-media>
+                            </a>
 
-                        <!-- Eyeglasses -->
-                        <xo-carousel-slide class="collection-v1">
-                            <xo-animate class="collection-v6__item" xo-cascade="">
-                                <a class="hover-style--scale-up" href=" ">
-                                    <div class="xo-image" style="--xo-ratio-percent: 1/1; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                                        <i class="fas fa-glasses" style="font-size: 6rem; color: white;"></i>
+                            <div class="xo-product-card__badge">
+                                {% if product.stock == 0 or not product.available %}
+                                <div class="xo-badge-sold-out">
+                                    <span class="xo-badge-sold-out__title">{% trans "Sold out" %}</span>
+                                </div>
+                                {% else %}
+                                <div class="xo-badge-sale">{% trans "Sale" %}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="xo-product-card__actions xo-product-card__actions--style9">
+                                <xo-tooltip class="xo-product-card__icon" xo-title="{% trans 'Add to Cart' %}">
+                                    <form method="POST" action=" "
+                                        class="add-to-cart-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="button"
+                                            class="xo-btn xo-btn--light xo-btn--primary xo-btn--circle xo-btn--sm xo-btn--slide-up circle add-to-cart-grid-btn"
+                                            data-product-id="{{ product.id }}"
+                                            data-url=" ">
+                                            <span class="xo-btn__content">
+                                                <span class="xo-btn__icon">
+                                                    <svg height="20" viewBox="0 0 24 24" width="20">
+                                                        <path
+                                                            d="M12,0C9.1,0,6.7,2.4,6.7,5.3v1h10.5v-1C17.2,2.4,14.9,0,12,0z M12,1.8c1.6,0,3,1.1,3.4,2.7H8.6C9,2.9,10.4,1.8,12,1.8"
+                                                            fill="currentColor"></path>
+                                                        <g>
+                                                            <path
+                                                                d="M17.6,6.2c0.9,0,1.6,0.7,1.6,1.6v12.9c0,0.9-0.7,1.6-1.6,1.6H6.4c-0.9,0-1.6-0.7-1.6-1.6V7.8c0-0.9,0.7-1.6,1.6-1.6H17.6 M17.6,4.5H6.4C4.5,4.5,3,6,3,7.8v12.9C3,22.5,4.5,24,6.4,24h11.3c1.8,0,3.3-1.5,3.3-3.3V7.8C21,6,19.5,4.5,17.6,4.5L17.6,4.5z"
+                                                                fill="currentColor"></path>
+                                                        </g>
+                                                        <path
+                                                            d="M14.8,8.8H9.2c-0.4,0-0.7-0.3-0.7-0.7v0c0-0.4,0.3-0.7,0.7-0.7h5.7c0.4,0,0.7,0.3,0.7,0.7v0C15.5,8.5,15.2,8.8,14.8,8.8z"
+                                                            fill="currentColor"></path>
+                                                    </svg>
+                                                </span>
+                                            </span>
+                                            <span class="xo-btn__loading">
+                                                <div class="xo-loader-3"
+                                                    style="--size: 8; --color: currentColor; --duration: 1000;">
+                                                    <div></div>
+                                                </div>
+                                            </span>
+                                        </button>
+                                    </form>
+                                </xo-tooltip>
+
+                                <xo-tooltip class="xo-product-card__icon" xo-title="{% trans 'Add to wishlist' %}">
+                                    <button class="wishlist-btn circle-btn" data-product-id="{{ product.id }}">
+                                        {% if product in request.user.wishlist.products.all %}
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="red">
+                                            <path
+                                                d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" />
+                                        </svg>
+                                        {% else %}
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black"
+                                            stroke-width="2">
+                                            <path
+                                                d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" />
+                                        </svg>
+                                        {% endif %}
+                                    </button>
+                                </xo-tooltip>
+                            </div>
+                        </div>
+
+                        <div class="xo-product-card__information">
+                            <h2 class="xo-product-card__title">
+                                <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                            </h2>
+                            <div class="xo-product-card__price">
+                                <div class="xo-product-card__price-inner">
+                                    <div class="xo-price">
+                                        <div class="xo-price__container">
+                                            <div class="xo-price__sale xo-price__sale--column">
+                                                <span class="xo-price__item xo-price__item--accent">
+                                                    ₹{{ product.price }}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
-                                </a>
-                                <a class="collection-v6__item-label" href=" ">
-                                    <h3 class="collection-v6__item-title">{% trans "EYEGLASSES" %}</h3>
-                                </a>
-                            </xo-animate>
-                        </xo-carousel-slide>
+                                </div>
+                            </div>
+                        </div>
+                    </xo-animate>
+                </xo-product>
+                {% endfor %}
+            </xo-grid>
+        </xo-container>
+    </div>
+</section>
+<section class="shopify-section section">
+    <section class="xo-section xo-section--categories color-background-1" style="--margin: 0; --pt: 50; --pb: 50;">
+        <xo-container class="xo-container--wide">
+            <xo-animate class="product-v1__heading" xo-cascade="">
+                <div class="product-v1__title-wrap">
+                    <h2 class="product-v1__title" style="text-align: center; margin-bottom: 4rem; font-size: 4.2rem; font-weight: 500;">
+                        {% trans "Categories" %}
+                    </h2>
+                </div>
+            </xo-animate>
 
-                        <!-- Contact Lenses -->
-                        <xo-carousel-slide class="collection-v1">
-                            <xo-animate class="collection-v6__item" xo-cascade="">
-                                <a class="hover-style--scale-up" href=" ">
-                                    <div class="xo-image" style="--xo-ratio-percent: 1/1; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                                        <i class="fas fa-eye" style="font-size: 6rem; color: white;"></i>
-                                    </div>
-                                </a>
-                                <a class="collection-v6__item-label" href=" ">
-                                    <h3 class="collection-v6__item-title">{% trans "CONTACT LENSES" %}</h3>
-                                </a>
-                            </xo-animate>
-                        </xo-carousel-slide>
+            <div class="categories-grid">
+                <!-- Sunglasses -->
+                <a href=" " class="category-card">
+                    <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&h=750&fit=crop" 
+                         alt="{% trans 'Sunglasses' %}" 
+                         class="category-image"
+                         loading="lazy">
+                    <div class="category-label">
+                        <h3 class="category-title">{% trans "SUNGLASSES" %}</h3>
+                        <p class="category-subtitle">{% trans "Premium UV Protection" %}</p>
+                    </div>
+                </a>
 
-                        <!-- Kids -->
-                        <xo-carousel-slide class="collection-v1">
-                            <xo-animate class="collection-v6__item" xo-cascade="">
-                                <a class="hover-style--scale-up" href=" ">
-                                    <div class="xo-image" style="--xo-ratio-percent: 1/1; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                                        <i class="fas fa-child" style="font-size: 6rem; color: white;"></i>
-                                    </div>
-                                </a>
-                                <a class="collection-v6__item-label" href=" ">
-                                    <h3 class="collection-v6__item-title">{% trans "KIDS" %}</h3>
-                                </a>
-                            </xo-animate>
-                        </xo-carousel-slide>
+                <!-- Eyeglasses -->
+                <a href=" " class="category-card">
+                    <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=600&h=750&fit=crop" 
+                         alt="{% trans 'Eyeglasses' %}" 
+                         class="category-image"
+                         loading="lazy">
+                    <div class="category-label">
+                        <h3 class="category-title">{% trans "EYEGLASSES" %}</h3>
+                        <p class="category-subtitle">{% trans "Designer Frames" %}</p>
+                    </div>
+                </a>
 
-                        <!-- Accessories -->
-                        <xo-carousel-slide class="collection-v1">
-                            <xo-animate class="collection-v6__item" xo-cascade="">
-                                <a class="hover-style--scale-up" href=" ">
-                                    <div class="xo-image" style="--xo-ratio-percent: 1/1; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                                        <i class="fas fa-box" style="font-size: 6rem; color: white;"></i>
-                                    </div>
-                                </a>
-                                <a class="collection-v6__item-label" href=" ">
-                                    <h3 class="collection-v6__item-title">{% trans "ACCESSORIES" %}</h3>
-                                </a>
-                            </xo-animate>
-                        </xo-carousel-slide>
+                <!-- Contact Lenses -->
+                <a href=" " class="category-card">
+                    <img src="https://images.unsplash.com/photo-1588951752390-24900b55a56a?w=600&h=750&fit=crop" 
+                         alt="{% trans 'Contact Lenses' %}" 
+                         class="category-image"
+                         loading="lazy">
+                    <div class="category-label">
+                        <h3 class="category-title">{% trans "CONTACT LENSES" %}</h3>
+                        <p class="category-subtitle">{% trans "Comfortable Vision" %}</p>
+                    </div>
+                </a>
 
-                        <!-- Medical Lenses -->
-                        <xo-carousel-slide class="collection-v1">
-                            <xo-animate class="collection-v6__item" xo-cascade="">
-                                <a class="hover-style--scale-up" href=" ">
-                                    <div class="xo-image" style="--xo-ratio-percent: 1/1; background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                                        <i class="fas fa-microscope" style="font-size: 6rem; color: white;"></i>
-                                    </div>
-                                </a>
-                                <a class="collection-v6__item-label" href=" ">
-                                    <h3 class="collection-v6__item-title">{% trans "MEDICAL LENSES" %}</h3>
-                                </a>
-                            </xo-animate>
-                        </xo-carousel-slide>
+                <!-- Kids -->
+                <a href=" " class="category-card">
+                    <img src="https://images.unsplash.com/photo-1514846326710-096e4a8035e0?w=600&h=750&fit=crop" 
+                         alt="{% trans 'Kids' %}" 
+                         class="category-image"
+                         loading="lazy">
+                    <div class="category-label">
+                        <h3 class="category-title">{% trans "KIDS" %}</h3>
+                        <p class="category-subtitle">{% trans "Fun & Durable" %}</p>
+                    </div>
+                </a>
 
-                    </xo-carousel-list>
-                </xo-carousel-inner>
-            </xo-carousel>
+                <!-- Accessories -->
+                <a href=" " class="category-card">
+                    <img src="https://images.unsplash.com/photo-1577803645773-f96470509666?w=600&h=750&fit=crop" 
+                         alt="{% trans 'Accessories' %}" 
+                         class="category-image"
+                         loading="lazy">
+                    <div class="category-label">
+                        <h3 class="category-title">{% trans "ACCESSORIES" %}</h3>
+                        <p class="category-subtitle">{% trans "Cases & Care" %}</p>
+                    </div>
+                </a>
+
+                <!-- Sale -->
+                <a href=" " class="category-card sale-card">
+                    <img src="https://images.unsplash.com/photo-1607023558931-e3f573f2e993?w=600&h=750&fit=crop" 
+                         alt="{% trans 'Sale' %}" 
+                         class="category-image"
+                         loading="lazy">
+                    <div class="sale-badge">{% trans "UP TO 50% OFF" %}</div>
+                    <div class="category-label">
+                        <h3 class="category-title">{% trans "SALE" %}</h3>
+                        <p class="category-subtitle">{% trans "Limited Time Offers" %}</p>
+                    </div>
+                </a>
+            </div>
         </xo-container>
     </section>
 </section>
+
+
+<!-- Featured Products Section -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--featured-products color-background-1" style="--margin: 0; --pt: 50; --pb: 50; z-index: 98">
+        <xo-animate class="xo-section-bg" xo-disabled="" xo-duration="1000">
+            <xo-parallax class="xo-section-bg-image__item" xo-lerp-ease="0.4">
+                <xo-parallax-scroll class="xo-section-bg-image__url xo-background-lazyload"
+                    xo-keyframes="{'0%': { backgroundPositionY: '200px' },'100%': { backgroundPositionY: '-200px' }}">
+                </xo-parallax-scroll>
+            </xo-parallax>
+        </xo-animate>
+
+        <xo-container class="xo-container--wide">
+            <xo-animate class="product-v1__heading" xo-cascade="">
+                <div class="product-v1__title-wrap">
+                    <h2 class="product-v1__title" style="text-align: center; margin-bottom: 4rem; font-size: 4.2rem; font-weight: 500;">
+                        {% trans "Featured Products" %}
+                    </h2>
+                </div>
+            </xo-animate>
+
+            <xo-grid style="--xs: 1; --sm: 2; --xl: 4">
+                {% for product in featured_products %}
+                <xo-product xo-product-id="{{ product.id }}" xo-section-id="template--main-collection">
+                    <xo-animate class="xo-product-card xo-product-card--style9 color-background-1" xo-cascade="">
+                        <div class="xo-product-card__header xo-product-card__header--style9">
+                            <a href="{{ product.get_absolute_url }}">
+                                <xo-product-media style="--xo-auto-play: 1500ms" xo-binding="img"
+                                    xo-carousel-active-index="0" xo-carousel-autoplay="1500"
+                                    xo-carousel-bullet-content="<span class='xo-product-card__bullet'></span>"
+                                    xo-carousel-pagination-enabled="" xo-type="auto">
+                                    <div class="xo-product-image">
+                                        <div class="xo-image" style="--xo-ratio-percent: 1/1; --x-pos: %; --y-pos: %;">
+                                            {% if product.images.all %}
+                                            {% with first_image=product.images.first %}
+                                            {% if first_image %}
+                                            <img alt="{{ product.name }}" src="{{ first_image.image.url }}" width="1000"
+                                                height="1000" loading="lazy" />
+                                            {% endif %}
+                                            {% endwith %}
+                                            {% elif product.image %}
+                                            <img alt="{{ product.name }}" src="{{ product.image.url }}" width="1000"
+                                                height="1000" loading="lazy" />
+                                            {% else %}
+                                            <img alt="No Image" src="/static/img/no-image.jpg" width="1000" height="1000"
+                                                loading="lazy" />
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </xo-product-media>
+                            </a>
+
+                            <div class="xo-product-card__badge">
+                                {% if product.stock == 0 or not product.available %}
+                                <div class="xo-badge-sold-out">
+                                    <span class="xo-badge-sold-out__title">{% trans "Sold out" %}</span>
+                                </div>
+                                {% else %}
+                                <div class="xo-badge-sale">{% trans "Sale" %}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="xo-product-card__actions xo-product-card__actions--style9">
+                                <xo-tooltip class="xo-product-card__icon" xo-title="{% trans 'Add to Cart' %}">
+                                    <form method="POST" action=" "
+                                        class="add-to-cart-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="button"
+                                            class="xo-btn xo-btn--light xo-btn--primary xo-btn--circle xo-btn--sm xo-btn--slide-up circle add-to-cart-grid-btn"
+                                            data-product-id="{{ product.id }}"
+                                            data-url=" ">
+                                            <span class="xo-btn__content">
+                                                <span class="xo-btn__icon">
+                                                    <svg height="20" viewBox="0 0 24 24" width="20">
+                                                        <path
+                                                            d="M12,0C9.1,0,6.7,2.4,6.7,5.3v1h10.5v-1C17.2,2.4,14.9,0,12,0z M12,1.8c1.6,0,3,1.1,3.4,2.7H8.6C9,2.9,10.4,1.8,12,1.8"
+                                                            fill="currentColor"></path>
+                                                        <g>
+                                                            <path
+                                                                d="M17.6,6.2c0.9,0,1.6,0.7,1.6,1.6v12.9c0,0.9-0.7,1.6-1.6,1.6H6.4c-0.9,0-1.6-0.7-1.6-1.6V7.8c0-0.9,0.7-1.6,1.6-1.6H17.6 M17.6,4.5H6.4C4.5,4.5,3,6,3,7.8v12.9C3,22.5,4.5,24,6.4,24h11.3c1.8,0,3.3-1.5,3.3-3.3V7.8C21,6,19.5,4.5,17.6,4.5L17.6,4.5z"
+                                                                fill="currentColor"></path>
+                                                        </g>
+                                                        <path
+                                                            d="M14.8,8.8H9.2c-0.4,0-0.7-0.3-0.7-0.7v0c0-0.4,0.3-0.7,0.7-0.7h5.7c0.4,0,0.7,0.3,0.7,0.7v0C15.5,8.5,15.2,8.8,14.8,8.8z"
+                                                            fill="currentColor"></path>
+                                                    </svg>
+                                                </span>
+                                            </span>
+                                            <span class="xo-btn__loading">
+                                                <div class="xo-loader-3"
+                                                    style="--size: 8; --color: currentColor; --duration: 1000;">
+                                                    <div></div>
+                                                </div>
+                                            </span>
+                                        </button>
+                                    </form>
+                                </xo-tooltip>
+
+                                <xo-tooltip class="xo-product-card__icon" xo-title="{% trans 'Add to wishlist' %}">
+                                    <button class="wishlist-btn circle-btn" data-product-id="{{ product.id }}">
+                                        {% if product in request.user.wishlist.products.all %}
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="red">
+                                            <path
+                                                d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" />
+                                        </svg>
+                                        {% else %}
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black"
+                                            stroke-width="2">
+                                            <path
+                                                d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" />
+                                        </svg>
+                                        {% endif %}
+                                    </button>
+                                </xo-tooltip>
+                            </div>
+                        </div>
+
+                        <div class="xo-product-card__information">
+                            <h2 class="xo-product-card__title">
+                                <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                            </h2>
+                            <div class="xo-product-card__price">
+                                <div class="xo-product-card__price-inner">
+                                    <div class="xo-price">
+                                        <div class="xo-price__container">
+                                            <div class="xo-price__sale xo-price__sale--column">
+                                                <span class="xo-price__item xo-price__item--accent">
+                                                    ₹{{ product.price }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </xo-animate>
+                </xo-product>
+                {% endfor %}
+            </xo-grid>
+        </xo-container>
+    </div>
+</section>
+
 
 <!-- SALE Banner -->
 <div class="banner-v270" style="--bg_custom: #f97316; --height-bg: 50%">
