@@ -187,6 +187,589 @@
     margin: 0 auto;
     padding: 0 20px;
 }
+  .product-grid-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .product-grid-header {
+            padding: 30px;
+            background: #e8f4f8;
+        }
+
+        .product-grid-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 15px;
+        }
+
+        .product-grid-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #333;
+            transform: translateX(3px);
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: #1a1a1a;
+            border: 1.5px solid #d0d0d0;
+        }
+
+        .btn-secondary:hover {
+            border-color: #1a1a1a;
+        }
+
+        .products-container {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 0;
+        }
+
+        /* Promotional Card */
+        .promo-card {
+            position: relative;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 500px;
+        }
+
+        .promo-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .promo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0.8;
+        }
+
+        .promo-content {
+            position: relative;
+            z-index: 2;
+            margin-top: auto;
+        }
+
+        .promo-watch-btn {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .promo-watch-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1px;
+            background: #e5e5e5;
+        }
+
+        .product-card {
+            background: #fff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .product-badge-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 3;
+        }
+
+        .product-badge {
+            background: rgba(255,255,255,0.95);
+            color: #1a1a1a;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .product-wishlist {
+            background: #fff;
+            border: 1.5px solid #e0e0e0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .product-wishlist:hover {
+            border-color: #ff3b30;
+        }
+
+        .product-wishlist.active {
+            background: #ff3b30;
+            border-color: #ff3b30;
+        }
+
+        .product-wishlist svg {
+            width: 16px;
+            height: 16px;
+            stroke: #333;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .product-wishlist.active svg {
+            stroke: #fff;
+            fill: #fff;
+        }
+
+        .product-image-wrapper {
+            position: relative;
+            aspect-ratio: 1/1;
+            margin-bottom: 15px;
+            background: #f8f8f8;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 20px;
+        }
+
+        .product-colors {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px #d0d0d0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .color-dot:hover,
+        .color-dot.active {
+            transform: scale(1.15);
+            box-shadow: 0 0 0 2px #1a1a1a;
+        }
+
+        .product-info {
+            margin-bottom: 12px;
+        }
+
+        .product-price-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .product-code {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .product-price {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .product-price-old {
+            font-size: 0.9rem;
+            color: #999;
+            text-decoration: line-through;
+            margin-left: 4px;
+        }
+
+        .discount-badge {
+            background: #ff3b30;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .product-name {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .product-try-btn {
+            flex: 1;
+            background: transparent;
+            border: 1.5px solid #1a1a1a;
+            color: #1a1a1a;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .product-try-btn:hover {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .product-add-btn {
+            background: transparent;
+            border: 1.5px solid #e0e0e0;
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .product-add-btn:hover {
+            background: #1a1a1a;
+            border-color: #1a1a1a;
+        }
+
+        .product-add-btn:hover svg {
+            stroke: #fff;
+        }
+
+        /* Icons */
+        .icon {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .products-container {
+                grid-template-columns: 1fr;
+            }
+
+            .promo-card {
+                min-height: 300px;
+            }
+
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .product-grid-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</style>
+<style>
+/* Shop By Top Brands Section - Scoped Styles */
+.xo-section--top-brands {
+    background: #000000;
+    position: relative;
+    overflow: hidden;
+}
+
+.top-brands-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.top-brand-card {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #1a1a1a;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.top-brand-card:hover {
+    transform: translateY(-10px);
+}
+
+.brand-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.brand-card-image {
+    position: relative;
+    aspect-ratio: 4/5;
+    overflow: hidden;
+}
+
+.brand-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.top-brand-card:hover .brand-card-image img {
+    transform: scale(1.08);
+}
+
+.brand-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.6) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+}
+
+.top-brand-card:hover .brand-overlay {
+    background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%);
+}
+
+.brand-logo {
+    text-align: center;
+    padding: 20px;
+    color: #ffffff;
+}
+
+.brand-logo h3 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    margin: 0;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+}
+
+.brand-logo p {
+    font-size: 1.4rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    margin: 5px 0 0 0;
+    opacity: 0.9;
+}
+
+.brand-logo-dark h3 {
+    color: #000000;
+    text-shadow: 2px 2px 8px rgba(255,255,255,0.5);
+}
+
+.brand-view-all {
+    padding: 20px;
+    text-align: center;
+    background: #1a1a1a;
+}
+
+.brand-btn {
+    background: transparent;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+    padding: 12px 35px;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.brand-btn:hover {
+    background: #ffffff;
+    color: #000000;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255,255,255,0.3);
+}
+
+/* Pagination Dots */
+.brand-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 40px;
+}
+
+.brand-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.brand-dot.active {
+    background: #ffffff;
+    width: 24px;
+    border-radius: 4px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .top-brands-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+    
+    .brand-logo h3 {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .xo-section--top-brands {
+        padding-top: 60px;
+        padding-bottom: 60px;
+    }
+    
+    .top-brands-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .product-v1__title {
+        font-size: 3.2rem !important;
+        margin-bottom: 3rem !important;
+    }
+    
+    .brand-logo h3 {
+        font-size: 2.5rem;
+    }
+    
+    .brand-logo p {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .brand-logo h3 {
+        font-size: 2rem;
+    }
+    
+    .brand-btn {
+        padding: 10px 25px;
+        font-size: 0.85rem;
+    }
+}
 </style>
 <!-- Hero Banner Carousel -->
 <section class="shopify-section section">
@@ -802,7 +1385,270 @@
     </div>
 </section>
 
+<section>
+<div class="product-grid-section">
+        <!-- Header -->
+        <div class="product-grid-header">
+            <h2 class="product-grid-title">Shop prescription glasses online or in-store</h2>
+            <div class="product-grid-actions">
+                <a href="#" class="btn btn-primary">
+                    Book Free Eyetest
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+                <a href="#" class="btn btn-secondary">
+                    Visit A Store
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
 
+        <div class="products-container">
+            <!-- Promotional Card -->
+            <div class="promo-card">
+                <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400&h=600&fit=crop" 
+                     alt="Book Free Eye Test" 
+                     class="promo-image">
+                <div class="promo-badge">BOOK A FREE EYE TEST</div>
+                <div class="promo-content">
+                    <button class="promo-watch-btn">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M5 3l14 9-14 9V3z" fill="currentColor"/>
+                        </svg>
+                        Watch now
+                    </button>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="product-grid">
+                <!-- Product 1 -->
+                <div class="product-card">
+                    <div class="product-badge-container">
+                        <span class="product-badge">Online Exclusive</span>
+                        <button class="product-wishlist">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="product-image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=300&h=300&fit=crop" 
+                             alt="Spectra" 
+                             class="product-image">
+                    </div>
+
+                    <div class="product-colors">
+                        <div class="color-dot active" style="background: #4A90E2;"></div>
+                        <div class="color-dot" style="background: #E8B4B8;"></div>
+                    </div>
+
+                    <div class="product-info">
+                        <div class="product-price-row">
+                            <span class="product-code">QAR1</span>
+                            <span class="product-price">OMR 68</span>
+                            <span class="discount-badge">-30%</span>
+                        </div>
+                        <div class="product-name">Spectra | Multi</div>
+                    </div>
+
+                    <div class="product-actions">
+                        <button class="product-try-btn">
+                            <svg class="icon" viewBox="0 0 24 24">
+                                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            TRY ON
+                        </button>
+                        <button class="product-add-btn">
+                            <svg class="icon" viewBox="0 0 24 24">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 2 -->
+                <div class="product-card">
+                    <div class="product-badge-container">
+                        <span class="product-badge">Online Exclusive</span>
+                        <button class="product-wishlist">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="product-image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1577803645773-f96470509666?w=300&h=300&fit=crop" 
+                             alt="Stanford" 
+                             class="product-image">
+                    </div>
+
+                    <div class="product-colors">
+                        <div class="color-dot active" style="background: #B8956A;"></div>
+                        <div class="color-dot" style="background: #8B7355;"></div>
+                        <div class="color-dot" style="background: #2C2C2C;"></div>
+                    </div>
+
+                    <div class="product-info">
+                        <div class="product-price-row">
+                            <span class="product-code">D | 1</span>
+                            <span class="product-price">OMR 45.9</span>
+                            <span class="discount-badge">-100%</span>
+                        </div>
+                        <div class="product-name">Spectra | STANFORD</div>
+                    </div>
+
+                    <div class="product-actions">
+                        <button class="product-try-btn">
+                            <svg class="icon" viewBox="0 0 24 24">
+                                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            TRY ON
+                        </button>
+                        <button class="product-add-btn">
+                            <svg class="icon" viewBox="0 0 24 24">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 3 -->
+                <div class="product-card">
+                    <div class="product-badge-container">
+                        <span class="product-badge">Online Exclusive</span>
+                        <button class="product-wishlist">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="product-image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=300&h=300&fit=crop" 
+                             alt="Fusion" 
+                             class="product-image">
+                    </div>
+
+                    <div class="product-colors">
+                        <div class="color-dot active" style="background: #87CEEB;"></div>
+                        <div class="color-dot" style="background: #FFB6C1;"></div>
+                        <div class="color-dot" style="background: #2C3E50;"></div>
+                    </div>
+
+                    <div class="product-info">
+                        <div class="product-price-row">
+                            <span class="product-code">D | 1</span>
+                            <span class="product-price">OMR 45.9</span>
+                            <span class="discount-badge">-100%</span>
+                        </div>
+                        <div class="product-name">Spectra | FUSION</div>
+                    </div>
+
+                    <div class="product-actions">
+                        <button class="product-try-btn">
+                            <svg class="icon" viewBox="0 0 24 24">
+                                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            TRY ON
+                        </button>
+                        <button class="product-add-btn">
+                            <svg class="icon" viewBox="0 0 24 24">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<br><br><br>
+<!-- Shop By Top Brands Section -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--top-brands color-background-1" style="--margin: 0; --pt: 80; --pb: 80;">
+        <xo-container class="xo-container--wide">
+            <!-- Section Title -->
+            <xo-animate class="product-v1__heading" xo-cascade="">
+                <div class="product-v1__title-wrap">
+                    <h2 class="product-v1__title" style="text-align: center; margin-bottom: 5rem; font-size: 4.2rem; font-weight: 500; color: #ffffff;">
+                        {% trans "Shop By Top Brands" %}
+                    </h2>
+                </div>
+            </xo-animate>
+
+            <!-- Brands Grid -->
+            <div class="top-brands-grid">
+                <!-- Tom Ford -->
+                <xo-animate class="top-brand-card" xo-cascade="">
+                    <a href="#" class="brand-card-link">
+                        <div class="brand-card-image">
+                            <img src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&h=700&fit=crop" 
+                                 alt="Tom Ford Eyewear" 
+                                 loading="lazy">
+                            <div class="brand-overlay">
+                                <div class="brand-logo">
+                                    <h3>TOM FORD</h3>
+                                    <p>EYEWEAR</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="brand-view-all">
+                            <button class="brand-btn">View All</button>
+                        </div>
+                    </a>
+                </xo-animate>
+
+                <!-- Ray-Ban -->
+                <xo-animate class="top-brand-card" xo-cascade="">
+                    <a href="#" class="brand-card-link">
+                        <div class="brand-card-image">
+                            <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&h=700&fit=crop" 
+                                 alt="Ray-Ban" 
+                                 loading="lazy">
+                            <div class="brand-overlay">
+                                <div class="brand-logo brand-logo-dark">
+                                    <h3>Ray-Ban</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="brand-view-all">
+                            <button class="brand-btn">View All</button>
+                        </div>
+                    </a>
+                </xo-animate>
+
+                <!-- Oakley -->
+                <xo-animate class="top-brand-card" xo-cascade="">
+                    <a href="#" class="brand-card-link">
+                        <div class="brand-card-image">
+                            <img src="https://images.unsplash.com/photo-1577803645773-f96470509666?w=600&h=400&fit=crop" 
+                                 alt="Oakley" 
+                                 loading="lazy">
+                            <div class="brand-overlay">
+                                <div class="brand-logo">
+                                    <h3>OAKLEY</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="brand-view-all">
+                            <button class="brand-btn">View All</button>
+                        </div>
+                    </a>
+                </xo-animate>
+            </div>
+        </xo-container>
+    </div>
+</section>
+<br><br><br>
 <!-- SALE Banner -->
 <div class="banner-v270" style="--bg_custom: #f97316; --height-bg: 50%">
     <div class="xo-section xo-section--sale-banner color-inverse" style="--margin: 0; --pt: 60; --pb: 60;">
@@ -858,7 +1704,102 @@
         </xo-container>
     </section>
 </section>
+<!-- Al Ameen Optics Blog Section -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--blog-cards color-background-1" style="--margin: 0; --pt: 80; --pb: 80; background: #e8f1f5;">
+        <xo-container class="xo-container--wide">
+            <!-- Section Title -->
+            <xo-animate class="blog-cards-heading" xo-cascade="">
+                <div class="blog-cards-title-wrap">
+                    <h2 class="blog-cards-main-title" style="text-align: center; margin-bottom: 5rem; font-size: 3.5rem; font-weight: 700; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.1em;">
+                        {% trans "AL AMEEN OPTICS BLOG" %}
+                    </h2>
+                </div>
+            </xo-animate>
 
+            <!-- Blog Cards Grid -->
+            <div class="blog-cards-grid">
+                <!-- Blog Card 1 -->
+                <xo-animate class="blog-single-card" xo-cascade="">
+                    <div class="blog-card-wrapper">
+                        <div class="blog-card-image-container">
+                            <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=800&h=900&fit=crop" 
+                                 alt="{% trans 'Eye Care at Al Ameen Optics' %}" 
+                                 class="blog-card-img"
+                                 loading="lazy">
+                        </div>
+                        <div class="blog-card-content">
+                            <h3 class="blog-card-title">
+                                {% trans "Your Vision Matters More: Discover Advanced Eye Care at Al Ameen Optics" %}
+                            </h3>
+                            <p class="blog-card-excerpt">
+                                {% trans "Prepare for an exceptional eye care experience with our comprehensive vision assessment and expert optical services, designed to keep your eyes healthy and your vision crystal clear—only at Al Ameen Optics." %}
+                            </p>
+                            <a href="#" class="blog-read-more-link">
+                                {% trans "Read More" %}
+                                <svg class="blog-arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </xo-animate>
+
+                <!-- Blog Card 2 -->
+                <xo-animate class="blog-single-card" xo-cascade="">
+                    <div class="blog-card-wrapper">
+                        <div class="blog-card-image-container">
+                            <img src="https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=800&h=900&fit=crop" 
+                                 alt="{% trans 'Eye Examination' %}" 
+                                 class="blog-card-img"
+                                 loading="lazy">
+                        </div>
+                        <div class="blog-card-content">
+                            <h3 class="blog-card-title">
+                                {% trans "Your Vision Matters More: Discover Advanced Eye Care at Al Ameen Optics" %}
+                            </h3>
+                            <p class="blog-card-excerpt">
+                                {% trans "Prepare for an exceptional eye care experience with our comprehensive vision assessment and expert optical services, designed to keep your eyes healthy and your vision crystal clear—only at Al Ameen Optics." %}
+                            </p>
+                            <a href="#" class="blog-read-more-link">
+                                {% trans "Read More" %}
+                                <svg class="blog-arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </xo-animate>
+
+                <!-- Blog Card 3 -->
+                <xo-animate class="blog-single-card" xo-cascade="">
+                    <div class="blog-card-wrapper">
+                        <div class="blog-card-image-container">
+                            <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=800&h=900&fit=crop" 
+                                 alt="{% trans 'Eye Care Services' %}" 
+                                 class="blog-card-img"
+                                 loading="lazy">
+                        </div>
+                        <div class="blog-card-content">
+                            <h3 class="blog-card-title">
+                                {% trans "Your Vision Matters More: Discover Advanced Eye Care at Al Ameen Optics" %}
+                            </h3>
+                            <p class="blog-card-excerpt">
+                                {% trans "Prepare for an exceptional eye care experience with our comprehensive vision assessment and expert optical services, designed to keep your eyes healthy and your vision crystal clear—only at Al Ameen Optics." %}
+                            </p>
+                            <a href="#" class="blog-read-more-link">
+                                {% trans "Read More" %}
+                                <svg class="blog-arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </xo-animate>
+            </div>
+        </xo-container>
+    </div>
+</section>
 <!-- Featured Products Section -->
 <section class="shopify-section section">
     <div class="xo-section xo-section--featured-products color-background-1" style="--margin: 0; --pt: 50; --pb: 50; z-index: 98">
