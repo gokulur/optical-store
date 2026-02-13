@@ -1110,7 +1110,7 @@ def eye_test_list(request):
     status = request.GET.get('status', '')
     search = request.GET.get('search', '')
     
-    bookings = EyeTestBooking.objects.select_related('user').order_by('-booking_date', '-booking_time')
+    bookings = EyeTestBooking.objects.select_related('customer').order_by('-booking_date', '-booking_time')
     
     if status:
         bookings = bookings.filter(status=status)
