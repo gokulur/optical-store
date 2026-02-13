@@ -13,7 +13,7 @@ class ChatConversation(models.Model):
     STATUS_CHOICES = (
         ('open', 'Open'),
         ('in_progress', 'In Progress'),
-        ('waiting', 'Waiting'),
+        ('waiting', 'Waiting for Customer'),
         ('resolved', 'Resolved'),
         ('closed', 'Closed'),
     )
@@ -27,23 +27,21 @@ class ChatConversation(models.Model):
 
     conversation_id = models.CharField(max_length=20, unique=True, editable=False)
 
-    # ✅ FIXED HERE
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name='conversations'
+        related_name='chat_conversations'
     )
 
-    guest_name = models.CharField(max_length=100, blank=True)
+    guest_name  = models.CharField(max_length=100, blank=True)
     guest_email = models.EmailField(blank=True)
 
-    subject = models.CharField(max_length=200, default="General Inquiry")
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    subject  = models.CharField(max_length=200, default='General Inquiry')
+    status   = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
 
-    # ✅ FIXED HERE
     assigned_to = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -54,22 +52,22 @@ class ChatConversation(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    closed_at = models.DateTimeField(null=True, blank=True)
+    closed_at  = models.DateTimeField(null=True, blank=True)
 
     ip_address = models.GenericIPAddressField(null=True, blank=True)
 
-    rating = models.IntegerField(null=True, blank=True)
+    rating   = models.IntegerField(null=True, blank=True)
     feedback = models.TextField(blank=True)
 
     class Meta:
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.conversation_id} - {self.get_display_name()}"
+        return f"{self.conversation_id} – {self.get_display_name()}"
 
     def save(self, *args, **kwargs):
         if not self.conversation_id:
-            timestamp = timezone.now().strftime('%Y%m%d')
+            timestamp  = timezone.now().strftime('%Y%m%d')
             random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
             self.conversation_id = f"CHAT{timestamp}{random_str}"
         super().save(*args, **kwargs)
@@ -85,6 +83,9 @@ class ChatConversation(models.Model):
     def unread_count_for_customer(self):
         return self.messages.filter(is_from_customer=False, is_read=False).count()
 
+    def last_message(self):
+        return self.messages.order_by('-created_at').first()
+
 
 # ============================================
 # CHAT MESSAGE
@@ -92,9 +93,9 @@ class ChatConversation(models.Model):
 
 class ChatMessage(models.Model):
     TYPE_CHOICES = (
-        ('text', 'Text'),
-        ('image', 'Image'),
-        ('file', 'File'),
+        ('text',   'Text'),
+        ('image',  'Image'),
+        ('file',   'File'),
         ('system', 'System'),
     )
 
@@ -104,7 +105,6 @@ class ChatMessage(models.Model):
         related_name='messages'
     )
 
-    # ✅ FIXED HERE
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -112,16 +112,15 @@ class ChatMessage(models.Model):
         blank=True
     )
 
-    sender_name = models.CharField(max_length=100, blank=True)
-
+    sender_name  = models.CharField(max_length=100, blank=True)
     message_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='text')
-    message = models.TextField()
+    message      = models.TextField()
 
     attachment = models.FileField(upload_to='chat_files/%Y/%m/', null=True, blank=True)
 
     is_from_customer = models.BooleanField(default=True)
-    is_read = models.BooleanField(default=False)
-    read_at = models.DateTimeField(null=True, blank=True)
+    is_read          = models.BooleanField(default=False)
+    read_at          = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -129,7 +128,7 @@ class ChatMessage(models.Model):
         ordering = ['created_at']
 
     def __str__(self):
-        return f"{self.conversation.conversation_id}"
+        return f"[{self.conversation.conversation_id}] {self.sender_name}: {self.message[:50]}"
 
 
 # ============================================
@@ -137,15 +136,16 @@ class ChatMessage(models.Model):
 # ============================================
 
 class ChatQuickReply(models.Model):
-    title = models.CharField(max_length=100)
-    message = models.TextField()
-    category = models.CharField(max_length=50, blank=True)
-    is_active = models.BooleanField(default=True)
+    title       = models.CharField(max_length=100)
+    message     = models.TextField()
+    shortcut    = models.CharField(max_length=30, blank=True, help_text='e.g. /greeting')
+    category    = models.CharField(max_length=50, blank=True)
+    is_active   = models.BooleanField(default=True)
     usage_count = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at  = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-usage_count']
+        ordering = ['-usage_count', 'title']
 
     def __str__(self):
         return self.title
@@ -156,19 +156,19 @@ class ChatQuickReply(models.Model):
 # ============================================
 
 class ChatOfflineMessage(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    subject = models.CharField(max_length=200)
-    message = models.TextField()
-    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    name         = models.CharField(max_length=100)
+    email        = models.EmailField()
+    subject      = models.CharField(max_length=200)
+    message      = models.TextField()
+    ip_address   = models.GenericIPAddressField(null=True, blank=True)
     is_processed = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at   = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.name} - {self.subject}"
+        return f"{self.name} – {self.subject}"
 
 
 # ============================================
@@ -177,26 +177,28 @@ class ChatOfflineMessage(models.Model):
 
 class AgentStatus(models.Model):
     STATUS_CHOICES = (
-        ('online', 'Online'),
-        ('away', 'Away'),
-        ('busy', 'Busy'),
+        ('online',  'Online'),
+        ('away',    'Away'),
+        ('busy',    'Busy'),
         ('offline', 'Offline'),
     )
 
-    # ✅ FIXED HERE
     agent = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='agent_status'
     )
 
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='offline')
-    last_activity = models.DateTimeField(auto_now=True)
+    status               = models.CharField(max_length=10, choices=STATUS_CHOICES, default='offline')
+    last_activity        = models.DateTimeField(auto_now=True)
     active_conversations = models.IntegerField(default=0)
-    max_conversations = models.IntegerField(default=5)
+    max_conversations    = models.IntegerField(default=5)
 
     def __str__(self):
-        return f"{self.agent.username} - {self.status}"
+        return f"{self.agent.username} – {self.status}"
 
     def is_available(self):
-        return self.status == 'online' and self.active_conversations < self.max_conversations
+        return (
+            self.status == 'online'
+            and self.active_conversations < self.max_conversations
+        )

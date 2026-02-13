@@ -296,7 +296,16 @@
             </ul>
           </div>
         </li>
-
+ <li class="nav-item menu-items">
+   <a class="nav-link {% if request.resolver_match.url_name == 'chat_list' or request.resolver_match.url_name == 'chat_conversation' %}active{% endif %}"
+      href="{% url 'adminpanel:chat_list' %}">
+     <span class="menu-icon"><i class="mdi mdi-chat"></i></span>
+    <span class="menu-title">Live Chat</span>
+     {% if unread_chat_count > 0 %}
+     <span class="badge badge-danger ml-auto">{{ unread_chat_count }}</span>
+     {% endif %}
+   </a>
+</li>
 
   <!-- Customers -->
   <li class="nav-item menu-items">

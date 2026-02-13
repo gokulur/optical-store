@@ -3807,90 +3807,95 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('💬 Chat Support Widget Loaded!');
 });
 </script> -->
+ 
+
 <script>
 // ============================================
-// CHAT SUPPORT WIDGET — CONNECTED TO DJANGO
+// CHAT SUPPORT WIDGET — DJANGO BACKEND
 // ============================================
+document.addEventListener('DOMContentLoaded', function () {
 
-document.addEventListener('DOMContentLoaded', function() {
-    const chatBtn          = document.getElementById('chatSupportBtn');
-    const chatWindow       = document.getElementById('chatSupportWindow');
-    const chatMinimizeBtn  = document.getElementById('chatMinimizeBtn');
-    const chatInput        = document.getElementById('chatInput');
-    const chatSendBtn      = document.getElementById('chatSendBtn');
-    const chatMessages     = document.getElementById('chatMessages');
-    const typingIndicator  = document.getElementById('typingIndicator');
-    const quickOptions     = document.querySelectorAll('.quick-option-btn');
+    const chatBtn           = document.getElementById('chatSupportBtn');
+    const chatWindow        = document.getElementById('chatSupportWindow');
+    const chatMinimizeBtn   = document.getElementById('chatMinimizeBtn');
+    const chatInput         = document.getElementById('chatInput');
+    const chatSendBtn       = document.getElementById('chatSendBtn');
+    const chatMessages      = document.getElementById('chatMessages');
+    const typingIndicator   = document.getElementById('typingIndicator');
     const notificationBadge = document.querySelector('.chat-notification-badge');
 
-    // State
-    let conversationId  = null;
-    let pollingInterval = null;
+    let conversationId  = localStorage.getItem('chat_conversation_id') || null;
     let lastMessageId   = 0;
+    let pollingInterval = null;
+    let isOpen          = false;
 
-    // ── CSRF helper ─────────────────────────────────
-    function getCookie(name) {
-        let v = null;
-        document.cookie.split(';').forEach(c => {
-            c = c.trim();
-            if (c.startsWith(name + '=')) v = decodeURIComponent(c.slice(name.length + 1));
-        });
-        return v;
+    // ── CSRF ─────────────────────────────────────────
+    function getCsrf() {
+        const m = document.cookie.match(/csrftoken=([^;]+)/);
+        return m ? m[1] : '';
     }
 
-    // ── Toggle window ────────────────────────────────
+    // ── Toggle ────────────────────────────────────────
     function toggleChat() {
-        chatWindow.classList.toggle('active');
-        chatBtn.classList.toggle('active');
-        if (chatWindow.classList.contains('active')) {
+        isOpen = !isOpen;
+        chatWindow.classList.toggle('active', isOpen);
+        chatBtn.classList.toggle('active', isOpen);
+        if (isOpen) {
             chatInput.focus();
             if (notificationBadge) notificationBadge.style.display = 'none';
             chatBtn.classList.remove('has-notification');
+            if (conversationId && !pollingInterval) startPolling();
+        } else {
+            stopPolling();
         }
     }
 
     chatBtn.addEventListener('click', toggleChat);
     chatMinimizeBtn.addEventListener('click', toggleChat);
 
-    // ── Create message bubble ────────────────────────
-    function createMessageElement(text, sender, senderName, time) {
-        const div = document.createElement('div');
-        div.className = `chat-message ${sender === 'user' ? 'user-message' : 'bot-message'}`;
-        const avatarUrl = sender === 'user'
-            ? `https://ui-avatars.com/api/?name=You&background=1a1a1a&color=fff&size=32`
-            : `https://ui-avatars.com/api/?name=Support&background=4A90E2&color=fff&size=32`;
-        div.innerHTML = `
+    // ── Build message bubble ──────────────────────────
+    function buildBubble(text, isUser, senderName, timeStr) {
+        const wrap = document.createElement('div');
+        wrap.className = 'chat-message ' + (isUser ? 'user-message' : 'bot-message');
+        const avatarSrc = isUser
+            ? 'https://ui-avatars.com/api/?name=You&background=1a1a1a&color=fff&size=32'
+            : 'https://ui-avatars.com/api/?name=Support&background=4A90E2&color=fff&size=32';
+        wrap.innerHTML = `
             <div class="message-avatar">
-                <img src="${avatarUrl}" alt="${senderName || sender}">
+                <img src="${avatarSrc}" alt="${isUser ? 'You' : (senderName || 'Support')}">
             </div>
             <div class="message-content">
-                <div class="message-bubble"><p>${text}</p></div>
-                <span class="message-time">${time || ''}</span>
+                <div class="message-bubble"><p>${escapeHtml(text)}</p></div>
+                <span class="message-time">${timeStr || ''}</span>
             </div>`;
-        return div;
+        return wrap;
     }
 
-    function scrollToBottom() {
+    function escapeHtml(s) {
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function now12() {
+        return new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    }
+
+    function scrollBottom() {
         setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 80);
     }
 
-    // ── Start a new conversation ─────────────────────
-    function startConversation(firstMessage) {
-        const formData = new FormData();
-        formData.append('subject', 'Website Inquiry');
-        formData.append('message', firstMessage);
-
-        // Guest name / email optional — grab from localStorage if stored
-        const gName = localStorage.getItem('chat_guest_name') || 'Guest';
-        const gEmail = localStorage.getItem('chat_guest_email') || '';
-        formData.append('guest_name', gName);
-        formData.append('guest_email', gEmail);
-        formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    // ── Start conversation ────────────────────────────
+    function startConversation(firstMsg) {
+        const fd = new FormData();
+        fd.append('subject', 'Website Inquiry');
+        fd.append('message', firstMsg);
+        fd.append('guest_name',  localStorage.getItem('chat_guest_name')  || 'Guest');
+        fd.append('guest_email', localStorage.getItem('chat_guest_email') || '');
+        fd.append('csrfmiddlewaretoken', getCsrf());
 
         fetch('/chat/start/', {
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            body: formData
+            body: fd
         })
         .then(r => r.json())
         .then(data => {
@@ -3900,21 +3905,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 startPolling();
             }
         })
-        .catch(err => console.error('Chat start error:', err));
+        .catch(console.error);
     }
 
-    // ── Send a message ───────────────────────────────
+    // ── Send message ──────────────────────────────────
     function sendMessage(text) {
-        if (!text.trim()) return;
+        text = text.trim();
+        if (!text) return;
         chatInput.value = '';
 
-        // Show user bubble immediately
-        const now = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-        chatMessages.appendChild(createMessageElement(text, 'user', 'You', now));
-        scrollToBottom();
+        // Append user bubble instantly
+        chatMessages.appendChild(buildBubble(text, true, 'You', now12()));
+        scrollBottom();
 
-        // Remove quick-options after first send
-        const qo = document.querySelector('.quick-options');
+        // Remove quick-options after first message
+        const qo = chatMessages.querySelector('.quick-options');
         if (qo) qo.remove();
 
         if (!conversationId) {
@@ -3922,14 +3927,14 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('message', text);
-        formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+        const fd = new FormData();
+        fd.append('message', text);
+        fd.append('csrfmiddlewaretoken', getCsrf());
 
         fetch(`/chat/send/${conversationId}/`, {
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            body: formData
+            body: fd
         })
         .then(r => r.json())
         .then(data => {
@@ -3937,13 +3942,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 lastMessageId = Math.max(lastMessageId, data.message.id);
             }
         })
-        .catch(err => console.error('Send error:', err));
+        .catch(console.error);
     }
 
-    // ── Poll for new messages ────────────────────────
+    // ── Poll for new messages ─────────────────────────
     function startPolling() {
-        if (pollingInterval) clearInterval(pollingInterval);
+        if (pollingInterval) return;
         pollingInterval = setInterval(pollMessages, 3000);
+    }
+    function stopPolling() {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
     }
 
     function pollMessages() {
@@ -3953,55 +3962,48 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(r => r.json())
         .then(data => {
-            if (data.success && data.messages.length) {
-                data.messages.forEach(msg => {
-                    if (msg.id > lastMessageId) {
-                        lastMessageId = msg.id;
-                        // Only show staff/bot messages (not echo of own)
-                        if (!msg.is_from_customer) {
-                            chatMessages.appendChild(
-                                createMessageElement(msg.message, 'bot', msg.sender_name, msg.created_at)
-                            );
-                            scrollToBottom();
-                            // Notify if window is closed
-                            if (!chatWindow.classList.contains('active') && notificationBadge) {
-                                notificationBadge.style.display = 'flex';
-                                chatBtn.classList.add('has-notification');
-                            }
+            if (!data.success || !data.messages.length) return;
+            data.messages.forEach(msg => {
+                if (msg.id > lastMessageId) {
+                    lastMessageId = msg.id;
+                    if (!msg.is_from_customer) {
+                        chatMessages.appendChild(
+                            buildBubble(msg.message, false, msg.sender_name, msg.created_at)
+                        );
+                        scrollBottom();
+                        if (!isOpen && notificationBadge) {
+                            notificationBadge.style.display = 'flex';
+                            chatBtn.classList.add('has-notification');
                         }
                     }
-                });
-            }
+                }
+            });
         })
         .catch(() => {});
     }
 
-    // ── Resume existing conversation ─────────────────
-    const savedConvId = localStorage.getItem('chat_conversation_id');
-    if (savedConvId) {
-        conversationId = savedConvId;
-        startPolling();
-    }
+    // Resume existing conversation on page load
+    if (conversationId) startPolling();
 
-    // ── Event listeners ──────────────────────────────
+    // ── Events ────────────────────────────────────────
     chatSendBtn.addEventListener('click', () => sendMessage(chatInput.value));
     chatInput.addEventListener('keypress', e => {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(chatInput.value); }
     });
 
-    quickOptions.forEach(btn => {
+    document.querySelectorAll('.quick-option-btn').forEach(btn => {
         btn.addEventListener('click', () => sendMessage(btn.getAttribute('data-message')));
     });
 
-    // Notification badge after 5s if closed
+    // Show badge after 5 s if chat is closed
     setTimeout(() => {
-        if (!chatWindow.classList.contains('active') && notificationBadge) {
+        if (!isOpen && notificationBadge) {
             notificationBadge.style.display = 'flex';
             chatBtn.classList.add('has-notification');
         }
     }, 5000);
 
-    console.log('💬 Chat widget connected to Django backend.');
+    console.log('💬 Chat widget connected to Django.');
 });
 </script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

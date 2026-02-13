@@ -98,4 +98,10 @@ urlpatterns = [
     path('stores/add/', views.store_add, name='store_add'),
     path('stores/<int:store_id>/edit/', views.store_edit, name='store_edit'),
     path('stores/<int:store_id>/delete/', views.store_delete, name='store_delete'),
+
+
+    path('chat/',                            views.chat_list,         name='chat_list'),
+    path('chat/<str:conversation_id>/',      views.chat_conversation,  name='chat_conversation'),
+    path('chat/agent-status/',               views.chat_agent_status,  name='chat_agent_status'),
+ 
 ]
