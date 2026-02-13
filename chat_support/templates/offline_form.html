@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Leave a Message — Al Ameen Optics{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:      #0f0f0f;
+  --gold:     #c9a84c;
+  --ivory:    #faf8f3;
+  --ivory-dk: #f2ede4;
+  --mist:     #ede9e1;
+  --grey:     #9a9690;
+  --danger:   #e05c5c;
+  --success:  #3eb87a;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--ivory);
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 20px;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse at 10% 20%, rgba(201,168,76,.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(15,15,15,.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.page-wrap {
+  width: 100%; max-width: 840px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 56px; align-items: start;
+  position: relative; z-index: 1;
+}
+
+/* ── LEFT ─── */
+.left { padding-top: 10px; }
+
+.back-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  color: var(--grey); font-size: 13px; text-decoration: none;
+  margin-bottom: 36px; transition: color .2s;
+}
+.back-link:hover { color: var(--ink); }
+.back-link svg { width: 16px; height: 16px; }
+
+.moon-icon {
+  width: 56px; height: 56px; border-radius: 14px;
+  background: var(--ink); display: flex; align-items: center; justify-content: center;
+  margin-bottom: 24px; font-size: 26px;
+}
+
+.left h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(28px, 3.5vw, 44px);
+  line-height: 1.15; margin-bottom: 16px;
+  color: var(--ink);
+}
+.left h1 em { font-style: italic; color: var(--gold); }
+
+.left p {
+  font-size: 15px; line-height: 1.7; color: var(--grey);
+  max-width: 320px; margin-bottom: 32px;
+}
+
+.hours-card {
+  background: #fff; border-radius: 14px;
+  border: 1px solid var(--mist); padding: 18px 20px;
+}
+.hours-card h3 { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--grey); margin-bottom: 14px; }
+.hour-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--mist); }
+.hour-row:last-child { border-bottom: none; padding-bottom: 0; }
+.hour-day   { font-size: 13px; color: var(--ink); font-weight: 500; }
+.hour-time  { font-size: 12.5px; color: var(--grey); font-family: 'DM Mono', sans-serif; }
+.hour-time.closed { color: var(--danger); }
+
+/* ── RIGHT (FORM) ─── */
+.form-card {
+  background: #fff; border-radius: 20px; padding: 34px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.07), 0 2px 10px rgba(0,0,0,.04);
+  border: 1px solid var(--mist);
+}
+.form-card h2 { font-size: 19px; font-weight: 700; margin-bottom: 6px; letter-spacing: -.01em; }
+.form-card > p { font-size: 13px; color: var(--grey); margin-bottom: 26px; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block; font-size: 12.5px; font-weight: 600;
+  color: var(--ink); margin-bottom: 7px;
+}
+.form-group label span { color: var(--danger); margin-left: 2px; }
+
+.f-ctrl {
+  width: 100%; padding: 11px 14px;
+  background: var(--ivory);
+  border: 1.5px solid var(--mist); border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink);
+  outline: none; transition: border-color .2s, box-shadow .2s;
+  appearance: none;
+}
+.f-ctrl:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,.1); background: #fff; }
+.f-ctrl::placeholder { color: var(--grey); }
+textarea.f-ctrl { resize: vertical; min-height: 100px; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* Messages */
+.msg-box {
+  padding: 12px 16px; border-radius: 10px;
+  font-size: 13px; display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px;
+}
+.msg-box svg { width: 16px; height: 16px; flex-shrink: 0; }
+.msg-error   { background: rgba(224,92,92,.08); border: 1px solid rgba(224,92,92,.25); color: var(--danger); }
+.msg-success { background: rgba(62,184,122,.08); border: 1px solid rgba(62,184,122,.25); color: #26895a; }
+
+/* Submit */
+.sub-btn {
+  width: 100%; padding: 13px; margin-top: 6px;
+  background: var(--ink); border: none; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+  color: #fff; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  position: relative; overflow: hidden; transition: transform .2s, box-shadow .2s;
+}
+.sub-btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(201,168,76,.12) 0%, transparent 60%);
+}
+.sub-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.sub-btn:active { transform: translateY(0); }
+.sub-btn svg { width: 18px; height: 18px; }
+
+.back-chat { display: block; text-align: center; margin-top: 16px; font-size: 13px; color: var(--grey); text-decoration: none; transition: color .2s; }
+.back-chat:hover { color: var(--ink); }
+.back-chat span { color: var(--gold); font-weight: 600; }
+
+/* ── RESPONSIVE ─── */
+@media (max-width: 680px) {
+  .page-wrap { grid-template-columns: 1fr; gap: 32px; }
+  .form-row  { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+
+  <!-- Left -->
+  <div class="left">
+    <a class="back-link" href="{% url 'chat:start_chat' %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Back to chat
+    </a>
+
+    <div class="moon-icon">🌙</div>
+
+    <h1>We're <em>offline</em><br>right now</h1>
+    <p>Our team isn't available at the moment. Leave your details and we'll get back to you during business hours — usually within a few hours.</p>
+
+    <div class="hours-card">
+      <h3>Business Hours (GST)</h3>
+      <div class="hour-row">
+        <span class="hour-day">Monday – Friday</span>
+        <span class="hour-time">9:00 AM – 8:00 PM</span>
+      </div>
+      <div class="hour-row">
+        <span class="hour-day">Saturday</span>
+        <span class="hour-time">10:00 AM – 6:00 PM</span>
+      </div>
+      <div class="hour-row">
+        <span class="hour-day">Sunday</span>
+        <span class="hour-time closed">Closed</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: form -->
+  <div class="form-card">
+    <h2>Leave a message</h2>
+    <p>We'll email you as soon as we're back.</p>
+
+    {% if error %}
+    <div class="msg-box msg-error">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ error }}
+    </div>
+    {% endif %}
+
+    {% if success %}
+    <div class="msg-box msg-success">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      Message received! We'll get back to you within 24 hours.
+    </div>
+    {% else %}
+
+    <form method="post" action="{% url 'chat:offline_message' %}" id="offlineForm" novalidate>
+      {% csrf_token %}
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="name">Full Name <span>*</span></label>
+          <input type="text" id="name" name="name" class="f-ctrl" placeholder="Ahmed Al Ameen" required autocomplete="name" value="{{ request.POST.name|default:'' }}">
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address <span>*</span></label>
+          <input type="email" id="email" name="email" class="f-ctrl" placeholder="ahmed@example.com" required autocomplete="email" value="{{ request.POST.email|default:'' }}">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="subject">Subject <span>*</span></label>
+        <input type="text" id="subject" name="subject" class="f-ctrl" placeholder="How can we help?" required value="{{ request.POST.subject|default:'' }}">
+      </div>
+
+      <div class="form-group">
+        <label for="message">Message <span>*</span></label>
+        <textarea id="message" name="message" class="f-ctrl" rows="5" placeholder="Describe what you need help with…" required>{{ request.POST.message|default:'' }}</textarea>
+      </div>
+
+      <button type="submit" class="sub-btn" id="subBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Send Message
+      </button>
+    </form>
+    {% endif %}
+
+    <a class="back-chat" href="{% url 'chat:start_chat' %}">
+      Want to try chat? <span>Check if we're online →</span>
+    </a>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('offlineForm')?.addEventListener('submit', function () {
+  const btn = document.getElementById('subBtn');
+  btn.style.opacity = '.7';
+  btn.style.pointerEvents = 'none';
+  btn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+    Sending…`;
+});
+const style = document.createElement('style');
+style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+document.head.appendChild(style);
+</script>
+{% endblock %}

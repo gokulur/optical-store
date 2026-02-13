@@ -1,272 +1,766 @@
 {% load static %}
-
-<!-- Chat Widget -->
-<div id="chatWidget">
-    <!-- Chat Button -->
-    <div id="chatButton" onclick="toggleChat()">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
-            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-        </svg>
-        <span id="unreadBadge" style="display:none;">0</span>
-    </div>
-    
-    <!-- Chat Window -->
-    <div id="chatWindow" style="display:none;">
-        <div id="chatHeader">
-            <div>
-                <h4>Live Chat Support</h4>
-                <p id="statusText">
-                    {% if is_online %}
-                    <span style="color:#4caf50;">● Online</span>
-                    {% else %}
-                    <span style="color:#f44336;">● Offline</span>
-                    {% endif %}
-                </p>
-            </div>
-            <button onclick="closeChat()">&times;</button>
-        </div>
-        
-        <div id="chatBody">
-            {% if is_online %}
-            <!-- Start Chat Form -->
-            <div id="startForm">
-                <p style="margin-bottom:15px;">How can we help you today?</p>
-                <input type="text" id="guestName" placeholder="Your Name" required>
-                <input type="email" id="guestEmail" placeholder="Your Email" required>
-                <input type="text" id="chatSubject" placeholder="Subject" value="General Inquiry">
-                <textarea id="chatMessage" placeholder="Your message..." rows="3" required></textarea>
-                <button onclick="startChat()" class="btn-primary">Start Chat</button>
-            </div>
-            {% else %}
-            <!-- Offline Form -->
-            <div id="offlineForm">
-                <p style="margin-bottom:15px;">We're offline. Leave a message!</p>
-                <input type="text" id="offlineName" placeholder="Your Name" required>
-                <input type="email" id="offlineEmail" placeholder="Your Email" required>
-                <input type="text" id="offlineSubject" placeholder="Subject" required>
-                <textarea id="offlineMessage" placeholder="Your message..." rows="4" required></textarea>
-                <button onclick="sendOfflineMessage()" class="btn-primary">Send Message</button>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat Widget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
-#chatWidget {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 9999;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+/* ═══════════════════════════════════════════════
+   AL AMEEN OPTICS — CHAT WIDGET  v2.0
+   Aesthetic: Refined dark luxury + warm ivory
+   ═══════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink:        #0f0f0f;
+  --ink-mid:    #1e1e1e;
+  --ink-light:  #2d2d2d;
+  --gold:       #c9a84c;
+  --gold-soft:  #e8d5a0;
+  --ivory:      #faf8f3;
+  --ivory-dark: #f2ede4;
+  --warm-grey:  #9a9690;
+  --mist:       #ede9e1;
+  --online:     #3eb87a;
+  --danger:     #e05c5c;
+  --r-lg:       16px;
+  --r-xl:       22px;
+  --shadow-float: 0 20px 60px rgba(0,0,0,.22), 0 4px 16px rgba(0,0,0,.12);
+  --transition: .28s cubic-bezier(.4,0,.2,1);
 }
 
-#chatButton {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    transition: transform 0.3s;
-    position: relative;
+body { background: transparent; font-family: 'DM Sans', sans-serif; }
+
+/* ── WIDGET SHELL ───────────────────────────────── */
+.widget {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
 }
 
-#chatButton:hover {
-    transform: scale(1.1);
+/* ── LAUNCHER BUTTON ────────────────────────────── */
+.launcher {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 6px 28px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.2);
+  transition: transform var(--transition), box-shadow var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.launcher::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(145deg, rgba(201,168,76,.22) 0%, transparent 60%);
+  border-radius: 50%;
+}
+.launcher:hover   { transform: scale(1.08); box-shadow: 0 10px 36px rgba(0,0,0,.4); }
+.launcher:active  { transform: scale(.96); }
+
+.launcher .ico { position: absolute; transition: all var(--transition); }
+.launcher .ico-chat  { opacity: 1; transform: rotate(0deg) scale(1); }
+.launcher .ico-close { opacity: 0; transform: rotate(-90deg) scale(.6); }
+.launcher.open .ico-chat  { opacity: 0; transform: rotate(90deg) scale(.6); }
+.launcher.open .ico-close { opacity: 1; transform: rotate(0deg) scale(1); }
+.launcher svg { width: 26px; height: 26px; color: #fff; }
+
+/* Badge */
+.badge {
+  position: absolute;
+  top: -2px; right: -2px;
+  width: 22px; height: 22px;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'DM Mono', monospace;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #fff;
+  opacity: 0;
+  transform: scale(0);
+  transition: all .3s cubic-bezier(.34,1.56,.64,1);
+}
+.badge.show { opacity: 1; transform: scale(1); }
+
+/* Pulse ring */
+.launcher.ping::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  animation: ping 2s ease-out infinite;
+}
+@keyframes ping {
+  0%   { opacity: .8; transform: scale(1); }
+  100% { opacity: 0;  transform: scale(1.55); }
 }
 
-#unreadBadge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: #f44336;
-    color: white;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: bold;
+/* ── CHAT PANEL ─────────────────────────────────── */
+.panel {
+  width: 370px;
+  max-width: calc(100vw - 56px);
+  height: 580px;
+  max-height: calc(100svh - 120px);
+  background: var(--ivory);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-float);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  /* closed state */
+  opacity: 0;
+  transform: translateY(18px) scale(.97);
+  pointer-events: none;
+  transform-origin: bottom right;
+  transition: opacity var(--transition), transform var(--transition);
+}
+.panel.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
 }
 
-#chatWindow {
-    position: absolute;
-    bottom: 80px;
-    right: 0;
-    width: 350px;
-    height: 500px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-    display: flex;
-    flex-direction: column;
-    animation: slideUp 0.3s;
+/* ── HEADER ─────────────────────────────────────── */
+.panel-header {
+  background: var(--ink);
+  padding: 20px 20px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.panel-header::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,168,76,.18) 0%, transparent 70%);
+  pointer-events: none;
 }
 
+.avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.avatar-wrap img {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(201,168,76,.4);
+  object-fit: cover;
+}
+.online-dot {
+  position: absolute;
+  bottom: 1px; right: 1px;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--online);
+  border: 2px solid var(--ink);
+  animation: pulse-dot 2.4s ease infinite;
+}
+{% if not is_online %}.online-dot { background: var(--warm-grey); animation: none; }{% endif %}
+
+@keyframes pulse-dot {
+  0%,100% { box-shadow: 0 0 0 0 rgba(62,184,122,.6); }
+  50%      { box-shadow: 0 0 0 5px rgba(62,184,122,0); }
+}
+
+.header-text { flex: 1; min-width: 0; }
+.header-text h3 {
+  font-size: 15px; font-weight: 600;
+  color: var(--ivory);
+  letter-spacing: -.01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.header-text p {
+  font-size: 12px;
+  color: rgba(250,248,243,.6);
+  margin-top: 3px;
+  display: flex; align-items: center; gap: 6px;
+}
+.status-blink {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--online);
+  animation: blink 1.6s ease infinite;
+}
+{% if not is_online %}.status-blink { background: var(--warm-grey); animation: none; }{% endif %}
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+
+.header-min {
+  background: rgba(255,255,255,.1);
+  border: none;
+  cursor: pointer;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--transition);
+}
+.header-min:hover { background: rgba(255,255,255,.18); }
+.header-min svg { width: 18px; height: 18px; color: #fff; }
+
+/* ── MESSAGES AREA ──────────────────────────────── */
+.msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--ivory);
+  scroll-behavior: smooth;
+}
+.msgs::-webkit-scrollbar { width: 4px; }
+.msgs::-webkit-scrollbar-thumb { background: var(--mist); border-radius: 4px; }
+
+/* Message row */
+.msg-row {
+  display: flex;
+  gap: 9px;
+  animation: slideUp .25s ease both;
+}
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-#chatHeader {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px 20px;
-    border-radius: 12px 12px 0 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.msg-row.mine { flex-direction: row-reverse; }
+
+.msg-av {
+  width: 30px; height: 30px; flex-shrink: 0;
+  border-radius: 50%; overflow: hidden;
+  align-self: flex-end;
+}
+.msg-av img { width: 100%; height: 100%; object-fit: cover; }
+
+.msg-body { display: flex; flex-direction: column; gap: 3px; max-width: 78%; }
+.msg-row.mine .msg-body { align-items: flex-end; }
+
+.bubble {
+  padding: 11px 15px;
+  border-radius: 16px 16px 16px 4px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink);
+  word-break: break-word;
+}
+.mine .bubble {
+  background: var(--ink);
+  color: var(--ivory);
+  border-radius: 16px 16px 4px 16px;
 }
 
-#chatHeader h4 {
-    margin: 0;
-    font-size: 16px;
+/* System message */
+.system-msg {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 4px;
+}
+.system-msg::before, .system-msg::after {
+  content: ''; flex: 1; height: 1px; background: var(--mist);
+}
+.system-msg span {
+  font-size: 11px; color: var(--warm-grey);
+  white-space: nowrap; font-family: 'DM Mono', monospace;
+  letter-spacing: .02em;
 }
 
-#chatHeader p {
-    margin: 5px 0 0 0;
-    font-size: 12px;
+.msg-time { font-size: 10.5px; color: var(--warm-grey); padding: 0 4px; }
+
+/* ── QUICK OPTIONS ──────────────────────────────── */
+.quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 2px 0 4px;
+}
+.q-btn {
+  background: #fff;
+  border: 1.5px solid var(--mist);
+  border-radius: 10px;
+  padding: 11px 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: all .2s ease;
+  line-height: 1.4;
+}
+.q-btn:hover {
+  border-color: var(--gold);
+  background: var(--ivory-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+.q-btn:active { transform: translateY(0); }
+
+/* ── TYPING DOTS ────────────────────────────────── */
+.typing-row { display: flex; gap: 9px; align-items: flex-end; }
+.typing-bubble {
+  background: #fff;
+  padding: 12px 16px;
+  border-radius: 16px 16px 16px 4px;
+  display: flex; gap: 5px; align-items: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.t-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--warm-grey);
+  animation: bounce 1.2s ease infinite;
+}
+.t-dot:nth-child(2) { animation-delay: .16s; }
+.t-dot:nth-child(3) { animation-delay: .32s; }
+@keyframes bounce {
+  0%,60%,100% { transform: translateY(0); opacity: .5; }
+  30%          { transform: translateY(-7px); opacity: 1; }
 }
 
-#chatHeader button {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 28px;
-    cursor: pointer;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    transition: background 0.2s;
+/* ── INPUT ──────────────────────────────────────── */
+.input-zone {
+  padding: 12px 14px 14px;
+  background: #fff;
+  border-top: 1px solid var(--mist);
+  flex-shrink: 0;
+}
+.input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  background: var(--ivory-dark);
+  border: 1.5px solid var(--mist);
+  border-radius: 14px;
+  padding: 8px 10px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.input-row:focus-within {
+  border-color: var(--gold-soft);
+  box-shadow: 0 0 0 3px rgba(201,168,76,.12);
+  background: #fff;
 }
 
-#chatHeader button:hover {
-    background: rgba(255,255,255,0.2);
+.attach-btn, .emoji-btn {
+  background: none; border: none; cursor: pointer;
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background .2s;
 }
+.attach-btn:hover, .emoji-btn:hover { background: var(--mist); }
+.attach-btn svg, .emoji-btn svg { width: 18px; height: 18px; color: var(--warm-grey); }
 
-#chatBody {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
+.msg-input {
+  flex: 1; border: none; background: transparent;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px; color: var(--ink);
+  resize: none; outline: none;
+  max-height: 100px; min-height: 22px;
+  line-height: 1.5;
+  padding: 4px 2px;
 }
+.msg-input::placeholder { color: var(--warm-grey); }
 
-#chatBody input,
-#chatBody textarea {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: inherit;
+.send-btn {
+  width: 34px; height: 34px;
+  background: var(--ink);
+  border: none; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+  transition: transform .2s, background .2s;
 }
+.send-btn:hover { background: var(--ink-light); transform: scale(1.08); }
+.send-btn:active { transform: scale(.94); }
+.send-btn svg { width: 16px; height: 16px; color: #fff; }
 
-#chatBody input:focus,
-#chatBody textarea:focus {
-    outline: none;
-    border-color: #667eea;
+/* ── FOOTER ─────────────────────────────────────── */
+.panel-footer {
+  padding: 8px 14px 12px;
+  text-align: center;
+  background: #fff;
+  flex-shrink: 0;
 }
-
-.btn-primary {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s;
+.panel-footer span {
+  font-size: 10.5px;
+  color: var(--warm-grey);
+  letter-spacing: .02em;
+  font-family: 'DM Mono', monospace;
 }
+.panel-footer span em { color: var(--gold); font-style: normal; }
 
-.btn-primary:hover {
-    transform: translateY(-2px);
+/* ── OFFLINE BANNER ─────────────────────────────── */
+.offline-banner {
+  margin: 0 14px;
+  padding: 10px 14px;
+  background: rgba(154,150,144,.08);
+  border-left: 3px solid var(--warm-grey);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--warm-grey);
+  flex-shrink: 0;
 }
+{% if is_online %}.offline-banner { display: none; }{% endif %}
 
+/* ── RESPONSIVE ─────────────────────────────────── */
 @media (max-width: 480px) {
-    #chatWindow {
-        width: calc(100vw - 40px);
-        height: calc(100vh - 100px);
-    }
+  .widget { bottom: 18px; right: 18px; }
+  .panel  { width: calc(100vw - 36px); height: calc(100svh - 110px); }
 }
 </style>
+</head>
+<body>
+
+<div class="widget" id="widget">
+
+  <!-- CHAT PANEL ---------------------------------------- -->
+  <div class="panel" id="panel" role="dialog" aria-label="Chat Support" aria-modal="true">
+
+    <div class="panel-header">
+      <div class="avatar-wrap">
+        <img src="https://ui-avatars.com/api/?name=AA&background=1e1e1e&color=c9a84c&size=88&bold=true" alt="Support">
+        <span class="online-dot"></span>
+      </div>
+      <div class="header-text">
+        <h3>Al Ameen Support</h3>
+        <p>
+          <span class="status-blink"></span>
+          {% if is_online %}Online — we reply instantly{% else %}Offline — leave a message{% endif %}
+        </p>
+      </div>
+      <button class="header-min" id="minBtn" aria-label="Minimise">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+
+    {% if not is_online %}
+    <div class="offline-banner">
+      🌙 Our team is offline right now. Send us a message and we'll get back to you within a few hours.
+    </div>
+    {% endif %}
+
+    <!-- Messages -->
+    <div class="msgs" id="msgs">
+      <!-- Welcome -->
+      <div class="msg-row agent-msg">
+        <div class="msg-av">
+          <img src="https://ui-avatars.com/api/?name=AA&background=c9a84c&color=0f0f0f&size=60&bold=true" alt="Agent">
+        </div>
+        <div class="msg-body">
+          <div class="bubble">
+            👋 Welcome to <strong>Al Ameen Optics</strong>!<br>How can we help you today?
+          </div>
+          <span class="msg-time">Just now</span>
+        </div>
+      </div>
+
+      <!-- Quick options -->
+      <div class="quick-grid" id="quickGrid">
+        <button class="q-btn" data-msg="I need help tracking my order">📦 Track Order</button>
+        <button class="q-btn" data-msg="I'd like to book an eye test">👁️ Book Eye Test</button>
+        <button class="q-btn" data-msg="I have a question about products">🛍️ Product Info</button>
+        <button class="q-btn" data-msg="I need help with my prescription">📋 Prescription Help</button>
+      </div>
+    </div>
+
+    <!-- Typing indicator (hidden) -->
+    <div class="typing-row" id="typingRow" style="display:none; padding: 0 16px 10px;">
+      <div class="msg-av">
+        <img src="https://ui-avatars.com/api/?name=AA&background=c9a84c&color=0f0f0f&size=60&bold=true" alt="Agent">
+      </div>
+      <div class="typing-bubble">
+        <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="input-zone">
+      <div class="input-row">
+        <button class="attach-btn" id="attachBtn" aria-label="Attach file" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+          </svg>
+        </button>
+        <textarea class="msg-input" id="msgInput" placeholder="Type a message…" rows="1" aria-label="Message"></textarea>
+        <button class="emoji-btn" id="emojiBtn" aria-label="Emoji" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+            <line x1="9" y1="9" x2="9.01" y2="9" stroke-linecap="round" stroke-width="2.5"/>
+            <line x1="15" y1="9" x2="15.01" y2="9" stroke-linecap="round" stroke-width="2.5"/>
+          </svg>
+        </button>
+        <button class="send-btn" id="sendBtn" aria-label="Send message" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+      <input type="file" id="fileInput" style="display:none" accept="image/*,.pdf,.doc,.docx">
+    </div>
+
+    <div class="panel-footer">
+      <span>Powered by <em>Al Ameen Optics</em></span>
+    </div>
+  </div>
+
+  <!-- LAUNCHER ------------------------------------------ -->
+  <button class="launcher" id="launcher" aria-label="Open chat" aria-expanded="false">
+    <span class="ico ico-chat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    </span>
+    <span class="ico ico-close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </span>
+    <span class="badge" id="badge">1</span>
+  </button>
+</div>
 
 <script>
-function toggleChat() {
-    const window = document.getElementById('chatWindow');
-    window.style.display = window.style.display === 'none' ? 'flex' : 'none';
-}
+/* ═══════════════════════════════════════════════
+   WIDGET CONTROLLER — DJANGO BACKEND
+   ═══════════════════════════════════════════════ */
+(function () {
+  'use strict';
 
-function closeChat() {
-    document.getElementById('chatWindow').style.display = 'none';
-}
+  // DOM
+  const launcher    = document.getElementById('launcher');
+  const panel       = document.getElementById('panel');
+  const minBtn      = document.getElementById('minBtn');
+  const msgs        = document.getElementById('msgs');
+  const msgInput    = document.getElementById('msgInput');
+  const sendBtn     = document.getElementById('sendBtn');
+  const badge       = document.getElementById('badge');
+  const typingRow   = document.getElementById('typingRow');
+  const quickGrid   = document.getElementById('quickGrid');
+  const attachBtn   = document.getElementById('attachBtn');
+  const fileInput   = document.getElementById('fileInput');
 
-function startChat() {
-    const name = document.getElementById('guestName').value;
-    const email = document.getElementById('guestEmail').value;
-    const subject = document.getElementById('chatSubject').value;
-    const message = document.getElementById('chatMessage').value;
-    
-    if (!name || !email || !message) {
-        alert('Please fill all fields');
-        return;
+  // State
+  let isOpen         = false;
+  let conversationId = localStorage.getItem('chatConvId') || null;
+  let lastId         = 0;
+  let pollTimer      = null;
+
+  // CSRF
+  const csrf = () => {
+    const m = document.cookie.match(/csrftoken=([^;]+)/);
+    return m ? m[1] : '';
+  };
+
+  /* ── TOGGLE ─────────────────────────────────── */
+  function toggle() {
+    isOpen = !isOpen;
+    panel.classList.toggle('open', isOpen);
+    launcher.classList.toggle('open', isOpen);
+    launcher.setAttribute('aria-expanded', isOpen);
+
+    if (isOpen) {
+      badge.classList.remove('show');
+      launcher.classList.remove('ping');
+      msgInput.focus();
+      scrollBottom();
+      if (conversationId && !pollTimer) startPoll();
+    } else {
+      stopPoll();
     }
-    
-    const formData = new FormData();
-    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-    formData.append('guest_name', name);
-    formData.append('guest_email', email);
-    formData.append('subject', subject);
-    formData.append('message', message);
-    
-    fetch('{% url "chat:start_chat" %}', {
-        method: 'POST',
-        body: formData,
-        headers: {'X-Requested-With': 'XMLHttpRequest'}
+  }
+
+  launcher.addEventListener('click', toggle);
+  minBtn.addEventListener('click', toggle);
+
+  /* ── AUTO-RESIZE TEXTAREA ────────────────────── */
+  msgInput.addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+  });
+
+  /* ── BUILD BUBBLE ───────────────────────────── */
+  function mkBubble(text, mine, senderName, timeStr, isSys) {
+    if (isSys) {
+      const row = document.createElement('div');
+      row.className = 'system-msg';
+      row.innerHTML = `<span>${esc(text)}</span>`;
+      return row;
+    }
+
+    const avSrc = mine
+      ? `https://ui-avatars.com/api/?name=Me&background=1e1e1e&color=faf8f3&size=60`
+      : `https://ui-avatars.com/api/?name=AA&background=c9a84c&color=0f0f0f&size=60&bold=true`;
+
+    const row = document.createElement('div');
+    row.className = 'msg-row ' + (mine ? 'mine' : 'agent-msg');
+    row.innerHTML = `
+      <div class="msg-av"><img src="${avSrc}" alt="${esc(senderName || 'Agent')}"></div>
+      <div class="msg-body">
+        <div class="bubble">${esc(text).replace(/\n/g,'<br>')}</div>
+        <span class="msg-time">${timeStr || ''}</span>
+      </div>`;
+    return row;
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function nowTime() {
+    return new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  }
+
+  function scrollBottom() {
+    requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
+  }
+
+  /* ── START CONVERSATION ─────────────────────── */
+  function startConversation(text) {
+    const fd = new FormData();
+    fd.append('subject', 'Website Inquiry');
+    fd.append('message', text);
+    fd.append('guest_name',  localStorage.getItem('chatGuestName')  || 'Guest');
+    fd.append('guest_email', localStorage.getItem('chatGuestEmail') || '');
+    fd.append('csrfmiddlewaretoken', csrf());
+
+    return fetch('/chat/start/', {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: fd,
     })
     .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            window.location.href = data.redirect_url;
-        }
+    .then(d => {
+      if (d.success) {
+        conversationId = d.conversation_id;
+        localStorage.setItem('chatConvId', conversationId);
+        startPoll();
+      }
     });
-}
+  }
 
-function sendOfflineMessage() {
-    const name = document.getElementById('offlineName').value;
-    const email = document.getElementById('offlineEmail').value;
-    const subject = document.getElementById('offlineSubject').value;
-    const message = document.getElementById('offlineMessage').value;
-    
-    if (!name || !email || !subject || !message) {
-        alert('Please fill all fields');
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-    formData.append('name', name);
-    formData.append('email', email);
-    formData.append('subject', subject);
-    formData.append('message', message);
-    
-    fetch('{% url "chat:offline_message" %}', {
+  /* ── SEND MESSAGE ───────────────────────────── */
+  function sendMessage(text, file) {
+    text = (text || '').trim();
+    if (!text && !file) return;
+
+    msgInput.value = '';
+    msgInput.style.height = 'auto';
+
+    // Optimistic UI
+    msgs.appendChild(mkBubble(text || '📎 Attachment', true, 'You', nowTime()));
+    scrollBottom();
+    if (quickGrid) quickGrid.remove();
+
+    const doSend = () => {
+      const fd = new FormData();
+      if (text) fd.append('message', text);
+      if (file) fd.append('attachment', file);
+      fd.append('csrfmiddlewaretoken', csrf());
+
+      fetch(`/chat/conversation/${conversationId}/send/`, {
         method: 'POST',
-        body: formData,
-        headers: {'X-Requested-With': 'XMLHttpRequest'}
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: fd,
+      })
+      .then(r => r.json())
+      .then(d => { if (d.success) lastId = Math.max(lastId, d.message.id); })
+      .catch(console.error);
+    };
+
+    if (!conversationId) {
+      startConversation(text).then(doSend);
+    } else {
+      doSend();
+    }
+  }
+
+  /* ── POLL ───────────────────────────────────── */
+  function startPoll() {
+    if (pollTimer) return;
+    pollTimer = setInterval(poll, 3000);
+  }
+  function stopPoll() { clearInterval(pollTimer); pollTimer = null; }
+
+  function poll() {
+    if (!conversationId) return;
+    fetch(`/chat/conversation/${conversationId}/messages/?last_message_id=${lastId}`, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
     })
     .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            closeChat();
+    .then(d => {
+      if (!d.success || !d.messages.length) return;
+      d.messages.forEach(m => {
+        if (m.id <= lastId) return;
+        lastId = m.id;
+        if (!m.is_from_customer) {
+          msgs.appendChild(mkBubble(m.message, false, m.sender_name, m.created_at, m.message_type === 'system'));
+          scrollBottom();
+          if (!isOpen) notify();
         }
-    });
-}
+      });
+    })
+    .catch(() => {});
+  }
+
+  function notify() {
+    badge.classList.add('show');
+    launcher.classList.add('ping');
+  }
+
+  // Resume poll if returning
+  if (conversationId) startPoll();
+
+  /* ── EVENTS ─────────────────────────────────── */
+  sendBtn.addEventListener('click', () => sendMessage(msgInput.value));
+  msgInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(msgInput.value); }
+  });
+
+  // Quick options
+  document.querySelectorAll('.q-btn').forEach(b => {
+    b.addEventListener('click', () => sendMessage(b.dataset.msg));
+  });
+
+  // Attachment
+  attachBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) sendMessage('', fileInput.files[0]);
+  });
+
+  // Show badge after 6 s if chat closed
+  setTimeout(() => { if (!isOpen) notify(); }, 6000);
+
+}());
 </script>
+
+</body>
+</html>

@@ -1,1 +1,373 @@
- 
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Start a Chat — Al Ameen Optics{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:       #0f0f0f;
+  --gold:      #c9a84c;
+  --gold-soft: rgba(201,168,76,.1);
+  --ivory:     #faf8f3;
+  --ivory-dk:  #f2ede4;
+  --mist:      #ede9e1;
+  --grey:      #9a9690;
+  --online:    #3eb87a;
+  --danger:    #e05c5c;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--ivory);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Decorative background */
+body::before {
+  content: '';
+  position: fixed;
+  top: -200px; right: -200px;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -150px; left: -150px;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(15,15,15,.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.page-wrap {
+  width: 100%;
+  max-width: 960px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── LEFT PANEL ─── */
+.left-panel { padding-right: 20px; }
+
+.brand {
+  display: inline-flex; align-items: center; gap: 10px;
+  margin-bottom: 40px;
+  text-decoration: none;
+}
+.brand-mark {
+  width: 42px; height: 42px;
+  background: var(--ink);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-mark svg { width: 22px; height: 22px; color: var(--gold); }
+.brand-name { font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: -.01em; }
+
+.left-panel h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(34px, 4vw, 52px);
+  line-height: 1.1;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+.left-panel h1 em { font-style: italic; color: var(--gold); }
+
+.left-panel p {
+  font-size: 16px;
+  color: var(--grey);
+  line-height: 1.65;
+  max-width: 340px;
+  margin-bottom: 36px;
+}
+
+/* Feature list */
+.features { display: flex; flex-direction: column; gap: 14px; }
+.feat {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid var(--mist);
+}
+.feat-icon {
+  width: 38px; height: 38px; border-radius: 9px;
+  background: var(--ivory-dk);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 18px;
+}
+.feat-text { flex: 1; }
+.feat-text strong { font-size: 13.5px; font-weight: 600; display: block; margin-bottom: 2px; }
+.feat-text span   { font-size: 12px; color: var(--grey); }
+
+/* Online indicator */
+.online-strip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-radius: 20px;
+  background: rgba(62,184,122,.1);
+  border: 1px solid rgba(62,184,122,.25);
+  margin-bottom: 28px;
+}
+.online-strip .dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--online);
+  animation: blink 1.6s ease infinite;
+}
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.2;} }
+.online-strip span { font-size: 12.5px; font-weight: 500; color: #26895a; }
+
+/* ── RIGHT PANEL (FORM) ─── */
+.form-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 36px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.08), 0 2px 12px rgba(0,0,0,.04);
+  border: 1px solid var(--mist);
+}
+
+.form-card h2 {
+  font-size: 20px; font-weight: 700; margin-bottom: 6px;
+  letter-spacing: -.01em;
+}
+.form-card > p {
+  font-size: 13.5px; color: var(--grey); margin-bottom: 28px;
+}
+
+.form-group { margin-bottom: 18px; }
+.form-group label {
+  display: block; font-size: 12.5px; font-weight: 600;
+  color: var(--ink); margin-bottom: 7px; letter-spacing: .01em;
+}
+.form-group label span { color: var(--danger); margin-left: 2px; }
+
+.form-control {
+  width: 100%; padding: 11px 14px;
+  background: var(--ivory);
+  border: 1.5px solid var(--mist);
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink);
+  outline: none; transition: border-color .2s, box-shadow .2s;
+  appearance: none;
+}
+.form-control:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201,168,76,.12);
+  background: #fff;
+}
+.form-control::placeholder { color: var(--grey); }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+textarea.form-control { resize: vertical; min-height: 90px; }
+
+select.form-control {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239a9690' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+/* Error */
+.form-error {
+  background: rgba(224,92,92,.08);
+  border: 1px solid rgba(224,92,92,.25);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px; color: var(--danger);
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 8px;
+}
+.form-error svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* Submit button */
+.submit-btn {
+  width: 100%; padding: 14px;
+  background: var(--ink); border: none; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+  color: #fff; cursor: pointer; margin-top: 8px;
+  position: relative; overflow: hidden;
+  transition: transform .2s, box-shadow .2s;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.submit-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(201,168,76,.15) 0%, transparent 60%);
+}
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+.submit-btn:active { transform: translateY(0); }
+.submit-btn svg { width: 18px; height: 18px; }
+.submit-btn.loading { pointer-events: none; opacity: .7; }
+
+.divider { text-align: center; margin: 18px 0; position: relative; }
+.divider::before {
+  content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--mist);
+}
+.divider span { background: #fff; padding: 0 12px; font-size: 12px; color: var(--grey); position: relative; }
+
+.offline-link {
+  display: block; text-align: center; font-size: 13px; color: var(--grey);
+  text-decoration: none; transition: color .2s;
+}
+.offline-link:hover { color: var(--ink); }
+.offline-link span { color: var(--gold); font-weight: 600; }
+
+/* ── RESPONSIVE ─── */
+@media (max-width: 720px) {
+  .page-wrap { grid-template-columns: 1fr; gap: 36px; }
+  .left-panel { padding-right: 0; }
+  .form-row  { grid-template-columns: 1fr; }
+  body { align-items: flex-start; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+
+  <!-- Left: branding + features -->
+  <div class="left-panel">
+    <a class="brand" href="/">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="5"/><circle cx="17" cy="17" r="5"/>
+          <path d="M11 6V2M11 20v-4M6 11H2M20 11h-4"/>
+        </svg>
+      </div>
+      <span class="brand-name">Al Ameen Optics</span>
+    </a>
+
+    <div class="online-strip">
+      <span class="dot"></span>
+      <span>Support team is online</span>
+    </div>
+
+    <h1>How can we<br>help you <em>today?</em></h1>
+    <p>Our optical specialists are ready to assist with prescriptions, product questions, appointments, and everything in between.</p>
+
+    <div class="features">
+      <div class="feat">
+        <div class="feat-icon">⚡</div>
+        <div class="feat-text">
+          <strong>Instant Reply</strong>
+          <span>Average response under 2 minutes</span>
+        </div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">👁️</div>
+        <div class="feat-text">
+          <strong>Expert Team</strong>
+          <span>Certified opticians always available</span>
+        </div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🔒</div>
+        <div class="feat-text">
+          <strong>Private & Secure</strong>
+          <span>Your data stays confidential</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: form -->
+  <div class="form-card">
+    <h2>Start a conversation</h2>
+    <p>Fill in a few details and we'll connect you right away.</p>
+
+    {% if error %}
+    <div class="form-error">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'chat:start_chat' %}" id="startForm" novalidate>
+      {% csrf_token %}
+
+      {% if not user.is_authenticated %}
+      <div class="form-row">
+        <div class="form-group">
+          <label for="guest_name">Your Name <span>*</span></label>
+          <input type="text" id="guest_name" name="guest_name" class="form-control" placeholder="Ahmed Al Ameen" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="guest_email">Email Address</label>
+          <input type="email" id="guest_email" name="guest_email" class="form-control" placeholder="ahmed@example.com" autocomplete="email">
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="form-group">
+        <label for="subject">What can we help with? <span>*</span></label>
+        <select id="subject" name="subject" class="form-control" required>
+          <option value="">Choose a topic…</option>
+          <option value="General Inquiry">General Inquiry</option>
+          <option value="Track My Order">Track My Order</option>
+          <option value="Book an Eye Test">Book an Eye Test</option>
+          <option value="Prescription Help">Prescription Help</option>
+          <option value="Product Information">Product Information</option>
+          <option value="Returns & Refunds">Returns & Refunds</option>
+          <option value="Technical Support">Technical Support</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="message">Your Message <span>*</span></label>
+        <textarea id="message" name="message" class="form-control" placeholder="Describe how we can help you…" required rows="4"></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        Start Chat
+      </button>
+    </form>
+
+    <div class="divider"><span>or</span></div>
+
+    <a class="offline-link" href="{% url 'chat:offline_message' %}">
+      Team offline? <span>Leave us a message →</span>
+    </a>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('startForm').addEventListener('submit', function (e) {
+  const btn = document.getElementById('submitBtn');
+  btn.classList.add('loading');
+  btn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .8s linear infinite">
+      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+    </svg>
+    Connecting…`;
+});
+
+// Add CSS keyframe for spinner
+const style = document.createElement('style');
+style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+document.head.appendChild(style);
+</script>
+{% endblock %}

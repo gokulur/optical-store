@@ -1,0 +1,420 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agent Dashboard — Chat Support{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:        #0f0f0f;
+  --ink-mid:    #1e1e1e;
+  --gold:       #c9a84c;
+  --gold-soft:  rgba(201,168,76,.12);
+  --ivory:      #faf8f3;
+  --ivory-dark: #f2ede4;
+  --mist:       #ede9e1;
+  --warm-grey:  #9a9690;
+  --online:     #3eb87a;
+  --warning:    #e07d3c;
+  --danger:     #e05c5c;
+  --sidebar-w:  260px;
+}
+
+body { font-family: 'DM Sans', sans-serif; background: var(--ivory); color: var(--ink); }
+
+/* ── LAYOUT ──── */
+.dash { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--ink);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* ── SIDEBAR ──── */
+.sb-brand {
+  padding: 24px 22px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.sb-brand h1 {
+  font-size: 16px; font-weight: 700; color: #fff;
+  letter-spacing: -.01em;
+  display: flex; align-items: center; gap: 10px;
+}
+.sb-brand h1 span { color: var(--gold); }
+.sb-brand p { font-size: 11.5px; color: rgba(255,255,255,.4); margin-top: 4px; font-family: 'DM Mono', monospace; }
+
+.sb-status {
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.sb-status label { font-size: 10.5px; color: rgba(255,255,255,.4); font-family: 'DM Mono', monospace; display: block; margin-bottom: 8px; letter-spacing: .05em; text-transform: uppercase; }
+.status-selector {
+  display: flex; gap: 6px;
+}
+.st-btn {
+  flex: 1; padding: 7px 0;
+  font-size: 11.5px; font-weight: 500; font-family: 'DM Sans', sans-serif;
+  border-radius: 7px; border: 1.5px solid rgba(255,255,255,.1);
+  background: transparent; color: rgba(255,255,255,.55);
+  cursor: pointer; transition: all .2s; text-align: center;
+}
+.st-btn:hover { border-color: rgba(255,255,255,.3); color: #fff; }
+.st-btn.active-online  { background: rgba(62,184,122,.15); border-color: var(--online); color: var(--online); }
+.st-btn.active-away    { background: rgba(224,125,60,.15);  border-color: var(--warning); color: var(--warning); }
+.st-btn.active-offline { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.3); color: #fff; }
+
+.sb-stats { padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; }
+.sb-stats h2 { font-size: 10.5px; color: rgba(255,255,255,.4); font-family: 'DM Mono', monospace; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px; }
+
+.stat-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 14px;
+  background: rgba(255,255,255,.04);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.05);
+  cursor: pointer; transition: background .2s;
+  text-decoration: none;
+}
+.stat-row:hover { background: rgba(255,255,255,.08); }
+.stat-row.active { background: var(--gold-soft); border-color: rgba(201,168,76,.3); }
+.stat-label { font-size: 12.5px; color: rgba(255,255,255,.75); display: flex; align-items: center; gap: 8px; }
+.stat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot-open     { background: var(--online); }
+.dot-progress { background: var(--gold); }
+.dot-mine     { background: #7b8fff; }
+.dot-un       { background: var(--danger); }
+.dot-done     { background: var(--warm-grey); }
+.stat-num { font-family: 'DM Mono', monospace; font-size: 14px; color: #fff; font-weight: 500; }
+
+.sb-nav { padding: 16px 22px 22px; margin-top: auto; }
+.sb-nav a {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 9px;
+  font-size: 13px; color: rgba(255,255,255,.55);
+  text-decoration: none; transition: all .2s;
+}
+.sb-nav a:hover { background: rgba(255,255,255,.06); color: #fff; }
+.sb-nav a svg { width: 17px; height: 17px; }
+
+/* ── TOP BAR ──── */
+.topbar {
+  display: flex; align-items: center; gap: 16px;
+  padding: 18px 28px;
+  background: #fff;
+  border-bottom: 1px solid var(--mist);
+  flex-shrink: 0;
+}
+.topbar h2 { font-size: 18px; font-weight: 600; color: var(--ink); margin-right: auto; }
+
+.search-wrap {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--ivory-dark);
+  border: 1.5px solid var(--mist);
+  border-radius: 10px; padding: 8px 14px;
+  transition: border-color .2s, box-shadow .2s;
+  width: 220px;
+}
+.search-wrap:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,.1); }
+.search-wrap svg { width: 16px; height: 16px; color: var(--warm-grey); flex-shrink: 0; }
+.search-wrap input { border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--ink); outline: none; width: 100%; }
+.search-wrap input::placeholder { color: var(--warm-grey); }
+
+.filter-pill {
+  padding: 8px 14px; border-radius: 10px;
+  font-size: 12.5px; font-weight: 500; font-family: 'DM Sans', sans-serif;
+  border: 1.5px solid var(--mist);
+  background: #fff; color: var(--ink);
+  cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 6px;
+  transition: all .2s;
+}
+.filter-pill:hover  { border-color: var(--gold); background: var(--gold-soft); }
+.filter-pill.active { border-color: var(--gold); background: var(--gold-soft); color: var(--ink); }
+.filter-pill select {
+  border: none; background: transparent; font-family: 'DM Sans', sans-serif;
+  font-size: 12.5px; font-weight: 500; color: var(--ink); outline: none; cursor: pointer;
+}
+
+/* ── CONVERSATION LIST ──── */
+.conv-list { flex: 1; overflow-y: auto; padding: 20px 28px; display: flex; flex-direction: column; gap: 10px; }
+.conv-list::-webkit-scrollbar { width: 4px; }
+.conv-list::-webkit-scrollbar-thumb { background: var(--mist); border-radius: 4px; }
+
+.conv-card {
+  background: #fff;
+  border: 1.5px solid var(--mist);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex; align-items: center; gap: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .22s;
+  position: relative;
+}
+.conv-card:hover { border-color: var(--gold); transform: translateX(3px); box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+.conv-card.urgent { border-left: 3px solid var(--danger); border-left-color: var(--danger); }
+.conv-card.high   { border-left: 3px solid var(--warning); }
+
+.conv-av {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--ink); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; color: #fff; font-size: 15px; font-weight: 600;
+  font-family: 'DM Mono', monospace;
+}
+.conv-av.assigned { background: linear-gradient(135deg, var(--ink) 0%, #2d2d2d 100%); border: 2px solid var(--gold); }
+
+.conv-meta { flex: 1; min-width: 0; }
+.conv-top  { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+.conv-name { font-size: 14px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-time { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--warm-grey); white-space: nowrap; }
+
+.conv-sub  { font-size: 12.5px; color: var(--warm-grey); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-tags { display: flex; align-items: center; gap: 6px; margin-top: 7px; flex-wrap: wrap; }
+
+.tag {
+  padding: 3px 9px; border-radius: 6px;
+  font-size: 10.5px; font-weight: 600; font-family: 'DM Mono', monospace;
+  letter-spacing: .02em; white-space: nowrap;
+}
+.tag-open      { background: rgba(62,184,122,.12); color: #26895a; }
+.tag-progress  { background: rgba(201,168,76,.15); color: #8a6a1a; }
+.tag-waiting   { background: rgba(224,125,60,.12); color: #a04d15; }
+.tag-resolved  { background: rgba(154,150,144,.1); color: var(--warm-grey); }
+.tag-closed    { background: rgba(154,150,144,.08); color: var(--warm-grey); }
+.tag-priority-urgent { background: rgba(224,92,92,.12); color: #b83030; }
+.tag-priority-high   { background: rgba(224,125,60,.12); color: #a04d15; }
+.tag-priority-medium { background: rgba(201,168,76,.12); color: #8a6a1a; }
+.tag-priority-low    { background: rgba(154,150,144,.1); color: var(--warm-grey); }
+
+.unread-pip {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--danger); flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(224,92,92,.2);
+}
+
+.assigned-badge {
+  font-size: 10.5px; color: var(--warm-grey);
+  display: flex; align-items: center; gap: 4px;
+  font-family: 'DM Mono', monospace;
+}
+.assigned-badge svg { width: 12px; height: 12px; }
+
+/* ── PAGINATION ──── */
+.pagination {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 16px 28px 24px;
+}
+.page-btn {
+  padding: 7px 14px; border-radius: 8px;
+  font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif;
+  border: 1.5px solid var(--mist);
+  background: #fff; color: var(--ink);
+  cursor: pointer; text-decoration: none; transition: all .2s;
+}
+.page-btn:hover { border-color: var(--gold); }
+.page-btn.current { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+/* ── EMPTY STATE ──── */
+.empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 80px 20px; color: var(--warm-grey);
+}
+.empty svg { width: 52px; height: 52px; opacity: .35; }
+.empty p { font-size: 15px; }
+.empty span { font-size: 13px; opacity: .7; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash">
+
+  <!-- ── SIDEBAR ───────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <h1>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        Al Ameen <span>Support</span>
+      </h1>
+      <p>{{ request.user.get_full_name|default:request.user.username }}</p>
+    </div>
+
+    <div class="sb-status">
+      <label>My Status</label>
+      <div class="status-selector">
+        <button class="st-btn {% if my_status.status == 'online' %}active-online{% endif %}" data-s="online">Online</button>
+        <button class="st-btn {% if my_status.status == 'away' %}active-away{% endif %}" data-s="away">Away</button>
+        <button class="st-btn {% if my_status.status == 'offline' %}active-offline{% endif %}" data-s="offline">Off</button>
+      </div>
+    </div>
+
+    <div class="sb-stats">
+      <h2>Overview</h2>
+      <a href="?status=open" class="stat-row {% if request.GET.status == 'open' %}active{% endif %}">
+        <span class="stat-label"><span class="stat-dot dot-open"></span>Open</span>
+        <span class="stat-num">{{ stats.open }}</span>
+      </a>
+      <a href="?status=in_progress" class="stat-row {% if request.GET.status == 'in_progress' %}active{% endif %}">
+        <span class="stat-label"><span class="stat-dot dot-progress"></span>In Progress</span>
+        <span class="stat-num">{{ stats.in_progress }}</span>
+      </a>
+      <a href="?assigned_to=me" class="stat-row {% if request.GET.assigned_to == 'me' %}active{% endif %}">
+        <span class="stat-label"><span class="stat-dot dot-mine"></span>Mine</span>
+        <span class="stat-num">{{ stats.my_active }}</span>
+      </a>
+      <a href="?assigned_to=unassigned" class="stat-row {% if request.GET.assigned_to == 'unassigned' %}active{% endif %}">
+        <span class="stat-label"><span class="stat-dot dot-un"></span>Unassigned</span>
+        <span class="stat-num">{{ stats.unassigned }}</span>
+      </a>
+      <a href="?" class="stat-row">
+        <span class="stat-label"><span class="stat-dot dot-done"></span>All</span>
+        <span class="stat-num">{{ stats.total }}</span>
+      </a>
+    </div>
+
+    <nav class="sb-nav">
+      <a href="{% url 'chat:agent_dashboard' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="/admin/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Admin Panel
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ── MAIN ──────────────────────────────────── -->
+  <div class="main">
+
+    <div class="topbar">
+      <h2>Conversations</h2>
+
+      <form method="get" action="." style="display:contents">
+        {% if request.GET.status %}<input type="hidden" name="status" value="{{ request.GET.status }}">{% endif %}
+        {% if request.GET.assigned_to %}<input type="hidden" name="assigned_to" value="{{ request.GET.assigned_to }}">{% endif %}
+
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search conversations…">
+        </div>
+
+        <label class="filter-pill">
+          Priority
+          <select name="priority" onchange="this.closest('form').submit()">
+            <option value="">All</option>
+            <option value="urgent" {% if request.GET.priority == 'urgent' %}selected{% endif %}>Urgent</option>
+            <option value="high"   {% if request.GET.priority == 'high'   %}selected{% endif %}>High</option>
+            <option value="medium" {% if request.GET.priority == 'medium' %}selected{% endif %}>Medium</option>
+            <option value="low"    {% if request.GET.priority == 'low'    %}selected{% endif %}>Low</option>
+          </select>
+        </label>
+      </form>
+    </div>
+
+    <div class="conv-list">
+      {% for conv in conversations %}
+      {% with unread=conv.unread_count_for_staff %}
+      <a class="conv-card {% if conv.priority == 'urgent' %}urgent{% elif conv.priority == 'high' %}high{% endif %}"
+         href="{% url 'chat:agent_conversation' conv.conversation_id %}">
+
+        <div class="conv-av {% if conv.assigned_to %}assigned{% endif %}">
+          {{ conv.get_display_name|slice:":2"|upper }}
+        </div>
+
+        <div class="conv-meta">
+          <div class="conv-top">
+            <span class="conv-name">{{ conv.get_display_name }}</span>
+            <span class="conv-time">
+              {% if conv.last_message_time %}{{ conv.last_message_time|timesince }} ago{% else %}{{ conv.created_at|timesince }} ago{% endif %}
+            </span>
+          </div>
+          <div class="conv-sub">{{ conv.subject }}</div>
+          <div class="conv-tags">
+            <span class="tag tag-{{ conv.status }}">{{ conv.get_status_display }}</span>
+            <span class="tag tag-priority-{{ conv.priority }}">{{ conv.get_priority_display }}</span>
+            {% if conv.assigned_to %}
+            <span class="assigned-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              {{ conv.assigned_to.get_full_name|default:conv.assigned_to.username }}
+            </span>
+            {% endif %}
+            <span class="assigned-badge">{{ conv.message_count }} msg{{ conv.message_count|pluralize }}</span>
+          </div>
+        </div>
+
+        {% if unread %}<span class="unread-pip" title="{{ unread }} unread"></span>{% endif %}
+      </a>
+      {% endwith %}
+      {% empty %}
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <p>No conversations found</p>
+        <span>Try adjusting your filters</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if conversations.has_other_pages %}
+    <div class="pagination">
+      {% if conversations.has_previous %}
+      <a class="page-btn" href="?page={{ conversations.previous_page_number }}&{{ request.GET.urlencode }}">← Prev</a>
+      {% endif %}
+
+      {% for num in conversations.paginator.page_range %}
+        {% if conversations.number == num %}
+          <span class="page-btn current">{{ num }}</span>
+        {% elif num > conversations.number|add:'-3' and num < conversations.number|add:'3' %}
+          <a class="page-btn" href="?page={{ num }}&{{ request.GET.urlencode }}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+
+      {% if conversations.has_next %}
+      <a class="page-btn" href="?page={{ conversations.next_page_number }}&{{ request.GET.urlencode }}">Next →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div><!-- /main -->
+</div><!-- /dash -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── AGENT STATUS TOGGLE ──────────────────────────────
+const csrf = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+
+document.querySelectorAll('.st-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const status = btn.dataset.s;
+    try {
+      const r = await fetch("{% url 'chat:agent_status' %}", {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `status=${status}&csrfmiddlewaretoken=${csrf()}`,
+      });
+      const d = await r.json();
+      if (d.success) {
+        document.querySelectorAll('.st-btn').forEach(b => b.className = 'st-btn');
+        btn.className = `st-btn active-${status}`;
+      }
+    } catch(e) { console.error(e); }
+  });
+});
+
+// ── AUTO-REFRESH EVERY 30s ───────────────────────────
+setTimeout(() => location.reload(), 30000);
+</script>
+{% endblock %}

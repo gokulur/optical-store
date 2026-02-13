@@ -78,7 +78,7 @@ def start_chat(request):
     Supports both standard form submissions and AJAX.
     """
     if request.method != 'POST':
-        return render(request, 'chat/start_chat.html')
+        return render(request, 'start_chat.html')
 
     subject      = request.POST.get('subject', 'General Inquiry').strip() or 'General Inquiry'
     message_text = request.POST.get('message', '').strip()
@@ -133,7 +133,7 @@ def chat_conversation(request, conversation_id):
 
     messages = conversation.messages.all()
 
-    return render(request, 'chat/conversation.html', {
+    return render(request, 'conversation.html', {
         'conversation': conversation,
         'messages':     messages,
     })

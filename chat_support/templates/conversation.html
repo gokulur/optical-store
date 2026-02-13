@@ -1,1 +1,483 @@
- 
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chat {{ conversation.conversation_id }} — Al Ameen Optics{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:      #0f0f0f;
+  --gold:     #c9a84c;
+  --ivory:    #faf8f3;
+  --ivory-dk: #f2ede4;
+  --mist:     #ede9e1;
+  --grey:     #9a9690;
+  --online:   #3eb87a;
+  --danger:   #e05c5c;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--ivory);
+  color: var(--ink);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── HEADER ─── */
+.chat-header {
+  background: var(--ink);
+  padding: 16px 22px;
+  display: flex; align-items: center; gap: 14px;
+  flex-shrink: 0;
+  position: relative; overflow: hidden;
+}
+.chat-header::before {
+  content: '';
+  position: absolute; top: -40px; right: -40px;
+  width: 160px; height: 160px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,168,76,.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.h-av {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(201,168,76,.2); border: 2px solid rgba(201,168,76,.4);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold); font-weight: 700; font-size: 14px;
+  flex-shrink: 0; position: relative;
+}
+.h-dot {
+  position: absolute; bottom: 1px; right: 1px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--online); border: 2px solid var(--ink);
+  animation: pulse 2.4s ease infinite;
+}
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(62,184,122,.5); } 50% { box-shadow: 0 0 0 5px rgba(62,184,122,0); } }
+
+.h-info { flex: 1; min-width: 0; }
+.h-info h1 { font-size: 15px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.h-info p  { font-size: 12px; color: rgba(255,255,255,.55); margin-top: 3px; display: flex; align-items: center; gap: 6px; }
+.h-blink   { width: 6px; height: 6px; border-radius: 50%; background: var(--online); animation: blink 1.6s ease infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.2;} }
+
+.h-id {
+  font-size: 10.5px; font-family: 'DM Mono', monospace;
+  color: rgba(255,255,255,.35); text-align: right;
+}
+.h-status {
+  display: inline-block; padding: 4px 10px; border-radius: 6px;
+  font-size: 10.5px; font-weight: 600; font-family: 'DM Mono', monospace;
+}
+.st-open      { background: rgba(62,184,122,.2);  color: #5ee09a; }
+.st-progress  { background: rgba(201,168,76,.2);  color: var(--gold); }
+.st-waiting   { background: rgba(224,125,60,.2);  color: #f0a05a; }
+.st-resolved  { background: rgba(255,255,255,.1); color: rgba(255,255,255,.5); }
+.st-closed    { background: rgba(255,255,255,.08);color: rgba(255,255,255,.4); }
+
+/* ── MESSAGES ─── */
+.msgs-wrap {
+  flex: 1; overflow-y: auto; padding: 22px 18px;
+  display: flex; flex-direction: column; gap: 16px;
+  scroll-behavior: smooth;
+}
+.msgs-wrap::-webkit-scrollbar { width: 5px; }
+.msgs-wrap::-webkit-scrollbar-thumb { background: var(--mist); border-radius: 5px; }
+
+/* Rows */
+.msg-row        { display: flex; gap: 10px; animation: up .25s ease both; }
+@keyframes up   { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
+.msg-row.mine   { flex-direction: row-reverse; }
+
+.msg-av {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11.5px; font-weight: 700; color: #fff; align-self: flex-end;
+  font-family: 'DM Mono', monospace;
+}
+.av-agent    { background: var(--ink); border: 2px solid rgba(201,168,76,.5); }
+.av-customer { background: #7b8fff; }
+
+.msg-body { max-width: 78%; display: flex; flex-direction: column; gap: 4px; }
+.mine .msg-body { align-items: flex-end; }
+
+.bubble {
+  padding: 11px 16px; border-radius: 18px 18px 18px 4px;
+  font-size: 14px; line-height: 1.6; word-break: break-word;
+}
+.bubble-agent    { background: #fff; color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.bubble-customer { background: var(--ink); color: #fff; border-radius: 18px 18px 4px 18px; }
+.bubble-system   {
+  background: none; font-size: 11.5px; color: var(--grey);
+  font-family: 'DM Mono', monospace; padding: 3px 10px; text-align: center;
+}
+
+.msg-time { font-size: 10.5px; color: var(--grey); padding: 0 4px; }
+
+/* Date separator */
+.date-sep {
+  display: flex; align-items: center; gap: 12px;
+  padding: 4px 0;
+}
+.date-sep::before, .date-sep::after { content: ''; flex: 1; height: 1px; background: var(--mist); }
+.date-sep span { font-size: 11px; color: var(--grey); font-family: 'DM Mono', monospace; white-space: nowrap; }
+
+/* Attachments */
+.attach-img { max-width: 220px; border-radius: 12px; overflow: hidden; margin-top: 6px; display: block; }
+.attach-img img { width: 100%; display: block; }
+.attach-file {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-radius: 9px; margin-top: 6px;
+  background: var(--ivory-dk); border: 1px solid var(--mist);
+  font-size: 12.5px; color: var(--ink); text-decoration: none; transition: background .2s;
+}
+.attach-file:hover { background: var(--mist); }
+.attach-file svg { width: 16px; height: 16px; color: var(--grey); }
+
+/* Typing indicator */
+.typing-row { display: flex; gap: 10px; align-items: flex-end; }
+.typing-bubble {
+  background: #fff; padding: 12px 15px;
+  border-radius: 18px 18px 18px 4px;
+  display: flex; gap: 5px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.t-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--grey); animation: bounce 1.2s ease infinite; }
+.t-dot:nth-child(2){animation-delay:.16s;} .t-dot:nth-child(3){animation-delay:.32s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.5;}30%{transform:translateY(-7px);opacity:1;}}
+
+/* ── INPUT ZONE ─── */
+.input-zone {
+  background: #fff; border-top: 1px solid var(--mist);
+  padding: 14px 18px 18px; flex-shrink: 0;
+}
+.input-row {
+  display: flex; align-items: flex-end; gap: 8px;
+  background: var(--ivory-dk); border: 1.5px solid var(--mist);
+  border-radius: 16px; padding: 9px 11px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.input-row:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,.1); background: #fff; }
+
+.att-btn {
+  background: none; border: none; cursor: pointer;
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background .2s;
+}
+.att-btn:hover { background: var(--mist); }
+.att-btn svg { width: 18px; height: 18px; color: var(--grey); }
+
+.msg-ta {
+  flex: 1; border: none; background: transparent; outline: none; resize: none;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink);
+  min-height: 22px; max-height: 120px; line-height: 1.5; padding: 4px 2px;
+}
+.msg-ta::placeholder { color: var(--grey); }
+
+.send-btn {
+  background: var(--ink); border: none; cursor: pointer;
+  width: 36px; height: 36px; border-radius: 11px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .2s, background .2s;
+}
+.send-btn:hover  { background: #2d2d2d; transform: scale(1.07); }
+.send-btn:active { transform: scale(.94); }
+.send-btn svg { width: 16px; height: 16px; color: #fff; }
+
+/* Rating banner */
+.rating-banner {
+  background: var(--ivory-dk); border-top: 1px solid var(--mist);
+  padding: 14px 18px; text-align: center; flex-shrink: 0;
+}
+.rating-banner p { font-size: 13px; color: var(--grey); margin-bottom: 10px; }
+.stars { display: flex; gap: 8px; justify-content: center; margin-bottom: 8px; }
+.star-btn {
+  width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--mist);
+  background: #fff; font-size: 18px; cursor: pointer; transition: all .2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.star-btn:hover, .star-btn.active { border-color: var(--gold); background: var(--gold-soft, rgba(201,168,76,.1)); transform: scale(1.15); }
+.rate-thanks { font-size: 13px; color: var(--online); font-weight: 600; display: none; }
+
+/* ── RESPONSIVE ─── */
+@media (max-width: 480px) {
+  .msgs-wrap { padding: 14px 12px; }
+  .input-zone { padding: 10px 12px 14px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="chat-header">
+  <div class="h-av">
+    AA
+    <span class="h-dot"></span>
+  </div>
+  <div class="h-info">
+    <h1>Al Ameen Support</h1>
+    <p>
+      <span class="h-blink"></span>
+      {% if conversation.assigned_to %}{{ conversation.assigned_to.get_full_name|default:conversation.assigned_to.username }} is with you{% else %}Connecting you to an agent…{% endif %}
+    </p>
+  </div>
+  <div class="h-id">
+    <div>{{ conversation.conversation_id }}</div>
+    {% if conversation.status == 'open' %}
+      <span class="h-status st-open">Open</span>
+    {% elif conversation.status == 'in_progress' %}
+      <span class="h-status st-progress">Active</span>
+    {% elif conversation.status == 'waiting' %}
+      <span class="h-status st-waiting">Waiting</span>
+    {% elif conversation.status == 'resolved' %}
+      <span class="h-status st-resolved">Resolved</span>
+    {% else %}
+      <span class="h-status st-closed">Closed</span>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Messages -->
+<div class="msgs-wrap" id="msgsWrap">
+  {% for msg in messages %}
+    {% if msg.message_type == 'system' %}
+    <div class="msg-row">
+      <div class="msg-body" style="width:100%;align-items:center;">
+        <div class="bubble bubble-system">— {{ msg.message }} —</div>
+      </div>
+    </div>
+
+    {% elif msg.is_from_customer %}
+    <div class="msg-row mine">
+      <div class="msg-av av-customer">{{ conversation.get_display_name|slice:":2"|upper }}</div>
+      <div class="msg-body">
+        <div class="bubble bubble-customer">{{ msg.message }}</div>
+        {% if msg.attachment %}
+          {% if msg.message_type == 'image' %}
+            <a class="attach-img" href="{{ msg.attachment.url }}" target="_blank">
+              <img src="{{ msg.attachment.url }}" alt="Attachment">
+            </a>
+          {% else %}
+            <a class="attach-file" href="{{ msg.attachment.url }}" target="_blank">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Download attachment
+            </a>
+          {% endif %}
+        {% endif %}
+        <span class="msg-time">{{ msg.created_at|date:"H:i" }}</span>
+      </div>
+    </div>
+
+    {% else %}
+    <div class="msg-row">
+      <div class="msg-av av-agent">{{ msg.sender_name|slice:":2"|upper }}</div>
+      <div class="msg-body">
+        <div class="bubble bubble-agent">{{ msg.message }}</div>
+        {% if msg.attachment %}
+          {% if msg.message_type == 'image' %}
+            <a class="attach-img" href="{{ msg.attachment.url }}" target="_blank">
+              <img src="{{ msg.attachment.url }}" alt="Attachment">
+            </a>
+          {% else %}
+            <a class="attach-file" href="{{ msg.attachment.url }}" target="_blank">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Download attachment
+            </a>
+          {% endif %}
+        {% endif %}
+        <span class="msg-time">{{ msg.sender_name }} · {{ msg.created_at|date:"H:i" }}</span>
+      </div>
+    </div>
+    {% endif %}
+  {% empty %}
+    <div style="text-align:center;color:var(--grey);font-size:14px;margin:auto;">
+      <p style="font-size:32px;margin-bottom:10px;">💬</p>
+      <p>Your conversation has started.<br>An agent will reply shortly.</p>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Typing indicator (shown by polling) -->
+<div class="typing-row" id="typingRow" style="display:none; padding: 0 18px 10px; flex-shrink:0;">
+  <div class="msg-av av-agent">AA</div>
+  <div class="typing-bubble">
+    <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
+  </div>
+</div>
+
+<!-- Input (hide if resolved/closed) -->
+{% if conversation.status not in 'resolved,closed'|make_list or True %}
+<div class="input-zone" id="inputZone" {% if conversation.status == 'closed' %}style="display:none"{% endif %}>
+  <div class="input-row">
+    <button class="att-btn" id="attBtn" type="button" aria-label="Attach file">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+    </button>
+    <textarea class="msg-ta" id="msgTa" rows="1" placeholder="Type a message…" aria-label="Your message"></textarea>
+    <button class="send-btn" id="sendBtn" type="button" aria-label="Send message">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+  <input type="file" id="fileInput" style="display:none" accept="image/*,.pdf,.doc,.docx">
+</div>
+{% endif %}
+
+<!-- Rating (shown if resolved) -->
+{% if conversation.status == 'resolved' and not conversation.rating %}
+<div class="rating-banner" id="ratingBanner">
+  <p>How was your support experience?</p>
+  <div class="stars">
+    <button class="star-btn" data-r="1">⭐</button>
+    <button class="star-btn" data-r="2">⭐</button>
+    <button class="star-btn" data-r="3">⭐</button>
+    <button class="star-btn" data-r="4">⭐</button>
+    <button class="star-btn" data-r="5">⭐</button>
+  </div>
+  <div class="rate-thanks" id="rateThanks">Thank you for your feedback! 🙏</div>
+</div>
+{% elif conversation.rating %}
+<div class="rating-banner">
+  <p style="color:var(--online);font-weight:600;">✓ Thanks for rating this conversation ${'⭐'.repeat(conversation.rating)}</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CONV_ID = '{{ conversation.conversation_id }}';
+const csrf    = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+
+const msgsWrap = document.getElementById('msgsWrap');
+const msgTa    = document.getElementById('msgTa');
+const sendBtn  = document.getElementById('sendBtn');
+const attBtn   = document.getElementById('attBtn');
+const fileInput= document.getElementById('fileInput');
+
+let lastId = {{ messages.last.id|default:0 }};
+
+/* Scroll to bottom on load */
+function scrollBottom() { requestAnimationFrame(() => { msgsWrap.scrollTop = msgsWrap.scrollHeight; }); }
+scrollBottom();
+
+/* Auto-resize textarea */
+msgTa?.addEventListener('input', function () {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+/* ── BUILD BUBBLE ─── */
+function mkBubble(msg) {
+  const isMine = msg.is_from_customer;
+  const isSys  = msg.message_type === 'system';
+  const div    = document.createElement('div');
+
+  if (isSys) {
+    div.className = 'msg-row';
+    div.innerHTML = `
+      <div class="msg-body" style="width:100%;align-items:center;">
+        <div class="bubble bubble-system">— ${esc(msg.message)} —</div>
+      </div>`;
+  } else {
+    div.className = `msg-row ${isMine ? 'mine' : ''}`;
+    const avClass = isMine ? 'av-customer' : 'av-agent';
+    const bClass  = isMine ? 'bubble-customer' : 'bubble-agent';
+    const avText  = isMine ? '{{ conversation.get_display_name|slice:":2"|upper }}' : (msg.sender_name || 'AA').slice(0,2).toUpperCase();
+
+    let attachHtml = '';
+    if (msg.attachment_url) {
+      if (msg.message_type === 'image') {
+        attachHtml = `<a class="attach-img" href="${msg.attachment_url}" target="_blank"><img src="${msg.attachment_url}" alt="Attachment"></a>`;
+      } else {
+        attachHtml = `<a class="attach-file" href="${msg.attachment_url}" target="_blank">Download attachment</a>`;
+      }
+    }
+
+    div.innerHTML = `
+      <div class="msg-av ${avClass}">${avText}</div>
+      <div class="msg-body">
+        <div class="bubble ${bClass}">${esc(msg.message)}</div>
+        ${attachHtml}
+        <span class="msg-time">${isMine ? '' : (esc(msg.sender_name) + ' · ')}${msg.created_at}</span>
+      </div>`;
+  }
+
+  msgsWrap.appendChild(div);
+  scrollBottom();
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+/* ── SEND ─── */
+function send(text, file) {
+  text = (text || '').trim();
+  if (!text && !file) return;
+  if (msgTa) { msgTa.value = ''; msgTa.style.height = 'auto'; }
+
+  const fd = new FormData();
+  if (text) fd.append('message', text);
+  if (file) fd.append('attachment', file);
+  fd.append('csrfmiddlewaretoken', csrf());
+
+  fetch(`/chat/conversation/${CONV_ID}/send/`, {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    body: fd,
+  })
+  .then(r => r.json())
+  .then(d => { if (d.success) { mkBubble(d.message); lastId = Math.max(lastId, d.message.id); } })
+  .catch(console.error);
+}
+
+sendBtn?.addEventListener('click', () => send(msgTa?.value));
+msgTa?.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(msgTa.value); }
+});
+attBtn?.addEventListener('click', () => fileInput.click());
+fileInput?.addEventListener('change', () => { if (fileInput.files[0]) send('', fileInput.files[0]); });
+
+/* ── POLL ─── */
+setInterval(() => {
+  fetch(`/chat/conversation/${CONV_ID}/messages/?last_message_id=${lastId}`, {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (!d.success || !d.messages.length) return;
+    d.messages.forEach(m => {
+      if (m.id <= lastId) return;
+      lastId = m.id;
+      if (!m.is_from_customer) mkBubble(m);
+    });
+  })
+  .catch(() => {});
+}, 3000);
+
+/* ── RATING ─── */
+document.querySelectorAll('.star-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const rating = btn.dataset.r;
+    document.querySelectorAll('.star-btn').forEach((b, i) => {
+      b.classList.toggle('active', i < parseInt(rating));
+    });
+    const fd = new FormData();
+    fd.append('rating', rating);
+    fd.append('csrfmiddlewaretoken', csrf());
+    fetch(`/chat/conversation/${CONV_ID}/rate/`, { method: 'POST', body: fd })
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) {
+          document.querySelector('.stars').style.display = 'none';
+          document.getElementById('rateThanks').style.display = 'block';
+        }
+      });
+  });
+});
+</script>
+{% endblock %}
