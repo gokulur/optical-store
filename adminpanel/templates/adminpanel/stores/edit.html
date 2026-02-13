@@ -1,0 +1,430 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+<style>
+  .form-control:focus {
+    border-color: #b66dff;
+    box-shadow: 0 0 0 0.2rem rgba(182, 109, 255, 0.25);
+  }
+  .card { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); transition: all 0.3s ease; }
+  .btn-gradient-primary {
+    background: linear-gradient(to right, #da8cff, #9a55ff);
+    border: 0;
+    color: white;
+  }
+  .btn-gradient-primary:hover {
+    background: linear-gradient(to right, #9a55ff, #da8cff);
+    color: white;
+  }
+  .page-header {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+  }
+  .section-header {
+    background: linear-gradient(135deg, rgba(240,147,251,0.1), rgba(245,87,108,0.1));
+    border-left: 4px solid #f5576c;
+    padding: 10px 15px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 20px;
+  }
+  .hours-row { background: #f8f9fa; border-radius: 6px; padding: 10px 15px; margin-bottom: 8px; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h3 class="mb-2"><i class="mdi mdi-store-edit"></i> Edit Store Location</h3>
+          <p class="mb-0">Editing: <strong>{{ store.name }}</strong></p>
+        </div>
+        <a href="{% url 'adminpanel:store_list' %}" class="btn btn-light">
+          <i class="mdi mdi-arrow-left"></i> Back to Stores
+        </a>
+      </div>
+    </div>
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-transparent p-0 mb-4">
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:store_list' %}">Store Locations</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit: {{ store.name }}</li>
+      </ol>
+    </nav>
+
+    {% if messages %}
+    <div class="row">
+      <div class="col-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          <strong>
+            {% if message.tags == 'success' %}<i class="mdi mdi-check-circle"></i>
+            {% elif message.tags == 'error' %}<i class="mdi mdi-alert-circle"></i>
+            {% else %}<i class="mdi mdi-information"></i>{% endif %}
+          </strong>
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <form method="POST" id="storeForm">
+      {% csrf_token %}
+      <div class="row">
+
+        <!-- LEFT COLUMN -->
+        <div class="col-md-8">
+
+          <!-- Basic Info -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="section-header mb-3">
+                <h5 class="mb-0"><i class="mdi mdi-information-outline"></i> Basic Information</h5>
+              </div>
+
+              <div class="form-group">
+                <label for="name" class="font-weight-bold">Store Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-lg" id="name" name="name"
+                       value="{{ store.name }}" placeholder="e.g. Rihazain - City Center" required>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="phone" class="font-weight-bold">Phone <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="mdi mdi-phone"></i></span>
+                      </div>
+                      <input type="text" class="form-control" id="phone" name="phone"
+                             value="{{ store.phone }}" required>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="email" class="font-weight-bold">Email</label>
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="mdi mdi-email"></i></span>
+                      </div>
+                      <input type="email" class="form-control" id="email" name="email"
+                             value="{{ store.email }}">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="section-header mb-3">
+                <h5 class="mb-0"><i class="mdi mdi-map-marker"></i> Address Details</h5>
+              </div>
+
+              <div class="form-group">
+                <label for="address_line1" class="font-weight-bold">Address Line 1 <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="address_line1" name="address_line1"
+                       value="{{ store.address_line1 }}" required>
+              </div>
+
+              <div class="form-group">
+                <label for="address_line2" class="font-weight-bold">Address Line 2</label>
+                <input type="text" class="form-control" id="address_line2" name="address_line2"
+                       value="{{ store.address_line2 }}">
+              </div>
+
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label for="city" class="font-weight-bold">City <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="city" name="city"
+                           value="{{ store.city }}" required>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label for="state" class="font-weight-bold">State / Zone</label>
+                    <input type="text" class="form-control" id="state" name="state"
+                           value="{{ store.state }}">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label for="postal_code" class="font-weight-bold">Postal Code</label>
+                    <input type="text" class="form-control" id="postal_code" name="postal_code"
+                           value="{{ store.postal_code }}">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="country" class="font-weight-bold">Country <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="country" name="country"
+                       value="{{ store.country }}" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Map & Coordinates -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="section-header mb-3">
+                <h5 class="mb-0"><i class="mdi mdi-google-maps"></i> Map & Coordinates</h5>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="latitude" class="font-weight-bold">Latitude</label>
+                    <input type="number" class="form-control" id="latitude" name="latitude"
+                           value="{{ store.latitude }}" step="0.0000001">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="longitude" class="font-weight-bold">Longitude</label>
+                    <input type="number" class="form-control" id="longitude" name="longitude"
+                           value="{{ store.longitude }}" step="0.0000001">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="google_maps_url" class="font-weight-bold">Google Maps URL</label>
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="mdi mdi-link"></i></span>
+                  </div>
+                  <input type="url" class="form-control" id="google_maps_url" name="google_maps_url"
+                         value="{{ store.google_maps_url }}">
+                </div>
+                {% if store.google_maps_url %}
+                <small class="form-text">
+                  <a href="{{ store.google_maps_url }}" target="_blank" class="text-primary">
+                    <i class="mdi mdi-open-in-new"></i> View on Google Maps
+                  </a>
+                </small>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Operating Hours -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="section-header mb-3">
+                <h5 class="mb-0"><i class="mdi mdi-clock-outline"></i> Operating Hours</h5>
+              </div>
+              <small class="text-muted d-block mb-3">Toggle a day to mark it as open, then set hours in 24h format (e.g. 09:00-21:00)</small>
+
+              {% for day_key, day_label in days %}
+              <div class="hours-row d-flex align-items-center mb-2">
+                <label class="font-weight-bold text-capitalize mr-3 mb-0" style="width: 110px; min-width: 110px;">{{ day_label }}</label>
+                <div class="custom-control custom-switch mr-3">
+                  <input type="checkbox" class="custom-control-input" id="toggle_{{ day_key }}"
+                         onchange="toggleDay('{{ day_key }}')"
+                         {% if store.operating_hours|get_item:day_key %}checked{% endif %}>
+                  <label class="custom-control-label" for="toggle_{{ day_key }}"></label>
+                </div>
+                <input type="text" class="form-control form-control-sm" id="hours_{{ day_key }}" name="hours_{{ day_key }}"
+                       placeholder="09:00-21:00"
+                       value="{{ store.operating_hours|get_item:day_key }}"
+                       {% if not store.operating_hours|get_item:day_key %}disabled{% endif %}
+                       style="max-width: 160px;">
+                <span class="ml-2 small font-weight-bold {% if store.operating_hours|get_item:day_key %}text-success{% else %}text-muted{% endif %}"
+                      id="label_{{ day_key }}">
+                  {% if store.operating_hours|get_item:day_key %}Open{% else %}Closed{% endif %}
+                </span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="col-md-4">
+
+          <!-- Settings -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="section-header mb-3">
+                <h5 class="mb-0"><i class="mdi mdi-cog"></i> Settings</h5>
+              </div>
+
+              <div class="form-group">
+                <label for="display_order" class="font-weight-bold">Display Order</label>
+                <input type="number" class="form-control" id="display_order" name="display_order"
+                       value="{{ store.display_order }}" min="0">
+                <small class="form-text text-muted">Lower numbers appear first</small>
+              </div>
+
+              <div class="form-group">
+                <div class="d-flex justify-content-between align-items-center p-3 mb-2 rounded" style="background: rgba(40,167,69,0.08); border: 1px solid rgba(40,167,69,0.2);">
+                  <div>
+                    <strong>Active Store</strong>
+                    <p class="mb-0 small text-muted">Visible to customers</p>
+                  </div>
+                  <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="is_active" name="is_active"
+                           {% if store.is_active %}checked{% endif %}>
+                    <label class="custom-control-label" for="is_active"></label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="d-flex justify-content-between align-items-center p-3 mb-2 rounded" style="background: rgba(255,193,7,0.08); border: 1px solid rgba(255,193,7,0.2);">
+                  <div>
+                    <strong>Flagship Store</strong>
+                    <p class="mb-0 small text-muted">Mark as flagship location</p>
+                  </div>
+                  <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="is_flagship" name="is_flagship"
+                           {% if store.is_flagship %}checked{% endif %}>
+                    <label class="custom-control-label" for="is_flagship"></label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="d-flex justify-content-between align-items-center p-3 rounded" style="background: rgba(23,162,184,0.08); border: 1px solid rgba(23,162,184,0.2);">
+                  <div>
+                    <strong>Offers Eye Test</strong>
+                    <p class="mb-0 small text-muted">Accepts bookings</p>
+                  </div>
+                  <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="offers_eye_test" name="offers_eye_test"
+                           {% if store.offers_eye_test %}checked{% endif %}>
+                    <label class="custom-control-label" for="offers_eye_test"></label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Store Info Summary -->
+          <div class="card mb-4 border-0" style="background: linear-gradient(135deg, rgba(240,147,251,0.1), rgba(245,87,108,0.1));">
+            <div class="card-body">
+              <h6 class="font-weight-bold mb-3"><i class="mdi mdi-information text-primary"></i> Store Info</h6>
+              <table class="table table-borderless table-sm mb-0 small">
+                <tr>
+                  <td class="text-muted pl-0">Added:</td>
+                  <td class="pr-0">{{ store.created_at|date:"d M Y" }}</td>
+                </tr>
+                <tr>
+                  <td class="text-muted pl-0">Updated:</td>
+                  <td class="pr-0">{{ store.updated_at|date:"d M Y, H:i" }}</td>
+                </tr>
+                <tr>
+                  <td class="text-muted pl-0">Bookings:</td>
+                  <td class="pr-0">
+                    <a href="{% url 'adminpanel:eye_test_list' %}?location={{ store.id }}" class="text-primary">
+                      View All
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="card">
+            <div class="card-body">
+              <button type="submit" class="btn btn-gradient-primary btn-block btn-lg mb-2">
+                <i class="mdi mdi-check"></i> Update Store
+              </button>
+              <a href="{% url 'adminpanel:store_list' %}" class="btn btn-light btn-block mb-2">
+                <i class="mdi mdi-close"></i> Cancel
+              </a>
+              <hr>
+              <button type="button" class="btn btn-outline-danger btn-block btn-sm"
+                      onclick="confirmDelete('{{ store.name|escapejs }}', '{{ store.id }}')">
+                <i class="mdi mdi-delete"></i> Delete This Store
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="mdi mdi-alert"></i> Confirm Delete</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0">Are you sure you want to delete <strong id="deleteStoreName"></strong>?</p>
+        <p class="text-danger mb-0 mt-2"><small><i class="mdi mdi-alert"></i> This will also delete all associated eye test bookings. This cannot be undone!</small></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+        <form id="deleteForm" method="POST" style="display: inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">
+            <i class="mdi mdi-delete"></i> Yes, Delete Store
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleDay(day) {
+    const checkbox = document.getElementById('toggle_' + day);
+    const input = document.getElementById('hours_' + day);
+    const label = document.getElementById('label_' + day);
+
+    if (checkbox.checked) {
+      input.disabled = false;
+      if (!input.value) input.value = '09:00-21:00';
+      label.textContent = 'Open';
+      label.className = 'text-success ml-2 small font-weight-bold';
+    } else {
+      input.disabled = true;
+      label.textContent = 'Closed';
+      label.className = 'text-muted ml-2 small font-weight-bold';
+    }
+  }
+
+  function confirmDelete(name, id) {
+    document.getElementById('deleteStoreName').textContent = name;
+    var deleteUrl = "{% url 'adminpanel:store_delete' 0 %}".replace('0', id);
+    document.getElementById('deleteForm').action = deleteUrl;
+    $('#deleteModal').modal('show');
+  }
+
+  document.getElementById('storeForm').addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const city = document.getElementById('city').value.trim();
+    const country = document.getElementById('country').value.trim();
+
+    if (!name || !phone || !city || !country) {
+      e.preventDefault();
+      alert('Please fill in all required fields (Name, Phone, City, Country).');
+    }
+  });
+</script>
+{% endblock %}
