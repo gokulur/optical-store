@@ -1039,13 +1039,13 @@ def order_list(request):
     status = request.GET.get('status', '')
     payment_status = request.GET.get('payment_status', '')
     
-    orders = Order.objects.select_related('user').prefetch_related('items').order_by('-created_at')
+    orders = Order.objects.select_related('customer').prefetch_related('items').order_by('-created_at')
     
     if search:
         orders = orders.filter(
             Q(order_number__icontains=search) | 
-            Q(user__email__icontains=search) |
-            Q(user__first_name__icontains=search)
+            Q(customer__email__icontains=search) |
+            Q(customer__first_name__icontains=search)
         )
     if status:
         orders = orders.filter(status=status)
