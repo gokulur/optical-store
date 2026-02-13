@@ -1,115 +1,794 @@
 <!-- booking_confirmation.html -->
 {% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
 
-{% block title %}Booking Confirmation - Eyewear Store{% endblock %}
+{% block title %}{% trans "Booking Confirmed" %} - Al Ameen Optics{% endblock %}
 
 {% block content %}
-<div class="booking-confirmation-page">
-    <div class="container">
-        <!-- Success Message -->
-        <div class="success-header">
-            <div class="success-icon">✓</div>
-            <h1>Booking Confirmed!</h1>
-            <p>Your eye test appointment has been successfully scheduled</p>
+<style>
+/* ============================================
+   BOOKING CONFIRMATION - AL AMEEN THEME
+   ============================================ */
+
+/* Page Wrapper */
+.bookconf-page {
+    background: #f8f9fa;
+    min-height: 100vh;
+    padding: 60px 20px 90px;
+}
+
+.bookconf-inner {
+    max-width: 780px;
+    margin: 0 auto;
+}
+
+/* ============================================
+   SUCCESS HEADER
+   ============================================ */
+.bookconf-success {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.bookconf-success__ring {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 22px;
+    position: relative;
+    box-shadow: 0 0 0 12px rgba(26,26,26,0.08);
+    animation: successPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes successPop {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+.bookconf-success__ring svg {
+    width: 38px;
+    height: 38px;
+    stroke: #fff;
+    fill: none;
+    stroke-width: 2.5;
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+    animation: drawCheck 0.5s 0.35s ease forwards;
+}
+
+@keyframes drawCheck {
+    to { stroke-dashoffset: 0; }
+}
+
+.bookconf-success__badge {
+    display: inline-block;
+    background: rgba(76,175,80,0.12);
+    border: 1.5px solid rgba(76,175,80,0.35);
+    color: #2e7d32;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    animation: fadeUp 0.5s 0.5s ease both;
+}
+
+.bookconf-success__title {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 10px;
+    letter-spacing: -0.02em;
+    animation: fadeUp 0.5s 0.6s ease both;
+}
+
+.bookconf-success__sub {
+    font-size: 1rem;
+    color: #888;
+    font-weight: 400;
+    margin: 0;
+    animation: fadeUp 0.5s 0.7s ease both;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
+   BOOKING ID PILL
+   ============================================ */
+.bookconf-id-strip {
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.5s 0.8s ease both;
+}
+
+.bookconf-id-strip__left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bookconf-id-strip__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(74,144,226,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bookconf-id-strip__icon svg {
+    width: 17px;
+    height: 17px;
+    stroke: #4A90E2;
+    fill: none;
+    stroke-width: 2;
+}
+
+.bookconf-id-strip__label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.bookconf-id-strip__value {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+    font-family: monospace;
+    letter-spacing: 0.05em;
+}
+
+.bookconf-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.bookconf-status-pill::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.status-confirmed { background: rgba(76,175,80,0.2);  color: #4CAF50; }
+.status-pending   { background: rgba(255,152,0,0.2);  color: #FF9800; }
+.status-cancelled { background: rgba(200,200,200,0.2); color: #aaa;   }
+.status-completed { background: rgba(74,144,226,0.2); color: #4A90E2; }
+
+/* ============================================
+   MAIN CARD
+   ============================================ */
+.bookconf-card {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    border: 1.5px solid #f0f0f0;
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s 0.85s ease both;
+}
+
+.bookconf-card__header {
+    background: #1a1a1a;
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bookconf-card__header-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    background: rgba(74,144,226,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.bookconf-card__header-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: #4A90E2;
+    fill: none;
+    stroke-width: 2;
+}
+
+.bookconf-card__header h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+/* Info Grid */
+.bookconf-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+}
+
+.bookconf-info-item {
+    padding: 20px 28px;
+    border-right: 1px solid #f5f5f5;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background 0.2s ease;
+}
+
+.bookconf-info-item:hover { background: #fafafa; }
+
+.bookconf-info-item:nth-child(even) { border-right: none; }
+.bookconf-info-item:nth-last-child(-n+2) { border-bottom: none; }
+
+/* Full-width info items */
+.bookconf-info-item--full {
+    grid-column: 1 / -1;
+    border-right: none;
+}
+
+.bookconf-info-item__label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #bbb;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.bookconf-info-item__label svg {
+    width: 11px;
+    height: 11px;
+    stroke: #4A90E2;
+    fill: none;
+    stroke-width: 2;
+}
+
+.bookconf-info-item__value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    line-height: 1.5;
+}
+
+.bookconf-info-item__value.muted { color: #777; font-weight: 500; }
+
+/* Divider inside card */
+.bookconf-card__divider {
+    height: 1px;
+    background: #f0f0f0;
+    margin: 0;
+}
+
+/* ============================================
+   CUSTOMER INFO SECTION (inside card)
+   ============================================ */
+.bookconf-customer {
+    padding: 22px 28px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.bookconf-customer__title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #4A90E2;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin: 0 0 14px;
+}
+
+.bookconf-customer__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.bookconf-customer__item {}
+
+.bookconf-customer__item-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #bbb;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+}
+
+.bookconf-customer__item-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Notes */
+.bookconf-notes {
+    padding: 20px 28px;
+    border-top: 1px solid #f0f0f0;
+    background: #fafafa;
+}
+
+.bookconf-notes__title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #bbb;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin: 0 0 8px;
+}
+
+.bookconf-notes__text {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+    font-style: italic;
+}
+
+/* ============================================
+   NEXT STEPS CARD
+   ============================================ */
+.bookconf-nextsteps {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    border: 1.5px solid #f0f0f0;
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s 0.95s ease both;
+}
+
+.bookconf-nextsteps__header {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bookconf-nextsteps__header-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bookconf-nextsteps__header-icon svg {
+    width: 17px;
+    height: 17px;
+    stroke: #fff;
+    fill: none;
+    stroke-width: 2;
+}
+
+.bookconf-nextsteps__header h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+.bookconf-nextsteps__body {
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.bookconf-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.bookconf-step:last-child { border-bottom: none; }
+
+.bookconf-step__num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.bookconf-step__text {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.55;
+    font-weight: 500;
+    padding-top: 4px;
+}
+
+.bookconf-step__text strong { color: #1a1a1a; }
+
+/* ============================================
+   ACTION BUTTONS ROW
+   ============================================ */
+.bookconf-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    animation: fadeUp 0.5s 1.05s ease both;
+}
+
+.bookconf-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 160px;
+}
+
+.bookconf-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.5;
+    flex-shrink: 0;
+}
+
+.bookconf-btn--primary {
+    background: #1a1a1a;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(26,26,26,0.2);
+}
+
+.bookconf-btn--primary:hover {
+    background: #333;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(26,26,26,0.28);
+}
+
+.bookconf-btn--outline {
+    background: transparent;
+    color: #1a1a1a;
+    border: 1.5px solid #d8d8d8;
+}
+
+.bookconf-btn--outline:hover {
+    border-color: #1a1a1a;
+    background: #f8f8f8;
+    transform: translateY(-2px);
+}
+
+.bookconf-btn--blue {
+    background: transparent;
+    color: #4A90E2;
+    border: 1.5px solid rgba(74,144,226,0.35);
+}
+
+.bookconf-btn--blue:hover {
+    background: rgba(74,144,226,0.08);
+    border-color: #4A90E2;
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   CANCEL + SUPPORT STRIP
+   ============================================ */
+.bookconf-footer-strip {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border: 1.5px solid #f0f0f0;
+    flex-wrap: wrap;
+    animation: fadeUp 0.5s 1.1s ease both;
+}
+
+.bookconf-footer-strip__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.86rem;
+    color: #888;
+}
+
+.bookconf-footer-strip__item svg {
+    width: 16px;
+    height: 16px;
+    stroke: #ccc;
+    fill: none;
+    stroke-width: 2;
+    flex-shrink: 0;
+}
+
+.bookconf-footer-strip__item a {
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.bookconf-link-danger { color: #c62828; }
+.bookconf-link-danger:hover { color: #b71c1c; }
+
+.bookconf-link-blue { color: #4A90E2; }
+.bookconf-link-blue:hover { color: #3a7bd5; }
+
+.bookconf-footer-strip__sep {
+    width: 1px;
+    height: 28px;
+    background: #f0f0f0;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 640px) {
+    .bookconf-success__title { font-size: 1.9rem; }
+
+    .bookconf-id-strip {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .bookconf-info-grid { grid-template-columns: 1fr; }
+    .bookconf-info-item { border-right: none; }
+    .bookconf-info-item:nth-last-child(-n+2) { border-bottom: 1px solid #f5f5f5; }
+    .bookconf-info-item:last-child { border-bottom: none; }
+
+    .bookconf-customer__grid { grid-template-columns: 1fr; gap: 12px; }
+
+    .bookconf-actions { flex-direction: column; }
+    .bookconf-btn { flex: 1 1 100%; }
+
+    .bookconf-footer-strip { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .bookconf-footer-strip__sep { display: none; }
+}
+</style>
+
+<div class="bookconf-page">
+<div class="bookconf-inner">
+
+    <!-- Success Header -->
+    <div class="bookconf-success">
+        <div class="bookconf-success__ring">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
-        
-        <!-- Booking Details -->
-        <div class="booking-details-card">
-            <h2>Appointment Details</h2>
-            
-            <div class="detail-row">
-                <span class="label">Booking ID:</span>
-                <span class="value">#{{ booking.id }}</span>
+        <div class="bookconf-success__badge">{% trans "Appointment Confirmed" %}</div>
+        <h1 class="bookconf-success__title">{% trans "Booking Confirmed!" %}</h1>
+        <p class="bookconf-success__sub">{% trans "Your eye test appointment has been successfully scheduled" %}</p>
+    </div>
+
+    <!-- Booking ID Strip -->
+    <div class="bookconf-id-strip">
+        <div class="bookconf-id-strip__left">
+            <div class="bookconf-id-strip__icon">
+                <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
             </div>
-            
-            <div class="detail-row">
-                <span class="label">Status:</span>
-                <span class="value status-{{ booking.status }}">{{ booking.get_status_display }}</span>
+            <div>
+                <span class="bookconf-id-strip__label">{% trans "Booking Reference" %}</span>
+                <span class="bookconf-id-strip__value">#{{ booking.id }}</span>
             </div>
-            
-            <div class="detail-row">
-                <span class="label">Date:</span>
-                <span class="value">{{ booking.booking_date|date:"l, F j, Y" }}</span>
-            </div>
-            
-            <div class="detail-row">
-                <span class="label">Time:</span>
-                <span class="value">{{ booking.booking_time }}</span>
-            </div>
-            
-            <div class="detail-row">
-                <span class="label">Location:</span>
-                <span class="value">{{ booking.location.name }}</span>
-            </div>
-            
-            <div class="detail-address">
-                <p>{{ booking.location.address_line1 }}</p>
-                {% if booking.location.address_line2 %}
-                <p>{{ booking.location.address_line2 }}</p>
-                {% endif %}
-                <p>{{ booking.location.city }}, {{ booking.location.country }}</p>
-            </div>
-            
-            <div class="detail-row">
-                <span class="label">Contact Phone:</span>
-                <span class="value">{{ booking.location.phone }}</span>
-            </div>
-            
-            <div class="customer-info">
-                <h3>Your Information</h3>
-                <p>Name: {{ booking.customer_name }}</p>
-                <p>Phone: {{ booking.customer_phone }}</p>
-                <p>Email: {{ booking.customer_email }}</p>
-            </div>
-            
-            {% if booking.notes %}
-            <div class="booking-notes">
-                <h3>Your Notes</h3>
-                <p>{{ booking.notes }}</p>
-            </div>
-            {% endif %}
         </div>
-        
-        <!-- Next Steps -->
-        <div class="next-steps">
-            <h2>What's Next?</h2>
-            <ul>
-                <li>You will receive a confirmation email at {{ booking.customer_email }}</li>
-                <li>We will send you a reminder 24 hours before your appointment</li>
-                <li>Please arrive 10 minutes early to complete any necessary paperwork</li>
-                <li>Bring your current eyewear and any previous prescriptions</li>
-            </ul>
+        <span class="bookconf-status-pill status-{{ booking.status }}">
+            {{ booking.get_status_display }}
+        </span>
+    </div>
+
+    <!-- Appointment Details Card -->
+    <div class="bookconf-card">
+        <div class="bookconf-card__header">
+            <div class="bookconf-card__header-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <h2>{% trans "Appointment Details" %}</h2>
         </div>
-        
-        <!-- Actions -->
-        <div class="booking-actions">
-            {% if booking.location.google_maps_url %}
-            <a href="{{ booking.location.google_maps_url }}" target="_blank" class="btn btn-outline">
-                Get Directions
-            </a>
-            {% endif %}
-            
-            <a href="{% url 'content:my_bookings' %}" class="btn btn-outline">
-                View All Bookings
-            </a>
-            
-            <a href="{% url 'catalog:home' %}" class="btn btn-primary">
-                Continue Shopping
-            </a>
+
+        <div class="bookconf-info-grid">
+
+            <div class="bookconf-info-item">
+                <div class="bookconf-info-item__label">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    {% trans "Date" %}
+                </div>
+                <div class="bookconf-info-item__value">{{ booking.booking_date|date:"l, F j, Y" }}</div>
+            </div>
+
+            <div class="bookconf-info-item">
+                <div class="bookconf-info-item__label">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    {% trans "Time" %}
+                </div>
+                <div class="bookconf-info-item__value">{{ booking.booking_time }}</div>
+            </div>
+
+            <div class="bookconf-info-item">
+                <div class="bookconf-info-item__label">
+                    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    {% trans "Store" %}
+                </div>
+                <div class="bookconf-info-item__value">{{ booking.location.name }}</div>
+            </div>
+
+            <div class="bookconf-info-item">
+                <div class="bookconf-info-item__label">
+                    <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    {% trans "Store Phone" %}
+                </div>
+                <div class="bookconf-info-item__value">
+                    <a href="tel:{{ booking.location.phone }}" style="color:#1a1a1a;text-decoration:none;font-weight:700;">
+                        {{ booking.location.phone }}
+                    </a>
+                </div>
+            </div>
+
+            <div class="bookconf-info-item bookconf-info-item--full">
+                <div class="bookconf-info-item__label">
+                    <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {% trans "Address" %}
+                </div>
+                <div class="bookconf-info-item__value muted">
+                    {{ booking.location.address_line1 }}{% if booking.location.address_line2 %}, {{ booking.location.address_line2 }}{% endif %},
+                    {{ booking.location.city }}, {{ booking.location.country }}
+                </div>
+            </div>
+
+        </div><!-- /info grid -->
+
+        <!-- Customer Info -->
+        <div class="bookconf-customer">
+            <div class="bookconf-customer__title">{% trans "Your Information" %}</div>
+            <div class="bookconf-customer__grid">
+                <div class="bookconf-customer__item">
+                    <div class="bookconf-customer__item-label">{% trans "Full Name" %}</div>
+                    <div class="bookconf-customer__item-value">{{ booking.customer_name }}</div>
+                </div>
+                <div class="bookconf-customer__item">
+                    <div class="bookconf-customer__item-label">{% trans "Phone" %}</div>
+                    <div class="bookconf-customer__item-value">{{ booking.customer_phone }}</div>
+                </div>
+                <div class="bookconf-customer__item">
+                    <div class="bookconf-customer__item-label">{% trans "Email" %}</div>
+                    <div class="bookconf-customer__item-value">{{ booking.customer_email }}</div>
+                </div>
+            </div>
         </div>
-        
-        <!-- Cancel Booking -->
-        <div class="cancel-section">
-            <p>Need to cancel or reschedule?</p>
-            <a href="{% url 'content:cancel_booking' booking.id %}" class="btn-text-danger">
-                Cancel This Booking
-            </a>
+
+        {% if booking.notes %}
+        <div class="bookconf-notes">
+            <div class="bookconf-notes__title">{% trans "Your Notes" %}</div>
+            <p class="bookconf-notes__text">"{{ booking.notes }}"</p>
         </div>
-        
-        <!-- Contact Support -->
-        <div class="support-section">
-            <p>Have questions? <a href="{% url 'content:contact_us' %}">Contact our support team</a></p>
+        {% endif %}
+
+    </div><!-- /main card -->
+
+    <!-- What's Next -->
+    <div class="bookconf-nextsteps">
+        <div class="bookconf-nextsteps__header">
+            <div class="bookconf-nextsteps__header-icon">
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+            <h3>{% trans "What's Next?" %}</h3>
+        </div>
+        <div class="bookconf-nextsteps__body">
+            <div class="bookconf-step">
+                <div class="bookconf-step__num">1</div>
+                <p class="bookconf-step__text">
+                    {% trans "A confirmation email will be sent to" %} <strong>{{ booking.customer_email }}</strong>
+                </p>
+            </div>
+            <div class="bookconf-step">
+                <div class="bookconf-step__num">2</div>
+                <p class="bookconf-step__text">
+                    {% trans "We'll send you a reminder" %} <strong>{% trans "24 hours before" %}</strong> {% trans "your appointment." %}
+                </p>
+            </div>
+            <div class="bookconf-step">
+                <div class="bookconf-step__num">3</div>
+                <p class="bookconf-step__text">
+                    {% trans "Please" %} <strong>{% trans "arrive 10 minutes early" %}</strong> {% trans "to complete any necessary paperwork." %}
+                </p>
+            </div>
+            <div class="bookconf-step">
+                <div class="bookconf-step__num">4</div>
+                <p class="bookconf-step__text">
+                    {% trans "Bring your" %} <strong>{% trans "current eyewear" %}</strong> {% trans "and any" %} <strong>{% trans "previous prescriptions" %}</strong> {% trans "if available." %}
+                </p>
+            </div>
         </div>
     </div>
+
+    <!-- Actions -->
+    <div class="bookconf-actions">
+        {% if booking.location.google_maps_url %}
+        <a href="{{ booking.location.google_maps_url }}" target="_blank" rel="noopener" class="bookconf-btn bookconf-btn--outline">
+            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            {% trans "Get Directions" %}
+        </a>
+        {% endif %}
+        <a href="{% url 'content:my_bookings' %}" class="bookconf-btn bookconf-btn--blue">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            {% trans "View All Bookings" %}
+        </a>
+        <a href="{% url 'catalog:home' %}" class="bookconf-btn bookconf-btn--primary">
+            <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            {% trans "Continue Shopping" %}
+        </a>
+    </div>
+
+    <!-- Cancel + Support Footer -->
+    <div class="bookconf-footer-strip">
+        <div class="bookconf-footer-strip__item">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            {% trans "Need to cancel or reschedule?" %}
+            <a href="{% url 'content:cancel_booking' booking.id %}" class="bookconf-link-danger">
+                {% trans "Cancel This Booking" %}
+            </a>
+        </div>
+        <div class="bookconf-footer-strip__sep"></div>
+        <div class="bookconf-footer-strip__item">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            {% trans "Have questions?" %}
+            <a href="{% url 'content:contact_us' %}" class="bookconf-link-blue">
+                {% trans "Contact Support" %}
+            </a>
+        </div>
+    </div>
+
+</div>
 </div>
 {% endblock %}
