@@ -1,0 +1,370 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.page-header-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 24px 28px;
+    border-radius: 8px;
+    margin-bottom: 28px;
+    color: #fff;
+}
+.page-header-gradient h3 { margin: 0 0 4px; font-size: 1.4rem; font-weight: 700; }
+.page-header-gradient p  { margin: 0; opacity: .75; font-size: .88rem; }
+
+.stats-card {
+    border-left: 4px solid;
+    border-radius: 6px;
+    padding: 16px 18px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.07);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.stats-card.purple { border-left-color: #b66dff; }
+.stats-card.yellow { border-left-color: #fed713; }
+.stats-card.teal   { border-left-color: #1bcfb4; }
+.stats-card.red    { border-left-color: #fe7c96; }
+.stats-card .label { font-size: .78rem; color: #888; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+.stats-card .value { font-size: 1.8rem; font-weight: 700; color: #1a1a1a; line-height: 1; }
+.stats-card .icon  { font-size: 2.4rem; opacity: .18; }
+
+.filter-bar {
+    background: #fff;
+    border-radius: 8px;
+    padding: 18px 22px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.07);
+    margin-bottom: 22px;
+}
+.filter-bar .form-control  { border-radius: 6px; font-size: .88rem; }
+.filter-bar .btn           { border-radius: 6px; font-size: .88rem; font-weight: 600; }
+
+/* Search box */
+.search-box { position: relative; }
+.search-box .mdi { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 18px; }
+.search-box input { padding-left: 38px; }
+
+.badge { padding: 5px 11px; font-size: 11px; font-weight: 700; border-radius: 4px; letter-spacing: .4px; }
+
+/* Unread dot */
+.unread-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    background: #4A90E2;
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: blink 1.4s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+.priority-urgent { color: #dc3545; font-weight: 700; }
+.priority-high   { color: #fd7e14; font-weight: 600; }
+.priority-medium { color: #ffc107; font-weight: 600; }
+.priority-low    { color: #28a745; }
+
+.conv-subject {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.action-buttons .btn { padding: 4px 9px; font-size: 12px; }
+
+.empty-state { text-align: center; padding: 60px 20px; }
+.empty-state .mdi { font-size: 72px; color: #ddd; }
+.empty-state h5 { margin-top: 12px; color: #999; }
+
+.table thead th {
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #888;
+    font-weight: 700;
+    border-bottom: 2px solid #f0f0f0;
+    white-space: nowrap;
+}
+.table tbody tr { transition: background .2s; cursor: pointer; }
+.table tbody tr:hover { background: #f8f9ff; }
+
+.agent-status-form select {
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: .82rem;
+    font-weight: 600;
+    border: 2px solid #e0e0e0;
+}
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <!-- Page Header -->
+    <div class="page-header-gradient d-flex justify-content-between align-items-center">
+      <div>
+        <h3><i class="mdi mdi-chat"></i> Live Chat Management</h3>
+        <p>Manage all customer conversations and support tickets</p>
+      </div>
+      <form method="POST" action="{% url 'adminpanel:chat_agent_status' %}" class="agent-status-form" id="agentStatusForm">
+        {% csrf_token %}
+        <select name="status" onchange="document.getElementById('agentStatusForm').submit()">
+          <option value="online"  {% if agent_status == 'online'  %}selected{% endif %}>🟢 Online</option>
+          <option value="away"    {% if agent_status == 'away'    %}selected{% endif %}>🟡 Away</option>
+          <option value="busy"    {% if agent_status == 'busy'    %}selected{% endif %}>🔴 Busy</option>
+          <option value="offline" {% if agent_status == 'offline' %}selected{% endif %}>⚫ Offline</option>
+        </select>
+      </form>
+    </div>
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-transparent p-0 mb-4">
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active">Live Chat</li>
+      </ol>
+    </nav>
+
+    <!-- Messages -->
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    {% endfor %}
+
+    <!-- Stats Row -->
+    <div class="row">
+      <div class="col-md-3">
+        <div class="stats-card purple">
+          <div>
+            <div class="label">Total Chats</div>
+            <div class="value">{{ stats.total }}</div>
+          </div>
+          <i class="mdi mdi-chat-outline icon"></i>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stats-card yellow">
+          <div>
+            <div class="label">Open</div>
+            <div class="value">{{ stats.open }}</div>
+          </div>
+          <i class="mdi mdi-clock-outline icon"></i>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stats-card teal">
+          <div>
+            <div class="label">In Progress</div>
+            <div class="value">{{ stats.in_progress }}</div>
+          </div>
+          <i class="mdi mdi-chat-processing icon"></i>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stats-card red">
+          <div>
+            <div class="label">Unassigned</div>
+            <div class="value">{{ stats.unassigned }}</div>
+          </div>
+          <i class="mdi mdi-account-question icon"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <form method="GET">
+        <div class="row align-items-end">
+          <div class="col-md-3">
+            <div class="form-group mb-0">
+              <label class="font-weight-bold" style="font-size:.8rem;">Status</label>
+              <select class="form-control form-control-sm" name="status">
+                <option value="">All Status</option>
+                <option value="open"        {% if request.GET.status == 'open'        %}selected{% endif %}>Open</option>
+                <option value="in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                <option value="waiting"     {% if request.GET.status == 'waiting'     %}selected{% endif %}>Waiting</option>
+                <option value="resolved"    {% if request.GET.status == 'resolved'    %}selected{% endif %}>Resolved</option>
+                <option value="closed"      {% if request.GET.status == 'closed'      %}selected{% endif %}>Closed</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="form-group mb-0">
+              <label class="font-weight-bold" style="font-size:.8rem;">Priority</label>
+              <select class="form-control form-control-sm" name="priority">
+                <option value="">All</option>
+                <option value="urgent" {% if request.GET.priority == 'urgent' %}selected{% endif %}>Urgent</option>
+                <option value="high"   {% if request.GET.priority == 'high'   %}selected{% endif %}>High</option>
+                <option value="medium" {% if request.GET.priority == 'medium' %}selected{% endif %}>Medium</option>
+                <option value="low"    {% if request.GET.priority == 'low'    %}selected{% endif %}>Low</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="form-group mb-0">
+              <label class="font-weight-bold" style="font-size:.8rem;">Assigned</label>
+              <select class="form-control form-control-sm" name="assigned_to">
+                <option value="">All</option>
+                <option value="me"         {% if request.GET.assigned_to == 'me'         %}selected{% endif %}>Mine</option>
+                <option value="unassigned" {% if request.GET.assigned_to == 'unassigned' %}selected{% endif %}>Unassigned</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="form-group mb-0">
+              <label class="font-weight-bold" style="font-size:.8rem;">Search</label>
+              <div class="search-box">
+                <i class="mdi mdi-magnify"></i>
+                <input type="text" class="form-control form-control-sm" name="search" placeholder="Name, email, subject…" value="{{ request.GET.search }}">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary btn-sm flex-fill">
+              <i class="mdi mdi-filter"></i> Filter
+            </button>
+            <a href="{% url 'adminpanel:chat_list' %}" class="btn btn-light btn-sm">
+              <i class="mdi mdi-refresh"></i>
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Table Card -->
+    <div class="row">
+      <div class="col-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h4 class="card-title mb-0">
+                <i class="mdi mdi-table"></i> Conversations
+              </h4>
+              <small class="text-muted">{{ conversations.paginator.count }} total</small>
+            </div>
+
+            {% if conversations %}
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Assigned To</th>
+                    <th>Messages</th>
+                    <th>Started</th>
+                    <th class="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for conv in conversations %}
+                  <tr onclick="window.location='{% url 'adminpanel:chat_conversation' conv.conversation_id %}'">
+                    <td><code>{{ conv.conversation_id }}</code></td>
+                    <td>
+                      {% if conv.unread_count_for_staff > 0 %}
+                        <span class="unread-dot"></span>
+                      {% endif %}
+                      <div style="font-weight:600;">{{ conv.get_display_name }}</div>
+                      <small class="text-muted">
+                        {% if conv.user %}{{ conv.user.email }}
+                        {% elif conv.guest_email %}{{ conv.guest_email }}
+                        {% endif %}
+                      </small>
+                    </td>
+                    <td><div class="conv-subject">{{ conv.subject }}</div></td>
+                    <td>
+                      {% if conv.status == 'open'        %}<span class="badge badge-warning">Open</span>
+                      {% elif conv.status == 'in_progress'%}<span class="badge badge-info">In Progress</span>
+                      {% elif conv.status == 'waiting'   %}<span class="badge badge-secondary">Waiting</span>
+                      {% elif conv.status == 'resolved'  %}<span class="badge badge-success">Resolved</span>
+                      {% elif conv.status == 'closed'    %}<span class="badge badge-dark">Closed</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <span class="priority-{{ conv.priority }}">
+                        {{ conv.get_priority_display }}
+                      </span>
+                    </td>
+                    <td>
+                      {% if conv.assigned_to %}
+                        <span class="badge badge-primary">
+                          {{ conv.assigned_to.get_full_name|default:conv.assigned_to.username }}
+                        </span>
+                      {% else %}
+                        <span class="text-muted" style="font-size:.82rem;">Unassigned</span>
+                      {% endif %}
+                    </td>
+                    <td><span class="badge badge-light text-dark">{{ conv.message_count }}</span></td>
+                    <td><small class="text-muted">{{ conv.created_at|date:"d M, H:i" }}</small></td>
+                    <td class="text-right action-buttons" onclick="event.stopPropagation()">
+                      <a href="{% url 'adminpanel:chat_conversation' conv.conversation_id %}" class="btn btn-sm btn-outline-primary" title="Open">
+                        <i class="mdi mdi-eye"></i>
+                      </a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if conversations.has_other_pages %}
+            <nav class="mt-4">
+              <ul class="pagination justify-content-center">
+                {% if conversations.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ conversations.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                    <i class="mdi mdi-chevron-left"></i>
+                  </a>
+                </li>
+                {% endif %}
+                {% for num in conversations.paginator.page_range %}
+                  {% if conversations.number == num %}
+                  <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                  {% elif num > conversations.number|add:'-3' and num < conversations.number|add:'3' %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">{{ num }}</a>
+                  </li>
+                  {% endif %}
+                {% endfor %}
+                {% if conversations.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ conversations.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                    <i class="mdi mdi-chevron-right"></i>
+                  </a>
+                </li>
+                {% endif %}
+              </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="empty-state">
+              <i class="mdi mdi-chat-outline"></i>
+              <h5>No conversations found</h5>
+              <p class="text-muted">No chat conversations match your current filters.</p>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content-wrapper -->
+</div><!-- /main-panel -->
+
+<script>
+// Auto-refresh every 15 s to catch new chats
+setTimeout(() => location.reload(), 15000);
+</script>
+{% endblock %}

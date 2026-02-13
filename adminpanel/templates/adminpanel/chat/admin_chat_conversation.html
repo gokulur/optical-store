@@ -1,0 +1,530 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+/* ── Page header ── */
+.page-header-gradient {
+    background: linear-gradient(135deg, #f857a6 0%, #ff5858 100%);
+    padding: 20px 26px;
+    border-radius: 8px;
+    margin-bottom: 22px;
+    color: #fff;
+}
+.page-header-gradient h3 { margin: 0 0 3px; font-size: 1.25rem; font-weight: 700; }
+.page-header-gradient p  { margin: 0; opacity: .75; font-size: .84rem; }
+
+/* ── Layout ── */
+.chat-layout { display: grid; grid-template-columns: 1fr 300px; gap: 22px; align-items: start; }
+
+/* ── Chat panel ── */
+.chat-panel {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 260px);
+    min-height: 500px;
+}
+.chat-panel__header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+.chat-panel__title { font-weight: 700; font-size: 1rem; color: #1a1a1a; margin: 0; }
+.chat-panel__sub   { font-size: .78rem; color: #999; margin: 2px 0 0; }
+
+/* ── Messages area ── */
+.chat-panel__messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.chat-panel__messages::-webkit-scrollbar { width: 5px; }
+.chat-panel__messages::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+
+/* ── Message bubbles ── */
+.msg { display: flex; gap: 10px; animation: popIn .2s ease; }
+@keyframes popIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+.msg--customer { flex-direction: row; }
+.msg--staff    { flex-direction: row-reverse; }
+.msg--system   { justify-content: center; }
+
+.msg__avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.msg__avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.msg__body { max-width: 70%; display: flex; flex-direction: column; gap: 3px; }
+.msg--staff .msg__body { align-items: flex-end; }
+
+.msg__bubble {
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: .88rem;
+    line-height: 1.5;
+    color: #1a1a1a;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.07);
+}
+.msg--staff .msg__bubble {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+}
+.msg--system .msg__bubble {
+    background: #e9ecef;
+    color: #888;
+    font-size: .78rem;
+    border-radius: 30px;
+    padding: 5px 14px;
+}
+.msg__meta { font-size: .72rem; color: #bbb; padding: 0 4px; }
+
+/* ── Input area ── */
+.chat-panel__input {
+    border-top: 1px solid #f0f0f0;
+    padding: 14px 16px;
+    flex-shrink: 0;
+    background: #fff;
+    border-radius: 0 0 10px 10px;
+}
+.chat-panel__input textarea {
+    width: 100%;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: .88rem;
+    resize: none;
+    outline: none;
+    transition: border .2s;
+    font-family: inherit;
+}
+.chat-panel__input textarea:focus { border-color: #667eea; }
+.input-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.quick-replies-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.qr-chip {
+    background: #f0f0f0;
+    border: none;
+    border-radius: 14px;
+    padding: 5px 12px;
+    font-size: .75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+}
+.qr-chip:hover { background: #667eea; color: #fff; }
+
+/* ── Sidebar cards ── */
+.side-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.07);
+    overflow: hidden;
+    margin-bottom: 18px;
+}
+.side-card__header {
+    padding: 14px 18px;
+    font-size: .82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #fff;
+}
+.side-card__header.purple { background: linear-gradient(135deg, #667eea, #764ba2); }
+.side-card__header.teal   { background: linear-gradient(135deg, #1bcfb4, #17a89a); }
+.side-card__header.dark   { background: linear-gradient(135deg, #1a1a1a, #333); }
+.side-card__body { padding: 16px 18px; }
+
+.info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f5f5f5; font-size: .84rem; }
+.info-row:last-child { border-bottom: none; }
+.info-row__label { color: #999; }
+.info-row__value { font-weight: 600; color: #1a1a1a; text-align: right; max-width: 60%; }
+
+.status-select, .priority-select {
+    width: 100%;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: .84rem;
+    margin-bottom: 10px;
+    outline: none;
+}
+.status-select:focus, .priority-select:focus { border-color: #667eea; }
+
+.badge { padding: 5px 11px; font-size: 11px; font-weight: 700; border-radius: 4px; }
+.priority-urgent { color: #dc3545; font-weight: 700; }
+.priority-high   { color: #fd7e14; font-weight: 600; }
+.priority-medium { color: #ffc107; font-weight: 600; }
+.priority-low    { color: #28a745; }
+
+@media (max-width: 992px) {
+    .chat-layout { grid-template-columns: 1fr; }
+    .chat-panel  { height: 500px; }
+}
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <!-- Header -->
+    <div class="page-header-gradient d-flex justify-content-between align-items-center flex-wrap" style="gap:12px;">
+      <div>
+        <h3><i class="mdi mdi-chat-processing"></i> Conversation: {{ conversation.conversation_id }}</h3>
+        <p>{{ conversation.get_display_name }} &mdash; {{ conversation.subject }}</p>
+      </div>
+      <a href="{% url 'adminpanel:chat_list' %}" class="btn btn-light btn-sm">
+        <i class="mdi mdi-arrow-left"></i> Back to List
+      </a>
+    </div>
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-transparent p-0 mb-4">
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:chat_list' %}">Live Chat</a></li>
+        <li class="breadcrumb-item active">{{ conversation.conversation_id }}</li>
+      </ol>
+    </nav>
+
+    <div class="chat-layout">
+
+      <!-- ── LEFT: Chat panel ── -->
+      <div class="chat-panel">
+
+        <div class="chat-panel__header">
+          <div>
+            <p class="chat-panel__title">{{ conversation.get_display_name }}</p>
+            <p class="chat-panel__sub">
+              {% if conversation.status == 'open'        %}<span class="badge badge-warning">Open</span>
+              {% elif conversation.status == 'in_progress'%}<span class="badge badge-info">In Progress</span>
+              {% elif conversation.status == 'waiting'   %}<span class="badge badge-secondary">Waiting</span>
+              {% elif conversation.status == 'resolved'  %}<span class="badge badge-success">Resolved</span>
+              {% elif conversation.status == 'closed'    %}<span class="badge badge-dark">Closed</span>
+              {% endif %}
+              &nbsp;
+              <span class="priority-{{ conversation.priority }}">{{ conversation.get_priority_display }}</span>
+            </p>
+          </div>
+          <div class="d-flex gap-2">
+            {% if not conversation.assigned_to %}
+            <button class="btn btn-sm btn-outline-primary" id="assignBtn">
+              <i class="mdi mdi-account-plus"></i> Assign to Me
+            </button>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-panel__messages" id="chatMessages">
+          {% for msg in messages %}
+            {% if msg.message_type == 'system' %}
+            <div class="msg msg--system">
+              <div class="msg__bubble">{{ msg.message }}</div>
+            </div>
+            {% elif msg.is_from_customer %}
+            <div class="msg msg--customer">
+              <div class="msg__avatar">
+                <img src="https://ui-avatars.com/api/?name={{ msg.sender_name|urlencode }}&background=e0e0e0&color=333&size=32" alt="{{ msg.sender_name }}">
+              </div>
+              <div class="msg__body">
+                <div class="msg__bubble">{{ msg.message }}</div>
+                <span class="msg__meta">{{ msg.sender_name }} &middot; {{ msg.created_at|date:"d M, H:i" }}</span>
+              </div>
+            </div>
+            {% else %}
+            <div class="msg msg--staff">
+              <div class="msg__avatar">
+                <img src="https://ui-avatars.com/api/?name={{ msg.sender_name|urlencode }}&background=667eea&color=fff&size=32" alt="{{ msg.sender_name }}">
+              </div>
+              <div class="msg__body">
+                <div class="msg__bubble">{{ msg.message }}</div>
+                <span class="msg__meta">{{ msg.sender_name }} &middot; {{ msg.created_at|date:"d M, H:i" }}</span>
+              </div>
+            </div>
+            {% endif %}
+          {% empty %}
+            <div style="text-align:center;color:#ccc;padding:40px 0;">
+              <i class="mdi mdi-chat-outline" style="font-size:48px;"></i>
+              <p class="mt-2">No messages yet</p>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Input -->
+        <div class="chat-panel__input">
+          {% if quick_replies %}
+          <div class="quick-replies-row">
+            {% for qr in quick_replies %}
+            <button class="qr-chip" data-message="{{ qr.message }}" data-id="{{ qr.id }}">
+              {{ qr.title }}
+            </button>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <textarea id="msgInput" rows="3" placeholder="Type your reply… (Ctrl+Enter to send)"></textarea>
+          <div class="input-actions">
+            <small class="text-muted">Ctrl + Enter to send</small>
+            <div class="d-flex gap-2">
+              <button class="btn btn-light btn-sm" id="resolveBtn">
+                <i class="mdi mdi-check-circle-outline"></i> Resolve
+              </button>
+              <button class="btn btn-primary btn-sm" id="sendBtn">
+                <i class="mdi mdi-send"></i> Send Reply
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── RIGHT: Sidebar ── -->
+      <aside>
+
+        <!-- Customer Info -->
+        <div class="side-card">
+          <div class="side-card__header purple"><i class="mdi mdi-account"></i> Customer Info</div>
+          <div class="side-card__body">
+            <div class="info-row">
+              <span class="info-row__label">Name</span>
+              <span class="info-row__value">{{ conversation.get_display_name }}</span>
+            </div>
+            {% if conversation.user %}
+            <div class="info-row">
+              <span class="info-row__label">Email</span>
+              <span class="info-row__value" style="word-break:break-all;">{{ conversation.user.email }}</span>
+            </div>
+            {% elif conversation.guest_email %}
+            <div class="info-row">
+              <span class="info-row__label">Email</span>
+              <span class="info-row__value" style="word-break:break-all;">{{ conversation.guest_email }}</span>
+            </div>
+            {% endif %}
+            <div class="info-row">
+              <span class="info-row__label">Type</span>
+              <span class="info-row__value">
+                {% if conversation.user %}Registered{% else %}Guest{% endif %}
+              </span>
+            </div>
+            {% if conversation.ip_address %}
+            <div class="info-row">
+              <span class="info-row__label">IP</span>
+              <span class="info-row__value">{{ conversation.ip_address }}</span>
+            </div>
+            {% endif %}
+            <div class="info-row">
+              <span class="info-row__label">Started</span>
+              <span class="info-row__value">{{ conversation.created_at|date:"d M Y, H:i" }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="side-card">
+          <div class="side-card__header teal"><i class="mdi mdi-cog"></i> Actions</div>
+          <div class="side-card__body">
+            <label style="font-size:.78rem;font-weight:700;text-transform:uppercase;color:#888;letter-spacing:.06em;">Status</label>
+            <select class="status-select" id="statusSelect">
+              <option value="open"        {% if conversation.status == 'open'        %}selected{% endif %}>Open</option>
+              <option value="in_progress" {% if conversation.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+              <option value="waiting"     {% if conversation.status == 'waiting'     %}selected{% endif %}>Waiting</option>
+              <option value="resolved"    {% if conversation.status == 'resolved'    %}selected{% endif %}>Resolved</option>
+              <option value="closed"      {% if conversation.status == 'closed'      %}selected{% endif %}>Closed</option>
+            </select>
+
+            <label style="font-size:.78rem;font-weight:700;text-transform:uppercase;color:#888;letter-spacing:.06em;">Priority</label>
+            <select class="priority-select" id="prioritySelect">
+              <option value="low"    {% if conversation.priority == 'low'    %}selected{% endif %}>Low</option>
+              <option value="medium" {% if conversation.priority == 'medium' %}selected{% endif %}>Medium</option>
+              <option value="high"   {% if conversation.priority == 'high'   %}selected{% endif %}>High</option>
+              <option value="urgent" {% if conversation.priority == 'urgent' %}selected{% endif %}>Urgent</option>
+            </select>
+
+            {% if conversation.assigned_to %}
+            <div class="info-row mt-2">
+              <span class="info-row__label">Assigned to</span>
+              <span class="info-row__value">
+                <span class="badge badge-primary">
+                  {{ conversation.assigned_to.get_full_name|default:conversation.assigned_to.username }}
+                </span>
+              </span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Rating (if given) -->
+        {% if conversation.rating %}
+        <div class="side-card">
+          <div class="side-card__header dark"><i class="mdi mdi-star"></i> Customer Rating</div>
+          <div class="side-card__body text-center">
+            <div style="font-size:2rem;color:#ffc107;">
+              {% for i in "12345" %}
+                {% if forloop.counter <= conversation.rating %}⭐{% endif %}
+              {% endfor %}
+            </div>
+            {% if conversation.feedback %}
+            <p class="mt-2" style="font-size:.84rem;color:#666;">{{ conversation.feedback }}</p>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+      </aside>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const CONV_ID   = '{{ conversation.conversation_id }}';
+const CSRF      = '{{ csrf_token }}';
+const msgInput  = document.getElementById('msgInput');
+const messagesEl = document.getElementById('chatMessages');
+let lastId = {{ messages.last.id|default:0 }};
+
+// ── Helpers ─────────────────────────────────────────
+function scrollBottom() {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function showToast(msg, ok=true) {
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;top:20px;right:20px;z-index:9999;padding:12px 22px;
+        border-radius:8px;font-size:.85rem;font-weight:600;color:#fff;
+        background:${ok?'#1bcfb4':'#fe7c96'};box-shadow:0 4px 12px rgba(0,0,0,.15)`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+}
+
+function post(url, data) {
+    const fd = new FormData();
+    fd.append('csrfmiddlewaretoken', CSRF);
+    Object.entries(data).forEach(([k,v]) => fd.append(k,v));
+    return fetch(url, { method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:fd }).then(r=>r.json());
+}
+
+// ── Send Reply ────────────────────────────────────────
+function sendReply() {
+    const text = msgInput.value.trim();
+    if (!text) return;
+    document.getElementById('sendBtn').disabled = true;
+
+    post(`/chat/send/${CONV_ID}/`, { message: text })
+    .then(data => {
+        if (data.success) {
+            msgInput.value = '';
+            appendBubble(data.message);
+            lastId = data.message.id;
+        } else {
+            showToast('Failed to send', false);
+        }
+    })
+    .catch(() => showToast('Error sending message', false))
+    .finally(() => { document.getElementById('sendBtn').disabled = false; });
+}
+
+function appendBubble(msg) {
+    const isCustomer = msg.is_from_customer;
+    const div = document.createElement('div');
+    div.className = `msg msg--${isCustomer ? 'customer' : 'staff'}`;
+    const color = isCustomer ? 'e0e0e0&color=333' : '667eea&color=fff';
+    div.innerHTML = `
+      <div class="msg__avatar">
+        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(msg.sender_name)}&background=${color}&size=32">
+      </div>
+      <div class="msg__body">
+        <div class="msg__bubble">${escHtml(msg.message)}</div>
+        <span class="msg__meta">${msg.sender_name} · ${msg.created_at}</span>
+      </div>`;
+    messagesEl.appendChild(div);
+    scrollBottom();
+}
+
+function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Poll new messages ─────────────────────────────────
+setInterval(() => {
+    fetch(`/chat/messages/${CONV_ID}/?last_message_id=${lastId}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r=>r.json())
+    .then(data => {
+        if (!data.success || !data.messages.length) return;
+        data.messages.forEach(msg => {
+            if (msg.id > lastId) {
+                lastId = msg.id;
+                appendBubble(msg);
+            }
+        });
+    });
+}, 3000);
+
+// ── Assign to me ──────────────────────────────────────
+const assignBtn = document.getElementById('assignBtn');
+if (assignBtn) {
+    assignBtn.addEventListener('click', () => {
+        post(`/chat/assign/${CONV_ID}/`, {})
+        .then(data => {
+            if (data.success) { showToast('Assigned to you!'); assignBtn.remove(); }
+        });
+    });
+}
+
+// ── Resolve quick button ──────────────────────────────
+document.getElementById('resolveBtn').addEventListener('click', () => {
+    document.getElementById('statusSelect').value = 'resolved';
+    post(`/chat/status/${CONV_ID}/`, { status: 'resolved' })
+    .then(() => showToast('Marked as resolved ✓'));
+});
+
+// ── Status change ─────────────────────────────────────
+document.getElementById('statusSelect').addEventListener('change', function() {
+    post(`/chat/status/${CONV_ID}/`, { status: this.value })
+    .then(() => showToast('Status updated'));
+});
+
+// ── Priority change ───────────────────────────────────
+document.getElementById('prioritySelect').addEventListener('change', function() {
+    post(`/chat/priority/${CONV_ID}/`, { priority: this.value })
+    .then(() => showToast('Priority updated'));
+});
+
+// ── Send button & keyboard ────────────────────────────
+document.getElementById('sendBtn').addEventListener('click', sendReply);
+msgInput.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); sendReply(); }
+});
+
+// ── Quick replies ─────────────────────────────────────
+document.querySelectorAll('.qr-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+        msgInput.value = chip.dataset.message;
+        msgInput.focus();
+        // Increment usage
+        fetch(`/chat/quick-reply/${chip.dataset.id}/`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+    });
+});
+
+// ── Init ──────────────────────────────────────────────
+scrollBottom();
+</script>
+{% endblock %}

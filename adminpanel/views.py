@@ -10,6 +10,11 @@ from datetime import timedelta
 from decimal import Decimal
 from django.db import transaction, IntegrityError
 from content.models import EyeTestBooking, StoreLocation
+from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.http import require_http_methods
+from django.core.paginator import Paginator
+from django.utils import timezone
+from django.db import models
 # Models - Consolidated Imports
 from catalog.models import (
     Category, Brand, Product, ProductVariant, ProductImage,
@@ -1479,3 +1484,162 @@ def store_delete(request, store_id):
         messages.success(request, 'Store location deleted.')
         return redirect('adminpanel:store_list')
     return render(request, 'adminpanel/stores/delete_confirm.html', {'store': store})
+
+
+
+# ============================================================
+# FILE 1: Add these views to adminpanel/views.py
+# ============================================================
+
+from chat_support.models import (
+    ChatConversation, ChatMessage, ChatQuickReply, AgentStatus
+)
+from django.db.models import Count, Max
+
+# ──────────────────────────────────────────────────────────
+# Helper: get current agent status
+# ──────────────────────────────────────────────────────────
+def _agent_status(request):
+    try:
+        return AgentStatus.objects.get(agent=request.user).status
+    except AgentStatus.DoesNotExist:
+        return 'offline'
+
+
+# ──────────────────────────────────────────────────────────
+# Chat List
+# ──────────────────────────────────────────────────────────
+@staff_member_required
+def chat_list(request):
+    qs = ChatConversation.objects.select_related('user', 'assigned_to').annotate(
+        message_count=Count('messages'),
+        last_message_time=Max('messages__created_at')
+    )
+
+    # --- Filters ---
+    status = request.GET.get('status')
+    if status:
+        qs = qs.filter(status=status)
+
+    priority = request.GET.get('priority')
+    if priority:
+        qs = qs.filter(priority=priority)
+
+    assigned = request.GET.get('assigned_to')
+    if assigned == 'me':
+        qs = qs.filter(assigned_to=request.user)
+    elif assigned == 'unassigned':
+        qs = qs.filter(assigned_to__isnull=True)
+
+    search = request.GET.get('search', '').strip()
+    if search:
+        qs = qs.filter(
+            models.Q(guest_name__icontains=search) |
+            models.Q(guest_email__icontains=search) |
+            models.Q(subject__icontains=search) |
+            models.Q(user__email__icontains=search) |
+            models.Q(user__first_name__icontains=search)
+        )
+
+    qs = qs.order_by('-created_at')
+
+    paginator = Paginator(qs, 20)
+    page = paginator.get_page(request.GET.get('page', 1))
+
+    stats = {
+        'total':       ChatConversation.objects.count(),
+        'open':        ChatConversation.objects.filter(status='open').count(),
+        'in_progress': ChatConversation.objects.filter(status='in_progress').count(),
+        'unassigned':  ChatConversation.objects.filter(assigned_to__isnull=True).count(),
+    }
+
+    return render(request, 'adminpanel/chat/list.html', {
+        'conversations': page,
+        'stats':         stats,
+        'agent_status':  _agent_status(request),
+    })
+
+
+# ──────────────────────────────────────────────────────────
+# Chat Conversation Detail
+# ──────────────────────────────────────────────────────────
+@staff_member_required
+def chat_conversation(request, conversation_id):
+    conversation = get_object_or_404(ChatConversation, conversation_id=conversation_id)
+
+    # Mark customer messages as read
+    conversation.messages.filter(
+        is_from_customer=True, is_read=False
+    ).update(is_read=True, read_at=timezone.now())
+
+    messages_qs   = conversation.messages.all()
+    quick_replies = ChatQuickReply.objects.filter(is_active=True)[:10]
+
+    return render(request, 'adminpanel/chat/conversation.html', {
+        'conversation':  conversation,
+        'messages':      messages_qs,
+        'quick_replies': quick_replies,
+    })
+
+
+# ──────────────────────────────────────────────────────────
+# Agent Status Update
+# ──────────────────────────────────────────────────────────
+@staff_member_required
+@require_http_methods(["POST"])
+def chat_agent_status(request):
+    obj, _ = AgentStatus.objects.get_or_create(agent=request.user)
+    obj.status = request.POST.get('status', 'offline')
+    obj.save()
+    return redirect('adminpanel:chat_list')
+
+
+# ============================================================
+# FILE 2: Add these URL patterns to adminpanel/urls.py
+# ============================================================
+#
+# path('chat/',                            views.chat_list,         name='chat_list'),
+# path('chat/<str:conversation_id>/',      views.chat_conversation,  name='chat_conversation'),
+# path('chat/agent-status/',               views.chat_agent_status,  name='chat_agent_status'),
+#
+# NOTE: the send/messages/assign/status/priority/quick-reply endpoints
+# are already defined in chat_support/views.py and registered under /chat/
+# The admin conversation page calls those same URLs directly.
+
+
+# ============================================================
+# FILE 3: Add to adminpanel/templates/adminpanel/admin-dashboard.html
+#          inside the sidebar <ul>, after the Store Locations item
+# ============================================================
+#
+# <li class="nav-item menu-items">
+#   <a class="nav-link {% if request.resolver_match.url_name == 'chat_list' or request.resolver_match.url_name == 'chat_conversation' %}active{% endif %}"
+#      href="{% url 'adminpanel:chat_list' %}">
+#     <span class="menu-icon"><i class="mdi mdi-chat"></i></span>
+#     <span class="menu-title">Live Chat</span>
+#     {% if unread_chat_count > 0 %}
+#     <span class="badge badge-danger ml-auto">{{ unread_chat_count }}</span>
+#     {% endif %}
+#   </a>
+# </li>
+
+
+# ============================================================
+# FILE 4: Optionally — inject unread_chat_count into every
+#          admin page via a context processor.
+#          Add to adminpanel/ (create if missing)
+# ============================================================
+
+from chat_support.models import ChatMessage as CM
+
+def admin_chat_context(request):
+    """Injects unread chat count into every admin template."""
+    if request.user.is_authenticated and request.user.is_staff:
+        count = CM.objects.filter(
+            is_from_customer=True,
+            is_read=False
+        ).values('conversation').distinct().count()
+        return {'unread_chat_count': count}
+    return {'unread_chat_count': 0}
+
+ 
