@@ -100,10 +100,12 @@ def store_location_detail(request, pk):
 # Eye Test Booking
 def eye_test_booking(request):
     """Eye test booking page"""
-    locations = StoreLocation.objects.filter(
-        is_active=True,
-        offers_eye_test=True
-    ).order_by('display_order')
+    # locations = StoreLocation.objects.filter(
+    #     is_active=True,
+    #     offers_eye_test=True
+    # ).order_by('display_order')
+    locations = StoreLocation.objects.filter(is_active=True)
+
     
     if request.method == 'POST':
         # Get form data

@@ -91,4 +91,11 @@ urlpatterns = [
     path("tags/add/", views.tag_add, name="tag_add"),
     path("tags/edit/<int:tag_id>/", views.tag_edit, name="tag_edit"),
     path("tags/delete/<int:tag_id>/", views.tag_delete, name="tag_delete"),
+
+
+    #store locations
+    path('stores/', views.store_list, name='store_list'),
+    path('stores/add/', views.store_add, name='store_add'),
+    path('stores/<int:store_id>/edit/', views.store_edit, name='store_edit'),
+    path('stores/<int:store_id>/delete/', views.store_delete, name='store_delete'),
 ]

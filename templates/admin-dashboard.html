@@ -275,7 +275,7 @@
   </li>
 
 
-  
+
         <!-- Store Management -->
         <li class="nav-item menu-items">
           <a class="nav-link" data-toggle="collapse" href="#storeMenu">
@@ -287,11 +287,11 @@
           <div class="collapse" id="storeMenu">
             <ul class="nav flex-column sub-menu">
               <li class="nav-item">
-                <a class="nav-link" href=" ">All Stores</a>
+                <a class="nav-link" href="{% url 'adminpanel:store_list' %}">All Stores</a>
               </li>
 
               <li class="nav-item">
-                <a class="nav-link" href=" ">Add Store</a>
+                <a class="nav-link" href="{% url 'adminpanel:store_add' %}">Add Store</a>
               </li>
             </ul>
           </div>
