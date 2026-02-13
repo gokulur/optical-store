@@ -1,288 +1,1352 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
 
-{% block title %}Book Eye Test - Eyewear Store{% endblock %}
+{% block title %}Book Free Eye Test - Al Ameen Optics{% endblock %}
 
 {% block content %}
-<div class="eye-test-booking-page">
-    <!-- Hero Section -->
-    <div class="hero-section">
-        <h1>Book Your Free Eye Test</h1>
-        <p>Schedule a comprehensive eye examination with our expert optometrists</p>
+<style>
+/* ============================================
+   EYE TEST BOOKING PAGE - AL AMEEN THEME
+   ============================================ */
+
+/* Hero */
+.eyetest-hero {
+    position: relative;
+    height: 420px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0d0d0d;
+}
+
+.eyetest-hero__bg {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(135deg, rgba(74,144,226,0.18) 0%, rgba(26,26,26,0.92) 60%),
+        url('https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=1400&h=500&fit=crop') center/cover no-repeat;
+    transform: scale(1.04);
+    animation: heroZoom 12s ease-in-out infinite alternate;
+}
+
+@keyframes heroZoom {
+    from { transform: scale(1.04); }
+    to   { transform: scale(1.1); }
+}
+
+.eyetest-hero__content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 0 20px;
+}
+
+.eyetest-hero__badge {
+    display: inline-block;
+    background: rgba(74,144,226,0.22);
+    border: 1.5px solid rgba(74,144,226,0.5);
+    color: #4A90E2;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 7px 20px;
+    border-radius: 30px;
+    margin-bottom: 22px;
+    backdrop-filter: blur(8px);
+}
+
+.eyetest-hero__title {
+    font-size: 3.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+}
+
+.eyetest-hero__title span {
+    color: #4A90E2;
+}
+
+.eyetest-hero__subtitle {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.72);
+    font-weight: 300;
+    letter-spacing: 0.03em;
+    margin: 0;
+}
+
+/* ============================================
+   BENEFITS BAR
+   ============================================ */
+.eyetest-benefits-bar {
+    background: #1a1a1a;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.eyetest-benefits-bar__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+}
+
+.eyetest-benefit-pill {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 22px 28px;
+    border-right: 1px solid #2a2a2a;
+    transition: background 0.3s ease;
+}
+
+.eyetest-benefit-pill:last-child { border-right: none; }
+
+.eyetest-benefit-pill:hover { background: #222; }
+
+.eyetest-benefit-pill__icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(74,144,226,0.12);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.eyetest-benefit-pill__icon svg {
+    width: 20px;
+    height: 20px;
+    color: #4A90E2;
+    stroke: #4A90E2;
+    fill: none;
+    stroke-width: 2;
+}
+
+.eyetest-benefit-pill__text strong {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 2px;
+}
+
+.eyetest-benefit-pill__text span {
+    font-size: 0.75rem;
+    color: #888;
+    font-weight: 400;
+}
+
+/* ============================================
+   MAIN LAYOUT
+   ============================================ */
+.eyetest-main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 70px 20px 90px;
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 50px;
+    align-items: start;
+}
+
+/* ============================================
+   BOOKING FORM CARD
+   ============================================ */
+.eyetest-form-card {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.10);
+}
+
+.eyetest-form-card__header {
+    background: #1a1a1a;
+    padding: 28px 32px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.eyetest-form-card__header-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(74,144,226,0.18);
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.eyetest-form-card__header-icon svg {
+    width: 22px;
+    height: 22px;
+    color: #4A90E2;
+    stroke: #4A90E2;
+    fill: none;
+    stroke-width: 2;
+}
+
+.eyetest-form-card__header-text h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 3px;
+}
+
+.eyetest-form-card__header-text p {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.55);
+    margin: 0;
+}
+
+/* Step Progress */
+.eyetest-steps-progress {
+    display: flex;
+    align-items: center;
+    padding: 22px 32px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #efefef;
+    gap: 0;
+}
+
+.eyetest-step-dot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    position: relative;
+    cursor: default;
+}
+
+.eyetest-step-dot::after {
+    content: '';
+    position: absolute;
+    top: 16px;
+    left: 55%;
+    width: 90%;
+    height: 2px;
+    background: #e0e0e0;
+    z-index: 0;
+    transition: background 0.4s ease;
+}
+
+.eyetest-step-dot:last-child::after { display: none; }
+
+.eyetest-step-dot__circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #999;
+    position: relative;
+    z-index: 1;
+    transition: all 0.4s ease;
+    border: 2.5px solid #e0e0e0;
+}
+
+.eyetest-step-dot.active .eyetest-step-dot__circle {
+    background: #1a1a1a;
+    border-color: #1a1a1a;
+    color: #ffffff;
+}
+
+.eyetest-step-dot.done .eyetest-step-dot__circle {
+    background: #4A90E2;
+    border-color: #4A90E2;
+    color: #fff;
+}
+
+.eyetest-step-dot.done::after { background: #4A90E2; }
+
+.eyetest-step-dot__label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #bbb;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.eyetest-step-dot.active .eyetest-step-dot__label { color: #1a1a1a; }
+.eyetest-step-dot.done .eyetest-step-dot__label   { color: #4A90E2; }
+
+/* Form Steps */
+.eyetest-form-body {
+    padding: 36px 32px;
+}
+
+.eyetest-form-step { display: none; }
+.eyetest-form-step.active { display: block; }
+
+.eyetest-step-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 28px;
+    padding-bottom: 16px;
+    border-bottom: 1.5px solid #f0f0f0;
+}
+
+/* Form Groups */
+.eyetest-form-group {
+    margin-bottom: 22px;
+}
+
+.eyetest-form-group label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+.eyetest-form-group label .required-star {
+    color: #4A90E2;
+    margin-left: 2px;
+}
+
+.eyetest-form-group input,
+.eyetest-form-group select,
+.eyetest-form-group textarea {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 9px;
+    font-size: 0.92rem;
+    color: #1a1a1a;
+    background: #fafafa;
+    transition: all 0.3s ease;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+}
+
+.eyetest-form-group select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 42px;
+}
+
+.eyetest-form-group input:focus,
+.eyetest-form-group select:focus,
+.eyetest-form-group textarea:focus {
+    border-color: #1a1a1a;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(26,26,26,0.07);
+}
+
+.eyetest-form-group input.error,
+.eyetest-form-group select.error {
+    border-color: #ff3b30;
+    background: #fff8f7;
+}
+
+.eyetest-form-group textarea { resize: vertical; min-height: 100px; }
+
+.eyetest-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Location Details Box */
+.eyetest-location-box {
+    background: #f8f9fa;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-top: 14px;
+    display: none;
+    animation: fadeSlideDown 0.3s ease;
+}
+
+@keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.eyetest-location-box h4 {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #4A90E2;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0 0 10px;
+}
+
+.eyetest-location-box p {
+    font-size: 0.86rem;
+    color: #555;
+    margin: 0 0 5px;
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+}
+
+.eyetest-location-box p svg {
+    width: 14px;
+    height: 14px;
+    stroke: #4A90E2;
+    fill: none;
+    stroke-width: 2;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* Time Slots Grid */
+.eyetest-timeslot-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.eyetest-timeslot {
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px 6px;
+    text-align: center;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: #fafafa;
+}
+
+.eyetest-timeslot:hover {
+    border-color: #1a1a1a;
+    color: #1a1a1a;
+    background: #f5f5f5;
+    transform: translateY(-2px);
+}
+
+.eyetest-timeslot.selected {
+    background: #1a1a1a;
+    border-color: #1a1a1a;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26,26,26,0.2);
+}
+
+.eyetest-timeslot.unavailable {
+    opacity: 0.38;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#booking_time_hidden { display: none; }
+
+/* Booking Summary */
+.eyetest-summary-box {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1.5px solid #efefef;
+}
+
+.eyetest-summary-box h4 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #4A90E2;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0 0 14px;
+}
+
+.eyetest-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 7px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.88rem;
+}
+
+.eyetest-summary-row:last-child { border-bottom: none; }
+
+.eyetest-summary-row span:first-child { color: #888; font-weight: 500; }
+.eyetest-summary-row span:last-child  { color: #1a1a1a; font-weight: 700; text-align: right; max-width: 60%; }
+
+/* Form Actions */
+.eyetest-form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+}
+
+.eyetest-btn {
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.eyetest-btn--primary {
+    flex: 1;
+    justify-content: center;
+    background: #1a1a1a;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(26,26,26,0.2);
+}
+
+.eyetest-btn--primary:hover {
+    background: #333;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(26,26,26,0.28);
+}
+
+.eyetest-btn--secondary {
+    background: #f0f0f0;
+    color: #1a1a1a;
+    border: 1.5px solid #e0e0e0;
+}
+
+.eyetest-btn--secondary:hover {
+    background: #e8e8e8;
+    transform: translateY(-2px);
+}
+
+.eyetest-btn--primary.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+/* Messages */
+.eyetest-messages {
+    margin-bottom: 20px;
+}
+
+.eyetest-alert {
+    padding: 13px 18px;
+    border-radius: 9px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.eyetest-alert--success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+.eyetest-alert--error {
+    background: #fff3f3;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+/* ============================================
+   SIDEBAR
+   ============================================ */
+.eyetest-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Info Card */
+.eyetest-info-card {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.eyetest-info-card__header {
+    padding: 20px 24px;
+    background: #1a1a1a;
+}
+
+.eyetest-info-card__header h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+.eyetest-info-card__body { padding: 20px 24px; }
+
+/* What to Expect */
+.eyetest-timeline { display: flex; flex-direction: column; gap: 0; }
+
+.eyetest-timeline-item {
+    display: flex;
+    gap: 16px;
+    padding-bottom: 20px;
+    position: relative;
+}
+
+.eyetest-timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 34px;
+    bottom: 0;
+    width: 2px;
+    background: #f0f0f0;
+}
+
+.eyetest-timeline-item:last-child { padding-bottom: 0; }
+.eyetest-timeline-item:last-child::before { display: none; }
+
+.eyetest-timeline-item__num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.eyetest-timeline-item__content h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 6px 0 4px;
+}
+
+.eyetest-timeline-item__content p {
+    font-size: 0.82rem;
+    color: #777;
+    margin: 0;
+    line-height: 1.55;
+}
+
+/* FAQ Accordion */
+.eyetest-faq-item {
+    border-bottom: 1px solid #f0f0f0;
+    overflow: hidden;
+}
+
+.eyetest-faq-item:last-child { border-bottom: none; }
+
+.eyetest-faq-item__q {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    gap: 12px;
+    user-select: none;
+    transition: color 0.3s ease;
+}
+
+.eyetest-faq-item__q:hover { color: #4A90E2; }
+
+.eyetest-faq-item__q svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.5;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.eyetest-faq-item.open .eyetest-faq-item__q svg { transform: rotate(180deg); }
+
+.eyetest-faq-item__a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+}
+
+.eyetest-faq-item.open .eyetest-faq-item__a { max-height: 200px; }
+
+.eyetest-faq-item__a p {
+    font-size: 0.83rem;
+    color: #777;
+    line-height: 1.6;
+    padding-bottom: 14px;
+    margin: 0;
+}
+
+/* CTA Card */
+.eyetest-cta-card {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+    border-radius: 16px;
+    padding: 28px 24px;
+    text-align: center;
+}
+
+.eyetest-cta-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 8px;
+}
+
+.eyetest-cta-card p {
+    font-size: 0.84rem;
+    color: rgba(255,255,255,0.6);
+    margin: 0 0 20px;
+    line-height: 1.55;
+}
+
+.eyetest-cta-card a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #4A90E2;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.3s ease;
+}
+
+.eyetest-cta-card a:hover {
+    background: #3a7bd5;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(74,144,226,0.35);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1100px) {
+    .eyetest-main {
+        grid-template-columns: 1fr;
+        gap: 36px;
+        max-width: 700px;
+    }
+
+    .eyetest-sidebar {
+        grid-template-columns: repeat(2, 1fr);
+        display: grid;
+    }
+
+    .eyetest-cta-card { grid-column: 1 / -1; }
+}
+
+@media (max-width: 768px) {
+    .eyetest-hero { height: 320px; }
+    .eyetest-hero__title { font-size: 2.6rem; }
+
+    .eyetest-benefits-bar__inner {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .eyetest-benefit-pill:nth-child(2) { border-right: none; }
+    .eyetest-benefit-pill:nth-child(3) { border-top: 1px solid #2a2a2a; }
+    .eyetest-benefit-pill:nth-child(4) { border-top: 1px solid #2a2a2a; border-right: none; }
+
+    .eyetest-form-body { padding: 24px 20px; }
+    .eyetest-form-card__header { padding: 22px 20px; }
+
+    .eyetest-form-row { grid-template-columns: 1fr; }
+
+    .eyetest-timeslot-grid { grid-template-columns: repeat(3, 1fr); }
+
+    .eyetest-sidebar { display: flex; flex-direction: column; }
+}
+
+@media (max-width: 480px) {
+    .eyetest-hero__title { font-size: 2rem; }
+    .eyetest-hero__subtitle { font-size: 0.95rem; }
+
+    .eyetest-benefits-bar__inner { grid-template-columns: 1fr; }
+    .eyetest-benefit-pill { border-right: none !important; border-top: 1px solid #2a2a2a; }
+    .eyetest-benefit-pill:first-child { border-top: none; }
+
+    .eyetest-steps-progress { padding: 16px 14px; }
+    .eyetest-step-dot__label { display: none; }
+
+    .eyetest-timeslot-grid { grid-template-columns: repeat(3, 1fr); }
+
+    .eyetest-form-actions { flex-direction: column; }
+    .eyetest-btn--secondary { order: 2; }
+    .eyetest-btn--primary { order: 1; }
+}
+</style>
+
+<!-- Hero -->
+<div class="eyetest-hero">
+    <div class="eyetest-hero__bg"></div>
+    <div class="eyetest-hero__content">
+        <div class="eyetest-hero__badge">{% trans "Complimentary Service" %}</div>
+        <h1 class="eyetest-hero__title">{% trans "Book Your" %} <span>{% trans "Free Eye Test" %}</span></h1>
+        <p class="eyetest-hero__subtitle">{% trans "Comprehensive eye examination by certified optometrists — no obligation" %}</p>
     </div>
-    
-    <div class="booking-content">
-        <div class="container">
-            <!-- Benefits Section -->
-            <div class="benefits-section">
-                <h2>Why Get an Eye Test?</h2>
-                <div class="benefits-grid">
-                    <div class="benefit-item">
-                        <h3>Professional Care</h3>
-                        <p>Experienced optometrists using state-of-the-art equipment</p>
-                    </div>
-                    <div class="benefit-item">
-                        <h3>Comprehensive Exam</h3>
-                        <p>Complete vision and eye health assessment</p>
-                    </div>
-                    <div class="benefit-item">
-                        <h3>Free Service</h3>
-                        <p>Complimentary eye test with no obligations</p>
-                    </div>
-                    <div class="benefit-item">
-                        <h3>Expert Advice</h3>
-                        <p>Personalized recommendations for your vision needs</p>
-                    </div>
-                </div>
+</div>
+
+<!-- Benefits Bar -->
+<div class="eyetest-benefits-bar">
+    <div class="eyetest-benefits-bar__inner">
+        <div class="eyetest-benefit-pill">
+            <div class="eyetest-benefit-pill__icon">
+                <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             </div>
-            
-            <!-- Booking Form -->
-            <div class="booking-form-section">
-                <h2>Schedule Your Appointment</h2>
-                
-                {% if messages %}
-                <div class="messages">
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}">
-                        {{ message }}
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
-                <form method="post" action="{% url 'content:eye_test_booking' %}" id="bookingForm">
-                    {% csrf_token %}
-                    
-                    <!-- Step 1: Select Location -->
-                    <div class="form-step" id="step1">
-                        <h3>Step 1: Select Location</h3>
-                        
-                        <div class="form-group">
-                            <label for="location">Choose Store Location *</label>
-                            <select name="location" id="location" required onchange="loadLocationDetails()">
-                                <option value="">-- Select a location --</option>
-                                {% for location in locations %}
-                                <option value="{{ location.id }}">{{ location.name }} - {{ location.city }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
-                        <div id="locationDetails" class="location-details" style="display:none;">
-                            <h4>Location Details</h4>
-                            <p id="locationAddress"></p>
-                            <p id="locationPhone"></p>
-                            <div id="locationHours"></div>
-                        </div>
-                        
-                        <button type="button" class="btn btn-next" onclick="nextStep(2)">Next</button>
-                    </div>
-                    
-                    <!-- Step 2: Select Date & Time -->
-                    <div class="form-step" id="step2" style="display:none;">
-                        <h3>Step 2: Select Date & Time</h3>
-                        
-                        <div class="form-group">
-                            <label for="booking_date">Preferred Date *</label>
-                            <input type="date" name="booking_date" id="booking_date" required 
-                                   min="{{ today|date:'Y-m-d' }}" onchange="loadAvailableTimes()">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="booking_time">Preferred Time *</label>
-                            <select name="booking_time" id="booking_time" required>
-                                <option value="">-- Select date first --</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-back" onclick="prevStep(1)">Back</button>
-                            <button type="button" class="btn btn-next" onclick="nextStep(3)">Next</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 3: Personal Information -->
-                    <div class="form-step" id="step3" style="display:none;">
-                        <h3>Step 3: Your Information</h3>
-                        
-                        <div class="form-group">
-                            <label for="customer_name">Full Name *</label>
-                            <input type="text" name="customer_name" id="customer_name" required
-                                   {% if user.is_authenticated %}value="{{ user.get_full_name }}"{% endif %}>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="customer_phone">Phone Number *</label>
-                            <input type="tel" name="customer_phone" id="customer_phone" required
-                                   {% if user.is_authenticated and user.phone %}value="{{ user.phone }}"{% endif %}>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="customer_email">Email Address *</label>
-                            <input type="email" name="customer_email" id="customer_email" required
-                                   {% if user.is_authenticated %}value="{{ user.email }}"{% endif %}>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="notes">Additional Notes (Optional)</label>
-                            <textarea name="notes" id="notes" rows="4" 
-                                      placeholder="Any special requirements or concerns?"></textarea>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-back" onclick="prevStep(2)">Back</button>
-                            <button type="submit" class="btn btn-primary">Confirm Booking</button>
-                        </div>
-                    </div>
-                </form>
+            <div class="eyetest-benefit-pill__text">
+                <strong>{% trans "100% Free" %}</strong>
+                <span>{% trans "No hidden charges" %}</span>
             </div>
-            
-            <!-- What to Expect -->
-            <div class="what-to-expect">
-                <h2>What to Expect</h2>
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <h3>1. Arrival</h3>
-                        <p>Check in at the reception and complete a brief questionnaire about your vision history</p>
-                    </div>
-                    <div class="timeline-item">
-                        <h3>2. Examination</h3>
-                        <p>Our optometrist will conduct a comprehensive eye test, including vision acuity and eye health checks</p>
-                    </div>
-                    <div class="timeline-item">
-                        <h3>3. Consultation</h3>
-                        <p>Discuss your results and receive personalized recommendations for eyewear or treatment</p>
-                    </div>
-                    <div class="timeline-item">
-                        <h3>4. Selection</h3>
-                        <p>Browse our collection and get expert help choosing the perfect frames (optional)</p>
-                    </div>
-                </div>
+        </div>
+        <div class="eyetest-benefit-pill">
+            <div class="eyetest-benefit-pill__icon">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
             </div>
-            
-            <!-- FAQ -->
-            <div class="faq-section">
-                <h2>Frequently Asked Questions</h2>
-                
-                <div class="faq-item">
-                    <h3>How long does an eye test take?</h3>
-                    <p>A comprehensive eye test typically takes 30-45 minutes.</p>
-                </div>
-                
-                <div class="faq-item">
-                    <h3>Is the eye test really free?</h3>
-                    <p>Yes! We offer complimentary eye tests with no obligation to purchase.</p>
-                </div>
-                
-                <div class="faq-item">
-                    <h3>What should I bring?</h3>
-                    <p>Please bring your current eyewear (if any) and any previous prescriptions.</p>
-                </div>
-                
-                <div class="faq-item">
-                    <h3>Can I cancel or reschedule?</h3>
-                    <p>Yes, you can cancel or reschedule your appointment up to 24 hours in advance.</p>
-                </div>
+            <div class="eyetest-benefit-pill__text">
+                <strong>{% trans "Expert Optometrists" %}</strong>
+                <span>{% trans "Certified professionals" %}</span>
+            </div>
+        </div>
+        <div class="eyetest-benefit-pill">
+            <div class="eyetest-benefit-pill__icon">
+                <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <div class="eyetest-benefit-pill__text">
+                <strong>{% trans "Advanced Equipment" %}</strong>
+                <span>{% trans "State-of-the-art tech" %}</span>
+            </div>
+        </div>
+        <div class="eyetest-benefit-pill">
+            <div class="eyetest-benefit-pill__icon">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="eyetest-benefit-pill__text">
+                <strong>{% trans "30–45 Minutes" %}</strong>
+                <span>{% trans "Quick & thorough" %}</span>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-let currentStep = 1;
+<!-- Main Content -->
+<div class="eyetest-main">
 
-function nextStep(step) {
-    // Validate current step
-    const currentStepElement = document.getElementById('step' + currentStep);
-    const inputs = currentStepElement.querySelectorAll('input[required], select[required]');
-    let valid = true;
-    
-    inputs.forEach(input => {
-        if (!input.value) {
-            valid = false;
-            input.style.borderColor = 'red';
+    <!-- Booking Form -->
+    <div class="eyetest-form-card">
+        <div class="eyetest-form-card__header">
+            <div class="eyetest-form-card__header-icon">
+                <svg viewBox="0 0 24 24"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
+            </div>
+            <div class="eyetest-form-card__header-text">
+                <h2>{% trans "Schedule Your Appointment" %}</h2>
+                <p>{% trans "Fill in 3 quick steps — takes under 2 minutes" %}</p>
+            </div>
+        </div>
+
+        <!-- Step Indicators -->
+        <div class="eyetest-steps-progress" id="stepsProgress">
+            <div class="eyetest-step-dot active" id="stepDot1">
+                <div class="eyetest-step-dot__circle">1</div>
+                <span class="eyetest-step-dot__label">{% trans "Location" %}</span>
+            </div>
+            <div class="eyetest-step-dot" id="stepDot2">
+                <div class="eyetest-step-dot__circle">2</div>
+                <span class="eyetest-step-dot__label">{% trans "Date & Time" %}</span>
+            </div>
+            <div class="eyetest-step-dot" id="stepDot3">
+                <div class="eyetest-step-dot__circle">3</div>
+                <span class="eyetest-step-dot__label">{% trans "Your Info" %}</span>
+            </div>
+        </div>
+
+        <div class="eyetest-form-body">
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="eyetest-messages">
+                {% for message in messages %}
+                <div class="eyetest-alert eyetest-alert--{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'content:eye_test_booking' %}" id="eyetestForm">
+                {% csrf_token %}
+
+                <!-- STEP 1: Location -->
+                <div class="eyetest-form-step active" id="formStep1">
+                    <h3 class="eyetest-step-title">{% trans "Choose Your Store" %}</h3>
+
+                    <div class="eyetest-form-group">
+                        <label for="location">{% trans "Store Location" %} <span class="required-star">*</span></label>
+                        <select name="location" id="location" required onchange="loadLocationDetails()">
+                            <option value="">{% trans "— Select a location —" %}</option>
+                            {% for location in locations %}
+                            <option value="{{ location.id }}">{{ location.name }} &mdash; {{ location.city }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Location Detail Box -->
+                    <div class="eyetest-location-box" id="locationDetails">
+                        <h4>{% trans "Store Details" %}</h4>
+                        <p>
+                            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span id="locationAddress"></span>
+                        </p>
+                        <p>
+                            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            <span id="locationPhone"></span>
+                        </p>
+                        <div id="locationHours"></div>
+                    </div>
+
+                    <div class="eyetest-form-actions">
+                        <button type="button" class="eyetest-btn eyetest-btn--primary" onclick="nextStep(2)">
+                            {% trans "Next: Choose Date" %}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Date & Time -->
+                <div class="eyetest-form-step" id="formStep2">
+                    <h3 class="eyetest-step-title">{% trans "Pick a Date & Time" %}</h3>
+
+                    <div class="eyetest-form-group">
+                        <label for="booking_date">{% trans "Preferred Date" %} <span class="required-star">*</span></label>
+                        <input type="date" name="booking_date" id="booking_date" required
+                               min="{{ today|date:'Y-m-d' }}" onchange="loadAvailableTimes()">
+                    </div>
+
+                    <div class="eyetest-form-group">
+                        <label>{% trans "Available Time Slots" %} <span class="required-star">*</span></label>
+                        <div class="eyetest-timeslot-grid" id="timeslotGrid">
+                            <div style="grid-column:1/-1; color:#aaa; font-size:0.85rem; padding:10px 0;">
+                                {% trans "Select a date to see available slots" %}
+                            </div>
+                        </div>
+                        <input type="hidden" name="booking_time" id="booking_time_hidden" required>
+                    </div>
+
+                    <div class="eyetest-form-actions">
+                        <button type="button" class="eyetest-btn eyetest-btn--secondary" onclick="prevStep(1)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                            {% trans "Back" %}
+                        </button>
+                        <button type="button" class="eyetest-btn eyetest-btn--primary" onclick="nextStep(3)">
+                            {% trans "Next: Your Details" %}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Personal Info -->
+                <div class="eyetest-form-step" id="formStep3">
+                    <h3 class="eyetest-step-title">{% trans "Your Information" %}</h3>
+
+                    <!-- Booking Summary -->
+                    <div class="eyetest-summary-box">
+                        <h4>{% trans "Booking Summary" %}</h4>
+                        <div class="eyetest-summary-row">
+                            <span>{% trans "Location" %}</span>
+                            <span id="summaryLocation">—</span>
+                        </div>
+                        <div class="eyetest-summary-row">
+                            <span>{% trans "Date" %}</span>
+                            <span id="summaryDate">—</span>
+                        </div>
+                        <div class="eyetest-summary-row">
+                            <span>{% trans "Time" %}</span>
+                            <span id="summaryTime">—</span>
+                        </div>
+                        <div class="eyetest-summary-row">
+                            <span>{% trans "Cost" %}</span>
+                            <span style="color:#4A90E2;">{% trans "FREE" %}</span>
+                        </div>
+                    </div>
+
+                    <div class="eyetest-form-group">
+                        <label for="customer_name">{% trans "Full Name" %} <span class="required-star">*</span></label>
+                        <input type="text" name="customer_name" id="customer_name" required
+                               placeholder="{% trans 'e.g. Ahmed Al Farsi' %}"
+                               {% if user.is_authenticated %}value="{{ user.get_full_name }}"{% endif %}>
+                    </div>
+
+                    <div class="eyetest-form-row">
+                        <div class="eyetest-form-group">
+                            <label for="customer_phone">{% trans "Phone Number" %} <span class="required-star">*</span></label>
+                            <input type="tel" name="customer_phone" id="customer_phone" required
+                                   placeholder="{% trans '+968 XXXX XXXX' %}"
+                                   {% if user.is_authenticated and user.phone %}value="{{ user.phone }}"{% endif %}>
+                        </div>
+                        <div class="eyetest-form-group">
+                            <label for="customer_email">{% trans "Email Address" %} <span class="required-star">*</span></label>
+                            <input type="email" name="customer_email" id="customer_email" required
+                                   placeholder="{% trans 'you@example.com' %}"
+                                   {% if user.is_authenticated %}value="{{ user.email }}"{% endif %}>
+                        </div>
+                    </div>
+
+                    <div class="eyetest-form-group">
+                        <label for="notes">{% trans "Additional Notes" %} <em style="font-weight:400; text-transform:none; color:#aaa;">({% trans "Optional" %})</em></label>
+                        <textarea name="notes" id="notes" placeholder="{% trans 'Any special requirements, concerns about your vision, or existing conditions...' %}"></textarea>
+                    </div>
+
+                    <div class="eyetest-form-actions">
+                        <button type="button" class="eyetest-btn eyetest-btn--secondary" onclick="prevStep(2)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                            {% trans "Back" %}
+                        </button>
+                        <button type="submit" class="eyetest-btn eyetest-btn--primary" id="submitBtn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            {% trans "Confirm Booking" %}
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div><!-- /form card -->
+
+    <!-- Sidebar -->
+    <aside class="eyetest-sidebar">
+
+        <!-- What to Expect -->
+        <div class="eyetest-info-card">
+            <div class="eyetest-info-card__header">
+                <h3>{% trans "What to Expect" %}</h3>
+            </div>
+            <div class="eyetest-info-card__body">
+                <div class="eyetest-timeline">
+                    <div class="eyetest-timeline-item">
+                        <div class="eyetest-timeline-item__num">1</div>
+                        <div class="eyetest-timeline-item__content">
+                            <h4>{% trans "Arrival" %}</h4>
+                            <p>{% trans "Check in at reception and complete a brief vision history questionnaire." %}</p>
+                        </div>
+                    </div>
+                    <div class="eyetest-timeline-item">
+                        <div class="eyetest-timeline-item__num">2</div>
+                        <div class="eyetest-timeline-item__content">
+                            <h4>{% trans "Examination" %}</h4>
+                            <p>{% trans "Comprehensive eye test — visual acuity, eye health, and pressure checks." %}</p>
+                        </div>
+                    </div>
+                    <div class="eyetest-timeline-item">
+                        <div class="eyetest-timeline-item__num">3</div>
+                        <div class="eyetest-timeline-item__content">
+                            <h4>{% trans "Consultation" %}</h4>
+                            <p>{% trans "Discuss results and receive personalised recommendations from your optometrist." %}</p>
+                        </div>
+                    </div>
+                    <div class="eyetest-timeline-item">
+                        <div class="eyetest-timeline-item__num">4</div>
+                        <div class="eyetest-timeline-item__content">
+                            <h4>{% trans "Eyewear Selection" %}</h4>
+                            <p>{% trans "Browse our collection with expert guidance — completely optional." %}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Accordion -->
+        <div class="eyetest-info-card">
+            <div class="eyetest-info-card__header">
+                <h3>{% trans "FAQs" %}</h3>
+            </div>
+            <div class="eyetest-info-card__body">
+                <div class="eyetest-faq-item">
+                    <div class="eyetest-faq-item__q">
+                        {% trans "How long does an eye test take?" %}
+                        <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <div class="eyetest-faq-item__a">
+                        <p>{% trans "A comprehensive eye test typically takes 30–45 minutes from start to finish." %}</p>
+                    </div>
+                </div>
+                <div class="eyetest-faq-item">
+                    <div class="eyetest-faq-item__q">
+                        {% trans "Is the eye test really free?" %}
+                        <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <div class="eyetest-faq-item__a">
+                        <p>{% trans "Yes! We offer complimentary eye tests with absolutely no obligation to purchase anything." %}</p>
+                    </div>
+                </div>
+                <div class="eyetest-faq-item">
+                    <div class="eyetest-faq-item__q">
+                        {% trans "What should I bring?" %}
+                        <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <div class="eyetest-faq-item__a">
+                        <p>{% trans "Bring your current eyewear (glasses or contact lenses) and any previous prescriptions if available." %}</p>
+                    </div>
+                </div>
+                <div class="eyetest-faq-item">
+                    <div class="eyetest-faq-item__q">
+                        {% trans "Can I cancel or reschedule?" %}
+                        <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <div class="eyetest-faq-item__a">
+                        <p>{% trans "Yes, you can cancel or reschedule your appointment up to 24 hours in advance with no penalty." %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Card -->
+        <div class="eyetest-cta-card">
+            <h3>{% trans "Need help choosing?" %}</h3>
+            <p>{% trans "Visit any Al Ameen Optics store and our friendly team will guide you to your perfect pair." %}</p>
+            <a href="{% url 'content:store_locations' %}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                {% trans "Find a Store" %}
+            </a>
+        </div>
+
+    </aside>
+</div>
+
+<script>
+// ============================================
+// EYE TEST BOOKING - STEP LOGIC
+// ============================================
+let currentStep = 1;
+const totalSteps = 3;
+
+function setStepUI(step) {
+    // Update form steps
+    for (let i = 1; i <= totalSteps; i++) {
+        const formStep = document.getElementById('formStep' + i);
+        const dotEl   = document.getElementById('stepDot' + i);
+        if (!formStep || !dotEl) continue;
+
+        formStep.classList.toggle('active', i === step);
+        dotEl.classList.remove('active', 'done');
+        if (i === step) dotEl.classList.add('active');
+        if (i < step)  dotEl.classList.add('done');
+
+        // Replace number with checkmark for done steps
+        const circle = dotEl.querySelector('.eyetest-step-dot__circle');
+        if (i < step) {
+            circle.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`;
         } else {
-            input.style.borderColor = '';
+            circle.textContent = i;
+        }
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function validateStep(step) {
+    const stepEl = document.getElementById('formStep' + step);
+    const required = stepEl.querySelectorAll('[required]');
+    let valid = true;
+
+    required.forEach(el => {
+        el.classList.remove('error');
+        if (!el.value.trim()) {
+            el.classList.add('error');
+            valid = false;
         }
     });
-    
-    if (!valid) {
-        alert('Please fill in all required fields');
-        return;
+
+    // Special check: timeslot hidden input
+    if (step === 2) {
+        const timeHidden = document.getElementById('booking_time_hidden');
+        if (!timeHidden.value) {
+            valid = false;
+            // Highlight timeslot grid
+            document.getElementById('timeslotGrid').style.outline = '2px solid #ff3b30';
+            setTimeout(() => document.getElementById('timeslotGrid').style.outline = '', 1500);
+        }
     }
-    
-    // Hide current step
-    document.getElementById('step' + currentStep).style.display = 'none';
-    
-    // Show next step
-    document.getElementById('step' + step).style.display = 'block';
+
+    return valid;
+}
+
+function nextStep(step) {
+    if (!validateStep(currentStep)) return;
+    if (step === 3) updateSummary();
     currentStep = step;
-    
-    // Scroll to top
-    window.scrollTo(0, 0);
+    setStepUI(step);
 }
 
 function prevStep(step) {
-    document.getElementById('step' + currentStep).style.display = 'none';
-    document.getElementById('step' + step).style.display = 'block';
     currentStep = step;
-    window.scrollTo(0, 0);
+    setStepUI(step);
 }
 
+function updateSummary() {
+    const locationSelect = document.getElementById('location');
+    const dateInput      = document.getElementById('booking_date');
+    const timeHidden     = document.getElementById('booking_time_hidden');
+
+    const locText = locationSelect.options[locationSelect.selectedIndex]?.text || '—';
+    const dateVal = dateInput.value;
+    const timeVal = timeHidden.value;
+
+    document.getElementById('summaryLocation').textContent = locText;
+
+    if (dateVal) {
+        const d = new Date(dateVal + 'T00:00:00');
+        document.getElementById('summaryDate').textContent = d.toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+    }
+
+    document.getElementById('summaryTime').textContent = timeVal || '—';
+}
+
+// ============================================
+// LOCATION DETAILS (AJAX)
+// ============================================
 function loadLocationDetails() {
     const locationId = document.getElementById('location').value;
-    
-    if (!locationId) {
-        document.getElementById('locationDetails').style.display = 'none';
-        return;
-    }
-    
+    const box = document.getElementById('locationDetails');
+
+    if (!locationId) { box.style.display = 'none'; return; }
+
     fetch(`/api/location-details/?location_id=${locationId}`)
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
-            document.getElementById('locationAddress').textContent = data.address;
-            document.getElementById('locationPhone').textContent = 'Phone: ' + data.phone;
-            
-            // Display operating hours
-            let hoursHtml = '<h5>Operating Hours:</h5>';
-            for (const [day, hours] of Object.entries(data.operating_hours)) {
-                hoursHtml += `<p>${day.charAt(0).toUpperCase() + day.slice(1)}: ${hours}</p>`;
+            document.getElementById('locationAddress').textContent = data.address || '';
+            document.getElementById('locationPhone').textContent   = data.phone   || '';
+
+            let hoursHtml = '';
+            if (data.operating_hours) {
+                for (const [day, hrs] of Object.entries(data.operating_hours)) {
+                    hoursHtml += `<p style="display:flex;align-items:center;gap:7px;font-size:0.82rem;color:#555;margin:4px 0;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A90E2" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span><strong>${day.charAt(0).toUpperCase() + day.slice(1)}:</strong> ${hrs}</span>
+                    </p>`;
+                }
             }
             document.getElementById('locationHours').innerHTML = hoursHtml;
-            
-            document.getElementById('locationDetails').style.display = 'block';
+            box.style.display = 'block';
         })
-        .catch(error => console.error('Error:', error));
+        .catch(() => { box.style.display = 'none'; });
 }
 
+// ============================================
+// TIME SLOTS (AJAX)
+// ============================================
 function loadAvailableTimes() {
     const locationId = document.getElementById('location').value;
-    const date = document.getElementById('booking_date').value;
-    
+    const date       = document.getElementById('booking_date').value;
+    const grid       = document.getElementById('timeslotGrid');
+    const hidden     = document.getElementById('booking_time_hidden');
+
     if (!locationId || !date) return;
-    
+
+    hidden.value = '';
+    grid.innerHTML = `<div style="grid-column:1/-1;color:#aaa;font-size:0.85rem;padding:12px 0;">Loading slots…</div>`;
+
     fetch(`/api/available-times/?location_id=${locationId}&date=${date}`)
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
-            const timeSelect = document.getElementById('booking_time');
-            timeSelect.innerHTML = '<option value="">-- Select a time --</option>';
-            
-            if (data.available_times.length === 0) {
-                timeSelect.innerHTML = '<option value="">No available times for this date</option>';
-            } else {
-                data.available_times.forEach(time => {
-                    const option = document.createElement('option');
-                    option.value = time;
-                    option.textContent = time;
-                    timeSelect.appendChild(option);
-                });
+            grid.innerHTML = '';
+            hidden.value = '';
+
+            if (!data.available_times || data.available_times.length === 0) {
+                grid.innerHTML = `<div style="grid-column:1/-1;color:#ff3b30;font-size:0.85rem;padding:10px 0;">
+                    No available slots for this date. Please try another day.
+                </div>`;
+                return;
             }
+
+            data.available_times.forEach(time => {
+                const btn = document.createElement('div');
+                btn.className = 'eyetest-timeslot';
+                btn.textContent = time;
+                btn.addEventListener('click', function () {
+                    grid.querySelectorAll('.eyetest-timeslot').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    hidden.value = time;
+                    grid.style.outline = '';
+                });
+                grid.appendChild(btn);
+            });
         })
-        .catch(error => console.error('Error:', error));
+        .catch(() => {
+            grid.innerHTML = `<div style="grid-column:1/-1;color:#ff3b30;font-size:0.85rem;padding:10px 0;">
+                Unable to load available times. Please try again.
+            </div>`;
+        });
 }
 
-// Set minimum date to today
-document.addEventListener('DOMContentLoaded', function() {
+// ============================================
+// FAQ ACCORDION
+// ============================================
+document.querySelectorAll('.eyetest-faq-item__q').forEach(q => {
+    q.addEventListener('click', function () {
+        const item = this.closest('.eyetest-faq-item');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.eyetest-faq-item').forEach(i => i.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+    });
+});
+
+// ============================================
+// FORM SUBMIT — loading state
+// ============================================
+document.getElementById('eyetestForm').addEventListener('submit', function () {
+    const btn = document.getElementById('submitBtn');
+    btn.classList.add('loading');
+    btn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" 
+             style="animation:spin 1s linear infinite">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+        </svg>
+        Booking…
+    `;
+});
+
+// ============================================
+// Min date
+// ============================================
+document.addEventListener('DOMContentLoaded', function () {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('booking_date').setAttribute('min', today);
+
+    // Remove error state on change
+    document.querySelectorAll('.eyetest-form-group input, .eyetest-form-group select').forEach(el => {
+        el.addEventListener('input', () => el.classList.remove('error'));
+        el.addEventListener('change', () => el.classList.remove('error'));
+    });
 });
+
+// Spin keyframe
+const s = document.createElement('style');
+s.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
+document.head.appendChild(s);
 </script>
 {% endblock %}
