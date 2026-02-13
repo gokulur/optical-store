@@ -1,168 +1,945 @@
 <!-- my_bookings.html -->
 {% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
 
-{% block title %}My Bookings - Eyewear Store{% endblock %}
+{% block title %}{% trans "My Bookings" %} - Al Ameen Optics{% endblock %}
 
 {% block content %}
-<div class="my-bookings-page">
-    <div class="container">
-        <h1>My Eye Test Bookings</h1>
-        
-        <!-- Upcoming Bookings -->
-        <div class="bookings-section">
-            <h2>Upcoming Appointments</h2>
-            
-            {% if upcoming_bookings %}
-            <div class="bookings-list">
-                {% for booking in upcoming_bookings %}
-                <div class="booking-card">
-                    <div class="booking-header">
-                        <h3>{{ booking.location.name }}</h3>
-                        <span class="booking-status status-{{ booking.status }}">
-                            {{ booking.get_status_display }}
-                        </span>
-                    </div>
-                    
-                    <div class="booking-info">
-                        <div class="info-item">
-                            <strong>Date:</strong>
-                            <span>{{ booking.booking_date|date:"l, F j, Y" }}</span>
-                        </div>
-                        
-                        <div class="info-item">
-                            <strong>Time:</strong>
-                            <span>{{ booking.booking_time }}</span>
-                        </div>
-                        
-                        <div class="info-item">
-                            <strong>Location:</strong>
-                            <span>{{ booking.location.address_line1 }}, {{ booking.location.city }}</span>
-                        </div>
-                        
-                        <div class="info-item">
-                            <strong>Phone:</strong>
-                            <span>{{ booking.location.phone }}</span>
-                        </div>
-                        
-                        <div class="info-item">
-                            <strong>Booking ID:</strong>
-                            <span>#{{ booking.id }}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="booking-actions">
-                        <a href="{% url 'content:booking_confirmation' booking.id %}" class="btn btn-outline">
-                            View Details
-                        </a>
-                        
-                        {% if booking.location.google_maps_url %}
-                        <a href="{{ booking.location.google_maps_url }}" target="_blank" class="btn btn-outline">
-                            Get Directions
-                        </a>
-                        {% endif %}
-                        
-                        {% if booking.status == 'pending' or booking.status == 'confirmed' %}
-                        <a href="{% url 'content:cancel_booking' booking.id %}" class="btn btn-danger-outline">
-                            Cancel
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="no-bookings">
-                <p>You don't have any upcoming appointments.</p>
-                <a href="{% url 'content:eye_test_booking' %}" class="btn btn-primary">
-                    Book an Eye Test
-                </a>
-            </div>
-            {% endif %}
+<style>
+/* ============================================
+   MY BOOKINGS PAGE - AL AMEEN THEME
+   ============================================ */
+
+/* Page Hero */
+.mybookings-hero {
+    background: #1a1a1a;
+    padding: 52px 20px 48px;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.mybookings-hero__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.mybookings-hero__left {}
+
+.mybookings-hero__eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #4A90E2;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mybookings-hero__eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 2px;
+    background: #4A90E2;
+    border-radius: 2px;
+}
+
+.mybookings-hero__title {
+    font-size: 2.6rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 10px;
+    letter-spacing: -0.02em;
+}
+
+.mybookings-hero__sub {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.5);
+    font-weight: 300;
+    margin: 0;
+}
+
+.mybookings-hero__action a {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    background: #4A90E2;
+    color: #ffffff;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.mybookings-hero__action a:hover {
+    background: #3a7bd5;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(74,144,226,0.35);
+}
+
+.mybookings-hero__action a svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.5;
+}
+
+/* ============================================
+   STATS BAR
+   ============================================ */
+.mybookings-stats {
+    background: #222;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.mybookings-stats__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 0;
+}
+
+.mybookings-stat {
+    flex: 1;
+    padding: 20px 28px;
+    border-right: 1px solid #2e2e2e;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.mybookings-stat:last-child { border-right: none; }
+
+.mybookings-stat__icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.mybookings-stat__icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke-width: 2;
+}
+
+.mybookings-stat__icon--blue  { background: rgba(74,144,226,0.15); }
+.mybookings-stat__icon--blue svg  { stroke: #4A90E2; }
+.mybookings-stat__icon--green { background: rgba(76,175,80,0.15); }
+.mybookings-stat__icon--green svg { stroke: #4CAF50; }
+.mybookings-stat__icon--orange{ background: rgba(255,152,0,0.15); }
+.mybookings-stat__icon--orange svg{ stroke: #FF9800; }
+
+.mybookings-stat__text strong {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.1;
+}
+
+.mybookings-stat__text span {
+    font-size: 0.76rem;
+    color: #888;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* ============================================
+   MAIN LAYOUT
+   ============================================ */
+.mybookings-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 20px 90px;
+}
+
+/* Section Headings */
+.mybookings-section { margin-bottom: 56px; }
+
+.mybookings-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f0f0f0;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.mybookings-section-header__left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mybookings-section-header__icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.mybookings-section-header__icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: #fff;
+    fill: none;
+    stroke-width: 2;
+}
+
+.mybookings-section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.mybookings-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 8px;
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* ============================================
+   BOOKING CARDS
+   ============================================ */
+.mybookings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.mybooking-card {
+    background: #ffffff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.07);
+    border: 1.5px solid #f0f0f0;
+    transition: all 0.3s ease;
+}
+
+.mybooking-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.11);
+    border-color: #e0e0e0;
+}
+
+.mybooking-card.past {
+    opacity: 0.82;
+}
+
+.mybooking-card.past:hover { opacity: 1; }
+
+/* Card Accent Bar */
+.mybooking-card__accent {
+    height: 4px;
+    background: #1a1a1a;
+}
+
+.mybooking-card.status-confirmed .mybooking-card__accent { background: #4CAF50; }
+.mybooking-card.status-pending   .mybooking-card__accent { background: #FF9800; }
+.mybooking-card.status-cancelled .mybooking-card__accent { background: #e0e0e0; }
+.mybooking-card.status-completed .mybooking-card__accent { background: #4A90E2; }
+
+.mybooking-card__body {
+    padding: 24px 28px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: start;
+}
+
+/* Card Left */
+.mybooking-card__left {}
+
+.mybooking-card__top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.mybooking-card__location-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+/* Status Badge */
+.mybooking-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+}
+
+.mybooking-status::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+.status-confirmed { background: #e8f5e9; color: #2e7d32; }
+.status-pending   { background: #fff8e1; color: #e65100; }
+.status-cancelled { background: #f5f5f5; color: #9e9e9e; }
+.status-completed { background: #e3f2fd; color: #1565c0; }
+
+/* Info Grid */
+.mybooking-card__info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px 24px;
+}
+
+.mybooking-info-item {}
+
+.mybooking-info-item__label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.mybooking-info-item__label svg {
+    width: 12px;
+    height: 12px;
+    stroke: #4A90E2;
+    fill: none;
+    stroke-width: 2;
+}
+
+.mybooking-info-item__value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Booking ID pill */
+.mybooking-id {
+    display: inline-block;
+    background: #f5f5f5;
+    border: 1px solid #e8e8e8;
+    color: #888;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-family: monospace;
+    letter-spacing: 0.05em;
+}
+
+/* Card Right — Actions */
+.mybooking-card__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    flex-shrink: 0;
+    min-width: 150px;
+}
+
+.mybooking-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.mybooking-btn svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.5;
+    flex-shrink: 0;
+}
+
+.mybooking-btn--primary {
+    background: #1a1a1a;
+    color: #fff;
+}
+
+.mybooking-btn--primary:hover {
+    background: #333;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(26,26,26,0.2);
+}
+
+.mybooking-btn--outline {
+    background: transparent;
+    color: #1a1a1a;
+    border: 1.5px solid #d8d8d8;
+}
+
+.mybooking-btn--outline:hover {
+    border-color: #1a1a1a;
+    background: #f8f8f8;
+    transform: translateY(-1px);
+}
+
+.mybooking-btn--blue {
+    background: transparent;
+    color: #4A90E2;
+    border: 1.5px solid rgba(74,144,226,0.35);
+}
+
+.mybooking-btn--blue:hover {
+    background: rgba(74,144,226,0.08);
+    border-color: #4A90E2;
+    transform: translateY(-1px);
+}
+
+.mybooking-btn--danger {
+    background: transparent;
+    color: #c62828;
+    border: 1.5px solid rgba(198,40,40,0.3);
+}
+
+.mybooking-btn--danger:hover {
+    background: rgba(198,40,40,0.06);
+    border-color: #c62828;
+    transform: translateY(-1px);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+.mybookings-empty {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 2px dashed #e8e8e8;
+    padding: 56px 32px;
+    text-align: center;
+}
+
+.mybookings-empty__icon {
+    width: 64px;
+    height: 64px;
+    background: #f5f5f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.mybookings-empty__icon svg {
+    width: 28px;
+    height: 28px;
+    stroke: #bbb;
+    fill: none;
+    stroke-width: 1.5;
+}
+
+.mybookings-empty h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 8px;
+}
+
+.mybookings-empty p {
+    font-size: 0.9rem;
+    color: #999;
+    margin: 0 0 24px;
+}
+
+.mybookings-empty a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #1a1a1a;
+    color: #fff;
+    padding: 13px 26px;
+    border-radius: 9px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.3s ease;
+}
+
+.mybookings-empty a:hover {
+    background: #333;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(26,26,26,0.2);
+}
+
+.mybookings-empty a svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.5;
+}
+
+/* ============================================
+   QUICK ACTIONS GRID
+   ============================================ */
+.mybookings-quick { margin-top: 20px; }
+
+.mybookings-quick-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 22px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.mybookings-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.mybookings-quick-card {
+    display: block;
+    text-decoration: none;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px 20px;
+    border: 1.5px solid #f0f0f0;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.mybookings-quick-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.10);
+    border-color: #1a1a1a;
+}
+
+.mybookings-quick-card__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+    transition: all 0.3s ease;
+}
+
+.mybookings-quick-card__icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: #1a1a1a;
+    fill: none;
+    stroke-width: 1.8;
+    transition: stroke 0.3s ease;
+}
+
+.mybookings-quick-card:hover .mybookings-quick-card__icon {
+    background: #1a1a1a;
+}
+
+.mybookings-quick-card:hover .mybookings-quick-card__icon svg {
+    stroke: #ffffff;
+}
+
+.mybookings-quick-card h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 5px;
+}
+
+.mybookings-quick-card p {
+    font-size: 0.78rem;
+    color: #999;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1024px) {
+    .mybookings-quick-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .mybookings-hero__title { font-size: 2rem; }
+    .mybookings-stats__inner { flex-wrap: wrap; }
+    .mybookings-stat {
+        flex: 0 0 50%;
+        border-bottom: 1px solid #2e2e2e;
+    }
+    .mybookings-stat:nth-child(2) { border-right: none; }
+    .mybookings-stat:nth-child(3),
+    .mybookings-stat:nth-child(4) { border-bottom: none; }
+
+    .mybooking-card__body {
+        grid-template-columns: 1fr;
+    }
+
+    .mybooking-card__actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        min-width: auto;
+    }
+
+    .mybooking-card__info { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 480px) {
+    .mybookings-hero { padding: 36px 20px 32px; }
+    .mybookings-hero__title { font-size: 1.7rem; }
+    .mybookings-hero__inner { flex-direction: column; align-items: flex-start; }
+
+    .mybookings-stats__inner { flex-direction: column; }
+    .mybookings-stat { flex: 1 0 100%; border-right: none; border-bottom: 1px solid #2e2e2e; }
+    .mybookings-stat:last-child { border-bottom: none; }
+
+    .mybooking-card__body { padding: 18px 16px; }
+    .mybooking-card__info { grid-template-columns: 1fr; }
+    .mybooking-card__actions { flex-direction: column; }
+
+    .mybookings-quick-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+
+<!-- Hero -->
+<div class="mybookings-hero">
+    <div class="mybookings-hero__inner">
+        <div class="mybookings-hero__left">
+            <div class="mybookings-hero__eyebrow">{% trans "Account" %}</div>
+            <h1 class="mybookings-hero__title">{% trans "My Eye Test Bookings" %}</h1>
+            <p class="mybookings-hero__sub">{% trans "Manage your upcoming appointments and view past visits" %}</p>
         </div>
-        
-        <!-- Past Bookings -->
-        <div class="bookings-section">
-            <h2>Past Appointments</h2>
-            
-            {% if past_bookings %}
-            <div class="bookings-list">
-                {% for booking in past_bookings %}
-                <div class="booking-card past">
-                    <div class="booking-header">
-                        <h3>{{ booking.location.name }}</h3>
-                        <span class="booking-status status-{{ booking.status }}">
-                            {{ booking.get_status_display }}
-                        </span>
-                    </div>
-                    
-                    <div class="booking-info">
-                        <div class="info-item">
-                            <strong>Date:</strong>
-                            <span>{{ booking.booking_date|date:"l, F j, Y" }}</span>
-                        </div>
-                        
-                        <div class="info-item">
-                            <strong>Time:</strong>
-                            <span>{{ booking.booking_time }}</span>
-                        </div>
-                        
-                        <div class="info-item">
-                            <strong>Location:</strong>
-                            <span>{{ booking.location.name }}</span>
-                        </div>
-                        
-                        <div class="info-item">
-                            <strong>Booking ID:</strong>
-                            <span>#{{ booking.id }}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="booking-actions">
-                        <a href="{% url 'content:booking_confirmation' booking.id %}" class="btn btn-outline">
-                            View Details
-                        </a>
-                        
-                        {% if booking.status == 'completed' %}
-                        <a href="{% url 'content:eye_test_booking' %}" class="btn btn-primary-outline">
-                            Book Again
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="no-bookings">
-                <p>No past appointments found.</p>
-            </div>
-            {% endif %}
+        <div class="mybookings-hero__action">
+            <a href="{% url 'content:eye_test_booking' %}">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                {% trans "New Appointment" %}
+            </a>
         </div>
-        
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-            <h2>Quick Actions</h2>
-            <div class="actions-grid">
-                <a href="{% url 'content:eye_test_booking' %}" class="action-card">
-                    <h3>Book New Eye Test</h3>
-                    <p>Schedule your next appointment</p>
-                </a>
-                
-                <a href="{% url 'content:store_locations' %}" class="action-card">
-                    <h3>Find a Store</h3>
-                    <p>View all our locations</p>
-                </a>
-                
-                <a href="{% url 'catalog:eyeglasses_list' %}" class="action-card">
-                    <h3>Shop Eyeglasses</h3>
-                    <p>Browse our collection</p>
-                </a>
-                
-                <a href="{% url 'content:contact_us' %}" class="action-card">
-                    <h3>Contact Us</h3>
-                    <p>Get help and support</p>
-                </a>
+    </div>
+</div>
+
+<!-- Stats Bar -->
+<div class="mybookings-stats">
+    <div class="mybookings-stats__inner">
+        <div class="mybookings-stat">
+            <div class="mybookings-stat__icon mybookings-stat__icon--blue">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="mybookings-stat__text">
+                <strong>{{ upcoming_bookings.count }}</strong>
+                <span>{% trans "Upcoming" %}</span>
+            </div>
+        </div>
+        <div class="mybookings-stat">
+            <div class="mybookings-stat__icon mybookings-stat__icon--green">
+                <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="mybookings-stat__text">
+                <strong>{{ past_bookings.count }}</strong>
+                <span>{% trans "Completed" %}</span>
+            </div>
+        </div>
+        <div class="mybookings-stat">
+            <div class="mybookings-stat__icon mybookings-stat__icon--orange">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="mybookings-stat__text">
+                <strong>{% trans "Free" %}</strong>
+                <span>{% trans "Eye Tests" %}</span>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Main -->
+<div class="mybookings-main">
+
+    <!-- ======== UPCOMING BOOKINGS ======== -->
+    <div class="mybookings-section">
+        <div class="mybookings-section-header">
+            <div class="mybookings-section-header__left">
+                <div class="mybookings-section-header__icon">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
+                </div>
+                <h2 class="mybookings-section-title">{% trans "Upcoming Appointments" %}</h2>
+                <span class="mybookings-count-badge">{{ upcoming_bookings.count }}</span>
+            </div>
+        </div>
+
+        {% if upcoming_bookings %}
+        <div class="mybookings-list">
+            {% for booking in upcoming_bookings %}
+            <div class="mybooking-card status-{{ booking.status }}">
+                <div class="mybooking-card__accent"></div>
+                <div class="mybooking-card__body">
+                    <div class="mybooking-card__left">
+                        <div class="mybooking-card__top">
+                            <h3 class="mybooking-card__location-name">{{ booking.location.name }}</h3>
+                            <span class="mybooking-status status-{{ booking.status }}">
+                                {{ booking.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="mybooking-card__info">
+                            <div class="mybooking-info-item">
+                                <div class="mybooking-info-item__label">
+                                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                    {% trans "Date" %}
+                                </div>
+                                <div class="mybooking-info-item__value">{{ booking.booking_date|date:"l, F j, Y" }}</div>
+                            </div>
+                            <div class="mybooking-info-item">
+                                <div class="mybooking-info-item__label">
+                                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    {% trans "Time" %}
+                                </div>
+                                <div class="mybooking-info-item__value">{{ booking.booking_time }}</div>
+                            </div>
+                            <div class="mybooking-info-item">
+                                <div class="mybooking-info-item__label">
+                                    <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                    {% trans "Address" %}
+                                </div>
+                                <div class="mybooking-info-item__value">{{ booking.location.address_line1 }}, {{ booking.location.city }}</div>
+                            </div>
+                            <div class="mybooking-info-item">
+                                <div class="mybooking-info-item__label">
+                                    <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                    {% trans "Phone" %}
+                                </div>
+                                <div class="mybooking-info-item__value">{{ booking.location.phone }}</div>
+                            </div>
+                            <div class="mybooking-info-item">
+                                <div class="mybooking-info-item__label">
+                                    <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                                    {% trans "Booking ID" %}
+                                </div>
+                                <div class="mybooking-info-item__value">
+                                    <span class="mybooking-id">#{{ booking.id }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mybooking-card__actions">
+                        <a href="{% url 'content:booking_confirmation' booking.id %}" class="mybooking-btn mybooking-btn--primary">
+                            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            {% trans "View Details" %}
+                        </a>
+                        {% if booking.location.google_maps_url %}
+                        <a href="{{ booking.location.google_maps_url }}" target="_blank" rel="noopener" class="mybooking-btn mybooking-btn--outline">
+                            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            {% trans "Directions" %}
+                        </a>
+                        {% endif %}
+                        {% if booking.status == 'pending' or booking.status == 'confirmed' %}
+                        <a href="{% url 'content:cancel_booking' booking.id %}" class="mybooking-btn mybooking-btn--danger">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                            {% trans "Cancel" %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="mybookings-empty">
+            <div class="mybookings-empty__icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <h4>{% trans "No upcoming appointments" %}</h4>
+            <p>{% trans "You don't have any eye test appointments scheduled yet." %}</p>
+            <a href="{% url 'content:eye_test_booking' %}">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                {% trans "Book a Free Eye Test" %}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ======== PAST BOOKINGS ======== -->
+    <div class="mybookings-section">
+        <div class="mybookings-section-header">
+            <div class="mybookings-section-header__left">
+                <div class="mybookings-section-header__icon" style="background:#f0f0f0;">
+                    <svg viewBox="0 0 24 24" style="stroke:#888;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                </div>
+                <h2 class="mybookings-section-title" style="color:#666;">{% trans "Past Appointments" %}</h2>
+                <span class="mybookings-count-badge" style="background:#e0e0e0; color:#888;">{{ past_bookings.count }}</span>
+            </div>
+        </div>
+
+        {% if past_bookings %}
+        <div class="mybookings-list">
+            {% for booking in past_bookings %}
+            <div class="mybooking-card past status-{{ booking.status }}">
+                <div class="mybooking-card__accent"></div>
+                <div class="mybooking-card__body">
+                    <div class="mybooking-card__left">
+                        <div class="mybooking-card__top">
+                            <h3 class="mybooking-card__location-name">{{ booking.location.name }}</h3>
+                            <span class="mybooking-status status-{{ booking.status }}">
+                                {{ booking.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="mybooking-card__info">
+                            <div class="mybooking-info-item">
+                                <div class="mybooking-info-item__label">
+                                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                    {% trans "Date" %}
+                                </div>
+                                <div class="mybooking-info-item__value">{{ booking.booking_date|date:"l, F j, Y" }}</div>
+                            </div>
+                            <div class="mybooking-info-item">
+                                <div class="mybooking-info-item__label">
+                                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    {% trans "Time" %}
+                                </div>
+                                <div class="mybooking-info-item__value">{{ booking.booking_time }}</div>
+                            </div>
+                            <div class="mybooking-info-item">
+                                <div class="mybooking-info-item__label">
+                                    <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                    {% trans "Location" %}
+                                </div>
+                                <div class="mybooking-info-item__value">{{ booking.location.name }}</div>
+                            </div>
+                            <div class="mybooking-info-item">
+                                <div class="mybooking-info-item__label">
+                                    <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                                    {% trans "Booking ID" %}
+                                </div>
+                                <div class="mybooking-info-item__value">
+                                    <span class="mybooking-id">#{{ booking.id }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mybooking-card__actions">
+                        <a href="{% url 'content:booking_confirmation' booking.id %}" class="mybooking-btn mybooking-btn--outline">
+                            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            {% trans "View Details" %}
+                        </a>
+                        {% if booking.status == 'completed' %}
+                        <a href="{% url 'content:eye_test_booking' %}" class="mybooking-btn mybooking-btn--blue">
+                            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                            {% trans "Book Again" %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="mybookings-empty">
+            <div class="mybookings-empty__icon">
+                <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <h4>{% trans "No past appointments" %}</h4>
+            <p>{% trans "Your completed and cancelled appointments will appear here." %}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ======== QUICK ACTIONS ======== -->
+    <div class="mybookings-quick">
+        <h3 class="mybookings-quick-title">{% trans "Quick Actions" %}</h3>
+        <div class="mybookings-quick-grid">
+            <a href="{% url 'content:eye_test_booking' %}" class="mybookings-quick-card">
+                <div class="mybookings-quick-card__icon">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M12 14v4M10 16h4"/></svg>
+                </div>
+                <h4>{% trans "Book Eye Test" %}</h4>
+                <p>{% trans "Schedule your next free appointment" %}</p>
+            </a>
+            <a href="{% url 'content:store_locations' %}" class="mybookings-quick-card">
+                <div class="mybookings-quick-card__icon">
+                    <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
+                <h4>{% trans "Find a Store" %}</h4>
+                <p>{% trans "View all our locations" %}</p>
+            </a>
+            <a href="{% url 'catalog:eyeglasses_list' %}" class="mybookings-quick-card">
+                <div class="mybookings-quick-card__icon">
+                    <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="3"/><circle cx="19" cy="12" r="3"/><path d="M8 12h8M2 12H1M23 12h-1"/><path d="M5 9V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v2"/></svg>
+                </div>
+                <h4>{% trans "Shop Eyeglasses" %}</h4>
+                <p>{% trans "Browse our collection" %}</p>
+            </a>
+            <a href=" " class="mybookings-quick-card">
+                <div class="mybookings-quick-card__icon">
+                    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <h4>{% trans "Contact Us" %}</h4>
+                <p>{% trans "Get help and support" %}</p>
+            </a>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
