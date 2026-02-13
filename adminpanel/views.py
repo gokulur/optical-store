@@ -1166,7 +1166,7 @@ def eye_test_delete(request, booking_id):
 def review_list(request):
     status = request.GET.get('status', '')
     
-    reviews = Review.objects.select_related('user', 'product').order_by('-created_at')
+    reviews = Review.objects.select_related('customer', 'product').order_by('-created_at')
     
     if status == 'approved':
         reviews = reviews.filter(is_approved=True)
@@ -1258,8 +1258,8 @@ def user_list(request):
 @user_passes_test(is_admin)
 def user_detail(request, user_id):
     user = get_object_or_404(User, id=user_id)
-    orders = Order.objects.filter(user=user).order_by('-created_at')[:10]
-    reviews = Review.objects.filter(user=user).order_by('-created_at')[:5]
+    orders = Order.objects.filter(customer=user).order_by('-created_at')[:10]
+    reviews = Review.objects.filter(customer=user).order_by('-created_at')[:5]
     
     return render(request, 'adminpanel/users/detail.html', {
         'user_obj': user,
