@@ -9,7 +9,7 @@ from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
 from django.db import transaction, IntegrityError
-
+from content.models import EyeTestBooking, StoreLocation
 # Models - Consolidated Imports
 from catalog.models import (
     Category, Brand, Product, ProductVariant, ProductImage,
@@ -1322,3 +1322,160 @@ def tag_delete(request, tag_id):
         messages.success(request, 'Tag deleted.')
         return redirect('adminpanel:tag_list')
     return render(request, 'adminpanel/tags/delete_confirm.html', {'tag': tag})
+
+
+
+
+# ==================== STORE LOCATIONS ====================
+ 
+DAYS_OF_WEEK = [
+    ('monday', 'Monday'),
+    ('tuesday', 'Tuesday'),
+    ('wednesday', 'Wednesday'),
+    ('thursday', 'Thursday'),
+    ('friday', 'Friday'),
+    ('saturday', 'Saturday'),
+    ('sunday', 'Sunday'),
+]
+
+
+@login_required
+@user_passes_test(is_admin)
+def store_list(request):
+    search = request.GET.get('search', '')
+    status = request.GET.get('status', '')
+    eye_test = request.GET.get('eye_test', '')
+
+    stores = StoreLocation.objects.all().order_by('display_order', 'name')
+
+    # Stats
+    total_stores = stores.count()
+    active_stores = stores.filter(is_active=True).count()
+    flagship_stores = stores.filter(is_flagship=True).count()
+    eye_test_stores = stores.filter(offers_eye_test=True).count()
+
+    # Filters
+    if search:
+        stores = stores.filter(
+            Q(name__icontains=search) |
+            Q(city__icontains=search) |
+            Q(address_line1__icontains=search)
+        )
+    if status == 'active':
+        stores = stores.filter(is_active=True)
+    elif status == 'inactive':
+        stores = stores.filter(is_active=False)
+    if eye_test == 'yes':
+        stores = stores.filter(offers_eye_test=True)
+    elif eye_test == 'no':
+        stores = stores.filter(offers_eye_test=False)
+
+    paginator = Paginator(stores, 20)
+    stores = paginator.get_page(request.GET.get('page', 1))
+
+    return render(request, 'adminpanel/stores/list.html', {
+        'stores': stores,
+        'search': search,
+        'status': status,
+        'eye_test': eye_test,
+        'total_stores': total_stores,
+        'active_stores': active_stores,
+        'flagship_stores': flagship_stores,
+        'eye_test_stores': eye_test_stores,
+    })
+
+
+@login_required
+@user_passes_test(is_admin)
+def store_add(request):
+    if request.method == 'POST':
+        try:
+            # Build operating hours dict from form
+            operating_hours = {}
+            for day_key, _ in DAYS_OF_WEEK:
+                hours_value = request.POST.get(f'hours_{day_key}', '').strip()
+                if hours_value:
+                    operating_hours[day_key] = hours_value
+
+            StoreLocation.objects.create(
+                name=request.POST.get('name'),
+                address_line1=request.POST.get('address_line1'),
+                address_line2=request.POST.get('address_line2', ''),
+                city=request.POST.get('city'),
+                state=request.POST.get('state', ''),
+                country=request.POST.get('country'),
+                postal_code=request.POST.get('postal_code', ''),
+                phone=request.POST.get('phone'),
+                email=request.POST.get('email', ''),
+                latitude=request.POST.get('latitude') or None,
+                longitude=request.POST.get('longitude') or None,
+                google_maps_url=request.POST.get('google_maps_url', ''),
+                operating_hours=operating_hours,
+                offers_eye_test=request.POST.get('offers_eye_test') == 'on',
+                is_flagship=request.POST.get('is_flagship') == 'on',
+                display_order=request.POST.get('display_order', 0),
+                is_active=request.POST.get('is_active') == 'on',
+            )
+            messages.success(request, 'Store location created successfully!')
+            return redirect('adminpanel:store_list')
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+
+    return render(request, 'adminpanel/stores/add.html', {
+        'days': DAYS_OF_WEEK,
+    })
+
+
+@login_required
+@user_passes_test(is_admin)
+def store_edit(request, store_id):
+    store = get_object_or_404(StoreLocation, id=store_id)
+
+    if request.method == 'POST':
+        try:
+            # Build operating hours dict from form
+            operating_hours = {}
+            for day_key, _ in DAYS_OF_WEEK:
+                hours_value = request.POST.get(f'hours_{day_key}', '').strip()
+                if hours_value:
+                    operating_hours[day_key] = hours_value
+
+            store.name = request.POST.get('name')
+            store.address_line1 = request.POST.get('address_line1')
+            store.address_line2 = request.POST.get('address_line2', '')
+            store.city = request.POST.get('city')
+            store.state = request.POST.get('state', '')
+            store.country = request.POST.get('country')
+            store.postal_code = request.POST.get('postal_code', '')
+            store.phone = request.POST.get('phone')
+            store.email = request.POST.get('email', '')
+            store.latitude = request.POST.get('latitude') or None
+            store.longitude = request.POST.get('longitude') or None
+            store.google_maps_url = request.POST.get('google_maps_url', '')
+            store.operating_hours = operating_hours
+            store.offers_eye_test = request.POST.get('offers_eye_test') == 'on'
+            store.is_flagship = request.POST.get('is_flagship') == 'on'
+            store.display_order = request.POST.get('display_order', 0)
+            store.is_active = request.POST.get('is_active') == 'on'
+            store.save()
+
+            messages.success(request, 'Store location updated successfully!')
+            return redirect('adminpanel:store_list')
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+
+    return render(request, 'adminpanel/stores/edit.html', {
+        'store': store,
+        'days': DAYS_OF_WEEK,
+    })
+
+
+@login_required
+@user_passes_test(is_admin)
+def store_delete(request, store_id):
+    store = get_object_or_404(StoreLocation, id=store_id)
+    if request.method == 'POST':
+        store.delete()
+        messages.success(request, 'Store location deleted.')
+        return redirect('adminpanel:store_list')
+    return render(request, 'adminpanel/stores/delete_confirm.html', {'store': store})
