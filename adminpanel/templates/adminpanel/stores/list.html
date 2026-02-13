@@ -1,0 +1,330 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+<style>
+  .white-logo { filter: brightness(0) invert(1); transition: 0.3s ease; }
+  .white-logo:hover { filter: brightness(0) invert(0.9); }
+  .card { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); transition: all 0.3s ease; }
+  .table-hover tbody tr:hover { background-color: rgba(0, 0, 0, 0.02); cursor: pointer; }
+  .badge { padding: 6px 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+  .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+  .search-box { position: relative; }
+  .search-box input { padding-left: 40px; }
+  .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #6c757d; }
+  .action-buttons .btn { padding: 5px 10px; font-size: 12px; margin-right: 5px; }
+  .filter-section { padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+  .stats-card { border-left: 4px solid; padding: 15px; margin-bottom: 20px; }
+  .stats-card.primary { border-left-color: #b66dff; background-color: rgba(182, 109, 255, 0.1); }
+  .stats-card.success { border-left-color: #1bcfb4; background-color: rgba(27, 207, 180, 0.1); }
+  .stats-card.warning { border-left-color: #fed713; background-color: rgba(254, 215, 19, 0.1); }
+  .stats-card.info { border-left-color: #17a2b8; background-color: rgba(23, 162, 184, 0.1); }
+  .empty-state { text-align: center; padding: 60px 20px; }
+  .empty-state i { font-size: 80px; color: #ccc; }
+  .store-icon { width: 42px; height: 42px; border-radius: 8px; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+  .hours-preview { font-size: 11px; color: #6c757d; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+          <h3 class="mb-2"><i class="mdi mdi-store"></i> Store Locations</h3>
+          <p class="mb-0">Manage all physical store locations</p>
+        </div>
+        <a href="{% url 'adminpanel:store_add' %}" class="btn btn-light btn-lg">
+          <i class="mdi mdi-plus"></i> Add New Store
+        </a>
+      </div>
+    </div>
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-transparent p-0 mb-4">
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="#">Content</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Store Locations</li>
+      </ol>
+    </nav>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      <strong>
+        {% if message.tags == 'success' %}<i class="mdi mdi-check-circle"></i>
+        {% elif message.tags == 'error' %}<i class="mdi mdi-alert-circle"></i>
+        {% else %}<i class="mdi mdi-information"></i>{% endif %}
+      </strong>
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Stats Row -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="stats-card primary">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="mb-0 font-weight-bold">{{ total_stores }}</h2>
+              <p class="mb-0 text-muted">Total Stores</p>
+            </div>
+            <i class="mdi mdi-store" style="font-size: 42px; color: #b66dff;"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stats-card success">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="mb-0 font-weight-bold">{{ active_stores }}</h2>
+              <p class="mb-0 text-muted">Active Stores</p>
+            </div>
+            <i class="mdi mdi-check-circle" style="font-size: 42px; color: #1bcfb4;"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stats-card info">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="mb-0 font-weight-bold">{{ flagship_stores }}</h2>
+              <p class="mb-0 text-muted">Flagship Stores</p>
+            </div>
+            <i class="mdi mdi-star" style="font-size: 42px; color: #17a2b8;"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stats-card warning">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="mb-0 font-weight-bold">{{ eye_test_stores }}</h2>
+              <p class="mb-0 text-muted">Eye Test Stores</p>
+            </div>
+            <i class="mdi mdi-eye" style="font-size: 42px; color: #fed713;"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-section">
+      <form method="GET" action="">
+        <div class="row align-items-end">
+          <div class="col-md-4">
+            <div class="form-group mb-0">
+              <label class="font-weight-bold">Search Stores</label>
+              <div class="search-box">
+                <i class="mdi mdi-magnify"></i>
+                <input type="text" class="form-control" name="search" placeholder="Search by name or city..." value="{{ search }}">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="form-group mb-0">
+              <label class="font-weight-bold">Filter by Status</label>
+              <select class="form-control" name="status">
+                <option value="">All Status</option>
+                <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+                <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="form-group mb-0">
+              <label class="font-weight-bold">Eye Test</label>
+              <select class="form-control" name="eye_test">
+                <option value="">All</option>
+                <option value="yes" {% if eye_test == 'yes' %}selected{% endif %}>Offers Eye Test</option>
+                <option value="no" {% if eye_test == 'no' %}selected{% endif %}>No Eye Test</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="mdi mdi-filter"></i> Filter
+            </button>
+          </div>
+          <div class="col-md-1">
+            <a href="{% url 'adminpanel:store_list' %}" class="btn btn-light btn-block">
+              <i class="mdi mdi-refresh"></i>
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Table -->
+    <div class="row">
+      <div class="col-md-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h4 class="card-title mb-0"><i class="mdi mdi-table"></i> All Stores</h4>
+              <small class="text-muted">{{ stores.paginator.count }} store(s) found</small>
+            </div>
+
+            {% if stores %}
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th class="font-weight-bold">#</th>
+                    <th class="font-weight-bold">Store</th>
+                    <th class="font-weight-bold">Location</th>
+                    <th class="font-weight-bold">Contact</th>
+                    <th class="font-weight-bold">Features</th>
+                    <th class="font-weight-bold">Order</th>
+                    <th class="font-weight-bold">Status</th>
+                    <th class="font-weight-bold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for store in stores %}
+                  <tr>
+                    <td class="font-weight-medium">{{ forloop.counter }}</td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="store-icon mr-3">
+                          <i class="mdi mdi-store"></i>
+                        </div>
+                        <div>
+                          <div class="font-weight-medium">{{ store.name }}</div>
+                          {% if store.is_flagship %}
+                          <small><span class="badge badge-warning" style="padding: 2px 6px; font-size: 10px;">★ Flagship</span></small>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div>{{ store.city }}{% if store.state %}, {{ store.state }}{% endif %}</div>
+                      <small class="text-muted">{{ store.country }}</small>
+                    </td>
+                    <td>
+                      <div><i class="mdi mdi-phone text-muted mr-1"></i>{{ store.phone }}</div>
+                      {% if store.email %}
+                      <small class="text-muted"><i class="mdi mdi-email mr-1"></i>{{ store.email }}</small>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if store.offers_eye_test %}
+                      <span class="badge badge-info mr-1"><i class="mdi mdi-eye"></i> Eye Test</span>
+                      {% endif %}
+                      {% if store.google_maps_url %}
+                      <span class="badge badge-secondary"><i class="mdi mdi-map-marker"></i> Maps</span>
+                      {% endif %}
+                    </td>
+                    <td><span class="badge badge-dark">{{ store.display_order }}</span></td>
+                    <td>
+                      {% if store.is_active %}
+                      <label class="badge badge-success">Active</label>
+                      {% else %}
+                      <label class="badge badge-danger">Inactive</label>
+                      {% endif %}
+                    </td>
+                    <td class="text-right">
+                      <div class="action-buttons">
+                        <a href="{% url 'adminpanel:store_edit' store.id %}" class="btn btn-sm btn-outline-warning" title="Edit">
+                          <i class="mdi mdi-pencil"></i>
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                onclick="confirmDelete('{{ store.name|escapejs }}', '{{ store.id }}')" title="Delete">
+                          <i class="mdi mdi-delete"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            {% if stores.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+              <ul class="pagination justify-content-center">
+                {% if stores.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ stores.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                    <i class="mdi mdi-chevron-left"></i>
+                  </a>
+                </li>
+                {% endif %}
+                {% for num in stores.paginator.page_range %}
+                {% if stores.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > stores.number|add:'-3' and num < stores.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">{{ num }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                {% if stores.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ stores.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                    <i class="mdi mdi-chevron-right"></i>
+                  </a>
+                </li>
+                {% endif %}
+              </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="empty-state">
+              <i class="mdi mdi-store-off"></i>
+              <h4 class="mt-3">No Stores Found</h4>
+              <p class="text-muted">You haven't added any store locations yet.</p>
+              <a href="{% url 'adminpanel:store_add' %}" class="btn btn-primary btn-lg mt-3">
+                <i class="mdi mdi-plus"></i> Add Your First Store
+              </a>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="mdi mdi-alert"></i> Confirm Delete</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0">Are you sure you want to delete <strong id="deleteStoreName"></strong>?</p>
+        <p class="text-danger mb-0 mt-2"><small><i class="mdi mdi-alert"></i> This will also delete all associated eye test bookings. This cannot be undone!</small></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+        <form id="deleteForm" method="POST" style="display: inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">
+            <i class="mdi mdi-delete"></i> Yes, Delete Store
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function confirmDelete(name, id) {
+    document.getElementById('deleteStoreName').textContent = name;
+    var deleteUrl = "{% url 'adminpanel:store_delete' 0 %}".replace('0', id);
+    document.getElementById('deleteForm').action = deleteUrl;
+    $('#deleteModal').modal('show');
+  }
+</script>
+{% endblock %}
