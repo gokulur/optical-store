@@ -1,136 +1,1006 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
 
-{% block title %}Our Locations - Eyewear Store{% endblock %}
+{% block title %}{% trans "Our Store Locations" %} - Al Ameen Optics{% endblock %}
 
 {% block content %}
-<div class="store-locations-page">
-    <!-- Hero Section -->
-    <div class="hero-section">
-        <h1>Our Store Locations</h1>
-        <p>Visit us at any of our convenient locations across Qatar</p>
+<style>
+/* ============================================
+   STORE LOCATIONS PAGE - AL AMEEN THEME
+   ============================================ */
+
+/* Hero */
+.storeloc-hero {
+    position: relative;
+    height: 400px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0d0d0d;
+}
+
+.storeloc-hero__bg {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(135deg, rgba(26,26,26,0.85) 0%, rgba(26,26,26,0.55) 100%),
+        url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1400&h=500&fit=crop') center/cover no-repeat;
+    transform: scale(1.05);
+    animation: heroZoom 14s ease-in-out infinite alternate;
+}
+
+@keyframes heroZoom {
+    from { transform: scale(1.05); }
+    to   { transform: scale(1.12); }
+}
+
+.storeloc-hero__content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 0 20px;
+}
+
+.storeloc-hero__badge {
+    display: inline-block;
+    background: rgba(74,144,226,0.2);
+    border: 1.5px solid rgba(74,144,226,0.45);
+    color: #4A90E2;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 7px 20px;
+    border-radius: 30px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(8px);
+}
+
+.storeloc-hero__title {
+    font-size: 3.6rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 14px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+}
+
+.storeloc-hero__title span { color: #4A90E2; }
+
+.storeloc-hero__subtitle {
+    font-size: 1.05rem;
+    color: rgba(255,255,255,0.65);
+    font-weight: 300;
+    margin: 0;
+}
+
+/* ============================================
+   STATS BAR
+   ============================================ */
+.storeloc-stats {
+    background: #1a1a1a;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.storeloc-stats__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+}
+
+.storeloc-stat {
+    flex: 1;
+    padding: 22px 28px;
+    border-right: 1px solid #2a2a2a;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.storeloc-stat:last-child { border-right: none; }
+
+.storeloc-stat__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.storeloc-stat__icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke-width: 2;
+}
+
+.storeloc-stat__icon--blue   { background: rgba(74,144,226,0.15); }
+.storeloc-stat__icon--blue   svg { stroke: #4A90E2; }
+.storeloc-stat__icon--green  { background: rgba(76,175,80,0.15); }
+.storeloc-stat__icon--green  svg { stroke: #4CAF50; }
+.storeloc-stat__icon--orange { background: rgba(255,152,0,0.15); }
+.storeloc-stat__icon--orange svg { stroke: #FF9800; }
+.storeloc-stat__icon--pink   { background: rgba(233,30,99,0.15); }
+.storeloc-stat__icon--pink   svg { stroke: #E91E63; }
+
+.storeloc-stat__text strong {
+    display: block;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.1;
+}
+
+.storeloc-stat__text span {
+    font-size: 0.74rem;
+    color: #888;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* ============================================
+   MAIN WRAPPER
+   ============================================ */
+.storeloc-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 20px 90px;
+}
+
+/* ============================================
+   MAP SECTION
+   ============================================ */
+.storeloc-map-section {
+    margin-bottom: 64px;
+}
+
+.storeloc-section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.storeloc-section-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.storeloc-section-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: #fff;
+    fill: none;
+    stroke-width: 2;
+}
+
+.storeloc-section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.storeloc-map-container {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    border: 1.5px solid #efefef;
+    background: #f5f5f5;
+}
+
+.storeloc-map-placeholder {
+    width: 100%;
+    height: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #efefef 100%);
+    color: #bbb;
+}
+
+.storeloc-map-placeholder svg {
+    width: 48px;
+    height: 48px;
+    stroke: #ccc;
+    fill: none;
+    stroke-width: 1.5;
+}
+
+.storeloc-map-placeholder p {
+    font-size: 0.9rem;
+    color: #bbb;
+    margin: 0;
+}
+
+#locationsMap {
+    width: 100%;
+    height: 480px;
+}
+
+/* ============================================
+   LOCATIONS LIST
+   ============================================ */
+.storeloc-locations-section { margin-bottom: 64px; }
+
+/* City Group */
+.storeloc-city-group { margin-bottom: 48px; }
+
+.storeloc-city-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.storeloc-city-label__text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.storeloc-city-label__line {
+    flex: 1;
+    height: 1.5px;
+    background: #efefef;
+    min-width: 60px;
+}
+
+.storeloc-city-label__count {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #888;
+    background: #f0f0f0;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+/* Locations Grid */
+.storeloc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 22px;
+}
+
+/* Location Card */
+.storeloc-card {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1.5px solid #f0f0f0;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.storeloc-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+    border-color: #e0e0e0;
+}
+
+/* Card Top Bar */
+.storeloc-card__bar {
+    height: 4px;
+    background: #1a1a1a;
+}
+
+.storeloc-card.flagship .storeloc-card__bar { background: linear-gradient(90deg, #4A90E2, #1a1a1a); }
+
+/* Card Header */
+.storeloc-card__header {
+    padding: 22px 24px 16px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.storeloc-card__header-left {}
+
+.storeloc-card__name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 8px;
+}
+
+.storeloc-card__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.storeloc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.storeloc-badge svg {
+    width: 11px;
+    height: 11px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.5;
+}
+
+.storeloc-badge--flagship {
+    background: rgba(26,26,26,0.08);
+    color: #1a1a1a;
+}
+
+.storeloc-badge--eyetest {
+    background: rgba(74,144,226,0.12);
+    color: #4A90E2;
+}
+
+.storeloc-card__header-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.storeloc-card__header-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: #1a1a1a;
+    fill: none;
+    stroke-width: 1.8;
+}
+
+.storeloc-card:hover .storeloc-card__header-icon {
+    background: #1a1a1a;
+}
+
+.storeloc-card:hover .storeloc-card__header-icon svg { stroke: #fff; }
+
+/* Card Body */
+.storeloc-card__body {
+    padding: 20px 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.storeloc-detail-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.storeloc-detail-row__icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    background: #f8f8f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.storeloc-detail-row__icon svg {
+    width: 14px;
+    height: 14px;
+    stroke: #4A90E2;
+    fill: none;
+    stroke-width: 2;
+}
+
+.storeloc-detail-row__content {}
+
+.storeloc-detail-row__label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #bbb;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 3px;
+}
+
+.storeloc-detail-row__value {
+    font-size: 0.88rem;
+    color: #444;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.storeloc-detail-row__value a {
+    color: #1a1a1a;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.storeloc-detail-row__value a:hover { color: #4A90E2; }
+
+/* Hours Table */
+.storeloc-hours {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.storeloc-hours-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82rem;
+    padding: 3px 0;
+}
+
+.storeloc-hours-row__day {
+    color: #888;
+    font-weight: 600;
+    text-transform: capitalize;
+    min-width: 80px;
+}
+
+.storeloc-hours-row__time {
+    color: #333;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.storeloc-hours-row__time--closed { color: #ccc; }
+
+/* Card Actions */
+.storeloc-card__actions {
+    padding: 16px 24px 22px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    border-top: 1px solid #f5f5f5;
+    margin-top: auto;
+}
+
+.storeloc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px 17px;
+    border-radius: 8px;
+    font-size: 0.77rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.storeloc-btn svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.5;
+    flex-shrink: 0;
+}
+
+.storeloc-btn--primary {
+    background: #1a1a1a;
+    color: #fff;
+}
+
+.storeloc-btn--primary:hover {
+    background: #333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(26,26,26,0.22);
+}
+
+.storeloc-btn--outline {
+    background: transparent;
+    color: #1a1a1a;
+    border: 1.5px solid #d8d8d8;
+}
+
+.storeloc-btn--outline:hover {
+    border-color: #1a1a1a;
+    background: #f8f8f8;
+    transform: translateY(-2px);
+}
+
+.storeloc-btn--blue {
+    background: transparent;
+    color: #4A90E2;
+    border: 1.5px solid rgba(74,144,226,0.3);
+}
+
+.storeloc-btn--blue:hover {
+    background: rgba(74,144,226,0.08);
+    border-color: #4A90E2;
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+.storeloc-empty {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 2px dashed #e8e8e8;
+    padding: 64px 32px;
+    text-align: center;
+}
+
+.storeloc-empty__icon {
+    width: 64px;
+    height: 64px;
+    background: #f5f5f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+}
+
+.storeloc-empty__icon svg {
+    width: 28px;
+    height: 28px;
+    stroke: #ccc;
+    fill: none;
+    stroke-width: 1.5;
+}
+
+.storeloc-empty h4 { font-size: 1.05rem; font-weight: 700; color: #1a1a1a; margin: 0 0 8px; }
+.storeloc-empty p  { font-size: 0.9rem; color: #999; margin: 0; }
+
+/* ============================================
+   CTA BANNER
+   ============================================ */
+.storeloc-cta {
+    background: #1a1a1a;
+    border-radius: 20px;
+    padding: 60px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.storeloc-cta::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: rgba(74,144,226,0.08);
+    pointer-events: none;
+}
+
+.storeloc-cta::after {
+    content: '';
+    position: absolute;
+    bottom: -80px;
+    left: -40px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: rgba(74,144,226,0.05);
+    pointer-events: none;
+}
+
+.storeloc-cta__inner { position: relative; z-index: 1; }
+
+.storeloc-cta__eyebrow {
+    display: inline-block;
+    background: rgba(74,144,226,0.2);
+    border: 1px solid rgba(74,144,226,0.4);
+    color: #4A90E2;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+}
+
+.storeloc-cta h2 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 12px;
+    letter-spacing: -0.02em;
+}
+
+.storeloc-cta p {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.55);
+    margin: 0 0 32px;
+}
+
+.storeloc-cta__actions {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.storeloc-cta__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 15px 32px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.3s ease;
+}
+
+.storeloc-cta__btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.5;
+}
+
+.storeloc-cta__btn--white {
+    background: #ffffff;
+    color: #1a1a1a;
+}
+
+.storeloc-cta__btn--white:hover {
+    background: #f0f0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255,255,255,0.15);
+}
+
+.storeloc-cta__btn--outline {
+    background: transparent;
+    color: #ffffff;
+    border: 1.5px solid rgba(255,255,255,0.3);
+}
+
+.storeloc-cta__btn--outline:hover {
+    border-color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.07);
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1024px) {
+    .storeloc-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .storeloc-hero { height: 320px; }
+    .storeloc-hero__title { font-size: 2.4rem; }
+
+    .storeloc-stats__inner { flex-wrap: wrap; }
+    .storeloc-stat {
+        flex: 0 0 50%;
+        border-bottom: 1px solid #2a2a2a;
+    }
+    .storeloc-stat:nth-child(even) { border-right: none; }
+    .storeloc-stat:nth-last-child(-n+2) { border-bottom: none; }
+
+    .storeloc-grid { grid-template-columns: 1fr; }
+
+    .storeloc-cta { padding: 44px 24px; }
+    .storeloc-cta h2 { font-size: 1.9rem; }
+}
+
+@media (max-width: 480px) {
+    .storeloc-hero__title { font-size: 1.9rem; }
+
+    .storeloc-stats__inner { flex-direction: column; }
+    .storeloc-stat { flex: 1; border-right: none !important; border-bottom: 1px solid #2a2a2a; }
+    .storeloc-stat:last-child { border-bottom: none; }
+
+    .storeloc-cta__actions { flex-direction: column; align-items: center; }
+    .storeloc-cta__btn { width: 100%; justify-content: center; }
+}
+</style>
+
+<!-- Hero -->
+<div class="storeloc-hero">
+    <div class="storeloc-hero__bg"></div>
+    <div class="storeloc-hero__content">
+        <div class="storeloc-hero__badge">{% trans "Locations" %}</div>
+        <h1 class="storeloc-hero__title">{% trans "Our" %} <span>{% trans "Store Locations" %}</span></h1>
+        <p class="storeloc-hero__subtitle">{% trans "Visit us at any of our convenient locations" %}</p>
     </div>
-    
-    <div class="locations-content">
-        <div class="container">
-            <!-- Map View -->
-            <div class="map-section">
-                <h2>Find Us on the Map</h2>
-                <div class="map-container">
-                    <!-- Google Maps embed or interactive map -->
-                    <div id="locationsMap" style="width: 100%; height: 500px; background: #e0e0e0;">
-                        <p>Google Maps will be embedded here</p>
-                    </div>
-                </div>
+</div>
+
+<!-- Stats Bar -->
+<div class="storeloc-stats">
+    <div class="storeloc-stats__inner">
+        <div class="storeloc-stat">
+            <div class="storeloc-stat__icon storeloc-stat__icon--blue">
+                <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             </div>
-            
-            <!-- Locations List -->
-            <div class="locations-list">
-                <h2>All Locations</h2>
-                
-                {% if locations_by_city %}
-                    {% for city, city_locations in locations_by_city.items %}
-                    <div class="city-section">
-                        <h3>{{ city }}</h3>
-                        
-                        <div class="locations-grid">
-                            {% for location in city_locations %}
-                            <div class="location-card">
-                                <div class="location-header">
-                                    <h4>{{ location.name }}</h4>
-                                    {% if location.is_flagship %}
-                                    <span class="badge flagship">Flagship Store</span>
-                                    {% endif %}
-                                    {% if location.offers_eye_test %}
-                                    <span class="badge eye-test">Eye Test Available</span>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="location-details">
-                                    <div class="detail-item">
-                                        <strong>Address:</strong>
-                                        <p>{{ location.address_line1 }}</p>
-                                        {% if location.address_line2 %}
-                                        <p>{{ location.address_line2 }}</p>
-                                        {% endif %}
-                                        <p>{{ location.city }}, {{ location.country }}</p>
-                                        {% if location.postal_code %}
-                                        <p>{{ location.postal_code }}</p>
-                                        {% endif %}
-                                    </div>
-                                    
-                                    <div class="detail-item">
-                                        <strong>Phone:</strong>
-                                        <p><a href="tel:{{ location.phone }}">{{ location.phone }}</a></p>
-                                    </div>
-                                    
-                                    {% if location.email %}
-                                    <div class="detail-item">
-                                        <strong>Email:</strong>
-                                        <p><a href="mailto:{{ location.email }}">{{ location.email }}</a></p>
-                                    </div>
-                                    {% endif %}
-                                    
-                                    <div class="detail-item">
-                                        <strong>Operating Hours:</strong>
-                                        {% if location.operating_hours %}
-                                        <div class="operating-hours">
-                                            {% for day, hours in location.operating_hours.items %}
-                                            <div class="hours-row">
-                                                <span class="day">{{ day|title }}:</span>
-                                                <span class="hours">{{ hours }}</span>
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-                                        {% else %}
-                                        <p>Contact store for hours</p>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                
-                                <div class="location-actions">
-                                    {% if location.google_maps_url %}
-                                    <a href="{{ location.google_maps_url }}" target="_blank" class="btn btn-outline">
-                                        Get Directions
-                                    </a>
-                                    {% endif %}
-                                    
-                                    {% if location.offers_eye_test %}
-                                    <a href="{% url 'content:eye_test_booking' %}?location={{ location.id }}" class="btn btn-primary">
-                                        Book Eye Test
-                                    </a>
-                                    {% endif %}
-                                    
-                                    <a href="{% url 'content:store_location_detail' location.pk %}" class="btn btn-outline">
-                                        View Details
-                                    </a>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                <p>No locations available at the moment.</p>
-                {% endif %}
+            <div class="storeloc-stat__text">
+                <strong>{{ locations.count }}</strong>
+                <span>{% trans "Total Stores" %}</span>
             </div>
         </div>
-    </div>
-    
-    <!-- CTA Section -->
-    <div class="cta-section">
-        <div class="container">
-            <h2>Can't Visit Our Store?</h2>
-            <p>Shop online and get your eyewear delivered to your doorstep</p>
-            <a href="{% url 'catalog:home' %}" class="btn btn-large">Shop Online</a>
+        <div class="storeloc-stat">
+            <div class="storeloc-stat__icon storeloc-stat__icon--green">
+                <svg viewBox="0 0 24 24"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg>
+            </div>
+            <div class="storeloc-stat__text">
+                <strong>{{ locations_by_city|length }}</strong>
+                <span>{% trans "Cities" %}</span>
+            </div>
+        </div>
+        <div class="storeloc-stat">
+            <div class="storeloc-stat__icon storeloc-stat__icon--orange">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <div class="storeloc-stat__text">
+                <strong>{% trans "Free" %}</strong>
+                <span>{% trans "Eye Tests" %}</span>
+            </div>
+        </div>
+        <div class="storeloc-stat">
+            <div class="storeloc-stat__icon storeloc-stat__icon--pink">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="storeloc-stat__text">
+                <strong>{% trans "Trusted" %}</strong>
+                <span>{% trans "Since 1927" %}</span>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Main -->
+<div class="storeloc-main">
+
+    <!-- Map Section -->
+    <div class="storeloc-map-section">
+        <div class="storeloc-section-header">
+            <div class="storeloc-section-icon">
+                <svg viewBox="0 0 24 24"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg>
+            </div>
+            <h2 class="storeloc-section-title">{% trans "Find Us on the Map" %}</h2>
+        </div>
+        <div class="storeloc-map-container">
+            <div id="locationsMap">
+                <!-- Google Maps loads here — replace with actual embed -->
+                <div class="storeloc-map-placeholder">
+                    <svg viewBox="0 0 24 24"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg>
+                    <p>{% trans "Interactive map loading…" %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Locations List -->
+    <div class="storeloc-locations-section">
+        <div class="storeloc-section-header">
+            <div class="storeloc-section-icon">
+                <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <h2 class="storeloc-section-title">{% trans "All Locations" %}</h2>
+        </div>
+
+        {% if locations_by_city %}
+            {% for city, city_locations in locations_by_city.items %}
+            <div class="storeloc-city-group">
+                <div class="storeloc-city-label">
+                    <span class="storeloc-city-label__text">{{ city }}</span>
+                    <span class="storeloc-city-label__line"></span>
+                    <span class="storeloc-city-label__count">{{ city_locations|length }} {% trans "store" %}{% if city_locations|length > 1 %}s{% endif %}</span>
+                </div>
+
+                <div class="storeloc-grid">
+                    {% for location in city_locations %}
+                    <div class="storeloc-card {% if location.is_flagship %}flagship{% endif %}">
+                        <div class="storeloc-card__bar"></div>
+
+                        <!-- Header -->
+                        <div class="storeloc-card__header">
+                            <div class="storeloc-card__header-left">
+                                <h4 class="storeloc-card__name">{{ location.name }}</h4>
+                                <div class="storeloc-card__badges">
+                                    {% if location.is_flagship %}
+                                    <span class="storeloc-badge storeloc-badge--flagship">
+                                        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                        {% trans "Flagship" %}
+                                    </span>
+                                    {% endif %}
+                                    {% if location.offers_eye_test %}
+                                    <span class="storeloc-badge storeloc-badge--eyetest">
+                                        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        {% trans "Eye Test" %}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="storeloc-card__header-icon">
+                                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            </div>
+                        </div>
+
+                        <!-- Body -->
+                        <div class="storeloc-card__body">
+
+                            <!-- Address -->
+                            <div class="storeloc-detail-row">
+                                <div class="storeloc-detail-row__icon">
+                                    <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                </div>
+                                <div class="storeloc-detail-row__content">
+                                    <div class="storeloc-detail-row__label">{% trans "Address" %}</div>
+                                    <div class="storeloc-detail-row__value">
+                                        {{ location.address_line1 }}<br>
+                                        {% if location.address_line2 %}{{ location.address_line2 }}<br>{% endif %}
+                                        {{ location.city }}, {{ location.country }}
+                                        {% if location.postal_code %}<br>{{ location.postal_code }}{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="storeloc-detail-row">
+                                <div class="storeloc-detail-row__icon">
+                                    <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                </div>
+                                <div class="storeloc-detail-row__content">
+                                    <div class="storeloc-detail-row__label">{% trans "Phone" %}</div>
+                                    <div class="storeloc-detail-row__value">
+                                        <a href="tel:{{ location.phone }}">{{ location.phone }}</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Email -->
+                            {% if location.email %}
+                            <div class="storeloc-detail-row">
+                                <div class="storeloc-detail-row__icon">
+                                    <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                </div>
+                                <div class="storeloc-detail-row__content">
+                                    <div class="storeloc-detail-row__label">{% trans "Email" %}</div>
+                                    <div class="storeloc-detail-row__value">
+                                        <a href="mailto:{{ location.email }}">{{ location.email }}</a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Operating Hours -->
+                            <div class="storeloc-detail-row">
+                                <div class="storeloc-detail-row__icon">
+                                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                </div>
+                                <div class="storeloc-detail-row__content">
+                                    <div class="storeloc-detail-row__label">{% trans "Operating Hours" %}</div>
+                                    <div class="storeloc-detail-row__value">
+                                        {% if location.operating_hours %}
+                                        <div class="storeloc-hours">
+                                            {% for day, hours in location.operating_hours.items %}
+                                            <div class="storeloc-hours-row">
+                                                <span class="storeloc-hours-row__day">{{ day|title }}</span>
+                                                <span class="storeloc-hours-row__time {% if hours == 'Closed' or hours == 'closed' %}storeloc-hours-row__time--closed{% endif %}">
+                                                    {{ hours }}
+                                                </span>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% else %}
+                                        <span style="color:#bbb;">{% trans "Contact store for hours" %}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div><!-- /card body -->
+
+                        <!-- Actions -->
+                        <div class="storeloc-card__actions">
+                            {% if location.google_maps_url %}
+                            <a href="{{ location.google_maps_url }}" target="_blank" rel="noopener" class="storeloc-btn storeloc-btn--outline">
+                                <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                {% trans "Directions" %}
+                            </a>
+                            {% endif %}
+                            {% if location.offers_eye_test %}
+                            <a href="{% url 'content:eye_test_booking' %}?location={{ location.id }}" class="storeloc-btn storeloc-btn--blue">
+                                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                {% trans "Book Eye Test" %}
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'content:store_location_detail' location.pk %}" class="storeloc-btn storeloc-btn--primary">
+                                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                {% trans "View Store" %}
+                            </a>
+                        </div>
+
+                    </div><!-- /card -->
+                    {% endfor %}
+                </div><!-- /grid -->
+            </div><!-- /city group -->
+            {% endfor %}
+
+        {% else %}
+        <div class="storeloc-empty">
+            <div class="storeloc-empty__icon">
+                <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <h4>{% trans "No locations available" %}</h4>
+            <p>{% trans "Please check back soon." %}</p>
+        </div>
+        {% endif %}
+
+    </div><!-- /locations section -->
+
+    <!-- CTA Banner -->
+    <div class="storeloc-cta">
+        <div class="storeloc-cta__inner">
+            <div class="storeloc-cta__eyebrow">{% trans "Shop Anytime" %}</div>
+            <h2>{% trans "Can't Visit Our Store?" %}</h2>
+            <p>{% trans "Shop our full collection online and get your eyewear delivered to your doorstep." %}</p>
+            <div class="storeloc-cta__actions">
+                <a href="{% url 'catalog:home' %}" class="storeloc-cta__btn storeloc-cta__btn--white">
+                    <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    {% trans "Shop Online" %}
+                </a>
+                <a href="{% url 'content:eye_test_booking' %}" class="storeloc-cta__btn storeloc-cta__btn--outline">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    {% trans "Book Eye Test" %}
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /main -->
+
 <script>
-// Initialize Google Maps when page loads
 function initMap() {
-    // This would contain actual Google Maps initialization code
-    // For now, it's a placeholder
+    // Initialize Google Maps here when API key is ready
+    const mapEl = document.getElementById('locationsMap');
+    if (!mapEl) return;
+    // Replace placeholder with actual map
     console.log('Map initialized');
 }
 </script>
