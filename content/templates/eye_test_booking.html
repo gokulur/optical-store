@@ -1235,7 +1235,7 @@ function loadLocationDetails() {
 
     if (!locationId) { box.style.display = 'none'; return; }
 
-    fetch(`/api/location-details/?location_id=${locationId}`)
+    fetch(`{% url 'content:get_location_details' %}?location_id=${locationId}`)
         .then(r => r.json())
         .then(data => {
             document.getElementById('locationAddress').textContent = data.address || '';
@@ -1270,7 +1270,7 @@ function loadAvailableTimes() {
     hidden.value = '';
     grid.innerHTML = `<div style="grid-column:1/-1;color:#aaa;font-size:0.85rem;padding:12px 0;">Loading slots…</div>`;
 
-    fetch(`/api/available-times/?location_id=${locationId}&date=${date}`)
+    fetch(`{% url 'content:get_available_times' %}?location_id=${locationId}&date=${date}`)
         .then(r => r.json())
         .then(data => {
             grid.innerHTML = '';
