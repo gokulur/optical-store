@@ -78,6 +78,7 @@
     color: #1a1a1a;
     background: #fff;
     box-shadow: 0 1px 3px rgba(0,0,0,.07);
+    word-break: break-word;
 }
 .msg--staff .msg__bubble {
     background: linear-gradient(135deg, #667eea, #764ba2);
@@ -110,10 +111,11 @@
     outline: none;
     transition: border .2s;
     font-family: inherit;
+    box-sizing: border-box;
 }
 .chat-panel__input textarea:focus { border-color: #667eea; }
 .input-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-.quick-replies-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.quick-replies-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
 .qr-chip {
     background: #f0f0f0;
     border: none;
@@ -148,7 +150,10 @@
 .side-card__header.dark   { background: linear-gradient(135deg, #1a1a1a, #333); }
 .side-card__body { padding: 16px 18px; }
 
-.info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f5f5f5; font-size: .84rem; }
+.info-row {
+    display: flex; justify-content: space-between;
+    padding: 6px 0; border-bottom: 1px solid #f5f5f5; font-size: .84rem;
+}
 .info-row:last-child { border-bottom: none; }
 .info-row__label { color: #999; }
 .info-row__value { font-weight: 600; color: #1a1a1a; text-align: right; max-width: 60%; }
@@ -185,6 +190,7 @@
         <h3><i class="mdi mdi-chat-processing"></i> Conversation: {{ conversation.conversation_id }}</h3>
         <p>{{ conversation.get_display_name }} &mdash; {{ conversation.subject }}</p>
       </div>
+      {# ✅ BUG 3 FIX: was {% url 'chat:agent_dashboard' %} — wrong app namespace #}
       <a href="{% url 'adminpanel:chat_list' %}" class="btn btn-light btn-sm">
         <i class="mdi mdi-arrow-left"></i> Back to List
       </a>
@@ -194,6 +200,7 @@
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb bg-transparent p-0 mb-4">
         <li class="breadcrumb-item"><a href="{% url 'adminpanel:dashboard' %}">Dashboard</a></li>
+        {# ✅ BUG 3 FIX: was {% url 'chat:agent_dashboard' %} — wrong app namespace #}
         <li class="breadcrumb-item"><a href="{% url 'adminpanel:chat_list' %}">Live Chat</a></li>
         <li class="breadcrumb-item active">{{ conversation.conversation_id }}</li>
       </ol>
@@ -208,11 +215,16 @@
           <div>
             <p class="chat-panel__title">{{ conversation.get_display_name }}</p>
             <p class="chat-panel__sub">
-              {% if conversation.status == 'open'        %}<span class="badge badge-warning">Open</span>
-              {% elif conversation.status == 'in_progress'%}<span class="badge badge-info">In Progress</span>
-              {% elif conversation.status == 'waiting'   %}<span class="badge badge-secondary">Waiting</span>
-              {% elif conversation.status == 'resolved'  %}<span class="badge badge-success">Resolved</span>
-              {% elif conversation.status == 'closed'    %}<span class="badge badge-dark">Closed</span>
+              {% if conversation.status == 'open' %}
+                <span class="badge badge-warning">Open</span>
+              {% elif conversation.status == 'in_progress' %}
+                <span class="badge badge-info">In Progress</span>
+              {% elif conversation.status == 'waiting' %}
+                <span class="badge badge-secondary">Waiting</span>
+              {% elif conversation.status == 'resolved' %}
+                <span class="badge badge-success">Resolved</span>
+              {% elif conversation.status == 'closed' %}
+                <span class="badge badge-dark">Closed</span>
               {% endif %}
               &nbsp;
               <span class="priority-{{ conversation.priority }}">{{ conversation.get_priority_display }}</span>
@@ -289,7 +301,7 @@
           </div>
         </div>
 
-      </div>
+      </div><!-- /chat-panel -->
 
       <!-- ── RIGHT: Sidebar ── -->
       <aside>
@@ -315,9 +327,7 @@
             {% endif %}
             <div class="info-row">
               <span class="info-row__label">Type</span>
-              <span class="info-row__value">
-                {% if conversation.user %}Registered{% else %}Guest{% endif %}
-              </span>
+              <span class="info-row__value">{% if conversation.user %}Registered{% else %}Guest{% endif %}</span>
             </div>
             {% if conversation.ip_address %}
             <div class="info-row">
@@ -384,147 +394,168 @@
         {% endif %}
 
       </aside>
-    </div>
+    </div><!-- /chat-layout -->
 
   </div>
 </div>
 
 <script>
-const CONV_ID   = '{{ conversation.conversation_id }}';
-const CSRF      = '{{ csrf_token }}';
-const msgInput  = document.getElementById('msgInput');
+/* ── Config ── */
+const CONV_ID = '{{ conversation.conversation_id }}';
+const CSRF    = '{{ csrf_token }}';
+
+/* ── URL paths — match chat_support/urls.py exactly ── */
+const URL_SEND     = `/chat/conversation/${CONV_ID}/send/`;
+const URL_MESSAGES = (lastId) => `/chat/conversation/${CONV_ID}/messages/?last_message_id=${lastId}`;
+const URL_ASSIGN   = `/chat/agent/conversation/${CONV_ID}/assign/`;
+const URL_STATUS   = `/chat/agent/conversation/${CONV_ID}/status/`;
+const URL_PRIORITY = `/chat/agent/conversation/${CONV_ID}/priority/`;
+const URL_QR       = (id) => `/chat/agent/quick-reply/${id}/`;
+
+const msgInput   = document.getElementById('msgInput');
 const messagesEl = document.getElementById('chatMessages');
 let lastId = {{ messages.last.id|default:0 }};
 
-// ── Helpers ─────────────────────────────────────────
 function scrollBottom() {
     messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-function showToast(msg, ok=true) {
+function showToast(msg, ok) {
+    if (ok === undefined) ok = true;
     const t = document.createElement('div');
-    t.style.cssText = `position:fixed;top:20px;right:20px;z-index:9999;padding:12px 22px;
-        border-radius:8px;font-size:.85rem;font-weight:600;color:#fff;
-        background:${ok?'#1bcfb4':'#fe7c96'};box-shadow:0 4px 12px rgba(0,0,0,.15)`;
+    t.style.cssText = `
+        position:fixed;top:20px;right:20px;z-index:9999;
+        padding:12px 22px;border-radius:8px;font-size:.85rem;
+        font-weight:600;color:#fff;
+        background:${ok ? '#1bcfb4' : '#fe7c96'};
+        box-shadow:0 4px 12px rgba(0,0,0,.15);
+        transition:opacity .3s;
+    `;
     t.textContent = msg;
     document.body.appendChild(t);
-    setTimeout(() => t.remove(), 3000);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
 }
 
-function post(url, data) {
+function postData(url, data) {
     const fd = new FormData();
     fd.append('csrfmiddlewaretoken', CSRF);
-    Object.entries(data).forEach(([k,v]) => fd.append(k,v));
-    return fetch(url, { method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:fd }).then(r=>r.json());
+    Object.entries(data).forEach(([k, v]) => fd.append(k, v));
+    return fetch(url, {
+        method: 'POST',
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        body: fd
+    }).then(r => r.json());
 }
 
-// ── Send Reply ────────────────────────────────────────
-function sendReply() {
-    const text = msgInput.value.trim();
-    if (!text) return;
-    document.getElementById('sendBtn').disabled = true;
-
-    post(`/chat/send/${CONV_ID}/`, { message: text })
-    .then(data => {
-        if (data.success) {
-            msgInput.value = '';
-            appendBubble(data.message);
-            lastId = data.message.id;
-        } else {
-            showToast('Failed to send', false);
-        }
-    })
-    .catch(() => showToast('Error sending message', false))
-    .finally(() => { document.getElementById('sendBtn').disabled = false; });
+function escHtml(s) {
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
 }
 
 function appendBubble(msg) {
+    if (msg.message_type === 'system') {
+        const div = document.createElement('div');
+        div.className = 'msg msg--system';
+        div.innerHTML = `<div class="msg__bubble">${escHtml(msg.message)}</div>`;
+        messagesEl.appendChild(div);
+        scrollBottom();
+        return;
+    }
+
     const isCustomer = msg.is_from_customer;
     const div = document.createElement('div');
     div.className = `msg msg--${isCustomer ? 'customer' : 'staff'}`;
-    const color = isCustomer ? 'e0e0e0&color=333' : '667eea&color=fff';
+    const bgColor = isCustomer ? 'e0e0e0&color=333' : '667eea&color=fff';
     div.innerHTML = `
-      <div class="msg__avatar">
-        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(msg.sender_name)}&background=${color}&size=32">
-      </div>
-      <div class="msg__body">
-        <div class="msg__bubble">${escHtml(msg.message)}</div>
-        <span class="msg__meta">${msg.sender_name} · ${msg.created_at}</span>
-      </div>`;
+        <div class="msg__avatar">
+            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(msg.sender_name || 'User')}&background=${bgColor}&size=32" alt="">
+        </div>
+        <div class="msg__body">
+            <div class="msg__bubble">${escHtml(msg.message).replace(/\n/g, '<br>')}</div>
+            <span class="msg__meta">${escHtml(msg.sender_name || '')} · ${msg.created_at}</span>
+        </div>`;
     messagesEl.appendChild(div);
     scrollBottom();
 }
 
-function escHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function sendReply() {
+    const text = msgInput.value.trim();
+    if (!text) return;
+
+    const sendBtn = document.getElementById('sendBtn');
+    sendBtn.disabled = true;
+
+    postData(URL_SEND, {message: text})
+        .then(data => {
+            if (data.success) {
+                msgInput.value = '';
+                appendBubble(data.message);
+                lastId = Math.max(lastId, data.message.id);
+            } else {
+                showToast('Failed to send: ' + (data.error || 'unknown error'), false);
+            }
+        })
+        .catch(e => { console.error(e); showToast('Network error', false); })
+        .finally(() => { sendBtn.disabled = false; });
 }
 
-// ── Poll new messages ─────────────────────────────────
+/* Poll for new customer messages only */
 setInterval(() => {
-    fetch(`/chat/messages/${CONV_ID}/?last_message_id=${lastId}`, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    fetch(URL_MESSAGES(lastId), {
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
     })
-    .then(r=>r.json())
+    .then(r => r.json())
     .then(data => {
         if (!data.success || !data.messages.length) return;
         data.messages.forEach(msg => {
             if (msg.id > lastId) {
                 lastId = msg.id;
-                appendBubble(msg);
+                if (msg.is_from_customer) appendBubble(msg);
             }
         });
-    });
+    })
+    .catch(() => {});
 }, 3000);
 
-// ── Assign to me ──────────────────────────────────────
 const assignBtn = document.getElementById('assignBtn');
 if (assignBtn) {
     assignBtn.addEventListener('click', () => {
-        post(`/chat/assign/${CONV_ID}/`, {})
-        .then(data => {
-            if (data.success) { showToast('Assigned to you!'); assignBtn.remove(); }
-        });
+        postData(URL_ASSIGN, {})
+            .then(data => {
+                if (data.success) { showToast('Assigned to you!'); assignBtn.remove(); }
+                else showToast('Assignment failed', false);
+            });
     });
 }
 
-// ── Resolve quick button ──────────────────────────────
 document.getElementById('resolveBtn').addEventListener('click', () => {
     document.getElementById('statusSelect').value = 'resolved';
-    post(`/chat/status/${CONV_ID}/`, { status: 'resolved' })
-    .then(() => showToast('Marked as resolved ✓'));
+    postData(URL_STATUS, {status: 'resolved'}).then(() => showToast('Marked as resolved ✓'));
 });
 
-// ── Status change ─────────────────────────────────────
 document.getElementById('statusSelect').addEventListener('change', function() {
-    post(`/chat/status/${CONV_ID}/`, { status: this.value })
-    .then(() => showToast('Status updated'));
+    postData(URL_STATUS, {status: this.value}).then(() => showToast('Status updated'));
 });
 
-// ── Priority change ───────────────────────────────────
 document.getElementById('prioritySelect').addEventListener('change', function() {
-    post(`/chat/priority/${CONV_ID}/`, { priority: this.value })
-    .then(() => showToast('Priority updated'));
+    postData(URL_PRIORITY, {priority: this.value}).then(() => showToast('Priority updated'));
 });
 
-// ── Send button & keyboard ────────────────────────────
 document.getElementById('sendBtn').addEventListener('click', sendReply);
 msgInput.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); sendReply(); }
 });
 
-// ── Quick replies ─────────────────────────────────────
 document.querySelectorAll('.qr-chip').forEach(chip => {
     chip.addEventListener('click', () => {
         msgInput.value = chip.dataset.message;
         msgInput.focus();
-        // Increment usage
-        fetch(`/chat/quick-reply/${chip.dataset.id}/`, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        });
+        fetch(URL_QR(chip.dataset.id), {headers: {'X-Requested-With': 'XMLHttpRequest'}}).catch(() => {});
     });
 });
 
-// ── Init ──────────────────────────────────────────────
 scrollBottom();
 </script>
 {% endblock %}

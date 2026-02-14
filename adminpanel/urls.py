@@ -37,19 +37,19 @@ urlpatterns = [
     path("contact-lenses/colors/edit/<int:color_id>/", views.contact_lens_color_edit, name="contact_lens_color_edit"),
     path("contact-lenses/colors/delete/<int:color_id>/", views.contact_lens_color_delete, name="contact_lens_color_delete"),
 
-    # --- LENS CATEGORIES (Single Vision, Progressive etc.) ---
+    # --- LENS CATEGORIES ---
     path("lens-categories/", views.lens_category_list, name="lens_category_list"),
     path("lens-categories/add/", views.lens_category_add, name="lens_category_add"),
     path("lens-categories/edit/<int:cat_id>/", views.lens_category_edit, name="lens_category_edit"),
     path("lens-categories/delete/<int:cat_id>/", views.lens_category_delete, name="lens_category_delete"),
 
-    # --- LENS OPTIONS (Configuration & Pricing) ---
+    # --- LENS OPTIONS ---
     path("lens-options/", views.lens_option_list, name="lens_option_list"),
     path("lens-options/add/", views.lens_option_add, name="lens_option_add"),
     path("lens-options/edit/<int:option_id>/", views.lens_option_edit, name="lens_option_edit"),
     path("lens-options/delete/<int:option_id>/", views.lens_option_delete, name="lens_option_delete"),
 
-    # --- LENS ADD-ONS (Coatings etc.) ---
+    # --- LENS ADD-ONS ---
     path("lens-addons/", views.lens_addon_list, name="lens_addon_list"),
     path("lens-addons/add/", views.lens_addon_add, name="lens_addon_add"),
     path("lens-addons/edit/<int:addon_id>/", views.lens_addon_edit, name="lens_addon_edit"),
@@ -92,16 +92,15 @@ urlpatterns = [
     path("tags/edit/<int:tag_id>/", views.tag_edit, name="tag_edit"),
     path("tags/delete/<int:tag_id>/", views.tag_delete, name="tag_delete"),
 
-
-    #store locations
+    # --- STORE LOCATIONS ---
     path('stores/', views.store_list, name='store_list'),
     path('stores/add/', views.store_add, name='store_add'),
     path('stores/<int:store_id>/edit/', views.store_edit, name='store_edit'),
     path('stores/<int:store_id>/delete/', views.store_delete, name='store_delete'),
 
-
-    path('chat/',                            views.chat_list,         name='chat_list'),
-    path('chat/<str:conversation_id>/',      views.chat_conversation,  name='chat_conversation'),
-    path('chat/agent-status/',               views.chat_agent_status,  name='chat_agent_status'),
+    # --- LIVE CHAT ---
  
+    path('chat/', views.chat_list, name='chat_list'),
+    path('chat/agent-status/', views.chat_agent_status, name='chat_agent_status'),  # ← specific first
+    path('chat/<str:conversation_id>/', views.chat_conversation, name='chat_conversation'),  # ← catch-all last
 ]
