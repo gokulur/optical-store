@@ -88,7 +88,7 @@
                             {{ booking.user.first_name|first|upper }}
                         </div>
                         <div>
-                            <div class="font-weight-bold">{{ booking.user.first_name }} {{ booking.user.last_name }}</div>
+                            <div class="font-weight-bold">{{ booking.customer.first_name }} {{ booking.customer.last_name }}</div>
                             <small class="text-muted">#{{ booking.id }}</small>
                         </div>
                       </div>
@@ -98,7 +98,8 @@
                         <div class="booking-time"><i class="mdi mdi-clock-outline"></i> {{ booking.booking_time|time:"h:i A" }}</div>
                     </td>
                     <td>
-                        <div><i class="mdi mdi-phone-outline text-muted"></i> {{ booking.phone|default:booking.user.phone_number }}</div>
+                        <div><i class="mdi mdi-phone-outline text-muted"></i> {{ booking.customer_phone|default:booking.customer.phone }}
+</div>
                     </td>
                     <td>
                         {% if booking.status == 'pending' %}
