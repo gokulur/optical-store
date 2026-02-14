@@ -101,6 +101,15 @@ urlpatterns = [
     # --- LIVE CHAT ---
  
     path('chat/', views.chat_list, name='chat_list'),
-    path('chat/agent-status/', views.chat_agent_status, name='chat_agent_status'),  # ← specific first
-    path('chat/<str:conversation_id>/', views.chat_conversation, name='chat_conversation'),  # ← catch-all last
+    path('chat/agent-status/', views.chat_agent_status, name='chat_agent_status'),  
+    path('chat/<str:conversation_id>/', views.chat_conversation, name='chat_conversation'),  
+
+
+    # --- BANNER URLS ---
+    path('banners/',                           views.banner_list,          name='banner_list'),
+    path('banners/add/',                       views.banner_add,           name='banner_add'),
+    path('banners/<int:banner_id>/edit/',      views.banner_edit,          name='banner_edit'),
+    path('banners/<int:banner_id>/delete/',    views.banner_delete,        name='banner_delete'),
+    path('banners/<int:banner_id>/toggle/',    views.banner_toggle_active, name='banner_toggle_active'),
+
 ]

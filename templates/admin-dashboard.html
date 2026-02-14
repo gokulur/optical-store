@@ -296,15 +296,33 @@
             </ul>
           </div>
         </li>
- <li class="nav-item menu-items">
-   <a class="nav-link {% if request.resolver_match.url_name == 'chat_list' or request.resolver_match.url_name == 'chat_conversation' %}active{% endif %}"
-      href="{% url 'adminpanel:chat_list' %}">
-     <span class="menu-icon"><i class="mdi mdi-chat"></i></span>
-    <span class="menu-title">Live Chat</span>
-     {% if unread_chat_count > 0 %}
-     <span class="badge badge-danger ml-auto">{{ unread_chat_count }}</span>
-     {% endif %}
-   </a>
+
+        
+      <li class="nav-item menu-items">
+        <a class="nav-link {% if request.resolver_match.url_name == 'chat_list' or request.resolver_match.url_name == 'chat_conversation' %}active{% endif %}"
+            href="{% url 'adminpanel:chat_list' %}">
+          <span class="menu-icon"><i class="mdi mdi-chat"></i></span>
+          <span class="menu-title">Live Chat</span>
+          {% if unread_chat_count > 0 %}
+          <span class="badge badge-danger ml-auto">{{ unread_chat_count }}</span>
+          {% endif %}
+        </a>
+      </li>
+
+
+<!-- Banners -->
+<li class="nav-item menu-items">
+  <a class="nav-link" data-toggle="collapse" href="#bannerMenu">
+    <span class="menu-icon"><i class="mdi mdi-image-multiple"></i></span>
+    <span class="menu-title">Banners</span>
+    <i class="menu-arrow"></i>
+  </a>
+  <div class="collapse" id="bannerMenu">
+    <ul class="nav flex-column sub-menu">
+      <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:banner_list' %}">All Banners</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:banner_add' %}">Add Banner</a></li>
+    </ul>
+  </div>
 </li>
 
   <!-- Customers -->
