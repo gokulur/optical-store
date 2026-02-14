@@ -1081,243 +1081,176 @@
 
 <!-- Hero Banner Carousel -->
 <section class="shopify-section section">
-    <section class="xo-section--slideshow">
-        <xo-carousel xo-render-bullet="<span></span>" xo-type="nature" xo-speed="400" xo-loop="" xo-hover-pause=""
-            style="--xo-per-view: 1; --xo-gap: 0px; --xo-speed: 400ms; --xo-pagination-progress: 0%; --xo-mask: url('https://raw.githubusercontent.com/long-hp/storage/main/nature-sprite.png');"
-            xo-mask-initialized="" xo-initialized="">
-            <xo-carousel-inner style="overflow: hidden; height: 700px; transition: height 400ms;">
-                <xo-carousel-list role="list" aria-label="Slider" style="touch-action: none; outline: none;">
+  <section class="xo-section--slideshow">
+    <xo-carousel
+      xo-render-bullet="<span></span>"
+      xo-type="nature"
+      xo-speed="400"
+      xo-loop=""
+      xo-hover-pause=""
+      style="--xo-per-view:1;--xo-gap:0px;--xo-speed:400ms;--xo-pagination-progress:0%;--xo-mask:url('https://raw.githubusercontent.com/long-hp/storage/main/nature-sprite.png');"
+      xo-mask-initialized=""
+      xo-initialized="">
 
-                    <!-- Slide 1 -->
-                    <xo-carousel-slide aria-roledescription="Slide" aria-label="1 / 3" xo-carousel-slide=""
-                        role="tabpanel" xo-active="" xo-center="" xo-visible="">
-                        <div class="xo-slideshow color-inverse" style="--margin: 0;">
-                            <xo-animate class="slideshow-bg" xo-disabled="" xo-duration="1000"
-                                style="--img-desktop: url('{% static "cdn/shop/files/optical-banner-1.jpg" %}'); --img-mobile: url('{% static "cdn/shop/files/optical-banner-1.jpg" %}');">
-                                <div class="slideshow-bg-image__item">
-                                    <div class="slideshow-bg-image__url xo-background-lazyload"
-                                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                    </div>
-                                </div>
-                            </xo-animate>
+      <xo-carousel-inner style="overflow:hidden;height:700px;transition:height 400ms;">
+        <xo-carousel-list role="list" aria-label="Slider" style="touch-action:none;outline:none;">
 
-                            <xo-container class="xo-container--box">
-                                <xo-grid style="--height-desktop: 700; --height-mobile: 500; --pt: 0; --pb: 0;"
-                                    class="slideshow-v56__content">
-                                    <div style="--xs: 12; --md: 6; --start-md: 7; --align-items: center; --text-align: center;"
-                                        class="slideshow-v56__text">
-                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="3">
-                                            <h2 class="slideshow-v56__title" style="--fontsize: 6; --fontweight: 500">
-                                                {% trans "Your Vision Matters More" %}
-                                            </h2>
-                                        </xo-animate>
+          {% for slide in hero_slides %}
+          <xo-carousel-slide
+            aria-roledescription="Slide"
+            aria-label="{{ forloop.counter }} / {{ hero_slides|length }}"
+            xo-carousel-slide=""
+            role="tabpanel"
+            {% if forloop.first %}xo-active="" xo-center="" xo-visible=""{% endif %}
+            {% if forloop.counter == 2 %}xo-next=""{% endif %}>
 
-                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="5">
-                                            <p class="slideshow-v56__description"
-                                                style="--fontsize: 1.6; --fontweight: 400">
-                                                {% trans "Discover Advanced Eye Care at Al Ameen Optics. Prepare for an exceptional eye care experience with our comprehensive vision assessment and expert optical services." %}
-                                            </p>
-                                        </xo-animate>
+            <div class="xo-slideshow color-inverse" style="--margin:0;">
 
-                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="7" xo-strength="3">
-                                            <a class="xo-btn xo-btn--light xo-btn--tertiary xo-btn--sm xo-btn--slide-up"
-                                                style="border-radius: 0.8rem; padding-left: 1.4rem; padding-right: 1.4rem;"
-                                                href="{% url 'about' %}">
-                                                <span class="xo-btn__content">
-                                                    <span class="xo-btn__text" data-text="{% trans 'Read More' %}">
-                                                        {% trans "Read More" %}
-                                                    </span>
-                                                </span>
-                                                <span class="xo-btn__loading">
-                                                    <div class="xo-loader-3"
-                                                        style="--size: 8; --color: currentColor; --duration: 1000;">
-                                                        <div></div>
-                                                    </div>
-                                                </span>
-                                            </a>
-                                        </xo-animate>
-                                    </div>
+              {# Background image — falls back to gradient if no image uploaded #}
+              <xo-animate class="slideshow-bg" xo-disabled="" xo-duration="1000"
+                style="--img-desktop:url('{% if slide.image_desktop %}{{ slide.image_desktop.url }}{% endif %}');
+                       --img-mobile:url('{% if slide.image_mobile %}{{ slide.image_mobile.url }}{% elif slide.image_desktop %}{{ slide.image_desktop.url }}{% endif %}');">
+                <div class="slideshow-bg-image__item">
+                  <div class="slideshow-bg-image__url xo-background-lazyload"
+                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                  </div>
+                </div>
+              </xo-animate>
 
-                                    <div class="carousel-pagination-style3 slideshow-v56__pagination">
-                                        <div class="carousel-pagination-style3__pagination-wrap">
-                                            <xo-carousel-pagination class="carousel-pagination-style3__pagination">
-                                                <xo-carousel-bullet xo-index="0" xo-page="1" role="button" tabindex="0"
-                                                    aria-label="Bullet 1" xo-active="">
-                                                    <span></span>
-                                                </xo-carousel-bullet>
-                                                <xo-carousel-bullet xo-index="1" xo-page="2" role="button" tabindex="0"
-                                                    aria-label="Bullet 2">
-                                                    <span></span>
-                                                </xo-carousel-bullet>
-                                                <xo-carousel-bullet xo-index="2" xo-page="3" role="button" tabindex="0"
-                                                    aria-label="Bullet 3">
-                                                    <span></span>
-                                                </xo-carousel-bullet>
-                                            </xo-carousel-pagination>
-                                            <xo-carousel-pagination-bullet-active
-                                                xo-carousel-bullet-selector=".carousel-pagination-style3__pagination xo-carousel-bullet"
-                                                xo-duration="100"
-                                                style="--xo-duration: 100ms; opacity: 1; height: 8px; left: 0px; width: 8px;">
-                                            </xo-carousel-pagination-bullet-active>
-                                        </div>
-                                    </div>
-                                </xo-grid>
-                            </xo-container>
+              <xo-container class="xo-container--box">
+                <xo-grid style="--height-desktop:700;--height-mobile:500;--pt:0;--pb:0;"
+                  class="slideshow-v56__content">
 
-                            <div class="slideshow-v56__arrows">
-                                <xo-carousel-prev class="carousel-navigation-style3" aria-label="Slide left">
-                                    <div
-                                        class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--left">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24"
-                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <polyline points="15 18 9 12 15 6"></polyline>
-                                        </svg>
-                                    </div>
-                                    <div
-                                        class="carousel-navigation-style3__icon-after carousel-navigation-style3__icon-after--left">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24"
-                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <polyline points="15 18 9 12 15 6"></polyline>
-                                        </svg>
-                                    </div>
-                                </xo-carousel-prev>
-                                <xo-carousel-next class="carousel-navigation-style3" aria-label="Slide right">
-                                    <div
-                                        class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--right">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24"
-                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <polyline points="9 18 15 12 9 6"></polyline>
-                                        </svg>
-                                    </div>
-                                    <div
-                                        class="carousel-navigation-style3__icon-after carousel-navigation-style3__icon-after--right">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24"
-                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <polyline points="9 18 15 12 9 6"></polyline>
-                                        </svg>
-                                    </div>
-                                </xo-carousel-next>
-                            </div>
-                        </div>
-                    </xo-carousel-slide>
+                  <div style="--xs:12;--md:6;--start-md:7;--align-items:center;--text-align:center;"
+                    class="slideshow-v56__text">
 
-                    <!-- Slide 2 -->
-                    <xo-carousel-slide aria-roledescription="Slide" aria-label="2 / 3" xo-carousel-slide=""
-                        role="tabpanel" xo-next="">
-                        <div class="xo-slideshow color-inverse" style="--margin: 0;">
-                            <xo-animate class="slideshow-bg" xo-disabled="" xo-duration="1000"
-                                style="--img-desktop: url('{% static "cdn/shop/files/optical-banner-2.jpg" %}'); --img-mobile: url('{% static "cdn/shop/files/optical-banner-2.jpg" %}');">
-                                <div class="slideshow-bg-image__item">
-                                    <div class="slideshow-bg-image__url xo-background-lazyload"
-                                        style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                                    </div>
-                                </div>
-                            </xo-animate>
+                    {% if slide.slide_heading %}
+                    <xo-animate xo-type="fade-up" xo-duration="700" xo-order="3">
+                      <h2 class="slideshow-v56__title" style="--fontsize:6;--fontweight:500">
+                        {{ slide.slide_heading }}
+                      </h2>
+                    </xo-animate>
+                    {% endif %}
 
-                            <xo-container class="xo-container--box">
-                                <xo-grid style="--height-desktop: 700; --height-mobile: 500; --pt: 0; --pb: 0;"
-                                    class="slideshow-v56__content">
-                                    <div style="--xs: 12; --md: 6; --start-md: 7; --align-items: center; --text-align: center;"
-                                        class="slideshow-v56__text">
-                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="3">
-                                            <h2 class="slideshow-v56__title" style="--fontsize: 6; --fontweight: 500">
-                                                {% trans "Premium Eyewear Collection" %}
-                                            </h2>
-                                        </xo-animate>
+                    {% if slide.slide_description %}
+                    <xo-animate xo-type="fade-up" xo-duration="700" xo-order="5">
+                      <p class="slideshow-v56__description" style="--fontsize:1.6;--fontweight:400">
+                        {{ slide.slide_description }}
+                      </p>
+                    </xo-animate>
+                    {% endif %}
 
-                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="5">
-                                            <p class="slideshow-v56__description"
-                                                style="--fontsize: 1.6; --fontweight: 400">
-                                                {% trans "Explore our curated selection of designer frames and sunglasses from world-renowned brands. Find the perfect eyewear that complements your unique style." %}
-                                            </p>
-                                        </xo-animate>
+                    {% if slide.link_url %}
+                    <xo-animate xo-type="fade-up" xo-duration="700" xo-order="7" xo-strength="3">
+                      <a class="xo-btn xo-btn--light xo-btn--tertiary xo-btn--sm xo-btn--slide-up"
+                        style="border-radius:0.8rem;padding-left:1.4rem;padding-right:1.4rem;"
+                        href="{{ slide.link_url }}">
+                        <span class="xo-btn__content">
+                          <span class="xo-btn__text" data-text="{{ slide.cta_text|default:'Read More' }}">
+                            {{ slide.cta_text|default:"Read More" }}
+                          </span>
+                        </span>
+                        <span class="xo-btn__loading">
+                          <div class="xo-loader-3" style="--size:8;--color:currentColor;--duration:1000;"><div></div></div>
+                        </span>
+                      </a>
+                    </xo-animate>
+                    {% endif %}
 
-                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="7" xo-strength="3">
-                                            <a class="xo-btn xo-btn--light xo-btn--tertiary xo-btn--sm xo-btn--slide-up"
-                                                style="border-radius: 0.8rem; padding-left: 1.4rem; padding-right: 1.4rem;"
-                                                href=" ">
-                                                <span class="xo-btn__content">
-                                                    <span class="xo-btn__text" data-text="{% trans 'Shop Now' %}">
-                                                        {% trans "Shop Now" %}
-                                                    </span>
-                                                </span>
-                                                <span class="xo-btn__loading">
-                                                    <div class="xo-loader-3"
-                                                        style="--size: 8; --color: currentColor; --duration: 1000;">
-                                                        <div></div>
-                                                    </div>
-                                                </span>
-                                            </a>
-                                        </xo-animate>
-                                    </div>
-                                </xo-grid>
-                            </xo-container>
-                        </div>
-                    </xo-carousel-slide>
+                    {# Pagination bullets — only on the first slide so xo-carousel renders them correctly #}
+                    {% if forloop.first %}
+                    <div class="carousel-pagination-style3 slideshow-v56__pagination">
+                      <div class="carousel-pagination-style3__pagination-wrap">
+                        <xo-carousel-pagination class="carousel-pagination-style3__pagination">
+                          {% for s in hero_slides %}
+                          <xo-carousel-bullet xo-index="{{ forloop.counter0 }}" xo-page="{{ forloop.counter }}"
+                            role="button" tabindex="0" aria-label="Bullet {{ forloop.counter }}"
+                            {% if forloop.first %}xo-active=""{% endif %}>
+                            <span></span>
+                          </xo-carousel-bullet>
+                          {% endfor %}
+                        </xo-carousel-pagination>
+                        <xo-carousel-pagination-bullet-active
+                          xo-carousel-bullet-selector=".carousel-pagination-style3__pagination xo-carousel-bullet"
+                          xo-duration="100"
+                          style="--xo-duration:100ms;opacity:1;height:8px;left:0px;width:8px;">
+                        </xo-carousel-pagination-bullet-active>
+                      </div>
+                    </div>
+                    {% endif %}
 
-                    <!-- Slide 3 -->
-                    <xo-carousel-slide aria-roledescription="Slide" aria-label="3 / 3" xo-carousel-slide=""
-                        role="tabpanel">
-                        <div class="xo-slideshow color-inverse" style="--margin: 0;">
-                            <xo-animate class="slideshow-bg" xo-disabled="" xo-duration="1000"
-                                style="--img-desktop: url('{% static "cdn/shop/files/optical-banner-3.jpg" %}'); --img-mobile: url('{% static "cdn/shop/files/optical-banner-3.jpg" %}');">
-                                <div class="slideshow-bg-image__item">
-                                    <div class="slideshow-bg-image__url xo-background-lazyload"
-                                        style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                                    </div>
-                                </div>
-                            </xo-animate>
+                  </div>
+                </xo-grid>
+              </xo-container>
 
-                            <xo-container class="xo-container--box">
-                                <xo-grid style="--height-desktop: 700; --height-mobile: 500; --pt: 0; --pb: 0;"
-                                    class="slideshow-v56__content">
-                                    <div style="--xs: 12; --md: 6; --start-md: 7; --align-items: center; --text-align: center;"
-                                        class="slideshow-v56__text">
-                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="3">
-                                            <h2 class="slideshow-v56__title" style="--fontsize: 6; --fontweight: 500">
-                                                {% trans "Expert Eye Care Services" %}
-                                            </h2>
-                                        </xo-animate>
+              {# Navigation arrows — only on the first slide #}
+              {% if forloop.first %}
+              <div class="slideshow-v56__arrows">
+                <xo-carousel-prev class="carousel-navigation-style3" aria-label="Slide left">
+                  <div class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--left">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </div>
+                  <div class="carousel-navigation-style3__icon-after carousel-navigation-style3__icon-after--left">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </div>
+                </xo-carousel-prev>
+                <xo-carousel-next class="carousel-navigation-style3" aria-label="Slide right">
+                  <div class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--right">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </div>
+                  <div class="carousel-navigation-style3__icon-after carousel-navigation-style3__icon-after--right">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </div>
+                </xo-carousel-next>
+              </div>
+              {% endif %}
 
-                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="5">
-                                            <p class="slideshow-v56__description"
-                                                style="--fontsize: 1.6; --fontweight: 400">
-                                                {% trans "Our certified optometrists provide comprehensive eye examinations using state-of-the-art technology. Book your free eye test today." %}
-                                            </p>
-                                        </xo-animate>
+            </div>
+          </xo-carousel-slide>
+          {% empty %}
+          {# Fallback if no banners are published yet #}
+          <xo-carousel-slide xo-carousel-slide="" role="tabpanel" xo-active="" xo-center="" xo-visible="">
+            <div class="xo-slideshow color-inverse" style="--margin:0;">
+              <xo-animate class="slideshow-bg" xo-disabled="" xo-duration="1000">
+                <div class="slideshow-bg-image__item">
+                  <div class="slideshow-bg-image__url xo-background-lazyload"
+                    style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
+                  </div>
+                </div>
+              </xo-animate>
+              <xo-container class="xo-container--box">
+                <xo-grid style="--height-desktop:700;--height-mobile:500;--pt:0;--pb:0;" class="slideshow-v56__content">
+                  <div style="--xs:12;--md:6;--start-md:7;--align-items:center;--text-align:center;" class="slideshow-v56__text">
+                    <h2 class="slideshow-v56__title" style="--fontsize:6;--fontweight:500">Your Vision Matters More</h2>
+                    <p class="slideshow-v56__description" style="--fontsize:1.6;--fontweight:400">
+                      Add hero slides from the admin panel → Hero Banners.
+                    </p>
+                  </div>
+                </xo-grid>
+              </xo-container>
+            </div>
+          </xo-carousel-slide>
+          {% endfor %}
 
-                                        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="7" xo-strength="3">
-                                            <a class="xo-btn xo-btn--light xo-btn--tertiary xo-btn--sm xo-btn--slide-up"
-                                                style="border-radius: 0.8rem; padding-left: 1.4rem; padding-right: 1.4rem;"
-                                                href=" ">
-                                                <span class="xo-btn__content">
-                                                    <span class="xo-btn__text" data-text="{% trans 'Book Free Eye Test' %}">
-                                                        {% trans "Book Free Eye Test" %}
-                                                    </span>
-                                                </span>
-                                                <span class="xo-btn__loading">
-                                                    <div class="xo-loader-3"
-                                                        style="--size: 8; --color: currentColor; --duration: 1000;">
-                                                        <div></div>
-                                                    </div>
-                                                </span>
-                                            </a>
-                                        </xo-animate>
-                                    </div>
-                                </xo-grid>
-                            </xo-container>
-                        </div>
-                    </xo-carousel-slide>
-
-                </xo-carousel-list>
-            </xo-carousel-inner>
-        </xo-carousel>
-    </section>
+        </xo-carousel-list>
+      </xo-carousel-inner>
+    </xo-carousel>
+  </section>
 </section>
+
+
 <!-- Featured Products Section -->
 <section class="shopify-section section">
     <div class="xo-section xo-section--featured-products color-background-1" style="--margin: 0; --pt: 50; --pb: 50; z-index: 98">
