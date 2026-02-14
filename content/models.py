@@ -50,6 +50,10 @@ class Banner(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    slide_heading     = models.CharField(max_length=200, blank=True)
+    slide_description = models.TextField(blank=True)
+    cta_text          = models.CharField(max_length=80, blank=True, default='Read More')
     
     class Meta:
         db_table = 'content_banners'
