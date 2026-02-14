@@ -1610,19 +1610,15 @@ def admin_chat_context(request):
 @user_passes_test(is_admin)
 def banner_list(request):
     banner_type = request.GET.get('banner_type', '')
-    placement = request.GET.get('placement', '')
-    search = request.GET.get('search', '')
+    placement   = request.GET.get('placement', '')
+    search      = request.GET.get('search', '')
 
     banners = Banner.objects.all().order_by('placement', 'display_order')
 
-    # Stats
-    total_count = Banner.objects.count()
-    active_count = Banner.objects.filter(is_active=True).count()
-    inactive_count = Banner.objects.filter(is_active=False).count()
-    scheduled_count = Banner.objects.filter(
-        is_active=True,
-        start_date__isnull=False
-    ).count()
+    total_count     = Banner.objects.count()
+    active_count    = Banner.objects.filter(is_active=True).count()
+    inactive_count  = Banner.objects.filter(is_active=False).count()
+    scheduled_count = Banner.objects.filter(is_active=True, start_date__isnull=False).count()
 
     if banner_type:
         banners = banners.filter(banner_type=banner_type)
@@ -1632,18 +1628,18 @@ def banner_list(request):
         banners = banners.filter(title__icontains=search)
 
     paginator = Paginator(banners, 20)
-    banners = paginator.get_page(request.GET.get('page', 1))
+    banners   = paginator.get_page(request.GET.get('page', 1))
 
     return render(request, 'adminpanel/banners/list.html', {
-        'banners': banners,
-        'banner_type': banner_type,
-        'placement': placement,
-        'search': search,
-        'total_count': total_count,
-        'active_count': active_count,
-        'inactive_count': inactive_count,
-        'scheduled_count': scheduled_count,
-        'banner_types': Banner.BANNER_TYPES,
+        'banners':           banners,
+        'banner_type':       banner_type,
+        'placement':         placement,
+        'search':            search,
+        'total_count':       total_count,
+        'active_count':      active_count,
+        'inactive_count':    inactive_count,
+        'scheduled_count':   scheduled_count,
+        'banner_types':      Banner.BANNER_TYPES,
         'placement_choices': Banner.PLACEMENT_CHOICES,
     })
 
@@ -1654,36 +1650,36 @@ def banner_add(request):
     if request.method == 'POST':
         try:
             Banner.objects.create(
-                title=request.POST.get('title'),
-                banner_type=request.POST.get('banner_type'),
-                placement=request.POST.get('placement'),
-                image_desktop=request.FILES.get('image_desktop'),
-                image_mobile=request.FILES.get('image_mobile') or None,
-                image_tablet=request.FILES.get('image_tablet') or None,
-                link_url=request.POST.get('link_url', ''),
-                link_type=request.POST.get('link_type', ''),
-                linked_product_id=request.POST.get('linked_product_id') or None,
-                start_date=request.POST.get('start_date') or None,
-                end_date=request.POST.get('end_date') or None,
-                display_order=request.POST.get('display_order', 0),
-                is_active=request.POST.get('is_active') == 'on',
-                auto_slide=request.POST.get('auto_slide') == 'on',
-                slide_duration=request.POST.get('slide_duration', 5),
+                title              = request.POST.get('title'),
+                banner_type        = request.POST.get('banner_type'),
+                placement          = request.POST.get('placement'),
+                image_desktop      = request.FILES.get('image_desktop'),
+                image_mobile       = request.FILES.get('image_mobile') or None,
+                image_tablet       = request.FILES.get('image_tablet') or None,
+                link_url           = request.POST.get('link_url', ''),
+                link_type          = request.POST.get('link_type', ''),
+                linked_product_id  = request.POST.get('linked_product_id') or None,
+                start_date         = request.POST.get('start_date') or None,
+                end_date           = request.POST.get('end_date') or None,
+                display_order      = request.POST.get('display_order', 0),
+                is_active          = request.POST.get('is_active') == 'on',
+                auto_slide         = request.POST.get('auto_slide') == 'on',
+                slide_duration     = request.POST.get('slide_duration', 5),
             )
-            messages.success(request, 'Banner created successfully!')
+            messages.success(request, 'Banner (slide) created successfully!')
             return redirect('adminpanel:banner_list')
         except Exception as e:
             messages.error(request, f'Error: {str(e)}')
 
     return render(request, 'adminpanel/banners/add.html', {
-        'banner_types': Banner.BANNER_TYPES,
+        'banner_types':      Banner.BANNER_TYPES,
         'placement_choices': Banner.PLACEMENT_CHOICES,
         'link_type_choices': [
-            ('product', 'Product'),
-            ('category', 'Category'),
-            ('brand', 'Brand'),
-            ('page', 'Page'),
-            ('external', 'External'),
+            ('product',  'Product Page'),
+            ('category', 'Category Page'),
+            ('brand',    'Brand Page'),
+            ('page',     'Static Page'),
+            ('external', 'External URL'),
         ],
     })
 
@@ -1695,28 +1691,26 @@ def banner_edit(request, banner_id):
 
     if request.method == 'POST':
         try:
-            banner.title = request.POST.get('title')
-            banner.banner_type = request.POST.get('banner_type')
-            banner.placement = request.POST.get('placement')
-            banner.link_url = request.POST.get('link_url', '')
-            banner.link_type = request.POST.get('link_type', '')
+            banner.title             = request.POST.get('title')
+            banner.banner_type       = request.POST.get('banner_type')
+            banner.placement         = request.POST.get('placement')
+            banner.link_url          = request.POST.get('link_url', '')
+            banner.link_type         = request.POST.get('link_type', '')
             banner.linked_product_id = request.POST.get('linked_product_id') or None
-            banner.start_date = request.POST.get('start_date') or None
-            banner.end_date = request.POST.get('end_date') or None
-            banner.display_order = request.POST.get('display_order', 0)
-            banner.is_active = request.POST.get('is_active') == 'on'
-            banner.auto_slide = request.POST.get('auto_slide') == 'on'
-            banner.slide_duration = request.POST.get('slide_duration', 5)
+            banner.start_date        = request.POST.get('start_date') or None
+            banner.end_date          = request.POST.get('end_date') or None
+            banner.display_order     = request.POST.get('display_order', 0)
+            banner.is_active         = request.POST.get('is_active') == 'on'
+            banner.auto_slide        = request.POST.get('auto_slide') == 'on'
+            banner.slide_duration    = request.POST.get('slide_duration', 5)
 
-            # Handle image uploads
             if request.FILES.get('image_desktop'):
                 banner.image_desktop = request.FILES['image_desktop']
             if request.FILES.get('image_mobile'):
-                banner.image_mobile = request.FILES['image_mobile']
+                banner.image_mobile  = request.FILES['image_mobile']
             if request.FILES.get('image_tablet'):
-                banner.image_tablet = request.FILES['image_tablet']
+                banner.image_tablet  = request.FILES['image_tablet']
 
-            # Handle image removal
             if request.POST.get('remove_image_mobile') == '1':
                 banner.image_mobile = None
             if request.POST.get('remove_image_tablet') == '1':
@@ -1729,15 +1723,15 @@ def banner_edit(request, banner_id):
             messages.error(request, f'Error: {str(e)}')
 
     return render(request, 'adminpanel/banners/edit.html', {
-        'banner': banner,
-        'banner_types': Banner.BANNER_TYPES,
+        'banner':            banner,
+        'banner_types':      Banner.BANNER_TYPES,
         'placement_choices': Banner.PLACEMENT_CHOICES,
         'link_type_choices': [
-            ('product', 'Product'),
-            ('category', 'Category'),
-            ('brand', 'Brand'),
-            ('page', 'Page'),
-            ('external', 'External'),
+            ('product',  'Product Page'),
+            ('category', 'Category Page'),
+            ('brand',    'Brand Page'),
+            ('page',     'Static Page'),
+            ('external', 'External URL'),
         ],
     })
 
@@ -1756,10 +1750,9 @@ def banner_delete(request, banner_id):
 @login_required
 @user_passes_test(is_admin)
 def banner_toggle_active(request, banner_id):
-    """Quick toggle active/inactive via AJAX or redirect"""
     banner = get_object_or_404(Banner, id=banner_id)
     banner.is_active = not banner.is_active
     banner.save()
     status = 'activated' if banner.is_active else 'deactivated'
-    messages.success(request, f'Banner "{banner.title}" {status}.')
+    messages.success(request, f'Slide "{banner.title}" {status}.')
     return redirect('adminpanel:banner_list')
