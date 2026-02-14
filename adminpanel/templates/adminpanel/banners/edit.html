@@ -1,0 +1,334 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  .form-control:focus { border-color: #b66dff; box-shadow: 0 0 0 0.2rem rgba(182,109,255,0.25); }
+  .card { box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); transition: all 0.3s ease; }
+  .btn-gradient-primary { background: linear-gradient(to right, #da8cff, #9a55ff); border: 0; color: white; }
+  .btn-gradient-primary:hover { background: linear-gradient(to right, #9a55ff, #da8cff); color: white; }
+  .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+  .info-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+  .custom-file-label::after { content: "Browse"; }
+  .image-preview-box { border: 2px dashed #dee2e6; border-radius: 8px; padding: 15px; background: #f8f9fa; min-height: 120px; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+  .image-preview-box img { max-width: 100%; max-height: 180px; border-radius: 6px; }
+  .current-image-wrapper { position: relative; display: inline-block; }
+  .remove-img-btn { position: absolute; top: -10px; right: -10px; width: 28px; height: 28px; border-radius: 50%; background: #dc3545; color: white; border: none; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .schedule-section { background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; padding: 20px; }
+  .settings-section { background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 8px; padding: 20px; }
+  .section-title { font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px; }
+  .current-img-label { font-size: 11px; color: #6c757d; margin-top: 5px; display: block; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <h3 class="mb-2"><i class="mdi mdi-image-edit"></i> Edit Banner</h3>
+      <p class="mb-0">Updating — <strong>{{ banner.title }}</strong></p>
+    </div>
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-transparent p-0 mb-4">
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:banner_list' %}">Banners</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Banner</li>
+      </ol>
+    </nav>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      <strong>
+        {% if message.tags == 'success' %}<i class="mdi mdi-check-circle"></i>
+        {% elif message.tags == 'error' %}<i class="mdi mdi-alert-circle"></i>
+        {% else %}<i class="mdi mdi-information"></i>{% endif %}
+      </strong>
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Info Bar -->
+    <div class="info-card">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h5 class="mb-2"><i class="mdi mdi-information"></i> Banner Details</h5>
+          <p class="mb-1"><strong>Banner ID:</strong> #{{ banner.id }}</p>
+          <p class="mb-0"><strong>Last Updated:</strong> {{ banner.updated_at|date:"d M Y, h:i A" }}</p>
+        </div>
+        <div class="col-md-4 text-right">
+          <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#deleteModal">
+            <i class="mdi mdi-delete"></i> Delete Banner
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title mb-4"><i class="mdi mdi-form-select"></i> Update Banner</h4>
+
+            <form method="POST" enctype="multipart/form-data" id="bannerForm">
+              {% csrf_token %}
+              <!-- Hidden remove flags -->
+              <input type="hidden" name="remove_image_mobile" id="remove_image_mobile" value="0">
+              <input type="hidden" name="remove_image_tablet" id="remove_image_tablet" value="0">
+
+              <div class="row">
+
+                <!-- LEFT COLUMN -->
+                <div class="col-md-6">
+
+                  <div class="form-group">
+                    <label for="title" class="font-weight-bold">Banner Title <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-lg" id="title" name="title" value="{{ banner.title }}" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="banner_type" class="font-weight-bold">Banner Type <span class="text-danger">*</span></label>
+                    <select class="form-control form-control-lg" id="banner_type" name="banner_type" required>
+                      <option value="">-- Select Type --</option>
+                      {% for value, label in banner_types %}
+                      <option value="{{ value }}" {% if banner.banner_type == value %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="placement" class="font-weight-bold">Placement <span class="text-danger">*</span></label>
+                    <select class="form-control form-control-lg" id="placement" name="placement" required>
+                      <option value="">-- Select Placement --</option>
+                      {% for value, label in placement_choices %}
+                      <option value="{{ value }}" {% if banner.placement == value %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="display_order" class="font-weight-bold">Display Order</label>
+                    <input type="number" class="form-control form-control-lg" id="display_order" name="display_order" value="{{ banner.display_order }}" min="0">
+                  </div>
+
+                  <div class="form-group">
+                    <div class="form-check form-check-flat form-check-primary">
+                      <label class="form-check-label">
+                        <input type="checkbox" class="form-check-input" name="is_active" {% if banner.is_active %}checked{% endif %}>
+                        <span class="font-weight-bold">Active (Visible on Site)</span>
+                        <i class="input-helper"></i>
+                      </label>
+                    </div>
+                  </div>
+
+                  <hr>
+                  <p class="section-title text-muted"><i class="mdi mdi-link-variant"></i> Link Settings</p>
+
+                  <div class="form-group">
+                    <label for="link_type" class="font-weight-bold">Link Type</label>
+                    <select class="form-control form-control-lg" id="link_type" name="link_type">
+                      <option value="">-- No Link --</option>
+                      {% for value, label in link_type_choices %}
+                      <option value="{{ value }}" {% if banner.link_type == value %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="link_url" class="font-weight-bold">Link URL</label>
+                    <input type="text" class="form-control form-control-lg" id="link_url" name="link_url" value="{{ banner.link_url }}" placeholder="https://...">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="linked_product_id" class="font-weight-bold">Linked Product ID</label>
+                    <input type="number" class="form-control form-control-lg" id="linked_product_id" name="linked_product_id" value="{{ banner.linked_product_id|default:'' }}" placeholder="Optional">
+                  </div>
+
+                </div>
+
+                <!-- RIGHT COLUMN -->
+                <div class="col-md-6">
+
+                  <!-- Desktop Image -->
+                  <div class="form-group">
+                    <label class="font-weight-bold">Desktop Image</label>
+                    {% if banner.image_desktop %}
+                    <div class="mb-2">
+                      <div class="image-preview-box">
+                        <img src="{{ banner.image_desktop.url }}" alt="Desktop" style="max-height:180px;border-radius:6px;">
+                      </div>
+                      <span class="current-img-label"><i class="mdi mdi-check-circle text-success"></i> Current desktop image</span>
+                    </div>
+                    {% endif %}
+                    <div class="custom-file">
+                      <input type="file" class="custom-file-input" id="image_desktop" name="image_desktop" accept="image/*" onchange="previewNewImage(event,'newDesktopPreview','newDesktopLabel')">
+                      <label class="custom-file-label" id="newDesktopLabel" for="image_desktop">{% if banner.image_desktop %}Replace desktop image...{% else %}Choose desktop image...{% endif %}</label>
+                    </div>
+                    <img id="newDesktopPreview" style="display:none;max-width:100%;max-height:120px;border-radius:6px;margin-top:8px;" alt="New Desktop Preview">
+                  </div>
+
+                  <!-- Mobile Image -->
+                  <div class="form-group">
+                    <label class="font-weight-bold">Mobile Image <small class="text-muted">(optional)</small></label>
+                    {% if banner.image_mobile %}
+                    <div class="mb-2">
+                      <div class="current-image-wrapper" id="mobileWrapper">
+                        <img src="{{ banner.image_mobile.url }}" alt="Mobile" style="max-height:80px;border-radius:6px;">
+                        <button type="button" class="remove-img-btn" onclick="removeOptionalImage('remove_image_mobile','mobileWrapper')">
+                          <i class="mdi mdi-close"></i>
+                        </button>
+                      </div>
+                      <span class="current-img-label"><i class="mdi mdi-check-circle text-success"></i> Current mobile image</span>
+                    </div>
+                    {% endif %}
+                    <div class="custom-file">
+                      <input type="file" class="custom-file-input" id="image_mobile" name="image_mobile" accept="image/*" onchange="previewNewImage(event,'newMobilePreview','newMobileLabel')">
+                      <label class="custom-file-label" id="newMobileLabel" for="image_mobile">{% if banner.image_mobile %}Replace{% else %}Choose{% endif %} mobile image...</label>
+                    </div>
+                    <img id="newMobilePreview" style="display:none;max-width:100%;max-height:80px;border-radius:6px;margin-top:8px;" alt="New Mobile Preview">
+                  </div>
+
+                  <!-- Tablet Image -->
+                  <div class="form-group">
+                    <label class="font-weight-bold">Tablet Image <small class="text-muted">(optional)</small></label>
+                    {% if banner.image_tablet %}
+                    <div class="mb-2">
+                      <div class="current-image-wrapper" id="tabletWrapper">
+                        <img src="{{ banner.image_tablet.url }}" alt="Tablet" style="max-height:80px;border-radius:6px;">
+                        <button type="button" class="remove-img-btn" onclick="removeOptionalImage('remove_image_tablet','tabletWrapper')">
+                          <i class="mdi mdi-close"></i>
+                        </button>
+                      </div>
+                      <span class="current-img-label"><i class="mdi mdi-check-circle text-success"></i> Current tablet image</span>
+                    </div>
+                    {% endif %}
+                    <div class="custom-file">
+                      <input type="file" class="custom-file-input" id="image_tablet" name="image_tablet" accept="image/*" onchange="previewNewImage(event,'newTabletPreview','newTabletLabel')">
+                      <label class="custom-file-label" id="newTabletLabel" for="image_tablet">{% if banner.image_tablet %}Replace{% else %}Choose{% endif %} tablet image...</label>
+                    </div>
+                    <img id="newTabletPreview" style="display:none;max-width:100%;max-height:80px;border-radius:6px;margin-top:8px;" alt="New Tablet Preview">
+                  </div>
+
+                  <!-- Schedule -->
+                  <div class="schedule-section mt-2">
+                    <p class="section-title text-warning"><i class="mdi mdi-calendar-clock"></i> Schedule</p>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group mb-2">
+                          <label class="font-weight-bold text-muted small">Start Date & Time</label>
+                          <input type="datetime-local" class="form-control" id="start_date" name="start_date"
+                                 value="{% if banner.start_date %}{{ banner.start_date|date:'Y-m-d' }}T{{ banner.start_date|date:'H:i' }}{% endif %}">
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group mb-2">
+                          <label class="font-weight-bold text-muted small">End Date & Time</label>
+                          <input type="datetime-local" class="form-control" id="end_date" name="end_date"
+                                 value="{% if banner.end_date %}{{ banner.end_date|date:'Y-m-d' }}T{{ banner.end_date|date:'H:i' }}{% endif %}">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Slider Settings -->
+                  <div class="settings-section mt-3">
+                    <p class="section-title text-success"><i class="mdi mdi-play-circle-outline"></i> Slider Settings</p>
+                    <div class="form-group mb-2">
+                      <div class="form-check form-check-flat form-check-primary">
+                        <label class="form-check-label">
+                          <input type="checkbox" class="form-check-input" name="auto_slide" id="auto_slide" {% if banner.auto_slide %}checked{% endif %} onchange="toggleSliderDuration()">
+                          <span class="font-weight-bold">Enable Auto-Slide</span>
+                          <i class="input-helper"></i>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="form-group mb-0" id="slideDurationGroup" {% if not banner.auto_slide %}style="display:none;"{% endif %}>
+                      <label for="slide_duration" class="font-weight-bold text-muted small">Slide Duration (seconds)</label>
+                      <input type="number" class="form-control" id="slide_duration" name="slide_duration" value="{{ banner.slide_duration }}" min="1" max="30">
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Submit -->
+              <div class="row mt-4">
+                <div class="col-12">
+                  <hr>
+                  <button type="submit" class="btn btn-gradient-primary btn-lg mr-2">
+                    <i class="mdi mdi-check"></i> Update Banner
+                  </button>
+                  <a href="{% url 'adminpanel:banner_list' %}" class="btn btn-light btn-lg">
+                    <i class="mdi mdi-close"></i> Cancel
+                  </a>
+                </div>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="mdi mdi-alert"></i> Confirm Delete</h5>
+        <button type="button" class="close text-white" data-dismiss="modal">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete <strong>{{ banner.title }}</strong>?</p>
+        <p class="text-danger"><small>This cannot be undone!</small></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+        <form action="{% url 'adminpanel:banner_delete' banner.id %}" method="POST">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger"><i class="mdi mdi-delete"></i> Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function previewNewImage(event, previewId, labelId) {
+    const file = event.target.files[0];
+    const preview = document.getElementById(previewId);
+    const label = document.getElementById(labelId);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+      label.textContent = file.name;
+    }
+  }
+
+  function removeOptionalImage(hiddenFieldId, wrapperId) {
+    if (confirm('Remove this image?')) {
+      document.getElementById(hiddenFieldId).value = '1';
+      document.getElementById(wrapperId).style.display = 'none';
+    }
+  }
+
+  function toggleSliderDuration() {
+    const checked = document.getElementById('auto_slide').checked;
+    document.getElementById('slideDurationGroup').style.display = checked ? 'block' : 'none';
+  }
+</script>
+
+{% endblock %}
