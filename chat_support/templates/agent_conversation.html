@@ -399,178 +399,150 @@ body { font-family: 'DM Sans', sans-serif; background: var(--ivory); color: var(
 
 {% block extra_js %}
 <script>
-const CONV_ID = '{{ conversation.conversation_id }}';
-const csrf    = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
-
-const msgsArea  = document.getElementById('msgsArea');
-const msgTa     = document.getElementById('msgTa');
-const sendBtn   = document.getElementById('sendBtn');
-const attachBtn = document.getElementById('attachBtn');
-const fileInput = document.getElementById('fileInput');
-const charCount = document.getElementById('charCount');
-
+const CONV_ID    = '{{ conversation.conversation_id }}';
+const CSRF       = '{{ csrf_token }}';
+const msgInput   = document.getElementById('msgInput');
+const messagesEl = document.getElementById('chatMessages');
 let lastId = {{ messages.last.id|default:0 }};
 
-/* ── SCROLL ─────────────────────── */
-function scrollDown() { requestAnimationFrame(() => { msgsArea.scrollTop = msgsArea.scrollHeight; }); }
-scrollDown();
+// ── Helpers ──────────────────────────────────────────
+function scrollBottom() { messagesEl.scrollTop = messagesEl.scrollHeight; }
 
-/* ── TEXTAREA AUTO-RESIZE ───────── */
-msgTa.addEventListener('input', function () {
-  this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-  charCount.textContent = `${this.value.length} / 1000`;
-});
+function showToast(msg, ok=true) {
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;top:20px;right:20px;z-index:9999;padding:12px 22px;
+        border-radius:8px;font-size:.85rem;font-weight:600;color:#fff;
+        background:${ok?'#1bcfb4':'#fe7c96'};box-shadow:0 4px 12px rgba(0,0,0,.15)`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+}
 
-/* ── BUILD BUBBLE ───────────────── */
-function addBubble(msg) {
-  const isAgent  = !msg.is_from_customer;
-  const isSys    = msg.message_type === 'system';
-  const div      = document.createElement('div');
+function post(url, data) {
+    const fd = new FormData();
+    fd.append('csrfmiddlewaretoken', CSRF);
+    Object.entries(data).forEach(([k,v]) => fd.append(k,v));
+    return fetch(url, {
+        method: 'POST',
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        body: fd
+    }).then(r => r.json());
+}
 
-  if (isSys) {
-    div.className = 'msg-row';
+// ── Send Reply ────────────────────────────────────────
+function sendReply() {
+    const text = msgInput.value.trim();
+    if (!text) return;
+    document.getElementById('sendBtn').disabled = true;
+
+    // ✅ FIXED URL
+    post(`/chat/conversation/${CONV_ID}/send/`, { message: text })
+    .then(data => {
+        if (data.success) {
+            msgInput.value = '';
+            appendBubble(data.message);
+            lastId = data.message.id;
+        } else {
+            showToast('Failed to send', false);
+        }
+    })
+    .catch(() => showToast('Error sending message', false))
+    .finally(() => { document.getElementById('sendBtn').disabled = false; });
+}
+
+function appendBubble(msg) {
+    const isCustomer = msg.is_from_customer;
+    const div = document.createElement('div');
+    div.className = `msg msg--${isCustomer ? 'customer' : 'staff'}`;
+    const color = isCustomer ? 'e0e0e0&color=333' : '667eea&color=fff';
     div.innerHTML = `
-      <div class="msg-content" style="width:100%;align-items:center;">
-        <div class="bubble bubble-system">— ${esc(msg.message)} —</div>
-        <span class="msg-meta">${msg.created_at}</span>
+      <div class="msg__avatar">
+        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(msg.sender_name)}&background=${color}&size=32">
+      </div>
+      <div class="msg__body">
+        <div class="msg__bubble">${escHtml(msg.message)}</div>
+        <span class="msg__meta">${escHtml(msg.sender_name)} · ${msg.created_at}</span>
       </div>`;
-  } else {
-    div.className = `msg-row ${isAgent ? 'agent' : 'customer'}`;
-    const avClass = isAgent ? 'av-agent' : 'av-customer';
-    const avText  = (msg.sender_name || '?').slice(0, 2).toUpperCase();
-    const bClass  = isAgent ? 'bubble-agent' : 'bubble-customer';
-
-    let attachHtml = '';
-    if (msg.attachment_url) {
-      if (msg.message_type === 'image') {
-        attachHtml = `<div class="attach-preview"><img src="${msg.attachment_url}" alt="Attachment"></div>`;
-      } else {
-        attachHtml = `<div class="attach-preview"><a class="attach-file" href="${msg.attachment_url}" target="_blank">Download file</a></div>`;
-      }
-    }
-
-    div.innerHTML = `
-      <div class="msg-av ${avClass}">${avText}</div>
-      <div class="msg-content">
-        <div class="bubble ${bClass}">${esc(msg.message)}</div>
-        ${attachHtml}
-        <span class="msg-meta">${esc(msg.sender_name || 'Agent')} · ${msg.created_at}</span>
-      </div>`;
-  }
-
-  msgsArea.appendChild(div);
-  scrollDown();
+    messagesEl.appendChild(div);
+    scrollBottom();
 }
 
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-/* ── SEND ───────────────────────── */
-function sendMessage(text, file) {
-  text = (text || '').trim();
-  if (!text && !file) return;
-  msgTa.value = '';
-  msgTa.style.height = 'auto';
-  charCount.textContent = '0 / 1000';
-
-  const fd = new FormData();
-  if (text) fd.append('message', text);
-  if (file) fd.append('attachment', file);
-  fd.append('csrfmiddlewaretoken', csrf());
-
-  fetch(`/chat/conversation/${CONV_ID}/send/`, {
-    method: 'POST',
-    headers: { 'X-Requested-With': 'XMLHttpRequest' },
-    body: fd,
-  })
-  .then(r => r.json())
-  .then(d => {
-    if (d.success) {
-      addBubble(d.message);
-      lastId = Math.max(lastId, d.message.id);
-    }
-  })
-  .catch(console.error);
-}
-
-sendBtn.addEventListener('click', () => sendMessage(msgTa.value));
-msgTa.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(msgTa.value); }
-});
-attachBtn.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', () => { if (fileInput.files[0]) sendMessage('', fileInput.files[0]); });
-
-/* ── POLL ───────────────────────── */
+// ── Poll new messages ─────────────────────────────────
 setInterval(() => {
-  fetch(`/chat/conversation/${CONV_ID}/messages/?last_message_id=${lastId}`, {
-    headers: { 'X-Requested-With': 'XMLHttpRequest' },
-  })
-  .then(r => r.json())
-  .then(d => {
-    if (!d.success || !d.messages.length) return;
-    d.messages.forEach(m => {
-      if (m.id <= lastId) return;
-      lastId = m.id;
-      if (m.is_from_customer || m.message_type === 'system') addBubble(m);
-    });
-  })
-  .catch(() => {});
-}, 3000);
-
-/* ── QUICK REPLIES ──────────────── */
-document.querySelectorAll('.qr-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const id = btn.dataset.id;
-    fetch(`/chat/agent/quick-reply/${id}/`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-      .then(r => r.json())
-      .then(d => { if (d.success) { msgTa.value = d.message; msgTa.focus(); msgTa.dispatchEvent(new Event('input')); } })
-      .catch(console.error);
-  });
-});
-
-/* ── ASSIGN ─────────────────────── */
-const assignBtn = document.getElementById('assignBtn');
-if (assignBtn) {
-  assignBtn.addEventListener('click', () => {
-    fetch(`/chat/agent/conversation/${CONV_ID}/assign/`, {
-      method: 'POST',
-      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `csrfmiddlewaretoken=${csrf()}`,
+    // ✅ FIXED URL
+    fetch(`/chat/conversation/${CONV_ID}/messages/?last_message_id=${lastId}`, {
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
     })
     .then(r => r.json())
-    .then(d => {
-      if (d.success) {
-        assignBtn.textContent = '✓ Assigned to You';
-        assignBtn.style.cssText = 'background:rgba(62,184,122,.15);color:#26895a;cursor:default;width:100%;padding:9px 14px;border:none;border-radius:8px;font-size:12.5px;font-weight:600;';
-      }
+    .then(data => {
+        if (!data.success || !data.messages.length) return;
+        data.messages.forEach(msg => {
+            if (msg.id > lastId) {
+                lastId = msg.id;
+                appendBubble(msg);
+            }
+        });
+    })
+    .catch(() => {}); // silently ignore poll errors
+}, 3000);
+
+// ── Assign to me ──────────────────────────────────────
+const assignBtn = document.getElementById('assignBtn');
+if (assignBtn) {
+    assignBtn.addEventListener('click', () => {
+        // ✅ FIXED URL
+        post(`/chat/agent/conversation/${CONV_ID}/assign/`, {})
+        .then(data => {
+            if (data.success) { showToast('Assigned to you!'); assignBtn.remove(); }
+        });
     });
-  });
 }
 
-/* ── STATUS CHANGE ──────────────── */
-document.getElementById('statusSelect')?.addEventListener('change', function () {
-  fetch(`/chat/agent/conversation/${CONV_ID}/status/`, {
-    method: 'POST',
-    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `status=${this.value}&csrfmiddlewaretoken=${csrf()}`,
-  })
-  .then(r => r.json())
-  .then(d => { if (!d.success) alert('Status update failed.'); })
-  .catch(console.error);
+// ── Resolve quick button ──────────────────────────────
+document.getElementById('resolveBtn').addEventListener('click', () => {
+    document.getElementById('statusSelect').value = 'resolved';
+    // ✅ FIXED URL
+    post(`/chat/agent/conversation/${CONV_ID}/status/`, { status: 'resolved' })
+    .then(() => showToast('Marked as resolved ✓'));
 });
 
-/* ── PRIORITY CHANGE ────────────── */
-document.getElementById('prioritySelect')?.addEventListener('change', function () {
-  fetch(`/chat/agent/conversation/${CONV_ID}/priority/`, {
-    method: 'POST',
-    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `priority=${this.value}&csrfmiddlewaretoken=${csrf()}`,
-  })
-  .then(r => r.json())
-  .then(d => { if (!d.success) alert('Priority update failed.'); })
-  .catch(console.error);
+// ── Status change ─────────────────────────────────────
+document.getElementById('statusSelect').addEventListener('change', function() {
+    // ✅ FIXED URL
+    post(`/chat/agent/conversation/${CONV_ID}/status/`, { status: this.value })
+    .then(() => showToast('Status updated'));
 });
+
+// ── Priority change ───────────────────────────────────
+document.getElementById('prioritySelect').addEventListener('change', function() {
+    // ✅ FIXED URL
+    post(`/chat/agent/conversation/${CONV_ID}/priority/`, { priority: this.value })
+    .then(() => showToast('Priority updated'));
+});
+
+// ── Send button & keyboard ────────────────────────────
+document.getElementById('sendBtn').addEventListener('click', sendReply);
+msgInput.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); sendReply(); }
+});
+
+// ── Quick replies ─────────────────────────────────────
+document.querySelectorAll('.qr-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+        msgInput.value = chip.dataset.message;
+        msgInput.focus();
+        // ✅ FIXED URL
+        fetch(`/chat/agent/quick-reply/${chip.dataset.id}/`, {
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        });
+    });
+});
+
+// ── Init ──────────────────────────────────────────────
+scrollBottom();
 </script>
 {% endblock %}
