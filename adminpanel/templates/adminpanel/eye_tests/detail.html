@@ -36,7 +36,7 @@
                 </div>
                 <div class="col-md-6">
                     <p class="info-label">Phone Number</p>
-                    <p class="info-value">{{ booking.phone|default:booking.user.phone_number }}</p>
+                    <p class="info-value">{{ booking.customer_phone|default:booking.customer.phone }}</p>
                 </div>
                 <div class="col-md-6">
                     <p class="info-label">Email Address</p>
