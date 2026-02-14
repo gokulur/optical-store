@@ -2,341 +2,339 @@
 {% load static %}
 {% block content %}
 <style>
-  .card { box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); transition: all 0.3s ease; }
-  .table-hover tbody tr:hover { background-color: rgba(0,0,0,0.02); }
-  .badge { padding: 6px 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+  .form-control:focus { border-color: #b66dff; box-shadow: 0 0 0 0.2rem rgba(182,109,255,0.25); }
+  .card { box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); }
+  .btn-gradient-primary { background: linear-gradient(to right, #da8cff, #9a55ff); border: 0; color: white; }
+  .btn-gradient-primary:hover { background: linear-gradient(to right, #9a55ff, #da8cff); color: white; }
   .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
-  .search-box { position: relative; }
-  .search-box input { padding-left: 40px; }
-  .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #6c757d; }
-  .action-buttons .btn { padding: 5px 10px; font-size: 12px; margin-right: 3px; }
-  .filter-section { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e9ecef; }
-  .stats-card { border-left: 4px solid; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
-  .stats-card.primary { border-left-color: #b66dff; background-color: rgba(182,109,255,0.08); }
-  .stats-card.success { border-left-color: #1bcfb4; background-color: rgba(27,207,180,0.08); }
-  .stats-card.danger  { border-left-color: #fe7c96; background-color: rgba(254,124,150,0.08); }
-  .stats-card.warning { border-left-color: #fed713; background-color: rgba(254,215,19,0.08); }
-  .slide-thumb { width: 100px; height: 58px; object-fit: cover; border-radius: 6px; border: 2px solid #e0e0e0; }
-  .slide-thumb-placeholder { width: 100px; height: 58px; background: #f0f0f0; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #ccc; }
-  .gradient-preview { width: 100px; height: 58px; border-radius: 6px; }
-  .empty-state { text-align: center; padding: 60px 20px; }
-  .empty-state i { font-size: 80px; color: #ccc; }
-  .slide-order-badge { width: 28px; height: 28px; border-radius: 50%; background: #667eea; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
-  .info-pill { display: inline-flex; align-items: center; gap: 4px; background: #f0f0f0; border-radius: 20px; padding: 3px 10px; font-size: 11px; color: #555; }
+  .custom-file-label::after { content: "Browse"; }
+  .section-card { border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  .section-card.blue   { background: #e8f0fe; border: 1px solid #c5d5fb; }
+  .section-card.green  { background: #e8f5e9; border: 1px solid #a5d6a7; }
+  .section-card.orange { background: #fff3e0; border: 1px solid #ffcc80; }
+  .section-card.grey   { background: #f5f5f5; border: 1px solid #e0e0e0; }
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
+  .image-drop-zone { border: 2px dashed #c5d5fb; border-radius: 10px; padding: 20px; background: #f8fbff; min-height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+  .image-drop-zone:hover { border-color: #9a55ff; }
+  .image-drop-zone img { max-width: 100%; max-height: 160px; border-radius: 8px; display: none; margin-bottom: 8px; }
+  .slide-preview-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; padding: 30px 25px; color: #fff; min-height: 180px; position: relative; overflow: hidden; transition: all 0.3s; }
+  .slide-preview-box .preview-title { font-size: 1.6rem; font-weight: 600; margin-bottom: 8px; text-shadow: 1px 1px 4px rgba(0,0,0,0.3); }
+  .slide-preview-box .preview-desc { font-size: 0.85rem; opacity: 0.9; margin-bottom: 16px; }
+  .slide-preview-box .preview-btn { display: inline-block; background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.7); border-radius: 8px; padding: 7px 18px; font-size: 0.8rem; font-weight: 600; color: #fff; }
+  .slide-preview-box .preview-label { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.2); border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
+  .gradient-presets { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+  .gradient-chip { width: 36px; height: 36px; border-radius: 8px; cursor: pointer; border: 3px solid transparent; transition: all 0.2s; }
+  .gradient-chip:hover, .gradient-chip.active { border-color: #333; transform: scale(1.1); }
 </style>
 
 <div class="main-panel">
   <div class="content-wrapper">
 
     <div class="page-header">
-      <div class="d-flex justify-content-between align-items-center w-100">
-        <div>
-          <h3 class="mb-2"><i class="mdi mdi-view-carousel"></i> Hero Slideshow Banners</h3>
-          <p class="mb-0">Manage the homepage hero carousel slides — each banner = one slide</p>
-        </div>
-        <a href="{% url 'adminpanel:banner_add' %}" class="btn btn-light btn-lg">
-          <i class="mdi mdi-plus"></i> Add New Slide
-        </a>
-      </div>
+      <h3 class="mb-2"><i class="mdi mdi-plus-circle"></i> Add Hero Carousel Slide</h3>
+      <p class="mb-0">Each form submission = one new slide in the homepage <code>xo-carousel</code></p>
     </div>
 
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb bg-transparent p-0 mb-4">
         <li class="breadcrumb-item"><a href="{% url 'adminpanel:dashboard' %}">Dashboard</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Hero Banners</li>
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:banner_list' %}">Hero Banners</a></li>
+        <li class="breadcrumb-item active">Add Slide</li>
       </ol>
     </nav>
 
-    <!-- How It Works info bar -->
-    <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
-      <strong><i class="mdi mdi-information"></i> How it works:</strong>
-      Each banner you create here becomes <strong>one slide</strong> in the homepage hero carousel.
-      Slides are ordered by <strong>Display Order</strong> (lowest number = first slide).
-      Only <strong>Active</strong> slides that fall within their schedule are shown on the site.
-      <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-    </div>
-
     {% if messages %}
     {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-      <strong>
-        {% if message.tags == 'success' %}<i class="mdi mdi-check-circle"></i>
-        {% elif message.tags == 'error' %}<i class="mdi mdi-alert-circle"></i>
-        {% else %}<i class="mdi mdi-information"></i>{% endif %}
-      </strong> {{ message }}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+      {{ message }}
       <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
     </div>
     {% endfor %}
     {% endif %}
 
-    <!-- Stats -->
-    <div class="row mb-4">
-      <div class="col-md-3">
-        <div class="stats-card primary">
-          <div class="d-flex justify-content-between align-items-center">
-            <div><h2 class="mb-0 font-weight-bold">{{ total_count }}</h2><p class="mb-0 text-muted">Total Slides</p></div>
-            <i class="mdi mdi-view-carousel" style="font-size:40px;color:#b66dff;"></i>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stats-card success">
-          <div class="d-flex justify-content-between align-items-center">
-            <div><h2 class="mb-0 font-weight-bold">{{ active_count }}</h2><p class="mb-0 text-muted">Active / Live</p></div>
-            <i class="mdi mdi-play-circle" style="font-size:40px;color:#1bcfb4;"></i>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stats-card danger">
-          <div class="d-flex justify-content-between align-items-center">
-            <div><h2 class="mb-0 font-weight-bold">{{ inactive_count }}</h2><p class="mb-0 text-muted">Inactive</p></div>
-            <i class="mdi mdi-pause-circle" style="font-size:40px;color:#fe7c96;"></i>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stats-card warning">
-          <div class="d-flex justify-content-between align-items-center">
-            <div><h2 class="mb-0 font-weight-bold">{{ scheduled_count }}</h2><p class="mb-0 text-muted">Scheduled</p></div>
-            <i class="mdi mdi-calendar-clock" style="font-size:40px;color:#fed713;"></i>
-          </div>
-        </div>
-      </div>
-    </div>
+    <form method="POST" enctype="multipart/form-data" id="bannerForm">
+      {% csrf_token %}
+      <div class="row">
 
-    <!-- Filters -->
-    <div class="filter-section">
-      <form method="GET" action="">
-        <div class="row align-items-end">
-          <div class="col-md-4">
-            <div class="form-group mb-0">
-              <label class="font-weight-bold">Search Slides</label>
-              <div class="search-box">
-                <i class="mdi mdi-magnify"></i>
-                <input type="text" class="form-control" name="search" placeholder="Search by title..." value="{{ search }}">
+        <!-- ── LEFT COLUMN ── -->
+        <div class="col-md-7">
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title mb-4"><i class="mdi mdi-text"></i> Slide Content</h5>
+
+              <!-- Internal name -->
+              <div class="form-group">
+                <label class="font-weight-bold">Internal Title (Admin Only) <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-lg" name="title" id="title" placeholder="e.g. Slide 1 – Vision Matters" required>
+                <small class="text-muted">Not shown on site — for your reference only</small>
+              </div>
+
+              <!-- Slide heading (shown on site) -->
+              <div class="section-card blue">
+                <p class="section-label text-primary"><i class="mdi mdi-format-title"></i> Slide Text (shown on homepage)</p>
+                <div class="form-group mb-3">
+                  <label class="font-weight-bold">Heading <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" name="slide_heading" id="slide_heading"
+                         placeholder="e.g. Your Vision Matters More"
+                         oninput="updatePreview()">
+                  <small class="text-muted">Maps to <code>slideshow-v56__title</code> in your template</small>
+                </div>
+                <div class="form-group mb-3">
+                  <label class="font-weight-bold">Description</label>
+                  <textarea class="form-control" name="slide_description" id="slide_description" rows="3"
+                            placeholder="e.g. Discover advanced eye care at Al Ameen Optics..."
+                            oninput="updatePreview()"></textarea>
+                  <small class="text-muted">Maps to <code>slideshow-v56__description</code></small>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-0">
+                      <label class="font-weight-bold">CTA Button Text</label>
+                      <input type="text" class="form-control" name="cta_text" id="cta_text"
+                             placeholder="e.g. Read More / Shop Now"
+                             oninput="updatePreview()">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-0">
+                      <label class="font-weight-bold">CTA Button URL</label>
+                      <input type="text" class="form-control" name="link_url" id="link_url"
+                             placeholder="/about/ or /catalog/">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Link type (hidden, used by view) -->
+              <div class="form-group mt-3">
+                <label class="font-weight-bold">Link Type</label>
+                <select class="form-control" name="link_type">
+                  <option value="">-- None --</option>
+                  {% for value, label in link_type_choices %}
+                  <option value="{{ value }}">{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Banner type & placement -->
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Banner Type <span class="text-danger">*</span></label>
+                    <select class="form-control" name="banner_type" required>
+                      <option value="">-- Select --</option>
+                      {% for value, label in banner_types %}
+                      <option value="{{ value }}" {% if value == 'homepage' %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Placement <span class="text-danger">*</span></label>
+                    <select class="form-control" name="placement" required>
+                      <option value="">-- Select --</option>
+                      {% for value, label in placement_choices %}
+                      <option value="{{ value }}" {% if value == 'main_slider' %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Schedule & Settings -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title mb-4"><i class="mdi mdi-cog"></i> Settings & Schedule</h5>
+
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Display Order</label>
+                    <input type="number" class="form-control" name="display_order" value="0" min="0">
+                    <small class="text-muted">0 = first slide</small>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Slide Duration (sec)</label>
+                    <input type="number" class="form-control" name="slide_duration" id="slide_duration_input" value="5" min="1" max="30">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold d-block">Options</label>
+                    <div class="form-check mt-2">
+                      <label class="form-check-label">
+                        <input type="checkbox" class="form-check-input" name="is_active" checked>
+                        <span>Active (Live)</span>
+                        <i class="input-helper"></i>
+                      </label>
+                    </div>
+                    <div class="form-check mt-1">
+                      <label class="form-check-label">
+                        <input type="checkbox" class="form-check-input" name="auto_slide" checked>
+                        <span>Auto-slide</span>
+                        <i class="input-helper"></i>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="section-card orange">
+                <p class="section-label" style="color:#e65100;"><i class="mdi mdi-calendar-clock"></i> Schedule (optional)</p>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-0">
+                      <label class="font-weight-bold small">Start Date & Time</label>
+                      <input type="datetime-local" class="form-control" name="start_date">
+                      <small class="text-muted">Leave blank = show immediately</small>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-0">
+                      <label class="font-weight-bold small">End Date & Time</label>
+                      <input type="datetime-local" class="form-control" name="end_date">
+                      <small class="text-muted">Leave blank = no expiry</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- ── RIGHT COLUMN ── -->
+        <div class="col-md-5">
+
+          <!-- Live Preview -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title mb-3"><i class="mdi mdi-eye"></i> Live Preview</h5>
+              <div class="slide-preview-box" id="slidePreviewBox">
+                <span class="preview-label" id="previewLabel">Slide preview</span>
+                <div class="preview-title" id="previewTitle">Your slide heading</div>
+                <div class="preview-desc" id="previewDesc">Slide description will appear here...</div>
+                <span class="preview-btn" id="previewBtn">Read More</span>
+              </div>
+              <p class="text-muted mt-2 mb-1" style="font-size:12px;">Background gradient fallback:</p>
+              <div class="gradient-presets">
+                <div class="gradient-chip active" style="background:linear-gradient(135deg,#667eea,#764ba2);" data-gradient="linear-gradient(135deg,#667eea 0%,#764ba2 100%)" title="Purple"></div>
+                <div class="gradient-chip" style="background:linear-gradient(135deg,#f093fb,#f5576c);" data-gradient="linear-gradient(135deg,#f093fb 0%,#f5576c 100%)" title="Pink"></div>
+                <div class="gradient-chip" style="background:linear-gradient(135deg,#4facfe,#00f2fe);" data-gradient="linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)" title="Blue"></div>
+                <div class="gradient-chip" style="background:linear-gradient(135deg,#43e97b,#38f9d7);" data-gradient="linear-gradient(135deg,#43e97b 0%,#38f9d7 100%)" title="Green"></div>
+                <div class="gradient-chip" style="background:linear-gradient(135deg,#fa709a,#fee140);" data-gradient="linear-gradient(135deg,#fa709a 0%,#fee140 100%)" title="Sunset"></div>
+                <div class="gradient-chip" style="background:linear-gradient(135deg,#2c3e50,#34495e);" data-gradient="linear-gradient(135deg,#2c3e50 0%,#34495e 100%)" title="Dark"></div>
               </div>
             </div>
           </div>
-          <div class="col-md-3">
-            <div class="form-group mb-0">
-              <label class="font-weight-bold">Banner Type</label>
-              <select class="form-control" name="banner_type">
-                <option value="">All Types</option>
-                {% for value, label in banner_types %}
-                <option value="{{ value }}" {% if banner_type == value %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-              </select>
+
+          <!-- Images -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title mb-3"><i class="mdi mdi-image"></i> Slide Images</h5>
+
+              <!-- Desktop -->
+              <div class="form-group">
+                <label class="font-weight-bold">Desktop Image <span class="text-danger">*</span></label>
+                <div class="image-drop-zone" id="desktopDropZone" onclick="document.getElementById('image_desktop').click()">
+                  <img id="desktopPreview" alt="">
+                  <i class="mdi mdi-monitor-screenshot" style="font-size:36px;color:#ccc;" id="desktopIcon"></i>
+                  <p class="text-muted mb-0 mt-1" id="desktopHint">Click to upload desktop image</p>
+                  <small class="text-muted">Recommended: <strong>1920×700px</strong> · Used in <code>slideshow-bg</code></small>
+                </div>
+                <input type="file" id="image_desktop" name="image_desktop" accept="image/*" style="display:none"
+                       onchange="previewImg(event,'desktopPreview','desktopIcon','desktopHint')" required>
+              </div>
+
+              <!-- Mobile -->
+              <div class="form-group">
+                <label class="font-weight-bold">Mobile Image <small class="text-muted">(optional)</small></label>
+                <div class="image-drop-zone" style="min-height:80px;" onclick="document.getElementById('image_mobile').click()">
+                  <img id="mobilePreview" alt="" style="max-height:80px;">
+                  <i class="mdi mdi-cellphone" style="font-size:26px;color:#ccc;" id="mobileIcon"></i>
+                  <small class="text-muted" id="mobileHint">768×500px · maps to <code>--img-mobile</code></small>
+                </div>
+                <input type="file" id="image_mobile" name="image_mobile" accept="image/*" style="display:none"
+                       onchange="previewImg(event,'mobilePreview','mobileIcon','mobileHint')">
+              </div>
+
             </div>
           </div>
-          <div class="col-md-2">
-            <div class="form-group mb-0">
-              <button type="submit" class="btn btn-primary btn-block"><i class="mdi mdi-filter"></i> Filter</button>
-            </div>
-          </div>
-          <div class="col-md-2">
-            <div class="form-group mb-0">
-              <a href="{% url 'adminpanel:banner_list' %}" class="btn btn-light btn-block"><i class="mdi mdi-refresh"></i> Reset</a>
-            </div>
-          </div>
-        </div>
-      </form>
-    </div>
 
-    <!-- Table -->
-    <div class="row">
-      <div class="col-md-12 grid-margin stretch-card">
-        <div class="card">
-          <div class="card-body">
-            <h4 class="card-title mb-4">
-              <i class="mdi mdi-table"></i> All Slides
-              <small class="text-muted ml-2" style="font-size:13px;font-weight:400;">Drag-to-reorder coming soon — use Display Order field for now</small>
-            </h4>
-
-            {% if banners %}
-            <div class="table-responsive">
-              <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th class="font-weight-bold">Slide #</th>
-                    <th class="font-weight-bold">Preview</th>
-                    <th class="font-weight-bold">Title & CTA</th>
-                    <th class="font-weight-bold">Type</th>
-                    <th class="font-weight-bold">Link</th>
-                    <th class="font-weight-bold">Schedule</th>
-                    <th class="font-weight-bold">Auto-slide</th>
-                    <th class="font-weight-bold">Status</th>
-                    <th class="font-weight-bold text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for banner in banners %}
-                  <tr>
-                    <td>
-                      <div class="slide-order-badge">{{ banner.display_order }}</div>
-                    </td>
-                    <td>
-                      {% if banner.image_desktop %}
-                        <img src="{{ banner.image_desktop.url }}" alt="{{ banner.title }}" class="slide-thumb">
-                      {% else %}
-                        <div class="slide-thumb-placeholder">
-                          <i class="mdi mdi-image-off"></i>
-                        </div>
-                      {% endif %}
-                    </td>
-                    <td>
-                      <div class="font-weight-bold">{{ banner.title }}</div>
-                      {% if banner.link_url %}
-                      <small class="text-primary">
-                        <i class="mdi mdi-arrow-right-circle"></i>
-                        {{ banner.link_type|title }} link set
-                      </small>
-                      {% else %}
-                      <small class="text-muted">No CTA link</small>
-                      {% endif %}
-                    </td>
-                    <td>
-                      {% if banner.banner_type == 'homepage' %}
-                        <span class="badge badge-primary"><i class="mdi mdi-home"></i> Homepage</span>
-                      {% elif banner.banner_type == 'promotional' %}
-                        <span class="badge badge-warning"><i class="mdi mdi-sale"></i> Promo</span>
-                      {% elif banner.banner_type == 'category' %}
-                        <span class="badge badge-info"><i class="mdi mdi-tag"></i> Category</span>
-                      {% else %}
-                        <span class="badge badge-secondary">{{ banner.banner_type }}</span>
-                      {% endif %}
-                    </td>
-                    <td>
-                      {% if banner.link_url %}
-                        <a href="{{ banner.link_url }}" target="_blank" class="info-pill" title="{{ banner.link_url }}">
-                          <i class="mdi mdi-open-in-new"></i> {{ banner.link_type|default:"link" }}
-                        </a>
-                      {% else %}
-                        <span class="text-muted">—</span>
-                      {% endif %}
-                    </td>
-                    <td>
-                      {% if banner.start_date or banner.end_date %}
-                        <small>
-                          {% if banner.start_date %}<i class="mdi mdi-calendar-start text-success"></i> {{ banner.start_date|date:"d M Y" }}<br>{% endif %}
-                          {% if banner.end_date %}<i class="mdi mdi-calendar-end text-danger"></i> {{ banner.end_date|date:"d M Y" }}{% endif %}
-                        </small>
-                      {% else %}
-                        <span class="info-pill"><i class="mdi mdi-infinity"></i> Always on</span>
-                      {% endif %}
-                    </td>
-                    <td>
-                      {% if banner.auto_slide %}
-                        <span class="badge badge-success">{{ banner.slide_duration }}s</span>
-                      {% else %}
-                        <span class="badge badge-light text-muted">Off</span>
-                      {% endif %}
-                    </td>
-                    <td>
-                      {% if banner.is_active %}
-                        <span class="badge badge-success"><i class="mdi mdi-play"></i> Live</span>
-                      {% else %}
-                        <span class="badge badge-danger"><i class="mdi mdi-pause"></i> Hidden</span>
-                      {% endif %}
-                    </td>
-                    <td class="text-right">
-                      <div class="action-buttons">
-                        <a href="{% url 'adminpanel:banner_edit' banner.id %}" class="btn btn-sm btn-outline-warning" title="Edit">
-                          <i class="mdi mdi-pencil"></i>
-                        </a>
-                        <a href="{% url 'adminpanel:banner_toggle_active' banner.id %}"
-                           class="btn btn-sm {% if banner.is_active %}btn-outline-secondary{% else %}btn-outline-success{% endif %}"
-                           title="{% if banner.is_active %}Deactivate{% else %}Activate{% endif %}">
-                          <i class="mdi mdi-{% if banner.is_active %}eye-off{% else %}eye{% endif %}"></i>
-                        </a>
-                        <button type="button" class="btn btn-sm btn-outline-danger"
-                                onclick="confirmDelete('{{ banner.title|escapejs }}', '{{ banner.id }}')" title="Delete">
-                          <i class="mdi mdi-delete"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-
-            {% if banners.has_other_pages %}
-            <nav class="mt-4">
-              <ul class="pagination justify-content-center">
-                {% if banners.has_previous %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ banners.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if banner_type %}&banner_type={{ banner_type }}{% endif %}">
-                    <i class="mdi mdi-chevron-left"></i>
-                  </a>
-                </li>
-                {% endif %}
-                {% for num in banners.paginator.page_range %}
-                  {% if banners.number == num %}
-                  <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                  {% elif num > banners.number|add:'-3' and num < banners.number|add:'3' %}
-                  <li class="page-item">
-                    <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if banner_type %}&banner_type={{ banner_type }}{% endif %}">{{ num }}</a>
-                  </li>
-                  {% endif %}
-                {% endfor %}
-                {% if banners.has_next %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ banners.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if banner_type %}&banner_type={{ banner_type }}{% endif %}">
-                    <i class="mdi mdi-chevron-right"></i>
-                  </a>
-                </li>
-                {% endif %}
-              </ul>
-            </nav>
-            {% endif %}
-
-            {% else %}
-            <div class="empty-state">
-              <i class="mdi mdi-view-carousel"></i>
-              <h4 class="mt-3">No Slides Yet</h4>
-              <p class="text-muted">Create your first hero carousel slide to show on the homepage.</p>
-              <a href="{% url 'adminpanel:banner_add' %}" class="btn btn-primary btn-lg mt-3">
-                <i class="mdi mdi-plus"></i> Create First Slide
-              </a>
-            </div>
-            {% endif %}
-          </div>
         </div>
       </div>
-    </div>
 
-  </div>
-</div>
+      <!-- Submit -->
+      <div class="row">
+        <div class="col-12">
+          <hr>
+          <button type="submit" class="btn btn-gradient-primary btn-lg mr-2">
+            <i class="mdi mdi-check"></i> Save Slide
+          </button>
+          <a href="{% url 'adminpanel:banner_list' %}" class="btn btn-light btn-lg">
+            <i class="mdi mdi-close"></i> Cancel
+          </a>
+        </div>
+      </div>
+    </form>
 
-<!-- Delete Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title"><i class="mdi mdi-alert"></i> Delete Slide?</h5>
-        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
-      </div>
-      <div class="modal-body">
-        <p>Delete slide <strong id="deleteBannerName"></strong>?</p>
-        <p class="text-danger mb-0"><small><i class="mdi mdi-alert"></i> This cannot be undone.</small></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
-        <form id="deleteForm" method="POST" style="display:inline;">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-danger"><i class="mdi mdi-delete"></i> Delete</button>
-        </form>
-      </div>
-    </div>
   </div>
 </div>
 
 <script>
-  function confirmDelete(name, id) {
-    document.getElementById('deleteBannerName').textContent = name;
-    document.getElementById('deleteForm').action = "{% url 'adminpanel:banner_delete' 0 %}".replace('0', id);
-    $('#deleteModal').modal('show');
+  // ── Live preview ──
+  function updatePreview() {
+    const heading = document.getElementById('slide_heading').value || 'Your slide heading';
+    const desc    = document.getElementById('slide_description').value || 'Slide description will appear here...';
+    const btn     = document.getElementById('cta_text').value || 'Read More';
+    const label   = document.getElementById('title').value || 'Slide preview';
+    document.getElementById('previewTitle').textContent = heading;
+    document.getElementById('previewDesc').textContent  = desc;
+    document.getElementById('previewBtn').textContent   = btn;
+    document.getElementById('previewLabel').textContent = label;
   }
+  document.getElementById('title').addEventListener('input', updatePreview);
+
+  // ── Gradient presets ──
+  document.querySelectorAll('.gradient-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.gradient-chip').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+      document.getElementById('slidePreviewBox').style.background = this.dataset.gradient;
+    });
+  });
+
+  // ── Image preview ──
+  function previewImg(event, previewId, iconId, hintId) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const preview = document.getElementById(previewId);
+    const reader  = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+      document.getElementById(iconId).style.display = 'none';
+      document.getElementById(hintId).textContent = file.name;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ── Form validation ──
+  document.getElementById('bannerForm').addEventListener('submit', function(e) {
+    const title     = document.getElementById('title').value.trim();
+    const desktop   = document.getElementById('image_desktop').files.length;
+    const bannerType = document.querySelector('[name="banner_type"]').value;
+    const placement  = document.querySelector('[name="placement"]').value;
+    if (!title || !desktop || !bannerType || !placement) {
+      e.preventDefault();
+      alert('Please fill: Internal Title, Banner Type, Placement, and upload a Desktop Image.');
+    }
+  });
 </script>
 {% endblock %}
