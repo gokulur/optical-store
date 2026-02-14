@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ conversation.conversation_id }} — Agent View{% endblock %}
+{% block title %}Chat - {{ conversation.conversation_id }}{% endblock %}
 
-{% block extra_css %}
+{% block content %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -217,9 +217,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--ivory); color: var(
 
 .char-count { font-size: 10.5px; color: var(--grey); font-family: 'DM Mono', monospace; text-align: right; margin-top: 6px; }
 </style>
-{% endblock %}
 
-{% block content %}
 <div class="shell">
 
   <!-- ── LEFT RAIL ───────────────────────────────── -->

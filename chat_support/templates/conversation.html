@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Chat {{ conversation.conversation_id }} — Al Ameen Optics{% endblock %}
+{% block title %}Chat - {{ conversation.conversation_id }}{% endblock %}
 
-{% block extra_css %}
+{% block content %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -211,9 +211,9 @@ body {
   .input-zone { padding: 10px 12px 14px; }
 }
 </style>
-{% endblock %}
+ 
 
-{% block content %}
+ 
 <!-- Header -->
 <div class="chat-header">
   <div class="h-av">
@@ -345,9 +345,8 @@ body {
   <p style="color:var(--online);font-weight:600;">✓ Thanks for rating this conversation ${'⭐'.repeat(conversation.rating)}</p>
 </div>
 {% endif %}
-{% endblock %}
 
-{% block extra_js %}
+ 
 <script>
 const CONV_ID = '{{ conversation.conversation_id }}';
 const csrf    = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';

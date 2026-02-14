@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Start a Chat — Al Ameen Optics{% endblock %}
+{% block title %}Chat - {{ conversation.conversation_id }}{% endblock %}
 
-{% block extra_css %}
+{% block content %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
@@ -237,9 +237,7 @@ select.form-control {
   body { align-items: flex-start; }
 }
 </style>
-{% endblock %}
-
-{% block content %}
+ 
 <div class="page-wrap">
 
   <!-- Left: branding + features -->
@@ -351,9 +349,7 @@ select.form-control {
   </div>
 
 </div>
-{% endblock %}
-
-{% block extra_js %}
+ 
 <script>
 document.getElementById('startForm').addEventListener('submit', function (e) {
   const btn = document.getElementById('submitBtn');

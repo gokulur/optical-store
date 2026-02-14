@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Agent Dashboard — Chat Support{% endblock %}
+{% block title %}Chat - {{ conversation.conversation_id }}{% endblock %}
 
-{% block extra_css %}
+{% block content %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -233,9 +233,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--ivory); color: var(
 .empty p { font-size: 15px; }
 .empty span { font-size: 13px; opacity: .7; }
 </style>
-{% endblock %}
 
-{% block content %}
 <div class="dash">
 
   <!-- ── SIDEBAR ───────────────────────────────── -->
@@ -389,9 +387,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--ivory); color: var(
 
   </div><!-- /main -->
 </div><!-- /dash -->
-{% endblock %}
-
-{% block extra_js %}
+ 
 <script>
 // ── AGENT STATUS TOGGLE ──────────────────────────────
 const csrf = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';

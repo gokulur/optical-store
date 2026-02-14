@@ -2,487 +2,265 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Count, Max
+from django.db.models import Count, Max, F, Q
 from django.utils import timezone
 from django.core.paginator import Paginator
+from .models import ChatConversation, ChatMessage, ChatQuickReply, ChatOfflineMessage, AgentStatus
 
-from .models import (
-    ChatConversation, ChatMessage,
-    ChatQuickReply, ChatOfflineMessage, AgentStatus,
-)
-from django.db import models as dj_models    
-from django.db.models import F        
-from django.db import models
-# ──────────────────────────────────────────────
+
+# ─────────────────────────────────────────────
 # HELPERS
-# ──────────────────────────────────────────────
+# ─────────────────────────────────────────────
 
 def get_client_ip(request):
-    """Return the real client IP, honouring X-Forwarded-For."""
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        return x_forwarded_for.split(',')[0].strip()
-    return request.META.get('REMOTE_ADDR')
-
-
-def is_ajax(request):
-    return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    xff = request.META.get('HTTP_X_FORWARDED_FOR')
+    return xff.split(',')[0].strip() if xff else request.META.get('REMOTE_ADDR')
 
 
 def assign_to_agent(conversation):
-    """
-    Auto-assign conversation to the online agent with fewest active chats.
-    Creates a system message on successful assignment.
-    """
-    agents = (
-        AgentStatus.objects
-        .filter(status='online')
-        .order_by('active_conversations')
-        .select_related('agent')
-    )
-    for agent_status in agents:
-        if agent_status.is_available():
-            conversation.assigned_to = agent_status.agent
+    for a in AgentStatus.objects.filter(status='online').order_by('active_conversations').select_related('agent'):
+        if a.is_available():
+            conversation.assigned_to = a.agent
             conversation.status = 'in_progress'
             conversation.save(update_fields=['assigned_to', 'status'])
-
-            AgentStatus.objects.filter(pk=agent_status.pk).update(
-                active_conversations=agent_status.active_conversations + 1
-            )
+            AgentStatus.objects.filter(pk=a.pk).update(active_conversations=a.active_conversations + 1)
             ChatMessage.objects.create(
-                conversation=conversation,
-                sender_name='System',
-                message=f'You are connected with {agent_status.agent.get_full_name() or agent_status.agent.username}.',
-                is_from_customer=False,
+                conversation=conversation, sender_name='System', is_from_customer=False,
                 message_type='system',
+                message=f'You are connected with {a.agent.get_full_name() or a.agent.username}.',
             )
             return True
     return False
 
 
-# ──────────────────────────────────────────────
+# ─────────────────────────────────────────────
 # CUSTOMER VIEWS
-# ──────────────────────────────────────────────
+# ─────────────────────────────────────────────
 
 def chat_widget(request):
-    """Embeddable floating chat bubble (renders widget.html)."""
-    is_online = AgentStatus.objects.filter(status='online').exists()
-    return render(request, 'chat/widget.html', {'is_online': is_online})
+    """Renders the self-contained floating chat widget snippet."""
+    return render(request, 'widget.html', {
+        'is_online': AgentStatus.objects.filter(status='online').exists(),
+    })
 
 
 def start_chat(request):
     """
-    GET  → render the start-chat form.
-    POST → create a conversation, optionally with a first message, then redirect.
-    Supports both standard form submissions and AJAX.
+    POST  → creates conversation + first message → returns JSON {success, conversation_id}
+    GET   → redirects back (widget is the UI)
     """
     if request.method != 'POST':
-        return render(request, 'start_chat.html')
+        return redirect('/')
 
-    subject      = request.POST.get('subject', 'General Inquiry').strip() or 'General Inquiry'
-    message_text = request.POST.get('message', '').strip()
+    subject = request.POST.get('subject', 'Website Inquiry').strip() or 'Website Inquiry'
+    text    = request.POST.get('message', '').strip()
+    attach  = request.FILES.get('attachment')
 
-    # Build conversation
     if request.user.is_authenticated:
         conv = ChatConversation.objects.create(
-            user=request.user,
-            subject=subject,
-            ip_address=get_client_ip(request),
+            user=request.user, subject=subject, ip_address=get_client_ip(request),
         )
     else:
-        guest_name  = request.POST.get('guest_name', 'Guest').strip() or 'Guest'
-        guest_email = request.POST.get('guest_email', '').strip()
         conv = ChatConversation.objects.create(
-            guest_name=guest_name,
-            guest_email=guest_email,
-            subject=subject,
-            ip_address=get_client_ip(request),
+            guest_name=request.POST.get('guest_name', 'Guest').strip() or 'Guest',
+            guest_email=request.POST.get('guest_email', '').strip(),
+            subject=subject, ip_address=get_client_ip(request),
         )
 
-    # First message
-    if message_text:
+    if text or attach:
+        msg_type = 'image' if attach and attach.content_type.startswith('image/') else ('file' if attach else 'text')
         ChatMessage.objects.create(
             conversation=conv,
             sender=request.user if request.user.is_authenticated else None,
             sender_name=conv.get_display_name(),
-            message=message_text,
-            is_from_customer=True,
+            message=text, attachment=attach,
+            is_from_customer=True, message_type=msg_type,
         )
 
     assign_to_agent(conv)
-
-    if is_ajax(request):
-        return JsonResponse({
-            'success': True,
-            'conversation_id': conv.conversation_id,
-            'redirect_url': f'/chat/conversation/{conv.conversation_id}/',
-        })
-
-    return redirect('chat:conversation', conversation_id=conv.conversation_id)
+    return JsonResponse({'success': True, 'conversation_id': conv.conversation_id})
 
 
-def chat_conversation(request, conversation_id):
-    """Customer-facing conversation page."""
-    conversation = get_object_or_404(ChatConversation, conversation_id=conversation_id)
-
-    # Mark all agent/system messages as read
-    conversation.messages.filter(
-        is_from_customer=False, is_read=False
-    ).update(is_read=True, read_at=timezone.now())
-
-    messages = conversation.messages.all()
-
-    return render(request, 'conversation.html', {
-        'conversation': conversation,
-        'messages':     messages,
-    })
-
-
-@require_http_methods(['POST'])
 def send_message(request, conversation_id):
-    """
-    POST /chat/conversation/<id>/send/
-    Accepts JSON body or multipart/form-data.
-    Returns JSON with the persisted message.
-    """
-    conversation = get_object_or_404(ChatConversation, conversation_id=conversation_id)
+    """POST text/file → returns JSON message object."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False}, status=405)
 
-    message_text = request.POST.get('message', '').strip()
-    attachment   = request.FILES.get('attachment')
+    conv  = get_object_or_404(ChatConversation, conversation_id=conversation_id)
+    text  = request.POST.get('message', '').strip()
+    attach= request.FILES.get('attachment')
 
-    if not message_text and not attachment:
-        return JsonResponse({'success': False, 'error': 'Message cannot be empty.'}, status=400)
+    if not text and not attach:
+        return JsonResponse({'success': False, 'error': 'Empty message.'}, status=400)
 
     is_staff = request.user.is_authenticated and request.user.is_staff
-
-    # Determine message type
-    if attachment:
-        msg_type = 'image' if attachment.content_type.startswith('image/') else 'file'
-    else:
-        msg_type = 'text'
+    msg_type = 'image' if attach and attach.content_type.startswith('image/') else ('file' if attach else 'text')
 
     msg = ChatMessage.objects.create(
-        conversation=conversation,
+        conversation=conv,
         sender=request.user if request.user.is_authenticated else None,
-        sender_name=(
-            request.user.get_full_name() or request.user.username
-            if is_staff
-            else conversation.get_display_name()
-        ),
-        message=message_text,
-        attachment=attachment,
-        is_from_customer=not is_staff,
-        message_type=msg_type,
+        sender_name=request.user.get_full_name() or request.user.username if is_staff else conv.get_display_name(),
+        message=text, attachment=attach,
+        is_from_customer=not is_staff, message_type=msg_type,
     )
 
-    # Reopen closed conversations when a customer writes again
-    if not is_staff and conversation.status in ('resolved', 'closed'):
-        conversation.status = 'open'
-        conversation.save(update_fields=['status'])
+    if not is_staff and conv.status in ('resolved', 'closed'):
+        conv.status = 'open'
+        conv.save(update_fields=['status'])
 
-    return JsonResponse({
-        'success': True,
-        'message': {
-            'id':              msg.id,
-            'message':         msg.message,
-            'sender_name':     msg.sender_name,
-            'is_from_customer': msg.is_from_customer,
-            'message_type':    msg.message_type,
-            'created_at':      msg.created_at.strftime('%H:%M'),
-            'attachment_url':  msg.attachment.url if msg.attachment else None,
-        },
-    })
+    return JsonResponse({'success': True, 'message': {
+        'id': msg.id, 'message': msg.message, 'sender_name': msg.sender_name,
+        'is_from_customer': msg.is_from_customer, 'message_type': msg.message_type,
+        'created_at': msg.created_at.strftime('%H:%M'),
+        'attachment_url': msg.attachment.url if msg.attachment else None,
+    }})
 
 
 def get_messages(request, conversation_id):
-    """
-    GET /chat/conversation/<id>/messages/?last_message_id=<int>
-    Long-polling endpoint. Returns messages with id > last_message_id.
-    """
-    conversation = get_object_or_404(ChatConversation, conversation_id=conversation_id)
-
+    """GET → returns messages newer than last_message_id."""
+    conv = get_object_or_404(ChatConversation, conversation_id=conversation_id)
     try:
         last_id = int(request.GET.get('last_message_id', 0))
     except ValueError:
         last_id = 0
 
-    qs = conversation.messages.filter(id__gt=last_id)
-
     is_staff = request.user.is_authenticated and request.user.is_staff
+    qs = conv.messages.filter(id__gt=last_id)
 
-    # Mark messages as read on the receiving side
     if not is_staff:
-        qs.filter(is_from_customer=False, is_read=False).update(
-            is_read=True, read_at=timezone.now()
-        )
+        qs.filter(is_from_customer=False, is_read=False).update(is_read=True, read_at=timezone.now())
     else:
-        qs.filter(is_from_customer=True, is_read=False).update(
-            is_read=True, read_at=timezone.now()
-        )
+        qs.filter(is_from_customer=True, is_read=False).update(is_read=True, read_at=timezone.now())
 
-    msg_list = []
-    for m in qs:
-        msg_list.append({
-            'id':               m.id,
-            'message':          m.message,
-            'sender_name':      m.sender_name or 'Guest',
-            'is_from_customer': m.is_from_customer,
-            'message_type':     m.message_type,
-            'created_at':       m.created_at.strftime('%H:%M'),
-            'attachment_url':   m.attachment.url if m.attachment else None,
-        })
-
-    return JsonResponse({'success': True, 'messages': msg_list})
+    return JsonResponse({'success': True, 'messages': [{
+        'id': m.id, 'message': m.message, 'sender_name': m.sender_name or 'Support',
+        'is_from_customer': m.is_from_customer, 'message_type': m.message_type,
+        'created_at': m.created_at.strftime('%H:%M'),
+        'attachment_url': m.attachment.url if m.attachment else None,
+    } for m in qs]})
 
 
 @require_http_methods(['POST'])
 def rate_conversation(request, conversation_id):
-    """POST rating (1-5) and optional feedback text for a conversation."""
-    conversation = get_object_or_404(ChatConversation, conversation_id=conversation_id)
-
+    conv = get_object_or_404(ChatConversation, conversation_id=conversation_id)
     try:
         rating = int(request.POST.get('rating', 0))
-        if not (1 <= rating <= 5):
-            raise ValueError
-    except (TypeError, ValueError):
-        return JsonResponse({'success': False, 'error': 'Rating must be 1–5.'}, status=400)
-
-    conversation.rating   = rating
-    conversation.feedback = request.POST.get('feedback', '').strip()
-    conversation.save(update_fields=['rating', 'feedback'])
-
+        assert 1 <= rating <= 5
+    except (TypeError, ValueError, AssertionError):
+        return JsonResponse({'success': False}, status=400)
+    conv.rating = rating
+    conv.save(update_fields=['rating'])
     return JsonResponse({'success': True})
 
 
-def offline_message(request):
-    """
-    GET  → render offline contact form.
-    POST → save the offline message and acknowledge.
-    """
-    if request.method != 'POST':
-        return render(request, 'chat/offline_form.html')
-
-    required = ['name', 'email', 'subject', 'message']
-    missing  = [f for f in required if not request.POST.get(f, '').strip()]
-    if missing:
-        if is_ajax(request):
-            return JsonResponse(
-                {'success': False, 'error': f"Missing fields: {', '.join(missing)}"},
-                status=400,
-            )
-        return render(request, 'chat/offline_form.html', {'error': 'Please fill in all fields.'})
-
-    ChatOfflineMessage.objects.create(
-        name=request.POST['name'].strip(),
-        email=request.POST['email'].strip(),
-        subject=request.POST['subject'].strip(),
-        message=request.POST['message'].strip(),
-        ip_address=get_client_ip(request),
-    )
-
-    if is_ajax(request):
-        return JsonResponse({
-            'success': True,
-            'message': "Message received! We'll get back to you within 24 hours.",
-        })
-
-    return redirect('chat:start_chat')
-
-
-# ──────────────────────────────────────────────
+# ─────────────────────────────────────────────
 # AGENT VIEWS
-# ──────────────────────────────────────────────
+# ─────────────────────────────────────────────
 
 @staff_member_required
 def agent_dashboard(request):
-    """Main agent dashboard with filters, pagination, and live stats."""
-    conversations = (
-        ChatConversation.objects
-        .select_related('user', 'assigned_to')
-        .annotate(
-            message_count=Count('messages'),
-            last_message_time=Max('messages__created_at'),
-        )
-    )
+    qs = (ChatConversation.objects
+          .select_related('user', 'assigned_to')
+          .annotate(message_count=Count('messages'), last_message_time=Max('messages__created_at')))
 
-    # ── Filters ──────────────────────────────────
-    status_filter = request.GET.get('status')
-    if status_filter:
-        conversations = conversations.filter(status=status_filter)
+    if s := request.GET.get('status'):       qs = qs.filter(status=s)
+    if p := request.GET.get('priority'):     qs = qs.filter(priority=p)
+    at = request.GET.get('assigned_to')
+    if at == 'me':          qs = qs.filter(assigned_to=request.user)
+    elif at == 'unassigned': qs = qs.filter(assigned_to__isnull=True)
+    if q := request.GET.get('q', '').strip():
+        qs = qs.filter(Q(conversation_id__icontains=q)|Q(subject__icontains=q)|Q(guest_name__icontains=q))
 
-    assigned_filter = request.GET.get('assigned_to')
-    if assigned_filter == 'me':
-        conversations = conversations.filter(assigned_to=request.user)
-    elif assigned_filter == 'unassigned':
-        conversations = conversations.filter(assigned_to__isnull=True)
-
-    priority_filter = request.GET.get('priority')
-    if priority_filter:
-        conversations = conversations.filter(priority=priority_filter)
-
-    search_q = request.GET.get('q', '').strip()
-    if search_q:
-        conversations = conversations.filter(
-            conversation_id__icontains=search_q
-        ) | conversations.filter(
-            subject__icontains=search_q
-        ) | conversations.filter(
-            guest_name__icontains=search_q
-        ) | conversations.filter(
-            guest_email__icontains=search_q
-        )
-
-    conversations = conversations.order_by('-created_at')
-
-    # ── Pagination ────────────────────────────────
-    paginator = Paginator(conversations, 20)
-    page      = paginator.get_page(request.GET.get('page', 1))
-
-    # ── Stats ─────────────────────────────────────
+    qs = qs.order_by('-created_at')
+    page = Paginator(qs, 20).get_page(request.GET.get('page', 1))
     base = ChatConversation.objects
-    stats = {
-        'total':       base.count(),
-        'open':        base.filter(status='open').count(),
-        'in_progress': base.filter(status='in_progress').count(),
-        'my_active':   base.filter(
-            assigned_to=request.user, status__in=['open', 'in_progress']
-        ).count(),
-        'unassigned':  base.filter(assigned_to__isnull=True).count(),
-        'resolved_today': base.filter(
-            status='resolved',
-            closed_at__date=timezone.now().date()
-        ).count(),
-    }
-
-    # ── Agent status ──────────────────────────────
     my_status, _ = AgentStatus.objects.get_or_create(agent=request.user)
 
     return render(request, 'chat/agent_dashboard.html', {
         'conversations': page,
-        'stats':         stats,
-        'my_status':     my_status,
+        'my_status': my_status,
+        'stats': {
+            'total':       base.count(),
+            'open':        base.filter(status='open').count(),
+            'in_progress': base.filter(status='in_progress').count(),
+            'my_active':   base.filter(assigned_to=request.user, status__in=['open','in_progress']).count(),
+            'unassigned':  base.filter(assigned_to__isnull=True).count(),
+        },
     })
 
 
 @staff_member_required
 def agent_conversation(request, conversation_id):
-    """Agent conversation detail page."""
-    conversation = get_object_or_404(ChatConversation, conversation_id=conversation_id)
-
-    # Mark all customer messages as read
-    conversation.messages.filter(
-        is_from_customer=True, is_read=False
-    ).update(is_read=True, read_at=timezone.now())
-
-    messages      = conversation.messages.all()
-    quick_replies = ChatQuickReply.objects.filter(is_active=True)[:15]
-
+    conv = get_object_or_404(ChatConversation, conversation_id=conversation_id)
+    conv.messages.filter(is_from_customer=True, is_read=False).update(is_read=True, read_at=timezone.now())
     return render(request, 'chat/agent_conversation.html', {
-        'conversation': conversation,
-        'messages':     messages,
-        'quick_replies': quick_replies,
+        'conversation': conv,
+        'messages': conv.messages.all(),
+        'quick_replies': ChatQuickReply.objects.filter(is_active=True)[:15],
     })
 
 
 @staff_member_required
 @require_http_methods(['POST'])
 def assign_conversation(request, conversation_id):
-    """Assign a conversation to the requesting agent (or another via POST body)."""
-    conversation = get_object_or_404(ChatConversation, conversation_id=conversation_id)
-
-    assign_user = request.user  # default: self-assign
-    conversation.assigned_to = assign_user
-    if conversation.status == 'open':
-        conversation.status = 'in_progress'
-    conversation.save(update_fields=['assigned_to', 'status'])
-
+    conv = get_object_or_404(ChatConversation, conversation_id=conversation_id)
+    conv.assigned_to = request.user
+    if conv.status == 'open': conv.status = 'in_progress'
+    conv.save(update_fields=['assigned_to', 'status'])
     ChatMessage.objects.create(
-        conversation=conversation,
-        sender_name='System',
-        message=f'Conversation assigned to {assign_user.get_full_name() or assign_user.username}.',
-        is_from_customer=False,
-        message_type='system',
+        conversation=conv, sender_name='System', is_from_customer=False, message_type='system',
+        message=f'Assigned to {request.user.get_full_name() or request.user.username}.',
     )
-
     return JsonResponse({'success': True})
 
 
 @staff_member_required
 @require_http_methods(['POST'])
 def update_status(request, conversation_id):
-    """Update conversation status (open / in_progress / waiting / resolved / closed)."""
-    conversation = get_object_or_404(ChatConversation, conversation_id=conversation_id)
-
-    new_status = request.POST.get('status', '').strip()
-    valid      = [c[0] for c in ChatConversation.STATUS_CHOICES]
-    if new_status not in valid:
-        return JsonResponse({'success': False, 'error': 'Invalid status.'}, status=400)
-
-    conversation.status = new_status
-    if new_status in ('resolved', 'closed'):
-        conversation.closed_at = timezone.now()
-        # Decrement agent counter
-        if conversation.assigned_to:
-            AgentStatus.objects.filter(
-                agent=conversation.assigned_to,
-                active_conversations__gt=0
-            ).update(active_conversations=models.F('active_conversations') - 1)
-
-    conversation.save(update_fields=['status', 'closed_at'])
-
+    conv = get_object_or_404(ChatConversation, conversation_id=conversation_id)
+    new = request.POST.get('status', '').strip()
+    if new not in [c[0] for c in ChatConversation.STATUS_CHOICES]:
+        return JsonResponse({'success': False}, status=400)
+    conv.status = new
+    if new in ('resolved', 'closed'):
+        conv.closed_at = timezone.now()
+        if conv.assigned_to:
+            AgentStatus.objects.filter(agent=conv.assigned_to, active_conversations__gt=0).update(
+                active_conversations=F('active_conversations') - 1)
+    conv.save(update_fields=['status', 'closed_at'])
     ChatMessage.objects.create(
-        conversation=conversation,
-        sender_name='System',
-        message=f'Status changed to {conversation.get_status_display()}.',
-        is_from_customer=False,
-        message_type='system',
+        conversation=conv, sender_name='System', is_from_customer=False, message_type='system',
+        message=f'Status changed to {conv.get_status_display()}.',
     )
-
-    return JsonResponse({'success': True, 'status': conversation.get_status_display()})
+    return JsonResponse({'success': True})
 
 
 @staff_member_required
 @require_http_methods(['POST'])
 def update_priority(request, conversation_id):
-    """Update conversation priority."""
-    conversation = get_object_or_404(ChatConversation, conversation_id=conversation_id)
-
-    new_priority = request.POST.get('priority', '').strip()
-    valid        = [c[0] for c in ChatConversation.PRIORITY_CHOICES]
-    if new_priority not in valid:
-        return JsonResponse({'success': False, 'error': 'Invalid priority.'}, status=400)
-
-    conversation.priority = new_priority
-    conversation.save(update_fields=['priority'])
-
-    return JsonResponse({'success': True, 'priority': conversation.get_priority_display()})
+    conv = get_object_or_404(ChatConversation, conversation_id=conversation_id)
+    new = request.POST.get('priority', '').strip()
+    if new not in [c[0] for c in ChatConversation.PRIORITY_CHOICES]:
+        return JsonResponse({'success': False}, status=400)
+    conv.priority = new
+    conv.save(update_fields=['priority'])
+    return JsonResponse({'success': True})
 
 
 @staff_member_required
 @require_http_methods(['POST'])
 def agent_status_update(request):
-    """Toggle the current agent's availability status."""
-    new_status = request.POST.get('status', '').strip()
-    valid      = [c[0] for c in AgentStatus.STATUS_CHOICES]
-    if new_status not in valid:
-        return JsonResponse({'success': False, 'error': 'Invalid status.'}, status=400)
-
-    agent_status, _ = AgentStatus.objects.get_or_create(agent=request.user)
-    agent_status.status = new_status
-    agent_status.save(update_fields=['status'])
-
-    return JsonResponse({'success': True, 'status': new_status})
+    new = request.POST.get('status', '').strip()
+    if new not in [c[0] for c in AgentStatus.STATUS_CHOICES]:
+        return JsonResponse({'success': False}, status=400)
+    status, _ = AgentStatus.objects.get_or_create(agent=request.user)
+    status.status = new
+    status.save(update_fields=['status'])
+    return JsonResponse({'success': True})
 
 
 @staff_member_required
 def get_quick_reply(request, reply_id):
-    """Return the body of a quick-reply template and increment its usage counter."""
     reply = get_object_or_404(ChatQuickReply, id=reply_id, is_active=True)
-    ChatQuickReply.objects.filter(pk=reply.pk).update(
-        usage_count=models.F('usage_count') + 1
-    )
+    ChatQuickReply.objects.filter(pk=reply_id).update(usage_count=F('usage_count') + 1)
     return JsonResponse({'success': True, 'message': reply.message, 'title': reply.title})
-
-
- 
