@@ -27,7 +27,7 @@ urlpatterns = [
     path('category/<slug:slug>/', views.category_detail, name='category_detail'),
     
     # Search
-    path('search/', views.search_view, name='search'),
+    path('search-result', views.search_view, name='search'),
     
     # AJAX endpoints
     path('api/lens-options/', views.get_lens_options, name='get_lens_options'),

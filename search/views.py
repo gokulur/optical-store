@@ -20,7 +20,7 @@ def search_view(request):
             'total_results': 0,
             'popular_searches': PopularSearch.objects.filter(is_active=True)[:10],
         }
-        return render(request, 'search/search.html', context)
+        return render(request, 'search.html', context)
     
     # Get filters
     brand_filter = request.GET.get('brand')
@@ -114,7 +114,7 @@ def search_view(request):
         'sort_by': sort_by,
     }
     
-    return render(request, 'search/search.html', context)
+    return render(request, 'search.html', context)
 
 
 @require_GET
@@ -240,7 +240,7 @@ def search_suggestions(request):
 def search_history(request):
     """View user's search history"""
     if not request.user.is_authenticated:
-        return render(request, 'search/search_history.html', {'searches': []})
+        return render(request, 'search_history.html', {'searches': []})
     
     searches = SearchQuery.objects.filter(
         user=request.user
@@ -250,7 +250,7 @@ def search_history(request):
         'searches': searches,
     }
     
-    return render(request, 'search/search_history.html', context)
+    return render(request, 'search_history.html', context)
 
 
 def clear_search_history(request):
@@ -279,7 +279,7 @@ def trending_searches(request):
         'trending': trending,
     }
     
-    return render(request, 'search/trending.html', context)
+    return render(request, 'trending.html', context)
 
 
 # Analytics (for admin)
@@ -320,7 +320,7 @@ def search_analytics(request):
         'total_searches': total_searches,
     }
     
-    return render(request, 'search/analytics.html', context)
+    return render(request, 'analytics.html', context)
 
 
  
