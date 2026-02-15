@@ -1,0 +1,335 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+.page-header-promo {
+    background: linear-gradient(135deg, #f857a6 0%, #ff5858 100%);
+    padding: 22px 26px; border-radius: 10px; margin-bottom: 24px; color: #fff;
+}
+.page-header-promo h3 { margin: 0 0 4px; font-size: 1.3rem; font-weight: 700; }
+.page-header-promo p  { margin: 0; opacity: .8; font-size: .85rem; }
+
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-box {
+    background: #fff; border-radius: 10px; padding: 18px 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.07);
+    border-left: 4px solid transparent; display: flex; align-items: center; gap: 14px;
+}
+.stat-box.pink   { border-left-color: #f857a6; }
+.stat-box.green  { border-left-color: #1bcfb4; }
+.stat-box.orange { border-left-color: #fd7e14; }
+.stat-box.blue   { border-left-color: #667eea; }
+.stat-icon { width: 46px; height: 46px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.stat-box.pink   .stat-icon { background: rgba(248,87,166,.12); color: #f857a6; }
+.stat-box.green  .stat-icon { background: rgba(27,207,180,.12); color: #1bcfb4; }
+.stat-box.orange .stat-icon { background: rgba(253,126,20,.12); color: #fd7e14; }
+.stat-box.blue   .stat-icon { background: rgba(102,126,234,.12); color: #667eea; }
+.stat-label { font-size: .75rem; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; }
+.stat-value { font-size: 1.5rem; font-weight: 800; color: #1a1a1a; }
+
+.filter-card { background: #fff; border-radius: 10px; padding: 18px 22px; box-shadow: 0 2px 8px rgba(0,0,0,.06); margin-bottom: 22px; }
+.filter-card .form-control { border-radius: 8px; border: 1.5px solid #e0e0e0; font-size: .86rem; }
+.filter-card .form-control:focus { border-color: #f857a6; box-shadow: 0 0 0 3px rgba(248,87,166,.15); }
+
+.main-card { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.07); overflow: hidden; }
+.main-card-header { padding: 18px 22px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+.main-card-header h5 { margin: 0; font-weight: 700; font-size: 1rem; }
+
+.table thead th { background: #f8f9fa; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #888; border: none; padding: 12px 16px; }
+.table tbody td { padding: 13px 16px; vertical-align: middle; border-color: #f5f5f5; font-size: .875rem; }
+.table tbody tr:hover { background: #fafafa; }
+
+.coupon-code-badge {
+    font-family: 'Courier New', monospace;
+    background: linear-gradient(135deg, #1a1a1a, #333);
+    color: #fff; padding: 5px 12px; border-radius: 6px;
+    font-size: .82rem; font-weight: 700; letter-spacing: .08em;
+    display: inline-block;
+}
+.discount-badge {
+    padding: 5px 12px; border-radius: 20px; font-size: .78rem; font-weight: 700;
+}
+.discount-badge.pct      { background: rgba(102,126,234,.12); color: #667eea; }
+.discount-badge.fixed    { background: rgba(27,207,180,.12);  color: #1bcfb4; }
+.discount-badge.shipping { background: rgba(253,126,20,.12);  color: #fd7e14; }
+
+.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.status-dot.active   { background: #1bcfb4; }
+.status-dot.inactive { background: #dc3545; }
+.status-dot.expired  { background: #adb5bd; }
+
+.usage-bar { background: #f0f0f0; border-radius: 20px; height: 6px; width: 80px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 8px; }
+.usage-bar-fill { height: 100%; border-radius: 20px; background: linear-gradient(135deg, #f857a6, #ff5858); transition: width .4s; }
+
+.btn-add { background: linear-gradient(135deg, #f857a6 0%, #ff5858 100%); border: none; color: #fff; border-radius: 8px; padding: 9px 20px; font-weight: 600; font-size: .86rem; }
+.btn-add:hover { opacity: .9; color: #fff; }
+.btn-icon { width: 32px; height: 32px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; border: none; cursor: pointer; transition: all .2s; }
+.btn-icon.edit   { background: rgba(102,126,234,.1); color: #667eea; }
+.btn-icon.del    { background: rgba(220,53,69,.1); color: #dc3545; }
+.btn-icon.toggle { background: rgba(27,207,180,.1); color: #1bcfb4; }
+.btn-icon:hover  { opacity: .75; transform: scale(1.08); }
+
+.empty-state { padding: 60px 20px; text-align: center; color: #ccc; }
+.empty-state i { font-size: 56px; }
+
+@media(max-width:768px){ .stats-row { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:480px){ .stats-row { grid-template-columns: 1fr; } }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header-promo d-flex justify-content-between align-items-center flex-wrap" style="gap:12px;">
+      <div>
+        <h3><i class="mdi mdi-tag-multiple"></i> Promotions & Coupons</h3>
+        <p>Create and manage discount coupons for your store</p>
+      </div>
+      <a href="{% url 'adminpanel:coupon_add' %}" class="btn-add btn">
+        <i class="mdi mdi-plus"></i> Add New Coupon
+      </a>
+    </div>
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-transparent p-0 mb-4">
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active">Promotions</li>
+      </ol>
+    </nav>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-box pink">
+        <div class="stat-icon"><i class="mdi mdi-tag-multiple"></i></div>
+        <div>
+          <div class="stat-label">Total Coupons</div>
+          <div class="stat-value">{{ total_count }}</div>
+        </div>
+      </div>
+      <div class="stat-box green">
+        <div class="stat-icon"><i class="mdi mdi-check-circle"></i></div>
+        <div>
+          <div class="stat-label">Active</div>
+          <div class="stat-value">{{ active_count }}</div>
+        </div>
+      </div>
+      <div class="stat-box orange">
+        <div class="stat-icon"><i class="mdi mdi-close-circle"></i></div>
+        <div>
+          <div class="stat-label">Expired</div>
+          <div class="stat-value">{{ expired_count }}</div>
+        </div>
+      </div>
+      <div class="stat-box blue">
+        <div class="stat-icon"><i class="mdi mdi-chart-bar"></i></div>
+        <div>
+          <div class="stat-label">Total Uses</div>
+          <div class="stat-value">{{ total_uses }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-card">
+      <form method="GET">
+        <div class="row align-items-end">
+          <div class="col-md-4">
+            <label class="font-weight-bold" style="font-size:.8rem;">Search</label>
+            <div class="input-group">
+              <div class="input-group-prepend"><span class="input-group-text bg-white"><i class="mdi mdi-magnify"></i></span></div>
+              <input type="text" class="form-control" name="search" placeholder="Code or name…" value="{{ search }}">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="font-weight-bold" style="font-size:.8rem;">Discount Type</label>
+            <select class="form-control" name="discount_type">
+              <option value="">All Types</option>
+              <option value="percentage"  {% if discount_type == 'percentage'  %}selected{% endif %}>Percentage</option>
+              <option value="fixed_amount"{% if discount_type == 'fixed_amount'%}selected{% endif %}>Fixed Amount</option>
+              <option value="free_shipping"{% if discount_type == 'free_shipping'%}selected{% endif %}>Free Shipping</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="font-weight-bold" style="font-size:.8rem;">Status</label>
+            <select class="form-control" name="status">
+              <option value="">All</option>
+              <option value="active"  {% if status == 'active'  %}selected{% endif %}>Active</option>
+              <option value="expired" {% if status == 'expired' %}selected{% endif %}>Expired</option>
+              <option value="inactive"{% if status == 'inactive'%}selected{% endif %}>Inactive</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-primary btn-block" style="border-radius:8px;">
+              <i class="mdi mdi-filter"></i> Filter
+            </button>
+          </div>
+          <div class="col-md-1">
+            <a href="{% url 'adminpanel:coupon_list' %}" class="btn btn-light btn-block" style="border-radius:8px;">
+              <i class="mdi mdi-refresh"></i>
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Table -->
+    <div class="main-card">
+      <div class="main-card-header">
+        <h5><i class="mdi mdi-table text-muted mr-1"></i> All Coupons</h5>
+        <small class="text-muted">{{ coupons.paginator.count }} coupon{{ coupons.paginator.count|pluralize }}</small>
+      </div>
+      <div class="card-body p-0">
+        {% if coupons %}
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Discount</th>
+                <th>Min. Order</th>
+                <th>Usage</th>
+                <th>Valid Until</th>
+                <th>Status</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for coupon in coupons %}
+              <tr>
+                <td class="text-muted">{{ forloop.counter }}</td>
+                <td><span class="coupon-code-badge">{{ coupon.code }}</span></td>
+                <td>
+                  <div class="font-weight-600" style="font-size:.88rem;">{{ coupon.name }}</div>
+                  {% if coupon.description %}<small class="text-muted">{{ coupon.description|truncatewords:6 }}</small>{% endif %}
+                </td>
+                <td>
+                  {% if coupon.discount_type == 'percentage' %}
+                  <span class="discount-badge pct"><i class="mdi mdi-percent"></i> {{ coupon.discount_value }}% OFF</span>
+                  {% elif coupon.discount_type == 'fixed_amount' %}
+                  <span class="discount-badge fixed"><i class="mdi mdi-currency-usd"></i> {{ coupon.discount_value }} QAR</span>
+                  {% else %}
+                  <span class="discount-badge shipping"><i class="mdi mdi-truck"></i> Free Shipping</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if coupon.minimum_order_amount %}
+                  <span class="text-muted">{{ coupon.minimum_order_amount }} QAR</span>
+                  {% else %}<span class="text-muted">—</span>{% endif %}
+                </td>
+                <td>
+                  {% if coupon.usage_limit %}
+                    {% widthratio coupon.times_used coupon.usage_limit 100 as pct %}
+                    <span class="usage-bar"><span class="usage-bar-fill" style="width:{{ pct }}%"></span></span>
+                    <small>{{ coupon.times_used }}/{{ coupon.usage_limit }}</small>
+                  {% else %}
+                    <small class="text-muted">{{ coupon.times_used }} uses</small>
+                  {% endif %}
+                </td>
+                <td>
+                  <small>{{ coupon.valid_until|date:"d M Y" }}</small>
+                </td>
+                <td>
+                  {% if coupon.is_active and coupon.valid_until >= today %}
+                    <span class="status-dot active"></span><small class="text-success font-weight-bold">Active</small>
+                  {% elif not coupon.is_active %}
+                    <span class="status-dot inactive"></span><small class="text-danger">Inactive</small>
+                  {% else %}
+                    <span class="status-dot expired"></span><small class="text-muted">Expired</small>
+                  {% endif %}
+                </td>
+                <td class="text-right">
+                  <a href="{% url 'adminpanel:coupon_edit' coupon.id %}" class="btn-icon edit" title="Edit">
+                    <i class="mdi mdi-pencil"></i>
+                  </a>
+                  <button class="btn-icon del" onclick="confirmDelete('{{ coupon.code|escapejs }}', {{ coupon.id }})" title="Delete">
+                    <i class="mdi mdi-delete"></i>
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% if coupons.has_other_pages %}
+        <div class="px-4 py-3">
+          <nav>
+            <ul class="pagination justify-content-center mb-0">
+              {% if coupons.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ coupons.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if discount_type %}&discount_type={{ discount_type }}{% endif %}{% if status %}&status={{ status }}{% endif %}">‹</a>
+              </li>
+              {% endif %}
+              {% for num in coupons.paginator.page_range %}
+              {% if coupons.number == num %}
+              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+              {% elif num > coupons.number|add:'-3' and num < coupons.number|add:'3' %}
+              <li class="page-item"><a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}">{{ num }}</a></li>
+              {% endif %}
+              {% endfor %}
+              {% if coupons.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ coupons.next_page_number }}{% if search %}&search={{ search }}{% endif %}">›</a>
+              </li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+          <i class="mdi mdi-tag-off"></i>
+          <h5 class="mt-3 text-muted">No coupons found</h5>
+          <a href="{% url 'adminpanel:coupon_add' %}" class="btn-add btn mt-3">
+            <i class="mdi mdi-plus"></i> Create First Coupon
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="mdi mdi-alert"></i> Delete Coupon</h5>
+        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p>Delete coupon <strong id="deleteCouponCode"></strong>? This cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+        <form id="deleteForm" method="POST" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger"><i class="mdi mdi-delete"></i> Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function confirmDelete(code, id) {
+    document.getElementById('deleteCouponCode').textContent = code;
+    document.getElementById('deleteForm').action = "{% url 'adminpanel:coupon_delete' 0 %}".replace('0', id);
+    $('#deleteModal').modal('show');
+}
+</script>
+{% endblock %}
