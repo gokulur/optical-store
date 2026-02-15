@@ -156,7 +156,7 @@ def my_coupons(request):
         'used_coupons': used_coupons,
     }
     
-    return render(request, 'promotions/my_coupons.html', context)
+    return render(request, 'my_coupons.html', context)
 
 
 def active_promotions(request):
@@ -173,4 +173,4 @@ def active_promotions(request):
         'promotions': promotions,
     }
     
-    return render(request, 'promotions/promotions.html', context)
+    return render(request, 'promotions.html', context)

@@ -1,4 +1,318 @@
-{% extends 'catalog/base.html' %}{% block title %}My Coupons{% endblock %}{% block content %}
-<div class="coupons-page"><div class="container"><h1>My Coupons</h1><section class="coupons-section"><h2>Available Coupons</h2>{% if available_coupons %}<div class="coupons-grid">{% for coupon in available_coupons %}<div class="coupon-card {% if not coupon.can_use %}disabled{% endif %}"><div class="coupon-header"><span class="coupon-code">{{ coupon.code }}</span>{% if coupon.discount_type == 'percentage' %}<span class="discount">{{ coupon.discount_value }}% OFF</span>{% elif coupon.discount_type == 'fixed_amount' %}<span class="discount">{{ coupon.discount_value }} QAR OFF</span>{% else %}<span class="discount">FREE SHIPPING</span>{% endif %}</div><div class="coupon-body"><p class="coupon-name">{{ coupon.name }}</p>{% if coupon.description %}<p class="coupon-desc">{{ coupon.description }}</p>{% endif %}{% if coupon.minimum_order_amount %}<p class="condition">Min. order: {{ coupon.minimum_order_amount }} QAR</p>{% endif %}<p class="validity">Valid until {{ coupon.valid_until|date:"M j, Y" }}</p></div>{% if coupon.can_use %}<button class="btn btn-primary btn-sm" onclick="copyCoupon('{{ coupon.code }}')">Copy Code</button>{% else %}<span class="badge unavailable">Not Available</span>{% endif %}</div>{% endfor %}</div>{% else %}<p>No coupons available</p>{% endif %}</section><section class="coupons-section"><h2>Coupon History</h2>{% if used_coupons %}<div class="history-list">{% for usage in used_coupons %}<div class="history-item"><div class="usage-info"><strong>{{ usage.coupon.code }}</strong><span>Order #{{ usage.order.order_number }}</span></div><div class="usage-details"><span class="discount">-{{ usage.discount_amount }} QAR</span><span class="date">{{ usage.created_at|date:"M j, Y" }}</span></div></div>{% endfor %}</div>{% else %}<p>No coupon usage history</p>{% endif %}</section></div></div>
-<script>function copyCoupon(code){navigator.clipboard.writeText(code);alert('Coupon code copied: '+code);}</script>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}My Coupons - Al Ameen Optics{% endblock %}
+
+{% block content %}
+<style>
+/* ── Breadcrumb ── */
+.breadcrumb__list { display:flex; gap:6px; list-style:none; margin:0; padding:0; }
+.breadcrumb__link { color:#666; text-decoration:none; font-size:.85rem; }
+.breadcrumb__separator { color:#ccc; font-size:.85rem; }
+.breadcrumb__item--current .breadcrumb__link { color:#1a1a1a; font-weight:600; }
+
+/* ── Stats ── */
+.coupon-stats { display:flex; gap:20px; margin-bottom:44px; flex-wrap:wrap; }
+.coupon-stat-card {
+    flex:1; min-width:180px; background:#fff; border-radius:10px;
+    padding:20px 22px; box-shadow:0 2px 10px rgba(0,0,0,.06);
+    display:flex; align-items:center; gap:16px;
+}
+.coupon-stat-icon {
+    width:46px; height:46px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.icon-green  { background:#e6faf7; color:#1bcfb4; }
+.icon-orange { background:#fff3e8; color:#f97316; }
+.icon-blue   { background:#eef0ff; color:#667eea; }
+.coupon-stat-value { font-size:1.6rem; font-weight:700; color:#1a1a1a; line-height:1; }
+.coupon-stat-label { font-size:.75rem; color:#999; margin-top:3px; }
+
+/* ── Section Label ── */
+.section-label-row { display:flex; align-items:center; gap:14px; margin-bottom:26px; }
+.section-label-row h2 { font-size:1rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#1a1a1a; margin:0; white-space:nowrap; }
+.section-label-row::after { content:''; flex:1; height:1px; background:#e0e0e0; }
+
+/* ── Grid ── */
+.coupons-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(310px, 1fr)); gap:22px; }
+
+/* ── Card ── */
+.coupon-card {
+    background:#fff; border-radius:12px; overflow:hidden;
+    box-shadow:0 2px 12px rgba(0,0,0,.07); display:flex; flex-direction:column;
+    transition:transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .3s;
+}
+.coupon-card:hover { transform:translateY(-5px); box-shadow:0 10px 28px rgba(0,0,0,.12); }
+.coupon-card.disabled { opacity:.55; }
+
+.coupon-top { background:#1a1a1a; padding:22px 22px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.coupon-code-eyebrow { font-size:.63rem; color:rgba(255,255,255,.4); text-transform:uppercase; letter-spacing:.1em; margin-bottom:4px; }
+.coupon-code-text { font-family:'Courier New',monospace; font-size:1.35rem; font-weight:900; color:#fff; letter-spacing:.18em; text-transform:uppercase; }
+.coup-disc-pill { flex-shrink:0; padding:9px 14px; border-radius:8px; font-size:.88rem; font-weight:800; line-height:1.2; text-align:center; white-space:nowrap; }
+.coup-disc-pill.pct      { background:#f97316; color:#fff; }
+.coup-disc-pill.fixed    { background:#1bcfb4; color:#fff; }
+.coup-disc-pill.shipping { background:#667eea; color:#fff; }
+
+/* notch */
+.coup-notch { display:flex; align-items:center; background:#f8f9fa; }
+.coup-notch::before,.coup-notch::after { content:''; width:16px; height:16px; border-radius:50%; background:#fff; flex-shrink:0; }
+.coup-notch-dash { flex:1; border-top:2px dashed #e0e0e0; margin:0 4px; }
+
+.coupon-body { padding:16px 22px 10px; flex:1; }
+.coupon-name  { font-size:.93rem; font-weight:700; color:#1a1a1a; margin-bottom:5px; }
+.coupon-desc  { font-size:.8rem; color:#888; line-height:1.55; margin-bottom:10px; }
+.coup-pills   { display:flex; flex-wrap:wrap; gap:6px; }
+.coup-pill    { font-size:.7rem; font-weight:600; color:#555; background:#f5f5f5; padding:4px 10px; border-radius:20px; display:inline-flex; align-items:center; gap:4px; }
+
+.coup-usage       { padding:8px 22px 0; }
+.coup-usage-label { display:flex; justify-content:space-between; font-size:.68rem; color:#bbb; margin-bottom:4px; }
+.coup-usage-bar   { background:#f0f0f0; border-radius:20px; height:4px; overflow:hidden; }
+.coup-usage-fill  { height:100%; border-radius:20px; background:linear-gradient(90deg,#1a1a1a,#555); }
+
+.coupon-action { padding:14px 22px 18px; }
+.btn-copy-coup {
+    width:100%; background:#1a1a1a; color:#fff; border:none; padding:11px;
+    border-radius:8px; font-size:.8rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.06em; cursor:pointer; display:flex; align-items:center;
+    justify-content:center; gap:8px; transition:all .25s;
+}
+.btn-copy-coup:hover { background:#333; }
+.btn-copy-coup.copied { background:#1bcfb4; }
+.badge-unavail { display:block; width:100%; text-align:center; background:#f5f5f5; color:#bbb; padding:11px; border-radius:8px; font-size:.77rem; font-weight:600; }
+
+/* ── History ── */
+.history-wrap { background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,.07); }
+.history-table { width:100%; border-collapse:collapse; }
+.history-table thead th { background:#1a1a1a; color:#fff; padding:13px 18px; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; text-align:left; }
+.history-table tbody tr { border-bottom:1px solid #f5f5f5; transition:background .2s; }
+.history-table tbody tr:last-child { border-bottom:none; }
+.history-table tbody tr:hover { background:#fafafa; }
+.history-table td { padding:13px 18px; font-size:.875rem; vertical-align:middle; }
+.h-code { font-family:'Courier New',monospace; background:#1a1a1a; color:#fff; padding:3px 9px; border-radius:5px; font-size:.76rem; font-weight:700; letter-spacing:.08em; }
+.h-order a { color:#667eea; font-weight:600; text-decoration:none; }
+.h-order a:hover { text-decoration:underline; }
+.h-disc { color:#1bcfb4; font-weight:700; }
+.h-date { color:#aaa; font-size:.77rem; }
+
+/* ── Empty ── */
+.empty-box { text-align:center; padding:55px 20px; color:#ccc; }
+.empty-box svg { margin-bottom:12px; }
+.empty-box h3 { font-size:1.05rem; font-weight:600; color:#888; margin:0 0 5px; }
+.empty-box p { font-size:.88rem; color:#bbb; margin:0; }
+.btn-empty { display:inline-block; margin-top:18px; background:#1a1a1a; color:#fff; padding:11px 28px; border-radius:30px; font-size:.86rem; font-weight:600; text-decoration:none; transition:all .3s; }
+.btn-empty:hover { background:#333; color:#fff; transform:translateY(-2px); }
+
+/* ── Toast ── */
+.coup-toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px); background:#1a1a1a; color:#fff; padding:12px 24px; border-radius:40px; font-size:.85rem; font-weight:600; display:flex; align-items:center; gap:9px; box-shadow:0 6px 20px rgba(0,0,0,.25); z-index:9999; transition:transform .35s cubic-bezier(.34,1.56,.64,1); white-space:nowrap; }
+.coup-toast.show { transform:translateX(-50%) translateY(0); }
+.coup-toast-tick { color:#1bcfb4; }
+
+@media(max-width:640px){
+    .coupons-grid { grid-template-columns:1fr; }
+    .history-table thead { display:none; }
+    .history-table tr { display:block; padding:14px 18px; border-bottom:1px solid #f0f0f0; }
+    .history-table td { display:inline; padding:0 4px 0 0; }
+}
+</style>
+
+<!-- Breadcrumb -->
+<div class="xo-section color-background-1" style="--margin:0;--pt:15;--pb:15;">
+    <xo-container class="xo-container--box">
+        <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+            <ol class="breadcrumb__list" style="--justify:flex-start">
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item breadcrumb__item--current">
+                    <a aria-current="page" class="breadcrumb__link breadcrumb--current">My Coupons</a>
+                </li>
+            </ol>
+        </nav>
+    </xo-container>
+</div>
+
+<!-- Main Section -->
+<div class="xo-section color-background-1" style="--margin:0;--pt:50;--pb:80;background:#f8f9fa;">
+    <xo-container class="xo-container--box">
+
+        <!-- Page Title (matches site style) -->
+        <xo-animate xo-cascade="">
+            <h2 class="product-v1__title" style="text-align:center;margin-bottom:4rem;font-size:4.2rem;font-weight:500;">
+                My Coupons
+            </h2>
+        </xo-animate>
+
+        <!-- Stats Row -->
+        <div class="coupon-stats">
+            <div class="coupon-stat-card">
+                <div class="coupon-stat-icon icon-green">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1"/></svg>
+                </div>
+                <div>
+                    <div class="coupon-stat-value">{{ available_coupons|length }}</div>
+                    <div class="coupon-stat-label">Available Coupons</div>
+                </div>
+            </div>
+            <div class="coupon-stat-card">
+                <div class="coupon-stat-icon icon-orange">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                </div>
+                <div>
+                    <div class="coupon-stat-value">{{ used_coupons|length }}</div>
+                    <div class="coupon-stat-label">Total Used</div>
+                </div>
+            </div>
+            <div class="coupon-stat-card">
+                <div class="coupon-stat-icon icon-blue">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+                <div>
+                    <div class="coupon-stat-value">QAR {% for u in used_coupons %}{{ u.discount_amount }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %}</div>
+                    <div class="coupon-stat-label">Total Saved</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Coupons -->
+        <div class="section-label-row"><h2>Available Coupons ({{ available_coupons|length }})</h2></div>
+
+        {% if available_coupons %}
+        <div class="coupons-grid">
+            {% for coupon in available_coupons %}
+            <div class="coupon-card {% if not coupon.can_use %}disabled{% endif %}">
+
+                <div class="coupon-top">
+                    <div>
+                        <div class="coupon-code-eyebrow">Coupon Code</div>
+                        <div class="coupon-code-text">{{ coupon.code }}</div>
+                    </div>
+                    {% if coupon.discount_type == 'percentage' %}
+                        <div class="coup-disc-pill pct">{{ coupon.discount_value|floatformat:0 }}%<br>OFF</div>
+                    {% elif coupon.discount_type == 'fixed_amount' %}
+                        <div class="coup-disc-pill fixed">{{ coupon.discount_value|floatformat:0 }}<br>QAR</div>
+                    {% else %}
+                        <div class="coup-disc-pill shipping">FREE<br>SHIP</div>
+                    {% endif %}
+                </div>
+
+                <div class="coup-notch"><div class="coup-notch-dash"></div></div>
+
+                <div class="coupon-body">
+                    <div class="coupon-name">{{ coupon.name }}</div>
+                    {% if coupon.description %}
+                    <div class="coupon-desc">{{ coupon.description|truncatewords:18 }}</div>
+                    {% endif %}
+                    <div class="coup-pills">
+                        {% if coupon.minimum_order_amount %}
+                        <span class="coup-pill">
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                            Min. {{ coupon.minimum_order_amount }} QAR
+                        </span>
+                        {% endif %}
+                        <span class="coup-pill">
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                            Until {{ coupon.valid_until|date:"d M Y" }}
+                        </span>
+                        {% if coupon.maximum_discount_amount %}
+                        <span class="coup-pill">Cap: {{ coupon.maximum_discount_amount }} QAR</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if coupon.usage_limit %}
+                <div class="coup-usage">
+                    <div class="coup-usage-label">
+                        <span>{{ coupon.times_used }} / {{ coupon.usage_limit }} used</span>
+                        <span>{% widthratio coupon.times_used coupon.usage_limit 100 %}% claimed</span>
+                    </div>
+                    <div class="coup-usage-bar">
+                        <div class="coup-usage-fill" style="width:{% widthratio coupon.times_used coupon.usage_limit 100 %}%"></div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="coupon-action">
+                    {% if coupon.can_use %}
+                    <button class="btn-copy-coup" onclick="copyCoupon(this,'{{ coupon.code }}')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                        Copy Code
+                    </button>
+                    {% else %}
+                    <span class="badge-unavail">Already Used / Unavailable</span>
+                    {% endif %}
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-box">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1"/></svg>
+            <h3>No Coupons Available</h3>
+            <p>Check back soon for exclusive discounts</p>
+            <a href="{% url 'promotions:promotions' %}" class="btn-empty">View Promotions</a>
+        </div>
+        {% endif %}
+
+        <!-- History -->
+        <div class="section-label-row" style="margin-top:60px;"><h2>Coupon History</h2></div>
+
+        <div class="history-wrap">
+            {% if used_coupons %}
+            <div style="overflow-x:auto;">
+                <table class="history-table">
+                    <thead><tr><th>Code</th><th>Order</th><th>Discount</th><th>Date Used</th></tr></thead>
+                    <tbody>
+                        {% for usage in used_coupons %}
+                        <tr>
+                            <td><span class="h-code">{{ usage.coupon.code }}</span></td>
+                            <td class="h-order"><a href="{% url 'orders:order_detail' usage.order.id %}">#{{ usage.order.order_number }}</a></td>
+                            <td><span class="h-disc">-{{ usage.discount_amount }} QAR</span></td>
+                            <td class="h-date">{{ usage.created_at|date:"d M Y, H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-box" style="padding:48px 20px;">
+                <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                <h3>No History Yet</h3>
+                <p>Your coupon usage will appear here after checkout</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </xo-container>
+</div>
+
+<!-- Toast -->
+<div class="coup-toast" id="coupToast">
+    <span class="coup-toast-tick">✓</span>
+    <span id="coupToastMsg">Copied!</span>
+</div>
+
+<script>
+function copyCoupon(btn, code) {
+    navigator.clipboard.writeText(code).then(() => {
+        btn.classList.add('copied');
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+        showToast('Code "' + code + '" copied!');
+        setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy Code`;
+        }, 2500);
+    }).catch(() => {
+        const ta = document.createElement('textarea'); ta.value = code;
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta); showToast('Code "' + code + '" copied!');
+    });
+}
+function showToast(msg) {
+    const t = document.getElementById('coupToast');
+    document.getElementById('coupToastMsg').textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
 {% endblock %}
