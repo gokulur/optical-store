@@ -1756,3 +1756,158 @@ def banner_toggle_active(request, banner_id):
     status = 'activated' if banner.is_active else 'deactivated'
     messages.success(request, f'Slide "{banner.title}" {status}.')
     return redirect('adminpanel:banner_list')
+
+
+
+
+# ==================== PROMOTIONS / COUPONS ====================
+
+
+from promotions.models import Coupon, CouponUsage
+
+
+@login_required
+@user_passes_test(is_admin)
+def coupon_list(request):
+    search        = request.GET.get('search', '')
+    discount_type = request.GET.get('discount_type', '')
+    status        = request.GET.get('status', '')
+
+    coupons = Coupon.objects.all().order_by('-created_at')
+
+    if search:
+        coupons = coupons.filter(
+            Q(code__icontains=search) | Q(name__icontains=search)
+        )
+    if discount_type:
+        coupons = coupons.filter(discount_type=discount_type)
+
+    now = timezone.now()
+    if status == 'active':
+        coupons = coupons.filter(is_active=True, valid_until__gte=now)
+    elif status == 'expired':
+        coupons = coupons.filter(valid_until__lt=now)
+    elif status == 'inactive':
+        coupons = coupons.filter(is_active=False)
+
+    # Stats
+    total_count   = Coupon.objects.count()
+    active_count  = Coupon.objects.filter(is_active=True, valid_until__gte=now).count()
+    expired_count = Coupon.objects.filter(valid_until__lt=now).count()
+    total_uses    = Coupon.objects.aggregate(t=Sum('times_used'))['t'] or 0
+
+    paginator = Paginator(coupons, 20)
+    coupons   = paginator.get_page(request.GET.get('page', 1))
+
+    return render(request, 'adminpanel/promotions/list.html', {
+        'coupons':       coupons,
+        'search':        search,
+        'discount_type': discount_type,
+        'status':        status,
+        'total_count':   total_count,
+        'active_count':  active_count,
+        'expired_count': expired_count,
+        'total_uses':    total_uses,
+        'today':         now.date(),
+    })
+
+
+@login_required
+@user_passes_test(is_admin)
+def coupon_add(request):
+    if request.method == 'POST':
+        try:
+            Coupon.objects.create(
+                code                    = request.POST.get('code', '').strip().upper(),
+                name                    = request.POST.get('name'),
+                description             = request.POST.get('description', ''),
+                discount_type           = request.POST.get('discount_type'),
+                discount_value          = request.POST.get('discount_value') or 0,
+                minimum_order_amount    = request.POST.get('minimum_order_amount') or None,
+                maximum_discount_amount = request.POST.get('maximum_discount_amount') or None,
+                usage_limit             = request.POST.get('usage_limit') or None,
+                usage_limit_per_customer= request.POST.get('usage_limit_per_customer') or None,
+                valid_from              = request.POST.get('valid_from'),
+                valid_until             = request.POST.get('valid_until'),
+                applicable_to_all       = request.POST.get('applicable_to_all') == 'on',
+                is_active               = request.POST.get('is_active') == 'on',
+            )
+            messages.success(request, f'Coupon "{request.POST.get("code").upper()}" created successfully!')
+            return redirect('adminpanel:coupon_list')
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+            # Pass back form data on error
+            return render(request, 'adminpanel/promotions/add.html', {
+                'form_data': request.POST
+            })
+
+    return render(request, 'adminpanel/promotions/add.html')
+
+
+@login_required
+@user_passes_test(is_admin)
+def coupon_edit(request, coupon_id):
+    coupon = get_object_or_404(Coupon, id=coupon_id)
+
+    if request.method == 'POST':
+        try:
+            coupon.code                     = request.POST.get('code', '').strip().upper()
+            coupon.name                     = request.POST.get('name')
+            coupon.description              = request.POST.get('description', '')
+            coupon.discount_type            = request.POST.get('discount_type')
+            coupon.discount_value           = request.POST.get('discount_value') or 0
+            coupon.minimum_order_amount     = request.POST.get('minimum_order_amount') or None
+            coupon.maximum_discount_amount  = request.POST.get('maximum_discount_amount') or None
+            coupon.usage_limit              = request.POST.get('usage_limit') or None
+            coupon.usage_limit_per_customer = request.POST.get('usage_limit_per_customer') or None
+            coupon.valid_from               = request.POST.get('valid_from')
+            coupon.valid_until              = request.POST.get('valid_until')
+            coupon.applicable_to_all        = request.POST.get('applicable_to_all') == 'on'
+            coupon.is_active                = request.POST.get('is_active') == 'on'
+            coupon.save()
+            messages.success(request, f'Coupon "{coupon.code}" updated!')
+            return redirect('adminpanel:coupon_list')
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+
+    return render(request, 'adminpanel/promotions/edit.html', {'coupon': coupon})
+
+
+@login_required
+@user_passes_test(is_admin)
+def coupon_delete(request, coupon_id):
+    coupon = get_object_or_404(Coupon, id=coupon_id)
+    if request.method == 'POST':
+        code = coupon.code
+        coupon.delete()
+        messages.success(request, f'Coupon "{code}" deleted.')
+        return redirect('adminpanel:coupon_list')
+    return redirect('adminpanel:coupon_list')
+
+
+@login_required
+@user_passes_test(is_admin)
+def coupon_usage_history(request):
+    """View all coupon usage across all orders"""
+    search = request.GET.get('search', '')
+    usage  = CouponUsage.objects.select_related('coupon', 'order', 'user').order_by('-created_at')
+
+    if search:
+        usage = usage.filter(
+            Q(coupon__code__icontains=search) |
+            Q(user__email__icontains=search) |
+            Q(order__order_number__icontains=search)
+        )
+
+    paginator = Paginator(usage, 25)
+    usage     = paginator.get_page(request.GET.get('page', 1))
+
+    total_discount = CouponUsage.objects.aggregate(
+        total=Sum('discount_amount')
+    )['total'] or Decimal('0.00')
+
+    return render(request, 'adminpanel/promotions/usage.html', {
+        'usage':          usage,
+        'search':         search,
+        'total_discount': total_discount,
+    })
