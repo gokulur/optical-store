@@ -1,0 +1,287 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+<style>
+.page-header-promo { background: linear-gradient(135deg, #f857a6 0%, #ff5858 100%); padding: 22px 26px; border-radius: 10px; margin-bottom: 24px; color: #fff; }
+.page-header-promo h3 { margin: 0 0 4px; font-size: 1.3rem; font-weight: 700; }
+.page-header-promo p  { margin: 0; opacity: .8; font-size: .85rem; }
+.form-card { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.07); overflow: hidden; }
+.form-card-header { padding: 18px 22px; border-bottom: 1px solid #f0f0f0; }
+.form-card-header h5 { margin: 0; font-weight: 700; font-size: .95rem; }
+.form-card-body { padding: 24px 22px; }
+.section-title { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: #aaa; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid #f0f0f0; }
+.form-control { border-radius: 8px; border: 1.5px solid #e5e5e5; font-size: .88rem; padding: 10px 13px; transition: all .2s; }
+.form-control:focus { border-color: #f857a6; box-shadow: 0 0 0 3px rgba(248,87,166,.12); outline: none; }
+.form-label { font-size: .82rem; font-weight: 700; color: #555; margin-bottom: 5px; display: block; }
+.req { color: #f857a6; }
+.help-text { font-size: .76rem; color: #bbb; margin-top: 4px; }
+.type-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 6px; }
+.type-card { border: 2px solid #e5e5e5; border-radius: 10px; padding: 14px 12px; cursor: pointer; transition: all .2s; text-align: center; position: relative; }
+.type-card:hover { border-color: #f857a6; }
+.type-card input { position: absolute; opacity: 0; pointer-events: none; }
+.type-card.selected { border-color: #f857a6; background: rgba(248,87,166,.05); }
+.type-card i { font-size: 22px; display: block; margin-bottom: 5px; }
+.type-card span { font-size: .78rem; font-weight: 700; }
+.btn-save { background: linear-gradient(135deg, #f857a6 0%, #ff5858 100%); border: none; color: #fff; border-radius: 8px; padding: 11px 28px; font-weight: 700; font-size: .9rem; }
+.btn-save:hover { opacity: .9; color: #fff; }
+.usage-stat { background: #f8f9fa; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; }
+.usage-stat .num { font-size: 1.4rem; font-weight: 800; color: #1a1a1a; }
+.usage-stat .lbl { font-size: .76rem; color: #999; text-transform: uppercase; letter-spacing: .05em; }
+.usage-bar-wide { background: #f0f0f0; border-radius: 20px; height: 8px; overflow: hidden; margin-top: 8px; }
+.usage-bar-fill-wide { height: 100%; border-radius: 20px; background: linear-gradient(135deg, #f857a6, #ff5858); }
+.coupon-code-badge { font-family: 'Courier New', monospace; background: linear-gradient(135deg, #1a1a1a, #333); color: #fff; padding: 6px 16px; border-radius: 8px; font-size: 1rem; font-weight: 700; letter-spacing: .12em; display: inline-block; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header-promo d-flex justify-content-between align-items-center flex-wrap" style="gap:12px;">
+      <div>
+        <h3><i class="mdi mdi-tag-edit"></i> Edit Coupon</h3>
+        <p>Update coupon: <span class="coupon-code-badge">{{ coupon.code }}</span></p>
+      </div>
+      <div class="d-flex gap-2" style="gap:8px;">
+        <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal">
+          <i class="mdi mdi-delete"></i> Delete
+        </button>
+        <a href="{% url 'adminpanel:coupon_list' %}" class="btn btn-light btn-sm">
+          <i class="mdi mdi-arrow-left"></i> Back
+        </a>
+      </div>
+    </div>
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-transparent p-0 mb-4">
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:coupon_list' %}">Promotions</a></li>
+        <li class="breadcrumb-item active">Edit Coupon</li>
+      </ol>
+    </nav>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+      {{ message }}<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="POST" id="couponForm">
+      {% csrf_token %}
+      <div class="row">
+
+        <!-- LEFT: Main form -->
+        <div class="col-md-8">
+
+          <!-- Basic Info -->
+          <div class="form-card mb-4">
+            <div class="form-card-header"><h5><i class="mdi mdi-tag" style="color:#f857a6;"></i> Basic Information</h5></div>
+            <div class="form-card-body">
+              <div class="row">
+                <div class="col-md-6 form-group">
+                  <label class="form-label">Coupon Code <span class="req">*</span></label>
+                  <input type="text" class="form-control text-uppercase font-weight-bold" name="code" id="codeInput" required style="letter-spacing:.1em; font-family: monospace;" value="{{ coupon.code }}">
+                </div>
+                <div class="col-md-6 form-group">
+                  <label class="form-label">Coupon Name <span class="req">*</span></label>
+                  <input type="text" class="form-control" name="name" required value="{{ coupon.name }}">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" name="description" rows="2">{{ coupon.description }}</textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Discount Type -->
+          <div class="form-card mb-4">
+            <div class="form-card-header"><h5><i class="mdi mdi-percent" style="color:#667eea;"></i> Discount Type</h5></div>
+            <div class="form-card-body">
+              <div class="type-cards" id="typeCards">
+                <label class="type-card {% if coupon.discount_type == 'percentage' %}selected{% endif %}" onclick="selectType(this,'percentage')">
+                  <input type="radio" name="discount_type" value="percentage" {% if coupon.discount_type == 'percentage' %}checked{% endif %}>
+                  <i class="mdi mdi-percent" style="color:#667eea;"></i><span>Percentage</span>
+                </label>
+                <label class="type-card {% if coupon.discount_type == 'fixed_amount' %}selected{% endif %}" onclick="selectType(this,'fixed_amount')">
+                  <input type="radio" name="discount_type" value="fixed_amount" {% if coupon.discount_type == 'fixed_amount' %}checked{% endif %}>
+                  <i class="mdi mdi-cash" style="color:#1bcfb4;"></i><span>Fixed Amount</span>
+                </label>
+                <label class="type-card {% if coupon.discount_type == 'free_shipping' %}selected{% endif %}" onclick="selectType(this,'free_shipping')">
+                  <input type="radio" name="discount_type" value="free_shipping" {% if coupon.discount_type == 'free_shipping' %}checked{% endif %}>
+                  <i class="mdi mdi-truck" style="color:#fd7e14;"></i><span>Free Shipping</span>
+                </label>
+              </div>
+              <div class="row mt-3" id="discountValueRow" {% if coupon.discount_type == 'free_shipping' %}style="display:none;"{% endif %}>
+                <div class="col-md-6 form-group">
+                  <label class="form-label" id="discountValueLabel">
+                    {% if coupon.discount_type == 'percentage' %}Discount Value{% else %}Discount Amount{% endif %} <span class="req">*</span>
+                  </label>
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text" id="valuePrefix">{% if coupon.discount_type == 'percentage' %}%{% else %}QAR{% endif %}</span>
+                    </div>
+                    <input type="number" class="form-control" name="discount_value" id="discountValueInput" step="0.01" min="0" value="{{ coupon.discount_value }}">
+                  </div>
+                </div>
+                <div class="col-md-6 form-group">
+                  <label class="form-label">Maximum Discount Cap (QAR)</label>
+                  <input type="number" class="form-control" name="maximum_discount_amount" placeholder="Leave blank for no cap" step="0.01" min="0" value="{{ coupon.maximum_discount_amount|default:'' }}">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Conditions -->
+          <div class="form-card mb-4">
+            <div class="form-card-header"><h5><i class="mdi mdi-filter" style="color:#1bcfb4;"></i> Conditions & Limits</h5></div>
+            <div class="form-card-body">
+              <div class="row">
+                <div class="col-md-6 form-group">
+                  <label class="form-label">Minimum Order Amount (QAR)</label>
+                  <input type="number" class="form-control" name="minimum_order_amount" step="0.01" min="0" value="{{ coupon.minimum_order_amount|default:'' }}">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 form-group">
+                  <label class="form-label">Total Usage Limit</label>
+                  <input type="number" class="form-control" name="usage_limit" min="1" value="{{ coupon.usage_limit|default:'' }}" placeholder="Unlimited">
+                </div>
+                <div class="col-md-6 form-group">
+                  <label class="form-label">Limit Per Customer</label>
+                  <input type="number" class="form-control" name="usage_limit_per_customer" min="1" value="{{ coupon.usage_limit_per_customer|default:'' }}" placeholder="Unlimited">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Validity -->
+          <div class="form-card mb-4">
+            <div class="form-card-header"><h5><i class="mdi mdi-calendar" style="color:#fd7e14;"></i> Validity Period</h5></div>
+            <div class="form-card-body">
+              <div class="row">
+                <div class="col-md-6 form-group">
+                  <label class="form-label">Valid From <span class="req">*</span></label>
+                  <input type="datetime-local" class="form-control" name="valid_from" required
+                    value="{{ coupon.valid_from|date:'Y-m-d' }}T{{ coupon.valid_from|time:'H:i' }}">
+                </div>
+                <div class="col-md-6 form-group">
+                  <label class="form-label">Valid Until <span class="req">*</span></label>
+                  <input type="datetime-local" class="form-control" name="valid_until" required
+                    value="{{ coupon.valid_until|date:'Y-m-d' }}T{{ coupon.valid_until|time:'H:i' }}">
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: Sidebar -->
+        <div class="col-md-4">
+
+          <!-- Usage Stats -->
+          <div class="form-card mb-4">
+            <div class="form-card-header"><h5><i class="mdi mdi-chart-bar" style="color:#667eea;"></i> Usage Stats</h5></div>
+            <div class="form-card-body">
+              <div class="usage-stat">
+                <div class="num">{{ coupon.times_used }}</div>
+                <div class="lbl">Total Uses</div>
+                {% if coupon.usage_limit %}
+                <div class="usage-bar-wide">
+                  {% widthratio coupon.times_used coupon.usage_limit 100 as pct %}
+                  <div class="usage-bar-fill-wide" style="width:{{ pct }}%"></div>
+                </div>
+                <small class="text-muted">{{ pct }}% of {{ coupon.usage_limit }} total limit</small>
+                {% else %}
+                <small class="text-muted">Unlimited uses</small>
+                {% endif %}
+              </div>
+              <div class="info-row d-flex justify-content-between py-2 border-bottom">
+                <span class="text-muted" style="font-size:.83rem;">Created</span>
+                <span style="font-size:.83rem;font-weight:600;">{{ coupon.created_at|date:"d M Y" }}</span>
+              </div>
+              <div class="info-row d-flex justify-content-between py-2">
+                <span class="text-muted" style="font-size:.83rem;">Last Updated</span>
+                <span style="font-size:.83rem;font-weight:600;">{{ coupon.updated_at|date:"d M Y" }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Settings -->
+          <div class="form-card mb-4">
+            <div class="form-card-header"><h5><i class="mdi mdi-cog" style="color:#f857a6;"></i> Settings</h5></div>
+            <div class="form-card-body">
+              <div class="form-check form-check-flat mb-3">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="is_active" {% if coupon.is_active %}checked{% endif %}>
+                  Active
+                  <i class="input-helper"></i>
+                </label>
+              </div>
+              <div class="form-check form-check-flat mb-3">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="applicable_to_all" {% if coupon.applicable_to_all %}checked{% endif %}>
+                  Apply to all products
+                  <i class="input-helper"></i>
+                </label>
+              </div>
+              <hr>
+              <button type="submit" class="btn-save btn btn-block">
+                <i class="mdi mdi-check"></i> Update Coupon
+              </button>
+              <a href="{% url 'adminpanel:coupon_list' %}" class="btn btn-light btn-block mt-2" style="border-radius:8px;">Cancel</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="mdi mdi-alert"></i> Delete Coupon</h5>
+        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p>Delete coupon <strong>{{ coupon.code }}</strong>?</p>
+        {% if coupon.times_used > 0 %}
+        <div class="alert alert-warning"><i class="mdi mdi-alert"></i> This coupon has been used {{ coupon.times_used }} times. Consider deactivating instead.</div>
+        {% endif %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+        <form action="{% url 'adminpanel:coupon_delete' coupon.id %}" method="POST" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger"><i class="mdi mdi-delete"></i> Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function selectType(label, type) {
+    document.querySelectorAll('.type-card').forEach(function(c){ c.classList.remove('selected'); });
+    label.classList.add('selected');
+    var prefix = document.getElementById('valuePrefix');
+    var row = document.getElementById('discountValueRow');
+    var valInput = document.getElementById('discountValueInput');
+    if (type === 'percentage') {
+        prefix.textContent = '%'; row.style.display = ''; valInput.max = 100;
+    } else if (type === 'fixed_amount') {
+        prefix.textContent = 'QAR'; row.style.display = ''; valInput.removeAttribute('max');
+    } else {
+        row.style.display = 'none';
+    }
+}
+document.getElementById('codeInput').addEventListener('input', function() {
+    this.value = this.value.toUpperCase().replace(/[^A-Z0-9\-_]/g,'');
+});
+</script>
+{% endblock %}
