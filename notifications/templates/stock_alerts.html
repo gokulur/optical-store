@@ -1,26 +1,267 @@
-{% extends 'base.html' %}{% block title %}Stock Alerts{% endblock %}{% block content %}
-<div class="stock-alerts-page">
-    <div class="container">
-        <h1>Stock Alerts</h1>
-        <p>We'll notify you when these products are back in stock</p>{% if alerts %}<div class="alerts-list">{% for
-            alert in alerts %}<div class="alert-card">
-                <div class="alert-product"><img src="{{ alert.product.images.first.image.url }}"
-                        alt="{{ alert.product.name }}">
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Stock Alerts – Al Ameen Optics{% endblock %}
+
+{% block content %}
+<style>
+.breadcrumb__list{display:flex;gap:6px;list-style:none;margin:0;padding:0}
+.breadcrumb__link{color:#666;text-decoration:none;font-size:.85rem}
+.breadcrumb__separator{color:#ccc}
+.breadcrumb__item--current .breadcrumb__link{color:#1a1a1a;font-weight:600}
+
+/* ── Layout ── */
+.sa-wrap{max-width:840px;margin:0 auto;padding:40px 20px 80px}
+
+/* ── Header ── */
+.sa-header{display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:36px;flex-wrap:wrap;gap:14px}
+
+/* ── Stats ── */
+.sa-stats{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:32px}
+.sa-stat{flex:1;min-width:140px;background:#fff;border-radius:10px;padding:15px 18px;
+    box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px}
+.sa-stat-icon{width:38px;height:38px;border-radius:8px;display:flex;
+    align-items:center;justify-content:center;flex-shrink:0}
+.sai-or{background:#fff3e8;color:#f97316}
+.sai-gr{background:#e6faf7;color:#1bcfb4}
+.sa-stat-val{font-size:1.45rem;font-weight:700;color:#1a1a1a;line-height:1}
+.sa-stat-lbl{font-size:.7rem;color:#aaa;margin-top:2px}
+
+/* ── Section Divider ── */
+.sa-div{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.sa-div h2{font-size:.9rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.1em;color:#1a1a1a;margin:0;white-space:nowrap}
+.sa-div::after{content:'';flex:1;height:1px;background:#e0e0e0}
+
+/* ── Alert Card ── */
+.sa-card{background:#fff;border-radius:12px;overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:14px;
+    display:flex;gap:0;transition:box-shadow .25s}
+.sa-card:hover{box-shadow:0 6px 18px rgba(0,0,0,.1)}
+
+/* Left accent */
+.sa-accent{width:4px;flex-shrink:0;background:#f0f0f0}
+.sa-card.is-active   .sa-accent{background:linear-gradient(180deg,#f97316,#ff5858)}
+.sa-card.is-notified .sa-accent{background:linear-gradient(180deg,#1bcfb4,#0ea5e9)}
+
+.sa-body{flex:1;padding:16px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;min-width:0}
+
+/* product info */
+.sa-prod-img{width:66px;height:66px;border-radius:8px;overflow:hidden;
+    background:#f8f8f8;border:1px solid #f0f0f0;flex-shrink:0}
+.sa-prod-img img{width:100%;height:100%;object-fit:contain;padding:6px}
+.sa-prod-info{flex:1;min-width:130px}
+.sa-prod-name{font-size:.9rem;font-weight:700;color:#1a1a1a;margin-bottom:3px;line-height:1.3}
+.sa-prod-name a{color:inherit;text-decoration:none;transition:color .2s}
+.sa-prod-name a:hover{color:#667eea}
+.sa-prod-meta{font-size:.76rem;color:#aaa;display:flex;flex-direction:column;gap:3px}
+.sa-power{display:inline-flex;align-items:center;gap:5px;background:#f5f5f5;
+    border-radius:6px;padding:3px 8px;font-size:.72rem;font-weight:600;color:#555;margin-top:3px}
+
+/* right side */
+.sa-card-right{display:flex;flex-direction:column;align-items:flex-end;
+    justify-content:space-between;gap:10px;flex-shrink:0;padding:4px 0}
+.sa-badge{display:inline-flex;align-items:center;gap:4px;border-radius:20px;
+    padding:4px 11px;font-size:.7rem;font-weight:700;white-space:nowrap}
+.sa-badge-active  {background:#fff3e8;color:#b45309}
+.sa-badge-notified{background:#e6faf7;color:#0f8c6f}
+.sa-date{font-size:.72rem;color:#ccc}
+.sa-actions{display:flex;gap:7px;align-items:center}
+.btn-sa-view{display:inline-flex;align-items:center;gap:5px;color:#667eea;
+    font-size:.75rem;font-weight:700;text-decoration:none;padding:6px 12px;
+    border:1.5px solid #e0e0e0;border-radius:7px;transition:all .25s}
+.btn-sa-view:hover{border-color:#667eea}
+.btn-sa-cancel{display:inline-flex;align-items:center;gap:5px;background:transparent;
+    border:1.5px solid #e0e0e0;color:#888;padding:6px 12px;border-radius:7px;
+    font-size:.75rem;font-weight:700;cursor:pointer;transition:all .25s;font-family:inherit}
+.btn-sa-cancel:hover{border-color:#ff3b30;color:#ff3b30}
+
+/* ── Empty ── */
+.sa-empty{background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.07);
+    text-align:center;padding:65px 30px}
+.sa-empty svg{margin-bottom:14px}
+.sa-empty h3{font-size:1.2rem;font-weight:700;color:#1a1a1a;margin:0 0 8px}
+.sa-empty p{color:#888;font-size:.88rem;margin:0 0 22px}
+.btn-shop{display:inline-block;background:#1a1a1a;color:#fff;padding:12px 28px;
+    border-radius:30px;font-size:.87rem;font-weight:700;text-decoration:none;
+    text-transform:uppercase;letter-spacing:.06em;transition:all .3s}
+.btn-shop:hover{background:#333;color:#fff;transform:translateY(-2px)}
+
+/* ── Confirm Modal ── */
+.sa-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+    z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.sa-modal.open{display:flex}
+.sa-modal-box{background:#fff;border-radius:14px;padding:30px;max-width:340px;width:90%;text-align:center}
+.sa-modal-box h3{font-size:1.1rem;font-weight:700;margin:0 0 8px}
+.sa-modal-box p{color:#888;font-size:.85rem;margin:0 0 20px}
+.sa-modal-btns{display:flex;gap:10px}
+.btn-mc{flex:1;padding:11px;border:1.5px solid #e0e0e0;border-radius:8px;background:#fff;
+    color:#888;font-size:.83rem;font-weight:600;cursor:pointer;transition:all .25s;font-family:inherit}
+.btn-mc:hover{border-color:#1a1a1a;color:#1a1a1a}
+.btn-md{flex:1;padding:11px;border:none;border-radius:8px;background:#ff3b30;
+    color:#fff;font-size:.83rem;font-weight:700;cursor:pointer;transition:background .25s;font-family:inherit}
+.btn-md:hover{background:#e02e24}
+
+@media(max-width:540px){
+    .sa-body{flex-direction:column;align-items:flex-start}
+    .sa-card-right{flex-direction:row;width:100%;justify-content:space-between;align-items:center}
+}
+</style>
+
+<!-- Breadcrumb -->
+<div class="xo-section color-background-1" style="--margin:0;--pt:15;--pb:15;">
+    <xo-container class="xo-container--box">
+        <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+            <ol class="breadcrumb__list" style="--justify:flex-start">
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{% url 'notifications:notification_list' %}">Notifications</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item breadcrumb__item--current">
+                    <a aria-current="page" class="breadcrumb__link">Stock Alerts</a>
+                </li>
+            </ol>
+        </nav>
+    </xo-container>
+</div>
+
+<div class="xo-section color-background-1" style="--margin:0;--pt:50;--pb:80;background:#f8f9fa;">
+    <xo-container class="xo-container--box">
+        <div class="sa-wrap">
+
+            <div class="sa-header">
+                <h1 class="product-v1__title" style="font-size:3.2rem;font-weight:500;margin:0;">Stock Alerts</h1>
+                {% if alerts %}
+                <span style="font-size:.83rem;color:#aaa;">{{ alerts|length }} alert{{ alerts|length|pluralize }}</span>
+                {% endif %}
+            </div>
+
+            {% if alerts %}
+
+            <!-- Stats -->
+            <div class="sa-stats">
+                <div class="sa-stat">
+                    <div class="sa-stat-icon sai-or">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                    </div>
                     <div>
-                        <h3>{{ alert.product.name }}</h3>{% if alert.variant %}<p>{{ alert.variant.color_name }}</p>{%
-                        endif %}{% if alert.required_power_left %}<p>Power: L {{ alert.required_power_left }}, R {{
-                            alert.required_power_right }}</p>{% endif %}
+                        <div class="sa-stat-val">{{ alerts|length }}</div>
+                        <div class="sa-stat-lbl">Total Alerts</div>
                     </div>
                 </div>
-                <div class="alert-info">{% if alert.is_notified %}<span class="badge notified">✓ Notified {{
-                        alert.notified_at|date:"M j" }}</span>{% else %}<span class="badge active">Active</span>{% endif
-                    %}<span class="alert-date">Created {{ alert.created_at|date:"M j, Y" }}</span></div>
-                <div class="alert-actions">{% if not alert.is_notified %}<form method="post"
-                        action="{% url 'notifications:cancel_stock_alert' alert.id %}" style="display:inline;">{%
-                        csrf_token %}<button type="submit" class="btn btn-sm btn-danger">Cancel Alert</button></form>{%
-                    endif %}</div>
-            </div>{% endfor %}</div>{% else %}<div class="empty-state">
-            <p>No active stock alerts</p><a href="{% url 'catalog:home' %}" class="btn btn-primary">Start Shopping</a>
-        </div>{% endif %}
+                <div class="sa-stat">
+                    <div class="sa-stat-icon sai-gr">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <div>
+                        <div class="sa-stat-val">{% for a in alerts %}{% if not a.is_notified %}+{% endif %}{% empty %}0{% endfor %}</div>
+                        <div class="sa-stat-lbl">Active</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="sa-div"><h2>Your Alerts</h2></div>
+
+            <!-- Cards -->
+            {% for alert in alerts %}
+            <div class="sa-card {% if alert.is_notified %}is-notified{% else %}is-active{% endif %}">
+                <div class="sa-accent"></div>
+                <div class="sa-body">
+                    <div class="sa-prod-img">
+                        {% if alert.product.images.first %}
+                        <img src="{{ alert.product.images.first.image.url }}" alt="{{ alert.product.name }}" loading="lazy">
+                        {% elif alert.product.image %}
+                        <img src="{{ alert.product.image.url }}" alt="{{ alert.product.name }}" loading="lazy">
+                        {% else %}
+                        <img src="/static/img/no-image.jpg" alt="" loading="lazy">
+                        {% endif %}
+                    </div>
+                    <div class="sa-prod-info">
+                        <div class="sa-prod-name">
+                            <a href="{{ alert.product.get_absolute_url }}">{{ alert.product.name }}</a>
+                        </div>
+                        <div class="sa-prod-meta">
+                            {% if alert.variant %}<span>{{ alert.variant.color_name }}</span>{% endif %}
+                            {% if alert.required_power_left %}
+                            <span class="sa-power">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                                L: {{ alert.required_power_left }} · R: {{ alert.required_power_right }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="sa-card-right">
+                        {% if alert.is_notified %}
+                        <span class="sa-badge sa-badge-notified">
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            Notified {{ alert.notified_at|date:"d M" }}
+                        </span>
+                        {% else %}
+                        <span class="sa-badge sa-badge-active">
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                            Watching
+                        </span>
+                        {% endif %}
+                        <span class="sa-date">Set {{ alert.created_at|date:"d M Y" }}</span>
+                        <div class="sa-actions">
+                            <a href="{{ alert.product.get_absolute_url }}" class="btn-sa-view">View Product</a>
+                            {% if not alert.is_notified %}
+                            <button class="btn-sa-cancel" onclick="showCancelModal({{ alert.id }}, '{{ alert.product.name|truncatechars:28|escapejs }}')">Cancel</button>
+                            <form id="cancel-form-{{ alert.id }}" method="post" action="{% url 'notifications:cancel_stock_alert' alert.id %}" style="display:none">{% csrf_token %}</form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            {% else %}
+            <div class="sa-empty">
+                <svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.2">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                    <line x1="1" y1="1" x2="23" y2="23" stroke="#ddd"/>
+                </svg>
+                <h3>No Stock Alerts</h3>
+                <p>When a product you want is out of stock, you can request an alert — we'll email you the moment it's available.</p>
+                <a href="{% url 'home' %}" class="btn-shop">Browse Products</a>
+            </div>
+            {% endif %}
+
+        </div>
+    </xo-container>
+</div>
+
+<!-- Confirm Cancel Modal -->
+<div class="sa-modal" id="saModal" onclick="hideCancelModal(event)">
+    <div class="sa-modal-box" onclick="event.stopPropagation()">
+        <h3>Cancel Alert?</h3>
+        <p id="saModalDesc">You won't receive a notification when this product is back in stock.</p>
+        <div class="sa-modal-btns">
+            <button class="btn-mc" onclick="hideCancelModal()">Keep Alert</button>
+            <button class="btn-md" onclick="doCancel()">Cancel Alert</button>
+        </div>
     </div>
-</div>{% endblock %}
+</div>
+
+<script>
+let _cancelId = null;
+function showCancelModal(id, name) {
+    _cancelId = id;
+    document.getElementById('saModalDesc').textContent = 'Stop tracking "' + name + '"? You won\'t be notified when it\'s back.';
+    document.getElementById('saModal').classList.add('open');
+}
+function hideCancelModal(e) {
+    if (!e || e.target === document.getElementById('saModal'))
+        document.getElementById('saModal').classList.remove('open');
+}
+function doCancel() {
+    if (_cancelId) document.getElementById('cancel-form-' + _cancelId).submit();
+}
+</script>
+{% endblock %}
