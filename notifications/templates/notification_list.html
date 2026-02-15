@@ -1,20 +1,195 @@
-{% extends 'base.html' %}{% block title %}Notifications{% endblock %}{% block content %}
-<div class="notifications-page">
-    <div class="container">
-        <h1>Notifications</h1>{% if notifications %}<div class="notifications-list">{% for notif in notifications %}<div
-                class="notification-card {% if notif.status == 'sent' %}sent{% endif %}">
-                <div class="notif-header"><span class="notif-channel">{{ notif.get_channel_display }}</span><span
-                        class="notif-date">{{ notif.created_at|date:"M j, Y H:i" }}</span></div>
-                <div class="notif-body">
-                    <h3>{{ notif.subject }}</h3>
-                    <p>{{ notif.body|truncatewords:30 }}</p>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Notifications – Al Ameen Optics{% endblock %}
+
+{% block content %}
+<style>
+.breadcrumb__list{display:flex;gap:6px;list-style:none;margin:0;padding:0}
+.breadcrumb__link{color:#666;text-decoration:none;font-size:.85rem}
+.breadcrumb__separator{color:#ccc}
+.breadcrumb__item--current .breadcrumb__link{color:#1a1a1a;font-weight:600}
+
+/* ── Layout ── */
+.nl-page{max-width:780px;margin:0 auto;padding:40px 20px 80px}
+
+/* ── Page Header ── */
+.nl-header{display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:36px;flex-wrap:wrap;gap:14px}
+
+/* ── Stats ── */
+.nl-stats{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:30px}
+.nl-stat{flex:1;min-width:130px;background:#fff;border-radius:10px;padding:15px 18px;
+    box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px}
+.nl-stat-icon{width:38px;height:38px;border-radius:8px;display:flex;
+    align-items:center;justify-content:center;flex-shrink:0}
+.nsi-or{background:#fff3e8;color:#f97316}
+.nsi-gr{background:#e6faf7;color:#1bcfb4}
+.nsi-bl{background:#eef0ff;color:#667eea}
+.nsi-rd{background:#fff0ef;color:#ff5858}
+.nl-stat-val{font-size:1.45rem;font-weight:700;color:#1a1a1a;line-height:1}
+.nl-stat-lbl{font-size:.7rem;color:#aaa;margin-top:2px}
+
+/* ── Section Divider ── */
+.nl-div{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.nl-div h2{font-size:.9rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.1em;color:#1a1a1a;margin:0;white-space:nowrap}
+.nl-div::after{content:'';flex:1;height:1px;background:#e0e0e0}
+
+/* ── Notification Card ── */
+.notif-card{background:#fff;border-radius:12px;overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:12px;
+    display:flex;gap:0;transition:box-shadow .25s;text-decoration:none;color:inherit}
+.notif-card:hover{box-shadow:0 6px 18px rgba(0,0,0,.1);transform:translateY(-2px)}
+
+/* Left accent strip by channel */
+.notif-accent{width:4px;flex-shrink:0}
+.notif-card.ch-email  .notif-accent{background:linear-gradient(180deg,#667eea,#764ba2)}
+.notif-card.ch-sms    .notif-accent{background:linear-gradient(180deg,#1bcfb4,#0ea5e9)}
+.notif-card.ch-push   .notif-accent{background:linear-gradient(180deg,#f97316,#ff5858)}
+
+.notif-body{flex:1;padding:16px 18px;display:flex;align-items:center;gap:16px;min-width:0}
+
+.notif-icon-wrap{width:42px;height:42px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.notif-card.ch-email  .notif-icon-wrap{background:#eef0ff;color:#667eea}
+.notif-card.ch-sms    .notif-icon-wrap{background:#e6faf7;color:#1bcfb4}
+.notif-card.ch-push   .notif-icon-wrap{background:#fff3e8;color:#f97316}
+
+.notif-info{flex:1;min-width:0}
+.notif-subject{font-size:.92rem;font-weight:700;color:#1a1a1a;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.notif-preview{font-size:.79rem;color:#888;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
+
+.notif-meta{flex-shrink:0;text-align:right;display:flex;flex-direction:column;
+    align-items:flex-end;gap:6px}
+.notif-date{font-size:.72rem;color:#ccc}
+.n-status{display:inline-flex;align-items:center;gap:3px;border-radius:20px;
+    padding:3px 9px;font-size:.68rem;font-weight:700}
+.ns-sent    {background:#e6faf7;color:#0f8c6f}
+.ns-pending {background:#fff8e8;color:#b45309}
+.ns-failed  {background:#fff0ef;color:#c0392b}
+.ns-bounced {background:#f5f5f5;color:#aaa}
+
+/* ── Empty ── */
+.nl-empty{background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.07);
+    text-align:center;padding:65px 30px}
+.nl-empty svg{margin-bottom:14px}
+.nl-empty h3{font-size:1.2rem;font-weight:700;color:#1a1a1a;margin:0 0 8px}
+.nl-empty p{color:#888;font-size:.88rem;margin:0}
+
+@media(max-width:540px){
+    .notif-preview{display:none}
+    .notif-meta .notif-date{display:none}
+}
+</style>
+
+<!-- Breadcrumb -->
+<div class="xo-section color-background-1" style="--margin:0;--pt:15;--pb:15;">
+    <xo-container class="xo-container--box">
+        <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+            <ol class="breadcrumb__list" style="--justify:flex-start">
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item breadcrumb__item--current">
+                    <a aria-current="page" class="breadcrumb__link">Notifications</a>
+                </li>
+            </ol>
+        </nav>
+    </xo-container>
+</div>
+
+<div class="xo-section color-background-1" style="--margin:0;--pt:50;--pb:80;background:#f8f9fa;">
+    <xo-container class="xo-container--box">
+        <div class="nl-page">
+
+            <div class="nl-header">
+                <h1 class="product-v1__title" style="font-size:3.2rem;font-weight:500;margin:0;">Notifications</h1>
+                {% if notifications %}
+                <span style="font-size:.83rem;color:#aaa;">{{ notifications|length }} message{{ notifications|length|pluralize }}</span>
+                {% endif %}
+            </div>
+
+            {% if notifications %}
+            <!-- Stats -->
+            <div class="nl-stats">
+                <div class="nl-stat">
+                    <div class="nl-stat-icon nsi-or">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                    </div>
+                    <div>
+                        <div class="nl-stat-val">{{ notifications|length }}</div>
+                        <div class="nl-stat-lbl">Total</div>
+                    </div>
                 </div>
-                <div class="notif-footer"><a href="{% url 'notifications:notification_detail' notif.id %}"
-                        class="btn btn-sm">View</a><span class="notif-status status-{{ notif.status }}">{{
-                        notif.get_status_display }}</span></div>
-            </div>{% endfor %}</div>{% else %}<div class="empty-state">
-            <p>No notifications yet</p>
-        </div>{% endif %}
-    </div>
+                <div class="nl-stat">
+                    <div class="nl-stat-icon nsi-gr">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.61a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .84h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.21a16 16 0 006.29 6.29l1.53-1.53a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+                    </div>
+                    <div>
+                        <div class="nl-stat-val">{% for n in notifications %}{% if n.channel == 'email' %}✓{% endif %}{% endfor %}—</div>
+                        <div class="nl-stat-lbl">Sent</div>
+                    </div>
+                </div>
+                <div class="nl-stat">
+                    <div class="nl-stat-icon nsi-bl">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8l10 6 10-6"/></svg>
+                    </div>
+                    <div>
+                        <div class="nl-stat-val">{% for n in notifications %}{% if n.status == 'sent' %}+{% endif %}{% empty %}0{% endfor %}</div>
+                        <div class="nl-stat-lbl">Emails</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List -->
+            <div class="nl-div"><h2>All Notifications</h2></div>
+
+            {% for notif in notifications %}
+            <a href="{% url 'notifications:notification_detail' notif.id %}"
+               class="notif-card ch-{{ notif.channel }}">
+                <div class="notif-accent"></div>
+                <div class="notif-body">
+                    <div class="notif-icon-wrap">
+                        {% if notif.channel == 'email' %}
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8l10 6 10-6"/></svg>
+                        {% elif notif.channel == 'sms' %}
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                        {% else %}
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                        {% endif %}
+                    </div>
+                    <div class="notif-info">
+                        <div class="notif-subject">{{ notif.subject|default:"(No subject)" }}</div>
+                        <div class="notif-preview">{{ notif.body|truncatewords:12 }}</div>
+                    </div>
+                    <div class="notif-meta">
+                        <span class="notif-date">{{ notif.created_at|date:"d M, H:i" }}</span>
+                        <span class="n-status ns-{{ notif.status }}">
+                            {% if notif.status == 'sent' %}
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            {% endif %}
+                            {{ notif.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+
+            {% else %}
+            <div class="nl-empty">
+                <svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.2">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                </svg>
+                <h3>No Notifications Yet</h3>
+                <p>Order confirmations, shipping updates and alerts will appear here</p>
+            </div>
+            {% endif %}
+
+        </div>
+    </xo-container>
 </div>
 {% endblock %}
