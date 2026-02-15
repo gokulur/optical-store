@@ -1,21 +1,205 @@
-<!-- notification_detail.html -->
-{% extends 'base.html' %}{% block title %}Notification Details{% endblock %}{% block content %}
-<div class="notification-detail-page">
-    <div class="container">
-        <div class="notif-detail-card">
-            <div class="notif-meta"><span class="channel-badge">{{ notification.get_channel_display }}</span><span
-                    class="date">{{ notification.created_at|date:"F j, Y H:i" }}</span><span
-                    class="status-badge status-{{ notification.status }}">{{ notification.get_status_display }}</span>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ notification.subject|default:"Notification" }} – Al Ameen Optics{% endblock %}
+
+{% block content %}
+<style>
+.breadcrumb__list{display:flex;gap:6px;list-style:none;margin:0;padding:0}
+.breadcrumb__link{color:#666;text-decoration:none;font-size:.85rem}
+.breadcrumb__separator{color:#ccc}
+.breadcrumb__item--current .breadcrumb__link{color:#1a1a1a;font-weight:600}
+
+/* ── Wrapper ── */
+.nd-wrap{max-width:720px;margin:0 auto;padding:40px 20px 80px}
+
+/* ── Detail Card ── */
+.nd-card{background:#fff;border-radius:12px;overflow:hidden;
+    box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:20px}
+
+.nd-card-header{background:#1a1a1a;padding:22px 26px;display:flex;
+    align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.nd-channel-pill{display:inline-flex;align-items:center;gap:6px;
+    border-radius:20px;padding:5px 13px;font-size:.72rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.07em}
+.nd-channel-pill.ch-email{background:rgba(102,126,234,.25);color:#a5b4fc}
+.nd-channel-pill.ch-sms  {background:rgba(27,207,180,.2);color:#6ee7d0}
+.nd-channel-pill.ch-push {background:rgba(249,115,22,.2);color:#fdba74}
+.nd-meta-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.nd-date{font-size:.75rem;color:rgba(255,255,255,.45)}
+.nd-status{display:inline-flex;align-items:center;gap:4px;border-radius:20px;
+    padding:4px 11px;font-size:.7rem;font-weight:700}
+.nds-sent   {background:#e6faf7;color:#0f8c6f}
+.nds-pending{background:#fff8e8;color:#b45309}
+.nds-failed {background:#fff0ef;color:#c0392b}
+.nds-bounced{background:#f5f5f5;color:#aaa}
+
+.nd-subject-bar{padding:20px 26px 0}
+.nd-subject{font-size:1.3rem;font-weight:700;color:#1a1a1a;line-height:1.3;margin:0}
+
+.nd-body-wrap{padding:18px 26px 24px}
+.nd-body-content{font-size:.9rem;color:#555;line-height:1.8;
+    border-left:3px solid #f0f0f0;padding-left:16px;
+    white-space:pre-line}
+
+.nd-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;
+    border-top:1px solid #f5f5f5}
+.nd-info-item{padding:13px 26px;border-bottom:1px solid #f5f5f5;
+    display:flex;flex-direction:column;gap:3px}
+.nd-info-item:nth-child(odd){border-right:1px solid #f5f5f5}
+.nd-info-label{font-size:.68rem;color:#bbb;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.nd-info-value{font-size:.84rem;color:#1a1a1a;font-weight:600}
+.nd-error-box{margin:0 26px 20px;background:#fff0ef;border-radius:8px;
+    padding:12px 16px;font-size:.82rem;color:#c0392b}
+.nd-error-label{font-weight:700;margin-bottom:4px;font-size:.73rem;text-transform:uppercase;letter-spacing:.06em}
+
+/* ── Back Button ── */
+.btn-back{display:inline-flex;align-items:center;gap:7px;background:transparent;
+    border:1.5px solid #e0e0e0;color:#555;padding:10px 18px;border-radius:8px;
+    font-size:.8rem;font-weight:700;text-decoration:none;transition:all .25s}
+.btn-back:hover{border-color:#1a1a1a;color:#1a1a1a}
+
+/* ── Related Link ── */
+.nd-related{background:#f8f9fa;border-radius:10px;padding:14px 18px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin-bottom:20px;flex-wrap:wrap}
+.nd-related p{font-size:.84rem;color:#888;margin:0}
+.nd-related p strong{color:#1a1a1a}
+.btn-view-related{display:inline-flex;align-items:center;gap:6px;background:#1a1a1a;
+    color:#fff;padding:9px 16px;border-radius:7px;font-size:.78rem;font-weight:700;
+    text-decoration:none;transition:background .25s}
+.btn-view-related:hover{background:#333;color:#fff}
+
+@media(max-width:540px){
+    .nd-info-grid{grid-template-columns:1fr}
+    .nd-info-item:nth-child(odd){border-right:none}
+}
+</style>
+
+<!-- Breadcrumb -->
+<div class="xo-section color-background-1" style="--margin:0;--pt:15;--pb:15;">
+    <xo-container class="xo-container--box">
+        <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+            <ol class="breadcrumb__list" style="--justify:flex-start">
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{% url 'notifications:notification_list' %}">Notifications</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item breadcrumb__item--current">
+                    <a aria-current="page" class="breadcrumb__link">Detail</a>
+                </li>
+            </ol>
+        </nav>
+    </xo-container>
+</div>
+
+<div class="xo-section color-background-1" style="--margin:0;--pt:40;--pb:0;background:#f8f9fa;">
+    <xo-container class="xo-container--box">
+        <div class="nd-wrap">
+
+            <h1 class="product-v1__title" style="font-size:3rem;font-weight:500;text-align:center;margin:0 0 30px;">
+                Notification Detail
+            </h1>
+
+            <!-- Related object link -->
+            {% if notification.related_object_type %}
+            <div class="nd-related">
+                <p>Related to: <strong>{{ notification.related_object_type|title }} #{{ notification.related_object_id }}</strong></p>
+                {% if notification.related_object_type == 'order' %}
+                <a href="{% url 'orders:order_detail' notification.related_object_id %}" class="btn-view-related">
+                    View Order
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+                {% endif %}
             </div>
-            <h1>{{ notification.subject }}</h1>
-            <div class="notif-content">{{ notification.body|linebreaks }}</div>
-            <div class="notif-info">
-                <p><strong>Sent to:</strong> {{ notification.recipient }}</p>{% if notification.sent_at %}<p>
-                    <strong>Sent at:</strong> {{ notification.sent_at|date:"F j, Y H:i" }}</p>{% endif %}{% if
-                notification.error_message %}<p class="error"><strong>Error:</strong> {{ notification.error_message }}
-                </p>{% endif %}
+            {% endif %}
+
+            <!-- Main Card -->
+            <div class="nd-card">
+                <!-- Header -->
+                <div class="nd-card-header">
+                    <span class="nd-channel-pill ch-{{ notification.channel }}">
+                        {% if notification.channel == 'email' %}
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8l10 6 10-6"/></svg>
+                        {% elif notification.channel == 'sms' %}
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                        {% else %}
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                        {% endif %}
+                        {{ notification.get_channel_display }}
+                    </span>
+                    <div class="nd-meta-right">
+                        <span class="nd-date">{{ notification.created_at|date:"d M Y, H:i" }}</span>
+                        <span class="nd-status nds-{{ notification.status }}">
+                            {% if notification.status == 'sent' %}<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>{% endif %}
+                            {{ notification.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Subject -->
+                {% if notification.subject %}
+                <div class="nd-subject-bar">
+                    <h2 class="nd-subject">{{ notification.subject }}</h2>
+                </div>
+                {% endif %}
+
+                <!-- Body -->
+                <div class="nd-body-wrap">
+                    <div class="nd-body-content">{{ notification.body }}</div>
+                </div>
+
+                <!-- Error -->
+                {% if notification.error_message %}
+                <div class="nd-error-box">
+                    <div class="nd-error-label">Error Details</div>
+                    {{ notification.error_message }}
+                </div>
+                {% endif %}
+
+                <!-- Info Grid -->
+                <div class="nd-info-grid">
+                    <div class="nd-info-item">
+                        <span class="nd-info-label">Sent To</span>
+                        <span class="nd-info-value">{{ notification.recipient }}</span>
+                    </div>
+                    <div class="nd-info-item">
+                        <span class="nd-info-label">Channel</span>
+                        <span class="nd-info-value">{{ notification.get_channel_display }}</span>
+                    </div>
+                    {% if notification.sent_at %}
+                    <div class="nd-info-item">
+                        <span class="nd-info-label">Sent At</span>
+                        <span class="nd-info-value">{{ notification.sent_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                    {% endif %}
+                    {% if notification.template %}
+                    <div class="nd-info-item">
+                        <span class="nd-info-label">Template</span>
+                        <span class="nd-info-value">{{ notification.template.name }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="nd-info-item">
+                        <span class="nd-info-label">Status</span>
+                        <span class="nd-info-value">{{ notification.get_status_display }}</span>
+                    </div>
+                    <div class="nd-info-item">
+                        <span class="nd-info-label">Received</span>
+                        <span class="nd-info-value">{{ notification.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                </div>
             </div>
-        </div><a href="{% url 'notifications:notification_list' %}" class="btn btn-outline">Back to Notifications</a>
-    </div>
+
+            <!-- Back -->
+            <a href="{% url 'notifications:notification_list' %}" class="btn-back">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                Back to Notifications
+            </a>
+
+        </div>
+    </xo-container>
 </div>
 {% endblock %}
