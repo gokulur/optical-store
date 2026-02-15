@@ -112,4 +112,13 @@ urlpatterns = [
     path('banners/<int:banner_id>/delete/',    views.banner_delete,        name='banner_delete'),
     path('banners/<int:banner_id>/toggle/',    views.banner_toggle_active, name='banner_toggle_active'),
 
+
+    # Promotions / Coupons
+    path('promotions/',               views.coupon_list,          name='coupon_list'),
+    path('promotions/add/',           views.coupon_add,           name='coupon_add'),
+    path('promotions/<int:coupon_id>/edit/',   views.coupon_edit,   name='coupon_edit'),
+    path('promotions/<int:coupon_id>/delete/', views.coupon_delete, name='coupon_delete'),
+    path('promotions/usage/',         views.coupon_usage_history, name='coupon_usage_history'),
+
+
 ]
