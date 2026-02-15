@@ -1,134 +1,377 @@
-<!-- my_reviews.html -->
 {% extends 'base.html' %}
-
-{% block title %}My Reviews - Eyewear Store{% endblock %}
+{% load static %}
+{% block title %}My Reviews – Al Ameen Optics{% endblock %}
 
 {% block content %}
-<div class="my-reviews-page">
-    <div class="container">
-        <!-- Page Header -->
-        <div class="page-header">
-            <h1>My Reviews</h1>
-            <p>Manage all your product reviews</p>
-        </div>
-        
+<style>
+.breadcrumb__list{display:flex;gap:6px;list-style:none;margin:0;padding:0}
+.breadcrumb__link{color:#666;text-decoration:none;font-size:.85rem}
+.breadcrumb__separator{color:#ccc}
+.breadcrumb__item--current .breadcrumb__link{color:#1a1a1a;font-weight:600}
+
+/* ── Messages ── */
+.rv-msg{margin-bottom:22px}
+.rv-alert{padding:12px 16px;border-radius:8px;font-size:.86rem;font-weight:500;margin-bottom:7px}
+.rv-alert-success{background:#e6faf7;color:#0f8c6f;border:1px solid #c0ede6}
+.rv-alert-error{background:#fff0ef;color:#c0392b;border:1px solid #f5c6c2}
+
+/* ── Stat Row ── */
+.mr-stats{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:34px}
+.mr-stat{flex:1;min-width:145px;background:#fff;border-radius:10px;
+    padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,.06);
+    display:flex;align-items:center;gap:13px}
+.mr-stat-icon{width:40px;height:40px;border-radius:9px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center}
+.msi-or{background:#fff3e8;color:#f97316}
+.msi-gr{background:#e6faf7;color:#1bcfb4}
+.msi-bl{background:#eef0ff;color:#667eea}
+.mr-stat-val{font-size:1.5rem;font-weight:700;color:#1a1a1a;line-height:1}
+.mr-stat-lbl{font-size:.72rem;color:#aaa;margin-top:2px}
+
+/* ── Section Divider ── */
+.mr-div-row{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.mr-div-row h2{font-size:.95rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.1em;color:#1a1a1a;margin:0;white-space:nowrap}
+.mr-div-row::after{content:'';flex:1;height:1px;background:#e0e0e0}
+
+/* ── My Review Card ── */
+.mr-card{background:#fff;border-radius:12px;overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:16px;
+    display:flex;transition:box-shadow .25s}
+.mr-card:hover{box-shadow:0 6px 18px rgba(0,0,0,.1)}
+
+/* left strip: product */
+.mr-card-product{width:175px;flex-shrink:0;background:#f8f9fa;padding:18px 14px;
+    display:flex;flex-direction:column;align-items:center;text-align:center;
+    gap:9px;border-right:1px solid #f0f0f0}
+.mr-prod-img{width:84px;height:84px;border-radius:8px;overflow:hidden;
+    background:#fff;border:1px solid #eee;flex-shrink:0}
+.mr-prod-img img{width:100%;height:100%;object-fit:contain;padding:7px}
+.mr-prod-name{font-size:.79rem;font-weight:700;color:#1a1a1a;line-height:1.35;
+    text-decoration:none;transition:color .2s}
+.mr-prod-name:hover{color:#667eea}
+.mr-prod-brand{font-size:.71rem;color:#bbb}
+.btn-all-rvs{display:inline-block;margin-top:auto;background:#1a1a1a;color:#fff;
+    padding:6px 13px;border-radius:6px;font-size:.7rem;font-weight:700;
+    text-decoration:none;transition:background .25s;white-space:nowrap}
+.btn-all-rvs:hover{background:#333;color:#fff}
+
+/* right: content */
+.mr-card-content{flex:1;padding:20px 22px;display:flex;flex-direction:column;min-width:0}
+.mrc-top{display:flex;align-items:flex-start;justify-content:space-between;
+    margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.mrc-stars{display:flex;gap:2px}
+.mrc-stars .s{font-size:1rem}
+.mrc-stars .s.on{color:#f97316}
+.mrc-stars .s.off{color:#e0e0e0}
+.mrc-badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge-pub{display:inline-flex;align-items:center;gap:3px;background:#e6faf7;
+    color:#0f8c6f;border-radius:20px;padding:2px 9px;font-size:.67rem;font-weight:700}
+.badge-pend{display:inline-flex;align-items:center;gap:3px;background:#fff8e8;
+    color:#b45309;border-radius:20px;padding:2px 9px;font-size:.67rem;font-weight:700}
+.badge-verf{background:#eef0ff;color:#667eea;border-radius:20px;
+    padding:2px 9px;font-size:.67rem;font-weight:700}
+.mrc-title{font-size:.95rem;font-weight:700;color:#1a1a1a;margin:0 0 6px}
+.mrc-comment{font-size:.87rem;color:#555;line-height:1.65;flex:1;margin:0 0 10px}
+
+.mrc-imgs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.mrc-img-thumb{width:52px;height:52px;border-radius:6px;overflow:hidden;border:1.5px solid #f0f0f0}
+.mrc-img-thumb img{width:100%;height:100%;object-fit:cover}
+
+.mrc-meta{display:flex;gap:10px;flex-wrap:wrap;font-size:.73rem;color:#ccc;margin-bottom:14px}
+.mrc-meta-dot{color:#e0e0e0}
+.mrc-helpful{display:inline-flex;align-items:center;gap:4px}
+.mrc-helpful svg{color:#1bcfb4}
+
+.mrc-actions{display:flex;gap:8px;flex-wrap:wrap;padding-top:12px;
+    border-top:1px solid #f5f5f5;margin-top:auto}
+.btn-mrc-edit{display:inline-flex;align-items:center;gap:5px;background:transparent;
+    border:1.5px solid #e0e0e0;color:#555;padding:7px 13px;border-radius:7px;
+    font-size:.76rem;font-weight:700;text-decoration:none;transition:all .25s}
+.btn-mrc-edit:hover{border-color:#667eea;color:#667eea}
+.btn-mrc-del{display:inline-flex;align-items:center;gap:5px;background:transparent;
+    border:1.5px solid #e0e0e0;color:#888;padding:7px 13px;border-radius:7px;
+    font-size:.76rem;font-weight:700;cursor:pointer;transition:all .25s;font-family:inherit}
+.btn-mrc-del:hover{border-color:#ff3b30;color:#ff3b30}
+.btn-mrc-link{display:inline-flex;align-items:center;gap:4px;color:#667eea;
+    font-size:.76rem;font-weight:700;text-decoration:none;padding:7px 0;transition:color .2s}
+.btn-mrc-link:hover{color:#1a1a1a}
+
+/* ── Empty ── */
+.mr-empty{background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.07);
+    text-align:center;padding:65px 30px}
+.mr-empty svg{margin-bottom:14px}
+.mr-empty h3{font-size:1.2rem;font-weight:700;color:#1a1a1a;margin:0 0 8px}
+.mr-empty p{color:#888;font-size:.88rem;margin:0 0 22px}
+.btn-shop-now{display:inline-block;background:#1a1a1a;color:#fff;padding:12px 28px;
+    border-radius:30px;font-size:.87rem;font-weight:700;text-decoration:none;
+    text-transform:uppercase;letter-spacing:.06em;transition:all .3s}
+.btn-shop-now:hover{background:#333;color:#fff;transform:translateY(-2px)}
+
+/* ── Pagination ── */
+.mr-pages{display:flex;justify-content:center;gap:7px;margin-top:28px;flex-wrap:wrap}
+.mr-pg{width:38px;height:38px;border-radius:7px;border:1.5px solid #e0e0e0;
+    background:#fff;color:#555;font-size:.83rem;font-weight:600;
+    display:flex;align-items:center;justify-content:center;
+    text-decoration:none;transition:all .25s}
+.mr-pg:hover,.mr-pg.active{background:#1a1a1a;border-color:#1a1a1a;color:#fff}
+.mr-pg.disabled{opacity:.3;pointer-events:none}
+
+/* ── Delete Modal ── */
+.mr-del-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+    z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.mr-del-modal.open{display:flex}
+.mr-del-box{background:#fff;border-radius:14px;padding:30px;max-width:340px;
+    width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.mr-del-box h3{font-size:1.1rem;font-weight:700;margin:0 0 8px}
+.mr-del-box p{color:#888;font-size:.85rem;margin:0 0 20px}
+.mr-del-btns{display:flex;gap:10px}
+.btn-dc{flex:1;padding:11px;border:1.5px solid #e0e0e0;border-radius:8px;background:#fff;
+    color:#888;font-size:.83rem;font-weight:600;cursor:pointer;transition:all .25s;font-family:inherit}
+.btn-dc:hover{border-color:#1a1a1a;color:#1a1a1a}
+.btn-dd{flex:1;padding:11px;border:none;border-radius:8px;background:#ff3b30;
+    color:#fff;font-size:.83rem;font-weight:700;cursor:pointer;transition:background .25s;font-family:inherit}
+.btn-dd:hover{background:#e02e24}
+
+@media(max-width:620px){
+    .mr-card{flex-direction:column}
+    .mr-card-product{width:100%;flex-direction:row;text-align:left;
+        border-right:none;border-bottom:1px solid #f0f0f0;padding:14px 16px}
+    .mr-prod-img{width:56px;height:56px;flex-shrink:0}
+    .btn-all-rvs{margin-top:0;margin-left:auto}
+}
+</style>
+
+<!-- Breadcrumb -->
+<div class="xo-section color-background-1" style="--margin:0;--pt:15;--pb:15;">
+    <xo-container class="xo-container--box">
+        <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+            <ol class="breadcrumb__list" style="--justify:flex-start">
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item breadcrumb__item--current">
+                    <a aria-current="page" class="breadcrumb__link">My Reviews</a>
+                </li>
+            </ol>
+        </nav>
+    </xo-container>
+</div>
+
+<div class="xo-section color-background-1" style="--margin:0;--pt:50;--pb:80;background:#f8f9fa;">
+    <xo-container class="xo-container--box">
+
+        <!-- Title -->
+        <xo-animate xo-cascade="">
+            <h1 class="product-v1__title" style="font-size:3.2rem;font-weight:500;margin:0 0 36px;">My Reviews</h1>
+        </xo-animate>
+
+        <!-- Messages -->
         {% if messages %}
-        <div class="messages">
+        <div class="rv-msg">
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-            </div>
+            <div class="rv-alert rv-alert-{{ message.tags }}">{{ message }}</div>
             {% endfor %}
         </div>
         {% endif %}
-        
-        <!-- Reviews List -->
+
         {% if reviews %}
-        <div class="my-reviews-list">
-            {% for review in reviews %}
-            <div class="my-review-card">
-                <div class="review-product-info">
-                    <div class="product-image">
-                        {% if review.product.images.first %}
-                        <img src="{{ review.product.images.first.image.url }}" alt="{{ review.product.name }}">
-                        {% endif %}
-                    </div>
-                    <div class="product-details">
-                        <h3>
-                            <a href="{% url 'catalog:product_detail' review.product.slug %}">
-                                {{ review.product.name }}
-                            </a>
-                        </h3>
-                        <p class="brand">{{ review.product.brand.name }}</p>
-                    </div>
+
+        <!-- Stats Row -->
+        <div class="mr-stats">
+            <div class="mr-stat">
+                <div class="mr-stat-icon msi-or">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
                 </div>
-                
-                <div class="review-content-section">
-                    <div class="review-header">
-                        <div class="rating-stars">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= review.rating %}
-                                <span class="star filled">★</span>
-                                {% else %}
-                                <span class="star">☆</span>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                        <div class="review-status">
-                            {% if review.is_approved %}
-                            <span class="badge approved">✓ Published</span>
-                            {% else %}
-                            <span class="badge pending">⏳ Pending Approval</span>
-                            {% endif %}
-                            {% if review.is_verified_purchase %}
-                            <span class="badge verified">✓ Verified Purchase</span>
-                            {% endif %}
-                        </div>
+                <div>
+                    <div class="mr-stat-val">{{ reviews.paginator.count }}</div>
+                    <div class="mr-stat-lbl">Total Reviews</div>
+                </div>
+            </div>
+            <div class="mr-stat">
+                <div class="mr-stat-icon msi-gr">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div>
+                    <div class="mr-stat-val">{{ reviews|length }}</div>
+                    <div class="mr-stat-lbl">This Page</div>
+                </div>
+            </div>
+            <div class="mr-stat">
+                <div class="mr-stat-icon msi-bl">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/></svg>
+                </div>
+                <div>
+                    <div class="mr-stat-val">
+                        {% with total_helpful=0 %}
+                        {% for r in reviews %}{% if r.helpful_count %}{{ r.helpful_count }}{% endif %}{% endfor %}
+                        —
+                        {% endwith %}
                     </div>
-                    
-                    {% if review.title %}
-                    <h4 class="review-title">{{ review.title }}</h4>
+                    <div class="mr-stat-lbl">Helpful Votes</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="mr-div-row"><h2>Your Reviews</h2></div>
+
+        <!-- Cards -->
+        {% for review in reviews %}
+        <div class="mr-card">
+
+            <!-- Product strip -->
+            <div class="mr-card-product">
+                <div class="mr-prod-img">
+                    {% if review.product.images.first %}
+                        <img src="{{ review.product.images.first.image.url }}" alt="{{ review.product.name }}" loading="lazy">
+                    {% elif review.product.image %}
+                        <img src="{{ review.product.image.url }}" alt="{{ review.product.name }}" loading="lazy">
+                    {% else %}
+                        <img src="/static/img/no-image.jpg" alt="" loading="lazy">
                     {% endif %}
-                    
-                    <p class="review-comment">{{ review.comment }}</p>
-                    
-                    {% if review.images.all %}
-                    <div class="review-images">
-                        {% for image in review.images.all %}
-                        <img src="{{ image.image.url }}" alt="Review image">
+                </div>
+                <div>
+                    <a href="{{ review.product.get_absolute_url }}" class="mr-prod-name">{{ review.product.name }}</a>
+                    {% if review.product.brand %}
+                    <div class="mr-prod-brand">{{ review.product.brand.name }}</div>
+                    {% endif %}
+                </div>
+                <a href="{% url 'reviews:product_reviews' review.product.slug %}" class="btn-all-rvs">All Reviews</a>
+            </div>
+
+            <!-- Review content -->
+            <div class="mr-card-content">
+                <div class="mrc-top">
+                    <div class="mrc-stars">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= review.rating %}<span class="s on">★</span>{% else %}<span class="s off">★</span>{% endif %}
                         {% endfor %}
                     </div>
-                    {% endif %}
-                    
-                    <div class="review-meta">
-                        <span class="date">Posted on {{ review.created_at|date:"F j, Y" }}</span>
-                        <span class="helpful">{{ review.helpful_count }} people found this helpful</span>
-                    </div>
-                    
-                    <div class="review-actions">
-                        <a href="{% url 'reviews:edit_review' review.id %}" class="btn btn-sm btn-outline">
-                            Edit Review
-                        </a>
-                        <form method="post" action="{% url 'reviews:delete_review' review.id %}" 
-                              style="display:inline;"
-                              onsubmit="return confirm('Are you sure you want to delete this review?');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                        </form>
-                        <a href="{% url 'reviews:product_reviews' review.product.slug %}" class="btn btn-sm btn-text">
-                            View All Reviews
-                        </a>
+                    <div class="mrc-badges">
+                        {% if review.is_approved %}
+                        <span class="badge-pub">
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            Published
+                        </span>
+                        {% else %}
+                        <span class="badge-pend">
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                            Pending
+                        </span>
+                        {% endif %}
+                        {% if review.is_verified_purchase %}
+                        <span class="badge-verf">Verified</span>
+                        {% endif %}
                     </div>
                 </div>
+
+                {% if review.title %}<div class="mrc-title">{{ review.title }}</div>{% endif %}
+
+                <div class="mrc-comment">{{ review.comment|truncatechars:280 }}</div>
+
+                {% if review.images.all %}
+                <div class="mrc-imgs">
+                    {% for img in review.images.all %}
+                    <div class="mrc-img-thumb"><img src="{{ img.image.url }}" alt="Review photo" loading="lazy"></div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="mrc-meta">
+                    <span>{{ review.created_at|date:"d M Y" }}</span>
+                    {% if review.helpful_count %}
+                    <span class="mrc-meta-dot">·</span>
+                    <span class="mrc-helpful">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/></svg>
+                        {{ review.helpful_count }} found helpful
+                    </span>
+                    {% endif %}
+                    {% if review.updated_at != review.created_at %}
+                    <span class="mrc-meta-dot">·</span>
+                    <span>Edited {{ review.updated_at|date:"d M Y" }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="mrc-actions">
+                    <a href="{% url 'reviews:edit_review' review.id %}" class="btn-mrc-edit">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z"/></svg>
+                        Edit
+                    </a>
+                    <button class="btn-mrc-del" onclick="showDel({{ review.id }},'{{ review.product.name|truncatechars:28|escapejs }}')">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                        Delete
+                    </button>
+                    <a href="{% url 'reviews:product_reviews' review.product.slug %}" class="btn-mrc-link">
+                        See all reviews
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </a>
+                    <form id="delf-{{ review.id }}" method="post" action="{% url 'reviews:delete_review' review.id %}" style="display:none">{% csrf_token %}</form>
+                </div>
             </div>
-            {% endfor %}
+
         </div>
-        
+        {% endfor %}
+
         <!-- Pagination -->
         {% if reviews.has_other_pages %}
-        <div class="pagination">
-            {% if reviews.has_previous %}
-            <a href="?page={{ reviews.previous_page_number }}" class="page-link">Previous</a>
-            {% endif %}
-            
-            <span class="page-info">Page {{ reviews.number }} of {{ reviews.paginator.num_pages }}</span>
-            
-            {% if reviews.has_next %}
-            <a href="?page={{ reviews.next_page_number }}" class="page-link">Next</a>
-            {% endif %}
+        <div class="mr-pages">
+            <a href="?page={{ reviews.previous_page_number }}" class="mr-pg {% if not reviews.has_previous %}disabled{% endif %}">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </a>
+            {% for num in reviews.paginator.page_range %}
+                {% if reviews.number == num %}<span class="mr-pg active">{{ num }}</span>
+                {% elif num > reviews.number|add:"-3" and num < reviews.number|add:"3" %}
+                <a href="?page={{ num }}" class="mr-pg">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            <a href="?page={{ reviews.next_page_number }}" class="mr-pg {% if not reviews.has_next %}disabled{% endif %}">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
         </div>
         {% endif %}
-        
+
         {% else %}
-        <!-- No Reviews -->
-        <div class="no-reviews">
-            <div class="empty-state">
-                <h2>You haven't written any reviews yet</h2>
-                <p>Share your experience with products you've purchased to help other customers make informed decisions.</p>
-                <a href="{% url 'catalog:home' %}" class="btn btn-primary">Start Shopping</a>
-            </div>
+        <!-- Empty -->
+        <div class="mr-empty">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.2">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+            <h3>No Reviews Yet</h3>
+            <p>Share your experience with products you've purchased. Your review helps other shoppers make better decisions.</p>
+            <a href="{% url 'home' %}" class="btn-shop-now">Start Shopping</a>
         </div>
         {% endif %}
+
+    </xo-container>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="mr-del-modal" id="mrDelModal" onclick="hideDel(event)">
+    <div class="mr-del-box" onclick="event.stopPropagation()">
+        <h3>Delete Review?</h3>
+        <p id="delDesc">This will permanently delete your review. This action cannot be undone.</p>
+        <div class="mr-del-btns">
+            <button class="btn-dc" onclick="hideDel()">Cancel</button>
+            <button class="btn-dd" onclick="doDelete()">Delete</button>
+        </div>
     </div>
 </div>
+
+<script>
+let _activeId = null;
+function showDel(id, name) {
+    _activeId = id;
+    document.getElementById('delDesc').textContent = 'Delete your review for "' + name + '"? This cannot be undone.';
+    document.getElementById('mrDelModal').classList.add('open');
+}
+function hideDel(e) {
+    if (!e || e.target === document.getElementById('mrDelModal'))
+        document.getElementById('mrDelModal').classList.remove('open');
+}
+function doDelete() {
+    if (_activeId) document.getElementById('delf-' + _activeId).submit();
+}
+</script>
 {% endblock %}
