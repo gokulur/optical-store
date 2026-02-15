@@ -1,191 +1,353 @@
-<!-- write_review.html -->
 {% extends 'base.html' %}
-
-{% block title %}{% if is_edit %}Edit{% else %}Write{% endif %} Review - {{ product.name }}{% endblock %}
+{% load static %}
+{% block title %}{% if is_edit %}Edit{% else %}Write a{% endif %} Review – {{ product.name }} – Al Ameen Optics{% endblock %}
 
 {% block content %}
-<div class="write-review-page">
-    <div class="container">
-        <!-- Breadcrumb -->
-        <div class="breadcrumb">
-            <a href="{% url 'catalog:home' %}">Home</a> / 
-            <a href="{% url 'catalog:product_detail' product.slug %}">{{ product.name }}</a> / 
-            <span>{% if is_edit %}Edit{% else %}Write{% endif %} Review</span>
-        </div>
-        
-        <!-- Page Header -->
-        <div class="page-header">
-            <h1>{% if is_edit %}Edit Your{% else %}Write a{% endif %} Review</h1>
-        </div>
-        
-        {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        
-        <!-- Product Info -->
-        <div class="product-info-card">
-            <div class="product-image">
-                {% if product.images.first %}
-                <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
-                {% endif %}
-            </div>
-            <div class="product-details">
-                <h2>{{ product.name }}</h2>
-                <p class="brand">{{ product.brand.name }}</p>
-            </div>
-        </div>
-        
-        <!-- Review Form -->
-        <form method="post" enctype="multipart/form-data" class="review-form">
-            {% csrf_token %}
-            
-            <!-- Rating -->
-            <div class="form-group rating-input">
-                <label>Your Rating *</label>
-                <div class="star-rating-input">
-                    <input type="radio" name="rating" value="5" id="star5" {% if review and review.rating == 5 %}checked{% endif %} required>
-                    <label for="star5" title="5 stars">★</label>
-                    
-                    <input type="radio" name="rating" value="4" id="star4" {% if review and review.rating == 4 %}checked{% endif %}>
-                    <label for="star4" title="4 stars">★</label>
-                    
-                    <input type="radio" name="rating" value="3" id="star3" {% if review and review.rating == 3 %}checked{% endif %}>
-                    <label for="star3" title="3 stars">★</label>
-                    
-                    <input type="radio" name="rating" value="2" id="star2" {% if review and review.rating == 2 %}checked{% endif %}>
-                    <label for="star2" title="2 stars">★</label>
-                    
-                    <input type="radio" name="rating" value="1" id="star1" {% if review and review.rating == 1 %}checked{% endif %}>
-                    <label for="star1" title="1 star">★</label>
-                </div>
-                <p class="rating-description" id="ratingDescription">Select a rating</p>
-            </div>
-            
+<style>
+.breadcrumb__list{display:flex;gap:6px;list-style:none;margin:0;padding:0}
+.breadcrumb__link{color:#666;text-decoration:none;font-size:.85rem}
+.breadcrumb__separator{color:#ccc}
+.breadcrumb__item--current .breadcrumb__link{color:#1a1a1a;font-weight:600}
+
+/* ── Messages ── */
+.rv-msg{margin-bottom:22px}
+.rv-alert{padding:12px 16px;border-radius:8px;font-size:.86rem;font-weight:500;margin-bottom:7px;
+    display:flex;align-items:center;gap:9px}
+.rv-alert-success{background:#e6faf7;color:#0f8c6f;border:1px solid #c0ede6}
+.rv-alert-error{background:#fff0ef;color:#c0392b;border:1px solid #f5c6c2}
+.rv-alert-warning{background:#fff8e8;color:#b45309;border:1px solid #fde8b4}
+
+/* ── Page Wrapper ── */
+.wr-wrap{max-width:720px;margin:0 auto;padding:40px 20px 80px}
+.wr-page-title{text-align:center;margin:0 0 30px}
+
+/* ── Product Banner ── */
+.wr-product-bar{background:#fff;border-radius:12px;padding:16px 20px;
+    box-shadow:0 2px 10px rgba(0,0,0,.07);display:flex;align-items:center;
+    gap:16px;margin-bottom:26px}
+.wr-prod-img{width:66px;height:66px;border-radius:8px;background:#f8f8f8;overflow:hidden;flex-shrink:0}
+.wr-prod-img img{width:100%;height:100%;object-fit:contain;padding:7px}
+.wr-prod-name{font-size:.97rem;font-weight:700;color:#1a1a1a;margin:0 0 3px;line-height:1.3}
+.wr-prod-brand{font-size:.78rem;color:#aaa;margin:0}
+
+/* ── Form Card ── */
+.wr-card{background:#fff;border-radius:12px;overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.wr-section{padding:22px 24px;border-bottom:1px solid #f0f0f0}
+.wr-section:last-child{border-bottom:none}
+.wr-section-label{font-size:.73rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.1em;color:#bbb;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+.wr-section-label span{font-weight:400;text-transform:none;letter-spacing:0;font-size:.72rem}
+
+/* ── Star Picker ── */
+.star-picker{display:flex;flex-direction:row-reverse;width:fit-content;gap:4px}
+.star-picker input[type=radio]{display:none}
+.star-picker label{font-size:2.6rem;color:#e0e0e0;cursor:pointer;
+    transition:color .12s transform .15s;line-height:1;user-select:none}
+.star-picker label:hover,
+.star-picker label:hover ~ label,
+.star-picker input:checked ~ label{color:#f97316;transform:scale(1.12)}
+.rating-hint{font-size:.82rem;color:#aaa;font-style:italic;margin-top:8px;min-height:18px}
+
+/* ── Fields ── */
+.wr-lbl{display:block;font-size:.81rem;font-weight:700;color:#1a1a1a;margin-bottom:7px}
+.wr-lbl .opt{color:#ccc;font-weight:400;font-size:.74rem;margin-left:4px}
+.wr-input,.wr-textarea{width:100%;border:1.5px solid #e0e0e0;border-radius:8px;
+    padding:11px 13px;font-size:.9rem;color:#1a1a1a;outline:none;
+    transition:border-color .2s;font-family:inherit;box-sizing:border-box}
+.wr-input:focus,.wr-textarea:focus{border-color:#1a1a1a}
+.wr-textarea{resize:vertical;min-height:126px;line-height:1.65}
+.wr-field-foot{display:flex;justify-content:space-between;margin-top:5px}
+.wr-char{font-size:.72rem;color:#ccc}
+.wr-char.ok{color:#1bcfb4}
+.wr-char.warn{color:#f97316}
+
+/* ── Image Upload ── */
+.wr-upload-zone{border:2px dashed #e0e0e0;border-radius:10px;padding:22px 18px;
+    text-align:center;cursor:pointer;position:relative;transition:all .25s}
+.wr-upload-zone:hover{border-color:#1a1a1a;background:#fafafa}
+.wr-upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;
+    width:100%;height:100%}
+.wr-upload-icon{color:#d0d0d0;margin-bottom:6px}
+.wr-upload-txt{font-size:.84rem;color:#888;font-weight:500}
+.wr-upload-sub{font-size:.72rem;color:#ccc;margin-top:2px}
+.wr-previews{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.wr-prev-item{position:relative;width:76px;height:76px;border-radius:8px;
+    overflow:hidden;border:1.5px solid #f0f0f0}
+.wr-prev-item img{width:100%;height:100%;object-fit:cover}
+.wr-prev-rm{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;
+    background:rgba(0,0,0,.65);color:#fff;border:none;cursor:pointer;font-size:.75rem;
+    display:flex;align-items:center;justify-content:center;line-height:1;font-family:inherit}
+
+/* existing images */
+.wr-existing-grid{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}
+.wr-existing-item{position:relative;width:76px;height:76px;border-radius:8px;
+    overflow:hidden;border:1.5px solid #f0f0f0;cursor:pointer}
+.wr-existing-item img{width:100%;height:100%;object-fit:cover}
+.wr-existing-overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;transition:opacity .2s}
+.wr-existing-overlay input{display:none}
+.wr-existing-item:hover .wr-existing-overlay{opacity:1}
+.wr-existing-overlay.marked{opacity:1;background:rgba(255,59,48,.65)}
+.wr-del-x{color:#fff;font-size:1.2rem;font-weight:700;line-height:1}
+
+/* ── Guidelines ── */
+.wr-guidelines{background:#f8f9fa;border-radius:8px;padding:14px 16px}
+.wr-gl-title{font-size:.72rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.09em;color:#ccc;margin:0 0 9px}
+.wr-gl-list{list-style:none;margin:0;padding:0}
+.wr-gl-list li{font-size:.79rem;color:#999;padding:2px 0 2px 14px;position:relative;line-height:1.5}
+.wr-gl-list li::before{content:'·';position:absolute;left:2px;color:#ddd;font-size:1.1rem}
+
+/* ── Actions ── */
+.wr-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.btn-submit{background:#1a1a1a;color:#fff;border:none;padding:13px 30px;
+    border-radius:8px;font-size:.88rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.06em;cursor:pointer;transition:all .25s;
+    display:inline-flex;align-items:center;gap:8px;font-family:inherit}
+.btn-submit:hover{background:#333;transform:translateY(-1px)}
+.btn-submit:disabled{opacity:.5;pointer-events:none;transform:none}
+.btn-cancel{color:#aaa;font-size:.85rem;font-weight:600;text-decoration:none;
+    padding:13px 18px;transition:color .25s;white-space:nowrap}
+.btn-cancel:hover{color:#1a1a1a}
+
+@media(max-width:520px){
+    .wr-section{padding:18px 16px}
+    .star-picker label{font-size:2rem}
+    .wr-actions{flex-direction:column}
+    .btn-submit,.btn-cancel{width:100%;text-align:center;justify-content:center}
+}
+</style>
+
+<!-- Breadcrumb -->
+<div class="xo-section color-background-1" style="--margin:0;--pt:15;--pb:15;">
+    <xo-container class="xo-container--box">
+        <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+            <ol class="breadcrumb__list" style="--justify:flex-start">
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item breadcrumb__item--current">
+                    <a aria-current="page" class="breadcrumb__link">{% if is_edit %}Edit Review{% else %}Write Review{% endif %}</a>
+                </li>
+            </ol>
+        </nav>
+    </xo-container>
+</div>
+
+<div class="xo-section color-background-1" style="--margin:0;--pt:40;--pb:0;background:#f8f9fa;">
+    <xo-container class="xo-container--box">
+        <div class="wr-wrap">
+
             <!-- Title -->
-            <div class="form-group">
-                <label for="title">Review Title (Optional)</label>
-                <input type="text" name="title" id="title" 
-                       placeholder="e.g., Great quality and style!"
-                       maxlength="200"
-                       value="{% if review %}{{ review.title }}{% endif %}">
+            <xo-animate xo-type="fade-up" xo-duration="600" xo-order="1">
+                <h1 class="product-v1__title wr-page-title" style="font-size:3rem;font-weight:500;">
+                    {% if is_edit %}Edit Your Review{% else %}Write a Review{% endif %}
+                </h1>
+            </xo-animate>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="rv-msg">
+                {% for message in messages %}
+                <div class="rv-alert rv-alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
             </div>
-            
-            <!-- Comment -->
-            <div class="form-group">
-                <label for="comment">Your Review *</label>
-                <textarea name="comment" id="comment" rows="6" required
-                          placeholder="Share your thoughts about this product. What did you like or dislike? How does it fit? What would you recommend to others?"
-                          minlength="10">{% if review %}{{ review.comment }}{% endif %}</textarea>
-                <p class="char-count"><span id="charCount">0</span> characters (minimum 10)</p>
-            </div>
-            
-            <!-- Images -->
-            <div class="form-group">
-                <label for="images">Add Photos (Optional)</label>
-                <input type="file" name="images" id="images" accept="image/*" multiple>
-                <p class="file-help">You can upload up to 5 images (JPG, PNG, max 5MB each)</p>
-                
-                <div id="imagePreview" class="image-preview"></div>
-                
-                {% if review and review.images.all %}
-                <div class="existing-images">
-                    <h4>Current Images:</h4>
-                    {% for image in review.images.all %}
-                    <div class="existing-image">
-                        <img src="{{ image.image.url }}" alt="Review image">
-                        <label>
-                            <input type="checkbox" name="delete_images" value="{{ image.id }}">
-                            Delete
-                        </label>
-                    </div>
-                    {% endfor %}
+            {% endif %}
+
+            <!-- Product Bar -->
+            <div class="wr-product-bar">
+                <div class="wr-prod-img">
+                    {% if product.images.first %}
+                        <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                    {% elif product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% endif %}
                 </div>
-                {% endif %}
+                <div>
+                    <div class="wr-prod-name">{{ product.name }}</div>
+                    {% if product.brand %}<div class="wr-prod-brand">{{ product.brand.name }}</div>{% endif %}
+                </div>
             </div>
-            
-            <!-- Guidelines -->
-            <div class="review-guidelines">
-                <h3>Review Guidelines:</h3>
-                <ul>
-                    <li>Focus on the product and your experience with it</li>
-                    <li>Be honest and constructive in your feedback</li>
-                    <li>Avoid profanity and personal attacks</li>
-                    <li>Don't include personal information (email, phone, address)</li>
-                    <li>Reviews are moderated and will be published after approval</li>
-                </ul>
-            </div>
-            
-            <!-- Submit -->
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    {% if is_edit %}Update{% else %}Submit{% endif %} Review
-                </button>
-                <a href="{% url 'catalog:product_detail' product.slug %}" class="btn btn-outline">Cancel</a>
-            </div>
-        </form>
-    </div>
+
+            <!-- Form -->
+            <form method="post" enctype="multipart/form-data" id="reviewForm" novalidate>
+                {% csrf_token %}
+                <div class="wr-card">
+
+                    <!-- 1. Star Rating -->
+                    <div class="wr-section">
+                        <div class="wr-section-label">Your Rating <span>*</span></div>
+                        <div class="star-picker" id="starPicker">
+                            <input type="radio" name="rating" id="s1" value="1" {% if review and review.rating == 1 %}checked{% endif %} required>
+                            <label for="s1" title="Poor">★</label>
+                            <input type="radio" name="rating" id="s2" value="2" {% if review and review.rating == 2 %}checked{% endif %}>
+                            <label for="s2" title="Fair">★</label>
+                            <input type="radio" name="rating" id="s3" value="3" {% if review and review.rating == 3 %}checked{% endif %}>
+                            <label for="s3" title="Good">★</label>
+                            <input type="radio" name="rating" id="s4" value="4" {% if review and review.rating == 4 %}checked{% endif %}>
+                            <label for="s4" title="Very Good">★</label>
+                            <input type="radio" name="rating" id="s5" value="5" {% if review and review.rating == 5 %}checked{% endif %}>
+                            <label for="s5" title="Excellent">★</label>
+                        </div>
+                        <div class="rating-hint" id="ratingHint">
+                            {% if review %}{{ review.rating }} star{{ review.rating|pluralize }} selected{% else %}Click to rate{% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 2. Title -->
+                    <div class="wr-section">
+                        <label class="wr-lbl" for="rvTitle">Review Title <span class="opt">(optional)</span></label>
+                        <input type="text" class="wr-input" name="title" id="rvTitle"
+                            placeholder="e.g., Perfect fit — great quality!"
+                            maxlength="200"
+                            value="{% if review %}{{ review.title }}{% endif %}">
+                    </div>
+
+                    <!-- 3. Comment -->
+                    <div class="wr-section">
+                        <label class="wr-lbl" for="rvComment">Your Review <span class="opt" style="color:#ff5858;">*</span></label>
+                        <textarea class="wr-input wr-textarea" name="comment" id="rvComment"
+                            placeholder="How does it fit? What did you like or dislike? Would you recommend it?"
+                            required minlength="10">{% if review %}{{ review.comment }}{% endif %}</textarea>
+                        <div class="wr-field-foot">
+                            <span class="wr-char" id="charCnt">0 characters (minimum 10)</span>
+                        </div>
+                    </div>
+
+                    <!-- 4. Photos -->
+                    <div class="wr-section">
+                        <div class="wr-section-label">Add Photos <span>(optional · max 5)</span></div>
+                        <div class="wr-upload-zone" id="uploadZone">
+                            <input type="file" name="images" id="imgInput" accept="image/*" multiple>
+                            <svg class="wr-upload-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            <div class="wr-upload-txt">Click to upload photos</div>
+                            <div class="wr-upload-sub">JPG or PNG · max 5 MB each</div>
+                        </div>
+                        <div class="wr-previews" id="previews"></div>
+
+                        {% if is_edit and review.images.all %}
+                        <div style="margin-top:16px;">
+                            <div style="font-size:.75rem;color:#aaa;margin-bottom:8px;">
+                                Current photos — click to mark for removal:
+                            </div>
+                            <div class="wr-existing-grid">
+                                {% for img in review.images.all %}
+                                <div class="wr-existing-item" onclick="toggleExisting(this,'del_{{ img.id }}')">
+                                    <img src="{{ img.image.url }}" alt="Review photo">
+                                    <div class="wr-existing-overlay" id="ov_{{ img.id }}">
+                                        <input type="checkbox" name="delete_images" value="{{ img.id }}" id="del_{{ img.id }}">
+                                        <span class="wr-del-x">✕</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- 5. Guidelines -->
+                    <div class="wr-section">
+                        <div class="wr-guidelines">
+                            <div class="wr-gl-title">Review Guidelines</div>
+                            <ul class="wr-gl-list">
+                                <li>Focus on the product and your personal experience</li>
+                                <li>Highlight both positives and areas for improvement</li>
+                                <li>Avoid profanity, personal attacks, or unrelated content</li>
+                                <li>Do not include personal contact information</li>
+                                <li>Reviews are published after moderation (usually within 24 hours)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 6. Submit -->
+                    <div class="wr-section">
+                        <div class="wr-actions">
+                            <button type="submit" class="btn-submit" id="submitBtn">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                {% if is_edit %}Update Review{% else %}Submit Review{% endif %}
+                            </button>
+                            <a href="{{ product.get_absolute_url }}" class="btn-cancel">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </xo-container>
 </div>
 
 <script>
-// Star rating interaction
-const stars = document.querySelectorAll('.star-rating-input label');
-const ratingDesc = document.getElementById('ratingDescription');
-const descriptions = {
-    5: '5 stars - Excellent!',
-    4: '4 stars - Very Good',
-    3: '3 stars - Good',
-    2: '2 stars - Fair',
-    1: '1 star - Poor'
-};
-
-document.querySelectorAll('.star-rating-input input').forEach(input => {
-    input.addEventListener('change', function() {
-        ratingDesc.textContent = descriptions[this.value];
+// ── Rating labels ──
+const _rDesc = {1:'1 star — Poor',2:'2 stars — Fair',3:'3 stars — Good',4:'4 stars — Very Good',5:'5 stars — Excellent!'};
+document.querySelectorAll('.star-picker input').forEach(r => {
+    r.addEventListener('change', () => {
+        document.getElementById('ratingHint').textContent = _rDesc[r.value] || '';
     });
 });
 
-// Character count
-const commentTextarea = document.getElementById('comment');
-const charCount = document.getElementById('charCount');
+// ── Character count ──
+const cmt = document.getElementById('rvComment');
+const cnt = document.getElementById('charCnt');
+function updateCount() {
+    const n = cmt.value.length;
+    cnt.textContent = n + (n < 10 ? ' characters (minimum 10)' : ' characters');
+    cnt.className = 'wr-char' + (n === 0 ? '' : n < 10 ? ' warn' : ' ok');
+}
+cmt.addEventListener('input', updateCount);
+updateCount();
 
-commentTextarea.addEventListener('input', function() {
-    charCount.textContent = this.value.length;
+// ── Image preview ──
+const imgInput = document.getElementById('imgInput');
+const previews = document.getElementById('previews');
+let selFiles = [];
+
+imgInput.addEventListener('change', function() {
+    selFiles = [...selFiles, ...Array.from(this.files)].slice(0, 5);
+    renderPreviews();
 });
 
-// Initialize character count
-charCount.textContent = commentTextarea.value.length;
-
-// Image preview
-document.getElementById('images').addEventListener('change', function(e) {
-    const preview = document.getElementById('imagePreview');
-    preview.innerHTML = '';
-    
-    const files = Array.from(e.target.files).slice(0, 5);
-    
-    files.forEach(file => {
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                preview.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-        }
+function renderPreviews() {
+    previews.innerHTML = '';
+    selFiles.forEach((f, i) => {
+        const r = new FileReader();
+        r.onload = e => {
+            const div = document.createElement('div');
+            div.className = 'wr-prev-item';
+            div.innerHTML = `<img src="${e.target.result}" alt=""><button type="button" class="wr-prev-rm" onclick="rmPreview(${i})">×</button>`;
+            previews.appendChild(div);
+        };
+        r.readAsDataURL(f);
     });
-});
+}
+function rmPreview(i) { selFiles.splice(i, 1); renderPreviews(); }
 
-// Initialize rating description if editing
-{% if review %}
-ratingDesc.textContent = descriptions[{{ review.rating }}];
-{% endif %}
+// ── Toggle existing image for deletion ──
+function toggleExisting(wrapper, cbId) {
+    const cb = document.getElementById(cbId);
+    const ov = wrapper.querySelector('.wr-existing-overlay');
+    cb.checked = !cb.checked;
+    cb.checked ? ov.classList.add('marked') : ov.classList.remove('marked');
+}
+
+// ── Form submit guard ──
+document.getElementById('reviewForm').addEventListener('submit', function(e) {
+    const rating = document.querySelector('.star-picker input:checked');
+    if (!rating) { e.preventDefault(); alert('Please select a star rating.'); return; }
+    if (cmt.value.trim().length < 10) { e.preventDefault(); alert('Please write at least 10 characters.'); return; }
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Submitting…`;
+});
 </script>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 {% endblock %}
-
-
