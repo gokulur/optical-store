@@ -1,11 +1,195 @@
-{% extends 'catalog/base.html' %}{% block title %}Trending Searches{% endblock %}{% block content %}
-<div class="trending-page">
-    <div class="container">
-        <h1>Trending Searches</h1>
-        <p>Popular searches in the last 30 days</p>
-        <div class="trending-grid">{% for item in trending %}<a href="{% url 'search:search' %}?q={{ item.query }}"
-                class="trending-card"><span class="query">{{ item.query }}</span><span class="count">{{
-                    item.search_count }} searches</span></a>{% endfor %}</div>
-    </div>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Trending Searches - Al Ameen Optics{% endblock %}
+
+{% block content %}
+<style>
+.breadcrumb__list{display:flex;gap:6px;list-style:none;margin:0;padding:0}
+.breadcrumb__link{color:#666;text-decoration:none;font-size:.85rem}
+.breadcrumb__separator{color:#ccc}
+.breadcrumb__item--current .breadcrumb__link{color:#1a1a1a;font-weight:600}
+
+/* ── Trending Hero ── */
+.trending-hero{background:#1a1a1a;padding:55px 20px;text-align:center;position:relative;overflow:hidden}
+.trending-hero::before{content:'TRENDING';position:absolute;top:50%;left:50%;
+    transform:translate(-50%,-50%);font-size:14rem;font-weight:900;
+    color:rgba(255,255,255,.025);letter-spacing:.2em;pointer-events:none;white-space:nowrap}
+.trending-hero-emoji{font-size:3rem;margin-bottom:12px;position:relative}
+.trending-hero h1{font-size:clamp(2rem,5vw,4.2rem);font-weight:500;color:#fff;margin:0 0 8px;position:relative}
+.trending-hero p{color:rgba(255,255,255,.5);position:relative;font-size:.95rem}
+
+/* ── Grid ── */
+.trending-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:60px}
+
+/* ── Trending Card ── */
+.trending-card{background:#fff;border-radius:12px;padding:20px 22px;
+    box-shadow:0 2px 10px rgba(0,0,0,.06);display:flex;align-items:center;gap:16px;
+    text-decoration:none;color:inherit;transition:all .3s cubic-bezier(.34,1.56,.64,1);
+    position:relative;overflow:hidden}
+.trending-card:hover{transform:translateY(-4px);box-shadow:0 10px 24px rgba(0,0,0,.12)}
+.trending-card::after{content:'';position:absolute;right:-20px;top:-20px;
+    width:80px;height:80px;border-radius:50%;background:rgba(0,0,0,.025);transition:all .3s}
+.trending-card:hover::after{transform:scale(1.3)}
+
+.trend-rank{width:36px;height:36px;border-radius:8px;background:#f5f5f5;
+    display:flex;align-items:center;justify-content:center;font-size:.82rem;
+    font-weight:900;color:#aaa;flex-shrink:0;transition:all .3s}
+.trend-rank.top3{background:#1a1a1a;color:#fff}
+.trend-rank.rank-1{background:linear-gradient(135deg,#f97316,#ff5858);color:#fff}
+.trend-rank.rank-2{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
+.trend-rank.rank-3{background:linear-gradient(135deg,#1bcfb4,#0ea5e9);color:#fff}
+
+.trend-info{flex:1;min-width:0}
+.trend-query{font-size:.95rem;font-weight:700;color:#1a1a1a;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.trend-count{font-size:.74rem;color:#bbb;font-weight:500}
+
+.trend-arrow{flex-shrink:0;color:#ddd;transition:all .3s}
+.trending-card:hover .trend-arrow{color:#1a1a1a;transform:translateX(3px)}
+
+/* ── Section Divider ── */
+.section-divider-row{display:flex;align-items:center;gap:14px;margin-bottom:28px}
+.section-divider-row h2{font-size:1rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.1em;color:#1a1a1a;margin:0;white-space:nowrap}
+.section-divider-row::after{content:'';flex:1;height:1px;background:#e0e0e0}
+
+/* ── Heat Bars ── */
+.heat-list{background:#fff;border-radius:12px;overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:60px}
+.heat-row{display:flex;align-items:center;gap:16px;padding:14px 22px;
+    border-bottom:1px solid #f5f5f5;transition:background .2s}
+.heat-row:last-child{border-bottom:none}
+.heat-row:hover{background:#fafafa}
+.heat-label{font-size:.88rem;font-weight:600;color:#1a1a1a;width:200px;
+    flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.heat-bar-wrap{flex:1}
+.heat-bar{height:8px;border-radius:20px;background:linear-gradient(90deg,#1a1a1a,#666);
+    transition:width .8s cubic-bezier(.34,1.56,.64,1)}
+.heat-count{font-size:.78rem;color:#aaa;width:80px;text-align:right;flex-shrink:0}
+.heat-link-btn{color:#667eea;font-size:.76rem;font-weight:700;text-decoration:none;
+    flex-shrink:0;transition:color .2s}
+.heat-link-btn:hover{color:#1a1a1a}
+
+/* ── Empty ── */
+.trending-empty{text-align:center;padding:70px 30px}
+.trending-empty svg{margin-bottom:18px}
+.trending-empty h3{font-size:1.2rem;font-weight:600;color:#888;margin-bottom:8px}
+.trending-empty p{color:#bbb}
+
+@media(max-width:640px){
+    .trending-grid{grid-template-columns:1fr 1fr}
+    .heat-label{width:120px}
+    .heat-count{display:none}
+}
+@media(max-width:400px){
+    .trending-grid{grid-template-columns:1fr}
+}
+</style>
+
+<!-- Breadcrumb -->
+<div class="xo-section color-background-1" style="--margin:0;--pt:15;--pb:15;">
+    <xo-container class="xo-container--box">
+        <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+            <ol class="breadcrumb__list" style="--justify:flex-start">
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{% url 'search:search' %}">Search</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item breadcrumb__item--current">
+                    <a aria-current="page" class="breadcrumb__link">Trending</a>
+                </li>
+            </ol>
+        </nav>
+    </xo-container>
 </div>
+
+<!-- Hero -->
+<div class="trending-hero">
+    <xo-container class="xo-container--box">
+        <xo-animate xo-type="fade-up" xo-duration="700" xo-order="1">
+            <div class="trending-hero-emoji">🔥</div>
+            <h1 class="product-v1__title" style="color:#fff;font-size:4.2rem;font-weight:500;">Trending Searches</h1>
+            <p>What shoppers are looking for right now · Last 30 days</p>
+        </xo-animate>
+    </xo-container>
+</div>
+
+<!-- Content -->
+<div class="xo-section color-background-1" style="--margin:0;--pt:60;--pb:80;background:#f8f9fa;">
+    <xo-container class="xo-container--box">
+
+        {% if trending %}
+
+        <!-- Cards Grid -->
+        <div class="section-divider-row"><h2>Top Searches</h2></div>
+        <div class="trending-grid">
+            {% for item in trending %}
+            <a href="{% url 'search:search' %}?q={{ item.query }}" class="trending-card">
+                <div class="trend-rank {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% elif forloop.counter <= 10 %}top3{% endif %}">
+                    #{{ forloop.counter }}
+                </div>
+                <div class="trend-info">
+                    <div class="trend-query">{{ item.query }}</div>
+                    <div class="trend-count">{{ item.search_count }} search{{ item.search_count|pluralize }}</div>
+                </div>
+                <svg class="trend-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- Heat List -->
+        <div class="section-divider-row"><h2>Search Volume</h2></div>
+        {% with max_count=trending.0.search_count %}
+        <div class="heat-list">
+            {% for item in trending %}
+            <div class="heat-row">
+                <div class="heat-label">{{ item.query }}</div>
+                <div class="heat-bar-wrap">
+                    <div class="heat-bar"
+                         style="width:0%"
+                         data-width="{% widthratio item.search_count max_count 100 %}%">
+                    </div>
+                </div>
+                <div class="heat-count">{{ item.search_count }} searches</div>
+                <a href="{% url 'search:search' %}?q={{ item.query }}" class="heat-link-btn">Search →</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% endwith %}
+
+        {% else %}
+        <div class="trending-empty">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                <polyline points="17 6 23 6 23 12"/>
+            </svg>
+            <h3>No Trending Data Yet</h3>
+            <p>Search trends will appear here after enough searches</p>
+        </div>
+        {% endif %}
+
+    </xo-container>
+</div>
+
+<script>
+// Animate heat bars on scroll
+document.addEventListener('DOMContentLoaded', () => {
+    const bars = document.querySelectorAll('.heat-bar[data-width]');
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.width = entry.target.dataset.width;
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.2 });
+    bars.forEach(b => observer.observe(b));
+});
+</script>
 {% endblock %}
