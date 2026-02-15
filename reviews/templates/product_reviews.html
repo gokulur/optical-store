@@ -1,219 +1,535 @@
-{% extends 'catalog/base.html' %}
-
-{% block title %}Reviews for {{ product.name }} - Eyewear Store{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Reviews: {{ product.name }} - Al Ameen Optics{% endblock %}
 
 {% block content %}
-<div class="product-reviews-page">
-    <div class="container">
-        <!-- Breadcrumb -->
-        <div class="breadcrumb">
-            <a href="{% url 'catalog:home' %}">Home</a> / 
-            <a href="{% url 'catalog:product_detail' product.slug %}">{{ product.name }}</a> / 
-            <span>Reviews</span>
+<style>
+/* ── Breadcrumb ── */
+.breadcrumb__list{display:flex;gap:6px;list-style:none;margin:0;padding:0}
+.breadcrumb__link{color:#666;text-decoration:none;font-size:.85rem}
+.breadcrumb__separator{color:#ccc}
+.breadcrumb__item--current .breadcrumb__link{color:#1a1a1a;font-weight:600}
+
+/* ── Review Hero ── */
+.rv-hero{background:#1a1a1a;padding:36px 20px}
+.rv-hero-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;
+    gap:24px;flex-wrap:wrap}
+.rv-hero-img{width:76px;height:76px;border-radius:10px;background:#2a2a2a;
+    overflow:hidden;flex-shrink:0;border:1px solid rgba(255,255,255,.08)}
+.rv-hero-img img{width:100%;height:100%;object-fit:contain;padding:8px}
+.rv-hero-info{flex:1;min-width:180px}
+.rv-hero-info h1{font-size:1.45rem;font-weight:700;color:#fff;margin:0 0 4px;line-height:1.3}
+.rv-hero-meta{color:rgba(255,255,255,.4);font-size:.82rem;display:flex;
+    align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
+.rv-hero-stars{display:flex;gap:2px}
+.rv-hero-stars .s{font-size:.95rem}
+.rv-hero-stars .s.on{color:#f97316}
+.rv-hero-stars .s.off{color:rgba(255,255,255,.2)}
+.rv-hero-right{margin-left:auto}
+.btn-write-rv{display:inline-flex;align-items:center;gap:7px;background:#fff;
+    color:#1a1a1a;border:none;padding:11px 20px;border-radius:8px;
+    font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+    text-decoration:none;transition:all .25s;white-space:nowrap}
+.btn-write-rv:hover{background:#f0f0f0;color:#1a1a1a;transform:scale(1.03)}
+
+/* ── Page Layout ── */
+.rv-page-layout{max-width:1200px;margin:0 auto;padding:36px 20px 80px;
+    display:grid;grid-template-columns:290px 1fr;gap:28px}
+
+/* ── Sidebar ── */
+.rv-sidebar{}
+.rv-sidebar-sticky{position:sticky;top:88px;display:flex;flex-direction:column;gap:16px}
+
+/* Rating Summary Card */
+.rsc{background:#fff;border-radius:12px;overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.rsc-head{background:#1a1a1a;padding:14px 18px;font-size:.74rem;font-weight:700;
+    text-transform:uppercase;letter-spacing:.09em;color:#fff}
+.rsc-body{padding:20px 18px}
+.rsc-avg-row{text-align:center;margin-bottom:16px;padding-bottom:16px;
+    border-bottom:1px solid #f0f0f0}
+.rsc-avg-num{font-size:4rem;font-weight:900;color:#1a1a1a;line-height:1}
+.rsc-avg-stars{display:flex;justify-content:center;gap:3px;margin:5px 0}
+.rsc-avg-stars .s{font-size:1.25rem}
+.rsc-avg-stars .s.on{color:#f97316}
+.rsc-avg-stars .s.off{color:#e0e0e0}
+.rsc-total-label{font-size:.75rem;color:#bbb;margin-top:2px}
+
+.rsc-bar-row{display:flex;align-items:center;gap:9px;margin-bottom:9px;cursor:pointer;
+    border-radius:6px;padding:3px 4px;transition:background .2s}
+.rsc-bar-row:hover{background:#fafafa}
+.rsc-bar-lbl{font-size:.73rem;color:#888;width:46px;flex-shrink:0;
+    display:flex;align-items:center;gap:3px}
+.rsc-bar-lbl .s{font-size:.8rem;color:#f97316}
+.rsc-bar-outer{flex:1;background:#f0f0f0;border-radius:20px;height:6px;overflow:hidden}
+.rsc-bar-inner{height:100%;border-radius:20px;
+    background:linear-gradient(90deg,#f97316,#ff5858);
+    transition:width .9s cubic-bezier(.34,1.56,.64,1)}
+.rsc-bar-cnt{font-size:.7rem;color:#ccc;width:18px;text-align:right;flex-shrink:0}
+
+.rsc-divider{border:none;border-top:1px solid #f0f0f0;margin:14px 0}
+.rsc-verified{display:flex;align-items:center;gap:8px;background:#e6faf7;
+    border-radius:8px;padding:10px 12px}
+.rsc-verified span{font-size:.76rem;color:#0f8c6f;font-weight:600}
+
+/* Login Prompt */
+.rv-login-bar{background:#f5f5f5;border-radius:10px;padding:14px 18px;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;margin-bottom:22px;flex-wrap:wrap}
+.rv-login-bar p{font-size:.86rem;color:#666;margin:0}
+.rv-login-bar a{display:inline-flex;align-items:center;gap:6px;background:#1a1a1a;
+    color:#fff;padding:9px 16px;border-radius:7px;font-size:.78rem;font-weight:700;
+    text-decoration:none;white-space:nowrap;transition:background .25s}
+.rv-login-bar a:hover{background:#333;color:#fff}
+
+/* Controls */
+.rv-controls{display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:18px;gap:12px;flex-wrap:wrap}
+.rv-controls-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rv-select{border:1.5px solid #e0e0e0;border-radius:8px;padding:8px 28px 8px 11px;
+    font-size:.79rem;color:#1a1a1a;outline:none;cursor:pointer;appearance:none;
+    background:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 9px center #fff;
+    font-family:inherit;transition:border-color .2s}
+.rv-select:focus{border-color:#1a1a1a}
+.rv-verified-lbl{display:flex;align-items:center;gap:7px;font-size:.79rem;
+    color:#666;cursor:pointer;font-weight:500}
+.rv-verified-lbl input{width:14px;height:14px;accent-color:#1a1a1a;cursor:pointer}
+.rv-count-lbl{font-size:.83rem;color:#aaa}
+.rv-count-lbl strong{color:#1a1a1a}
+
+/* Active filter tags */
+.rv-active-filters{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.rv-tag{display:inline-flex;align-items:center;gap:5px;background:#f5f5f5;
+    border:1.5px solid #e5e5e5;border-radius:20px;padding:4px 11px;
+    font-size:.74rem;font-weight:600;color:#555}
+.rv-tag button{background:none;border:none;color:#bbb;cursor:pointer;
+    font-size:.9rem;padding:0;line-height:1;transition:color .2s}
+.rv-tag button:hover{color:#1a1a1a}
+
+/* ── Review Card ── */
+.review-card{background:#fff;border-radius:12px;padding:22px 22px 16px;
+    box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:14px;transition:box-shadow .25s}
+.review-card:hover{box-shadow:0 6px 18px rgba(0,0,0,.1)}
+
+.rc-top{display:flex;align-items:flex-start;justify-content:space-between;
+    margin-bottom:12px;gap:10px;flex-wrap:wrap}
+.rc-left{display:flex;align-items:center;gap:11px}
+.rc-avatar{width:40px;height:40px;border-radius:50%;background:#1a1a1a;
+    display:flex;align-items:center;justify-content:center;color:#fff;
+    font-size:.88rem;font-weight:700;flex-shrink:0;text-transform:uppercase;letter-spacing:.05em}
+.rc-reviewer-name{font-size:.9rem;font-weight:700;color:#1a1a1a}
+.rc-badges{display:flex;gap:5px;margin-top:3px;flex-wrap:wrap}
+.badge-verified{display:inline-flex;align-items:center;gap:3px;background:#e6faf7;
+    color:#0f8c6f;border-radius:20px;padding:2px 8px;font-size:.67rem;font-weight:700}
+.rc-right{text-align:right;flex-shrink:0}
+.rc-stars{display:flex;gap:2px;justify-content:flex-end}
+.rc-stars .s{font-size:1.05rem}
+.rc-stars .s.on{color:#f97316}
+.rc-stars .s.off{color:#e0e0e0}
+.rc-date{font-size:.73rem;color:#bbb;margin-top:3px}
+
+.rc-title{font-size:.97rem;font-weight:700;color:#1a1a1a;margin:0 0 7px}
+.rc-comment{font-size:.88rem;color:#555;line-height:1.7;margin:0}
+.rc-read-more{display:inline-block;margin-top:4px;color:#667eea;font-size:.8rem;
+    font-weight:600;cursor:pointer;border:none;background:none;padding:0;font-family:inherit}
+
+.rc-imgs{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.rc-img-thumb{width:68px;height:68px;border-radius:7px;overflow:hidden;cursor:pointer;
+    border:1.5px solid #f0f0f0;transition:border-color .2s;flex-shrink:0}
+.rc-img-thumb:hover{border-color:#1a1a1a}
+.rc-img-thumb img{width:100%;height:100%;object-fit:cover}
+
+.rc-footer{display:flex;align-items:center;justify-content:space-between;
+    padding-top:12px;margin-top:14px;border-top:1px solid #f5f5f5;flex-wrap:wrap;gap:10px}
+.rc-helpful-lbl{font-size:.76rem;color:#bbb}
+.rc-helpful-btns{display:flex;gap:7px}
+.btn-helpful,.btn-nothelpful{display:inline-flex;align-items:center;gap:5px;
+    border:1.5px solid #e0e0e0;border-radius:20px;padding:5px 12px;
+    font-size:.74rem;font-weight:600;background:#fff;cursor:pointer;
+    transition:all .25s;font-family:inherit;color:#555}
+.btn-helpful:hover{border-color:#1bcfb4;color:#1bcfb4}
+.btn-nothelpful:hover{border-color:#ff5858;color:#ff5858}
+.btn-helpful.voted{background:#1bcfb4;border-color:#1bcfb4;color:#fff}
+.btn-nothelpful.voted{background:#ff5858;border-color:#ff5858;color:#fff}
+.rc-owner-actions{display:flex;gap:7px}
+.btn-rv-edit{color:#667eea;font-size:.74rem;font-weight:700;text-decoration:none;
+    padding:5px 11px;border:1.5px solid #667eea;border-radius:20px;transition:all .25s}
+.btn-rv-edit:hover{background:#667eea;color:#fff}
+.btn-rv-del{color:#ff5858;font-size:.74rem;font-weight:700;border:1.5px solid #ff5858;
+    border-radius:20px;padding:5px 11px;background:#fff;cursor:pointer;
+    transition:all .25s;font-family:inherit}
+.btn-rv-del:hover{background:#ff5858;color:#fff}
+
+/* ── No Reviews ── */
+.no-rv-block{text-align:center;padding:60px 30px;background:#fff;
+    border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.no-rv-block h3{font-size:1.25rem;font-weight:700;color:#1a1a1a;margin:14px 0 8px}
+.no-rv-block p{color:#888;margin-bottom:20px;font-size:.9rem}
+.btn-first-rv{display:inline-block;background:#1a1a1a;color:#fff;padding:12px 28px;
+    border-radius:30px;font-size:.86rem;font-weight:700;text-decoration:none;
+    text-transform:uppercase;letter-spacing:.06em;transition:all .3s}
+.btn-first-rv:hover{background:#333;color:#fff;transform:translateY(-2px)}
+
+/* ── Pagination ── */
+.rv-pages{display:flex;justify-content:center;gap:7px;margin-top:28px;flex-wrap:wrap}
+.rv-pg{width:38px;height:38px;border-radius:7px;border:1.5px solid #e0e0e0;
+    background:#fff;color:#555;font-size:.83rem;font-weight:600;
+    display:flex;align-items:center;justify-content:center;
+    text-decoration:none;transition:all .25s}
+.rv-pg:hover,.rv-pg.active{background:#1a1a1a;border-color:#1a1a1a;color:#fff}
+.rv-pg.disabled{opacity:.3;pointer-events:none}
+
+/* ── Lightbox ── */
+.rv-lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;
+    align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.rv-lb.open{display:flex}
+.rv-lb-img{max-width:90vw;max-height:88vh;border-radius:10px;object-fit:contain}
+.rv-lb-close{position:absolute;top:18px;right:22px;color:#fff;font-size:2.2rem;
+    cursor:pointer;line-height:1;transition:color .2s;z-index:1}
+.rv-lb-close:hover{color:#f97316}
+
+/* ── Delete Modal ── */
+.rv-del-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+    z-index:9998;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.rv-del-modal.open{display:flex}
+.rv-del-box{background:#fff;border-radius:14px;padding:30px;max-width:340px;
+    width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.rv-del-box h3{font-size:1.1rem;font-weight:700;margin:0 0 8px}
+.rv-del-box p{color:#888;font-size:.86rem;margin:0 0 20px}
+.rv-del-btns{display:flex;gap:10px}
+.btn-dcancel{flex:1;padding:11px;border:1.5px solid #e0e0e0;border-radius:8px;
+    background:#fff;color:#888;font-size:.83rem;font-weight:600;cursor:pointer;
+    transition:all .25s;font-family:inherit}
+.btn-dcancel:hover{border-color:#1a1a1a;color:#1a1a1a}
+.btn-dconfirm{flex:1;padding:11px;border:none;border-radius:8px;background:#ff3b30;
+    color:#fff;font-size:.83rem;font-weight:700;cursor:pointer;
+    transition:background .25s;font-family:inherit}
+.btn-dconfirm:hover{background:#e02e24}
+
+/* ── Toast ── */
+.rv-toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);
+    background:#1a1a1a;color:#fff;padding:11px 22px;border-radius:40px;font-size:.83rem;
+    font-weight:600;z-index:9999;display:flex;align-items:center;gap:8px;
+    box-shadow:0 6px 20px rgba(0,0,0,.25);transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.rv-toast.show{transform:translateX(-50%) translateY(0)}
+.rv-toast-tick{color:#1bcfb4}
+
+@media(max-width:860px){
+    .rv-page-layout{grid-template-columns:1fr}
+    .rv-sidebar-sticky{position:static}
+    .rv-hero-right{width:100%}
+    .btn-write-rv{width:100%;justify-content:center}
+}
+@media(max-width:500px){
+    .rc-top{flex-direction:column}
+    .rc-right{text-align:left}
+    .rc-stars{justify-content:flex-start}
+    .rv-controls{flex-direction:column;align-items:flex-start}
+}
+</style>
+
+<!-- Breadcrumb -->
+<div class="xo-section color-background-1" style="--margin:0;--pt:15;--pb:15;">
+    <xo-container class="xo-container--box">
+        <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+            <ol class="breadcrumb__list" style="--justify:flex-start">
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item breadcrumb__item--current">
+                    <a aria-current="page" class="breadcrumb__link">Reviews</a>
+                </li>
+            </ol>
+        </nav>
+    </xo-container>
+</div>
+
+<!-- Hero -->
+<div class="rv-hero">
+    <div class="rv-hero-inner">
+        <div class="rv-hero-img">
+            {% if product.images.first %}
+                <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+            {% elif product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            {% endif %}
         </div>
-        
-        <!-- Page Header -->
-        <div class="page-header">
-            <h1>Customer Reviews</h1>
-            <p>{{ product.name }}</p>
-        </div>
-        
-        <!-- Rating Summary -->
-        <div class="rating-summary-section">
-            <div class="overall-rating">
-                <div class="rating-number">
-                    <span class="big-rating">{{ rating_stats.average_rating|floatformat:1|default:"0.0" }}</span>
-                    <span class="out-of">out of 5</span>
-                </div>
-                <div class="stars">
-                    {% with rating=rating_stats.average_rating|floatformat:0|default:"0" %}
+        <div class="rv-hero-info">
+            <h1>{{ product.name }}</h1>
+            <div class="rv-hero-meta">
+                {% if rating_stats.average_rating %}
+                <div class="rv-hero-stars">
                     {% for i in "12345" %}
-                        {% if forloop.counter <= rating|add:"0" %}
-                        <span class="star filled">★</span>
-                        {% else %}
-                        <span class="star">☆</span>
+                        {% if forloop.counter <= rating_stats.average_rating|floatformat:0|add:"0" %}
+                        <span class="s on">★</span>{% else %}<span class="s off">★</span>
                         {% endif %}
                     {% endfor %}
-                    {% endwith %}
                 </div>
-                <p class="total-reviews">{{ rating_stats.total_reviews }} reviews</p>
-            </div>
-            
-            <div class="rating-breakdown">
-                <h3>Rating Breakdown</h3>
-                {% for rating in "54321" %}
-                <div class="rating-bar-row">
-                    <span class="rating-label">{{ rating }} stars</span>
-                    <div class="rating-bar">
-                        <div class="rating-fill" style="width: {{ rating_percentages|get_item:rating|floatformat:0 }}%"></div>
-                    </div>
-                    <span class="rating-count">
-                        {% if rating == "5" %}{{ rating_stats.five_star }}{% endif %}
-                        {% if rating == "4" %}{{ rating_stats.four_star }}{% endif %}
-                        {% if rating == "3" %}{{ rating_stats.three_star }}{% endif %}
-                        {% if rating == "2" %}{{ rating_stats.two_star }}{% endif %}
-                        {% if rating == "1" %}{{ rating_stats.one_star }}{% endif %}
-                    </span>
-                </div>
-                {% endfor %}
+                <span>{{ rating_stats.average_rating|floatformat:1 }} / 5</span>
+                <span>·</span>
+                {% endif %}
+                <span>{{ rating_stats.total_reviews }} review{{ rating_stats.total_reviews|pluralize }}</span>
             </div>
         </div>
-        
-        <!-- Write Review Button -->
-        {% if user.is_authenticated %}
-            {% if can_review %}
-            <div class="write-review-cta">
-                <a href="{% url 'reviews:write_review' product.slug %}" class="btn btn-primary">
-                    ✍️ Write a Review
+        <div class="rv-hero-right">
+            {% if request.user.is_authenticated %}
+                {% if can_review %}
+                <a href="{% url 'reviews:write_review' product.slug %}" class="btn-write-rv">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4z"/></svg>
+                    Write a Review
                 </a>
-            </div>
-            {% elif user_review %}
-            <div class="user-review-notice">
-                <p>You have already reviewed this product.</p>
-                <a href="{% url 'reviews:edit_review' user_review.id %}" class="btn btn-outline">
+                {% elif user_review %}
+                <a href="{% url 'reviews:edit_review' user_review.id %}" class="btn-write-rv">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z"/></svg>
                     Edit Your Review
                 </a>
-            </div>
+                {% endif %}
             {% endif %}
-        {% else %}
-        <div class="login-to-review">
-            <p><a href="{% url 'users:login' %}?next={{ request.path }}">Login</a> to write a review</p>
         </div>
-        {% endif %}
-        
-        <!-- Filters and Sorting -->
-        <div class="reviews-controls">
-            <div class="filters">
-                <h3>Filter by:</h3>
-                <select name="rating" onchange="filterReviews(this.value)">
-                    <option value="all" {% if current_rating_filter == 'all' %}selected{% endif %}>All Ratings</option>
-                    <option value="5" {% if current_rating_filter == '5' %}selected{% endif %}>5 Stars</option>
-                    <option value="4" {% if current_rating_filter == '4' %}selected{% endif %}>4 Stars</option>
-                    <option value="3" {% if current_rating_filter == '3' %}selected{% endif %}>3 Stars</option>
-                    <option value="2" {% if current_rating_filter == '2' %}selected{% endif %}>2 Stars</option>
-                    <option value="1" {% if current_rating_filter == '1' %}selected{% endif %}>1 Star</option>
-                </select>
-                
-                <label class="checkbox">
-                    <input type="checkbox" {% if verified_only %}checked{% endif %} onchange="toggleVerified(this.checked)">
-                    Verified Purchases Only
-                </label>
-            </div>
-            
-            <div class="sorting">
-                <label>Sort by:</label>
-                <select name="sort" onchange="sortReviews(this.value)">
-                    <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Most Recent</option>
-                    <option value="helpful" {% if sort_by == 'helpful' %}selected{% endif %}>Most Helpful</option>
-                    <option value="rating_high" {% if sort_by == 'rating_high' %}selected{% endif %}>Highest Rating</option>
-                    <option value="rating_low" {% if sort_by == 'rating_low' %}selected{% endif %}>Lowest Rating</option>
-                </select>
-            </div>
-        </div>
-        
-        <!-- Reviews List -->
-        <div class="reviews-list">
-            {% if reviews %}
-                {% for review in reviews %}
-                <div class="review-card">
-                    <div class="review-header">
-                        <div class="reviewer-info">
-                            <span class="reviewer-name">{{ review.customer.get_full_name|default:review.customer.username }}</span>
-                            {% if review.is_verified_purchase %}
-                            <span class="badge verified">✓ Verified Purchase</span>
-                            {% endif %}
-                        </div>
-                        <div class="review-meta">
-                            <div class="rating-stars">
+    </div>
+</div>
+
+<!-- Body -->
+<div style="background:#f8f9fa;">
+    <div class="rv-page-layout">
+
+        <!-- Sidebar -->
+        <aside class="rv-sidebar">
+            <div class="rv-sidebar-sticky">
+                <div class="rsc">
+                    <div class="rsc-head">Rating Summary</div>
+                    <div class="rsc-body">
+                        <div class="rsc-avg-row">
+                            <div class="rsc-avg-num">{{ rating_stats.average_rating|floatformat:1|default:"—" }}</div>
+                            <div class="rsc-avg-stars">
                                 {% for i in "12345" %}
-                                    {% if forloop.counter <= review.rating %}
-                                    <span class="star filled">★</span>
-                                    {% else %}
-                                    <span class="star">☆</span>
+                                    {% if forloop.counter <= rating_stats.average_rating|floatformat:0|add:"0" %}
+                                    <span class="s on">★</span>{% else %}<span class="s off">★</span>
                                     {% endif %}
                                 {% endfor %}
                             </div>
-                            <span class="review-date">{{ review.created_at|date:"F j, Y" }}</span>
+                            <div class="rsc-total-label">{{ rating_stats.total_reviews }} review{{ rating_stats.total_reviews|pluralize }}</div>
                         </div>
-                    </div>
-                    
-                    {% if review.title %}
-                    <h3 class="review-title">{{ review.title }}</h3>
-                    {% endif %}
-                    
-                    <div class="review-content">
-                        <p>{{ review.comment }}</p>
-                    </div>
-                    
-                    {% if review.images.all %}
-                    <div class="review-images">
-                        {% for image in review.images.all %}
-                        <img src="{{ image.image.url }}" alt="Review image" onclick="openImageModal('{{ image.image.url }}')">
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    
-                    <div class="review-actions">
-                        <div class="helpfulness">
-                            <span>Was this review helpful?</span>
-                            {% if user.is_authenticated %}
-                            <form method="post" action="{% url 'reviews:mark_helpful' review.id %}" style="display:inline;">
-                                {% csrf_token %}
-                                <input type="hidden" name="is_helpful" value="true">
-                                <button type="submit" class="btn-helpful">
-                                    👍 Yes ({{ review.helpful_count }})
-                                </button>
-                            </form>
-                            <form method="post" action="{% url 'reviews:mark_helpful' review.id %}" style="display:inline;">
-                                {% csrf_token %}
-                                <input type="hidden" name="is_helpful" value="false">
-                                <button type="submit" class="btn-not-helpful">
-                                    👎 No ({{ review.not_helpful_count }})
-                                </button>
-                            </form>
-                            {% else %}
-                            <span class="login-prompt">
-                                <a href="{% url 'users:login' %}">Login</a> to vote
-                            </span>
-                            {% endif %}
+                        <!-- 5 star -->
+                        <div class="rsc-bar-row" onclick="setParam('rating','5')">
+                            <span class="rsc-bar-lbl">5 <span class="s">★</span></span>
+                            <div class="rsc-bar-outer"><div class="rsc-bar-inner" data-pct="{{ rating_percentages.5|floatformat:0 }}" style="width:0%"></div></div>
+                            <span class="rsc-bar-cnt">{{ rating_stats.five_star }}</span>
                         </div>
-                        
-                        {% if user == review.customer %}
-                        <div class="owner-actions">
-                            <a href="{% url 'reviews:edit_review' review.id %}" class="btn-edit">Edit</a>
-                            <form method="post" action="{% url 'reviews:delete_review' review.id %}" 
-                                  style="display:inline;"
-                                  onsubmit="return confirm('Are you sure you want to delete this review?');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-delete">Delete</button>
-                            </form>
+                        <!-- 4 star -->
+                        <div class="rsc-bar-row" onclick="setParam('rating','4')">
+                            <span class="rsc-bar-lbl">4 <span class="s">★</span></span>
+                            <div class="rsc-bar-outer"><div class="rsc-bar-inner" data-pct="{{ rating_percentages.4|floatformat:0 }}" style="width:0%"></div></div>
+                            <span class="rsc-bar-cnt">{{ rating_stats.four_star }}</span>
+                        </div>
+                        <!-- 3 star -->
+                        <div class="rsc-bar-row" onclick="setParam('rating','3')">
+                            <span class="rsc-bar-lbl">3 <span class="s">★</span></span>
+                            <div class="rsc-bar-outer"><div class="rsc-bar-inner" data-pct="{{ rating_percentages.3|floatformat:0 }}" style="width:0%"></div></div>
+                            <span class="rsc-bar-cnt">{{ rating_stats.three_star }}</span>
+                        </div>
+                        <!-- 2 star -->
+                        <div class="rsc-bar-row" onclick="setParam('rating','2')">
+                            <span class="rsc-bar-lbl">2 <span class="s">★</span></span>
+                            <div class="rsc-bar-outer"><div class="rsc-bar-inner" data-pct="{{ rating_percentages.2|floatformat:0 }}" style="width:0%"></div></div>
+                            <span class="rsc-bar-cnt">{{ rating_stats.two_star }}</span>
+                        </div>
+                        <!-- 1 star -->
+                        <div class="rsc-bar-row" onclick="setParam('rating','1')">
+                            <span class="rsc-bar-lbl">1 <span class="s">★</span></span>
+                            <div class="rsc-bar-outer"><div class="rsc-bar-inner" data-pct="{{ rating_percentages.1|floatformat:0 }}" style="width:0%"></div></div>
+                            <span class="rsc-bar-cnt">{{ rating_stats.one_star }}</span>
+                        </div>
+                        {% if rating_stats.total_reviews %}
+                        <hr class="rsc-divider">
+                        <div class="rsc-verified">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f8c6f" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            <span>{{ rating_stats.total_reviews }} verified review{{ rating_stats.total_reviews|pluralize }}</span>
                         </div>
                         {% endif %}
                     </div>
                 </div>
+            </div>
+        </aside>
+
+        <!-- Main Reviews -->
+        <div>
+            {% if not request.user.is_authenticated %}
+            <div class="rv-login-bar">
+                <p>Have this product? <strong>Share your experience</strong></p>
+                <a href="{% url 'users:login' %}?next={{ request.path }}">
+                    Login to Review
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Controls Bar -->
+            <div class="rv-controls">
+                <div class="rv-controls-left">
+                    <select class="rv-select" onchange="setParam('rating',this.value)">
+                        <option value="all" {% if not current_rating_filter or current_rating_filter == 'all' %}selected{% endif %}>All Ratings</option>
+                        <option value="5" {% if current_rating_filter == '5' %}selected{% endif %}>5 Stars</option>
+                        <option value="4" {% if current_rating_filter == '4' %}selected{% endif %}>4 Stars</option>
+                        <option value="3" {% if current_rating_filter == '3' %}selected{% endif %}>3 Stars</option>
+                        <option value="2" {% if current_rating_filter == '2' %}selected{% endif %}>2 Stars</option>
+                        <option value="1" {% if current_rating_filter == '1' %}selected{% endif %}>1 Star</option>
+                    </select>
+                    <label class="rv-verified-lbl">
+                        <input type="checkbox" {% if verified_only %}checked{% endif %}
+                            onchange="setParam('verified', this.checked ? 'true' : '')">
+                        Verified Only
+                    </label>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="rv-count-lbl"><strong>{{ rating_stats.total_reviews }}</strong> review{{ rating_stats.total_reviews|pluralize }}</span>
+                    <select class="rv-select" onchange="setParam('sort',this.value)">
+                        <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Most Recent</option>
+                        <option value="helpful"     {% if sort_by == 'helpful' %}selected{% endif %}>Most Helpful</option>
+                        <option value="rating_high" {% if sort_by == 'rating_high' %}selected{% endif %}>Highest Rating</option>
+                        <option value="rating_low"  {% if sort_by == 'rating_low' %}selected{% endif %}>Lowest Rating</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Active Tags -->
+            {% if current_rating_filter and current_rating_filter != 'all' or verified_only %}
+            <div class="rv-active-filters">
+                {% if current_rating_filter and current_rating_filter != 'all' %}
+                <span class="rv-tag">
+                    {{ current_rating_filter }} Star{{ current_rating_filter|pluralize }}
+                    <button onclick="setParam('rating','all')">×</button>
+                </span>
+                {% endif %}
+                {% if verified_only %}
+                <span class="rv-tag">
+                    Verified Only
+                    <button onclick="setParam('verified','')">×</button>
+                </span>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Review Cards -->
+            {% if reviews %}
+                {% for review in reviews %}
+                <div class="review-card">
+                    <div class="rc-top">
+                        <div class="rc-left">
+                            <div class="rc-avatar">{{ review.customer.first_name|first|default:review.customer.username|first }}</div>
+                            <div>
+                                <div class="rc-reviewer-name">{{ review.customer.get_full_name|default:review.customer.username }}</div>
+                                <div class="rc-badges">
+                                    {% if review.is_verified_purchase %}
+                                    <span class="badge-verified">
+                                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                        Verified Purchase
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rc-right">
+                            <div class="rc-stars">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}<span class="s on">★</span>{% else %}<span class="s off">★</span>{% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="rc-date">{{ review.created_at|date:"d M Y" }}</div>
+                        </div>
+                    </div>
+
+                    {% if review.title %}<div class="rc-title">{{ review.title }}</div>{% endif %}
+
+                    <div class="rc-comment" id="cmt-{{ review.id }}">
+                        {% if review.comment|length > 300 %}
+                        <span class="cmt-short">{{ review.comment|truncatechars:300 }}</span>
+                        <span class="cmt-full" style="display:none;">{{ review.comment }}</span>
+                        <button class="rc-read-more" onclick="toggleCmt({{ review.id }})">Read more</button>
+                        {% else %}
+                        {{ review.comment }}
+                        {% endif %}
+                    </div>
+
+                    {% if review.images.all %}
+                    <div class="rc-imgs">
+                        {% for img in review.images.all %}
+                        <div class="rc-img-thumb" onclick="openLb('{{ img.image.url }}')">
+                            <img src="{{ img.image.url }}" alt="Review photo" loading="lazy">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="rc-footer">
+                        <span class="rc-helpful-lbl">Was this helpful?</span>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            {% if request.user.is_authenticated %}
+                            <div class="rc-helpful-btns">
+                                <form method="post" action="{% url 'reviews:mark_helpful' review.id %}" style="display:inline">
+                                    {% csrf_token %}<input type="hidden" name="is_helpful" value="true">
+                                    <button type="submit" class="btn-helpful">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>
+                                        Yes ({{ review.helpful_count }})
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'reviews:mark_helpful' review.id %}" style="display:inline">
+                                    {% csrf_token %}<input type="hidden" name="is_helpful" value="false">
+                                    <button type="submit" class="btn-nothelpful">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg>
+                                        No ({{ review.not_helpful_count }})
+                                    </button>
+                                </form>
+                            </div>
+                            {% else %}
+                            <a href="{% url 'users:login' %}?next={{ request.path }}" style="font-size:.75rem;color:#667eea;text-decoration:none;">Login to vote</a>
+                            {% endif %}
+
+                            {% if request.user == review.customer %}
+                            <div class="rc-owner-actions">
+                                <a href="{% url 'reviews:edit_review' review.id %}" class="btn-rv-edit">Edit</a>
+                                <button class="btn-rv-del" onclick="showDel({{ review.id }})">Delete</button>
+                                <form id="delf-{{ review.id }}" method="post" action="{% url 'reviews:delete_review' review.id %}" style="display:none">{% csrf_token %}</form>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
-                
-                <!-- Pagination -->
+
                 {% if reviews.has_other_pages %}
-                <div class="pagination">
-                    {% if reviews.has_previous %}
-                    <a href="?page={{ reviews.previous_page_number }}" class="page-link">Previous</a>
-                    {% endif %}
-                    
-                    <span class="page-info">Page {{ reviews.number }} of {{ reviews.paginator.num_pages }}</span>
-                    
-                    {% if reviews.has_next %}
-                    <a href="?page={{ reviews.next_page_number }}" class="page-link">Next</a>
-                    {% endif %}
+                <div class="rv-pages">
+                    <a href="?page={{ reviews.previous_page_number }}&sort={{ sort_by }}" class="rv-pg {% if not reviews.has_previous %}disabled{% endif %}">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                    </a>
+                    {% for num in reviews.paginator.page_range %}
+                        {% if reviews.number == num %}<span class="rv-pg active">{{ num }}</span>
+                        {% elif num > reviews.number|add:"-3" and num < reviews.number|add:"3" %}
+                        <a href="?page={{ num }}&sort={{ sort_by }}" class="rv-pg">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    <a href="?page={{ reviews.next_page_number }}&sort={{ sort_by }}" class="rv-pg {% if not reviews.has_next %}disabled{% endif %}">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
                 </div>
                 {% endif %}
+
             {% else %}
-            <div class="no-reviews">
-                <p>No reviews yet. Be the first to review this product!</p>
-                {% if user.is_authenticated and can_review %}
-                <a href="{% url 'reviews:write_review' product.slug %}" class="btn btn-primary">
-                    Write the First Review
-                </a>
+            <div class="no-rv-block">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.2">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                </svg>
+                <h3>No Reviews Yet</h3>
+                <p>Be the first to share your experience</p>
+                {% if request.user.is_authenticated and can_review %}
+                <a href="{% url 'reviews:write_review' product.slug %}" class="btn-first-rv">Write the First Review</a>
+                {% elif not request.user.is_authenticated %}
+                <a href="{% url 'users:login' %}?next={% url 'reviews:write_review' product.slug %}" class="btn-first-rv">Login to Review</a>
                 {% endif %}
             </div>
             {% endif %}
@@ -221,42 +537,72 @@
     </div>
 </div>
 
-<!-- Image Modal -->
-<div id="imageModal" class="modal" style="display:none;">
-    <span class="close" onclick="closeImageModal()">&times;</span>
-    <img class="modal-content" id="modalImage">
+<!-- Lightbox -->
+<div class="rv-lb" id="rvLb" onclick="closeLb()">
+    <span class="rv-lb-close">×</span>
+    <img class="rv-lb-img" id="rvLbImg" src="" alt="" onclick="event.stopPropagation()">
+</div>
+
+<!-- Delete Modal -->
+<div class="rv-del-modal" id="rvDelModal" onclick="hideDel(event)">
+    <div class="rv-del-box" onclick="event.stopPropagation()">
+        <h3>Delete Review?</h3>
+        <p>This will permanently remove your review and cannot be undone.</p>
+        <div class="rv-del-btns">
+            <button class="btn-dcancel" onclick="hideDel()">Cancel</button>
+            <button class="btn-dconfirm" onclick="doDelete()">Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="rv-toast" id="rvToast">
+    <span class="rv-toast-tick">✓</span>
+    <span id="rvToastMsg">Done!</span>
 </div>
 
 <script>
-function filterReviews(rating) {
-    const url = new URL(window.location.href);
-    url.searchParams.set('rating', rating);
-    window.location.href = url.toString();
-}
+// Animate rating bars on load
+const rscBars = document.querySelectorAll('.rsc-bar-inner[data-pct]');
+const rscObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { rscBars.forEach(b => { b.style.width = b.dataset.pct + '%'; }); rscObs.disconnect(); }});
+}, { threshold: 0.1 });
+const rscCard = document.querySelector('.rsc');
+if (rscCard) rscObs.observe(rscCard);
 
-function toggleVerified(checked) {
-    const url = new URL(window.location.href);
-    if (checked) {
-        url.searchParams.set('verified', 'true');
-    } else {
-        url.searchParams.delete('verified');
-    }
-    window.location.href = url.toString();
+function setParam(key, val) {
+    const u = new URL(window.location.href);
+    if (!val || val === '' || val === 'all') u.searchParams.delete(key);
+    else u.searchParams.set(key, val);
+    u.searchParams.delete('page');
+    window.location.href = u.toString();
 }
-
-function sortReviews(sort) {
-    const url = new URL(window.location.href);
-    url.searchParams.set('sort', sort);
-    window.location.href = url.toString();
+function toggleCmt(id) {
+    const w = document.getElementById('cmt-' + id);
+    const s = w.querySelector('.cmt-short');
+    const f = w.querySelector('.cmt-full');
+    const b = w.querySelector('.rc-read-more');
+    if (f.style.display === 'none') { s.style.display='none'; f.style.display=''; b.textContent='Show less'; }
+    else { s.style.display=''; f.style.display='none'; b.textContent='Read more'; }
 }
-
-function openImageModal(imageUrl) {
-    document.getElementById('imageModal').style.display = 'block';
-    document.getElementById('modalImage').src = imageUrl;
+function openLb(url) {
+    document.getElementById('rvLbImg').src = url;
+    document.getElementById('rvLb').classList.add('open');
+    document.body.style.overflow = 'hidden';
 }
-
-function closeImageModal() {
-    document.getElementById('imageModal').style.display = 'none';
+function closeLb() {
+    document.getElementById('rvLb').classList.remove('open');
+    document.body.style.overflow = '';
 }
+let _delId = null;
+function showDel(id) { _delId = id; document.getElementById('rvDelModal').classList.add('open'); }
+function hideDel(e) { if (!e || e.target === document.getElementById('rvDelModal')) document.getElementById('rvDelModal').classList.remove('open'); }
+function doDelete() { if (_delId) document.getElementById('delf-' + _delId).submit(); }
+function toast(msg) {
+    const t = document.getElementById('rvToast');
+    document.getElementById('rvToastMsg').textContent = msg;
+    t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000);
+}
+{% if messages %}{% for m in messages %}toast('{{ m|escapejs }}');{% endfor %}{% endif %}
 </script>
 {% endblock %}

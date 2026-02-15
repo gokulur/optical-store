@@ -56,7 +56,7 @@ class ReviewHelpfulness(models.Model):
     review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='helpfulness_votes')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     
-    is_helpful = models.BooleanField()  # True = helpful, False = not helpful
+    is_helpful = models.BooleanField()  
     
     created_at = models.DateTimeField(auto_now_add=True)
     
