@@ -1,4 +1,262 @@
-{% extends 'base.html' %}{% block title %}Promotions{% endblock %}{% block content %}
-<div class="promotions-page"><div class="container"><h1>Active Promotions</h1><p>Save on your eyewear purchases with our special offers</p>{% if promotions %}<div class="promotions-grid">{% for promo in promotions %}<div class="promo-card"><div class="promo-badge">{% if promo.discount_type == 'percentage' %}{{ promo.discount_value }}% OFF{% elif promo.discount_type == 'fixed_amount' %}{{ promo.discount_value }} QAR OFF{% else %}FREE SHIPPING{% endif %}</div><h3>{{ promo.name }}</h3><p>{{ promo.description }}</p><div class="promo-code"><span>Code:</span><strong>{{ promo.code }}</strong><button onclick="copyCoupon('{{ promo.code }}')">Copy</button></div><div class="promo-details">{% if promo.minimum_order_amount %}<p>Min. order: {{ promo.minimum_order_amount }} QAR</p>{% endif %}<p>Valid until: {{ promo.valid_until|date:"M j, Y" }}</p></div></div>{% endfor %}</div>{% else %}<p>No active promotions at the moment</p>{% endif %}</div></div>
-<script>function copyCoupon(code){navigator.clipboard.writeText(code);alert('Copied: '+code);}</script>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Active Promotions - Al Ameen Optics{% endblock %}
+
+{% block content %}
+<style>
+/* ── Breadcrumb ── */
+.breadcrumb__list { display:flex; gap:6px; list-style:none; margin:0; padding:0; }
+.breadcrumb__link { color:#666; text-decoration:none; font-size:.85rem; }
+.breadcrumb__separator { color:#ccc; }
+.breadcrumb__item--current .breadcrumb__link { color:#1a1a1a; font-weight:600; }
+
+/* ── Hero Banner (reuses sale-banner pattern) ── */
+.promo-hero {
+    background:#1a1a1a; padding:70px 20px; text-align:center;
+    position:relative; overflow:hidden;
+}
+.promo-hero::before {
+    content:'DEALS'; position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-50%); font-size:20rem; font-weight:900;
+    color:rgba(255,255,255,.03); letter-spacing:.2em; pointer-events:none; white-space:nowrap;
+}
+.promo-hero-title { font-size:clamp(2.5rem,6vw,8rem); font-weight:900; color:#fff; text-transform:uppercase; letter-spacing:1.2rem; margin:0 0 10px; position:relative; }
+.promo-hero-title span { color:#f97316; }
+.promo-hero-sub { color:rgba(255,255,255,.55); font-size:1.05rem; position:relative; }
+
+/* ── Filter row ── */
+.promo-filter-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:48px; }
+.promo-filter-btn {
+    padding:9px 22px; border-radius:30px; font-size:.8rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:.07em;
+    border:2px solid #e0e0e0; background:#fff; color:#888; cursor:pointer; transition:all .25s;
+}
+.promo-filter-btn:hover, .promo-filter-btn.active {
+    background:#1a1a1a; border-color:#1a1a1a; color:#fff;
+}
+
+/* ── Promo Grid ── */
+.promotions-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:26px; }
+
+/* ── Promo Card (styled like product-card + coupon card fusion) ── */
+.promo-card-wrap {
+    background:#fff; border-radius:12px; overflow:hidden;
+    box-shadow:0 2px 12px rgba(0,0,0,.07); display:flex; flex-direction:column;
+    transition:transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .3s;
+    animation:fadeUp .5s ease both;
+}
+.promo-card-wrap:hover { transform:translateY(-6px); box-shadow:0 12px 32px rgba(0,0,0,.13); }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+/* Coloured top by type */
+.promo-card-wrap.type-percentage   .promo-card-top { background:linear-gradient(135deg,#f97316,#ff5858); }
+.promo-card-wrap.type-fixed_amount .promo-card-top { background:linear-gradient(135deg,#1bcfb4,#0ea5e9); }
+.promo-card-wrap.type-free_shipping .promo-card-top { background:linear-gradient(135deg,#667eea,#764ba2); }
+
+.promo-card-top { padding:28px 24px 22px; position:relative; overflow:hidden; display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
+.promo-card-top::after { content:''; position:absolute; top:-30px; right:-30px; width:130px; height:130px; border-radius:50%; background:rgba(255,255,255,.08); }
+
+.promo-val-number { font-size:3rem; font-weight:900; color:#fff; line-height:1; letter-spacing:-.02em; }
+.promo-val-unit   { font-size:1.2rem; font-weight:700; color:rgba(255,255,255,.85); }
+.promo-val-label  { font-size:.68rem; color:rgba(255,255,255,.65); text-transform:uppercase; letter-spacing:.1em; margin-top:4px; }
+.promo-top-icon { width:50px; height:50px; border-radius:12px; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.promo-top-icon svg { color:#fff; }
+
+/* notch */
+.promo-notch { display:flex; align-items:center; background:#f8f9fa; }
+.promo-notch::before,.promo-notch::after { content:''; width:16px; height:16px; border-radius:50%; background:#fff; flex-shrink:0; }
+.promo-notch-dash { flex:1; border-top:2px dashed #e0e0e0; margin:0 4px; }
+
+.promo-card-body { padding:18px 24px 10px; flex:1; background:#fff; }
+.promo-card-name { font-size:1rem; font-weight:700; color:#1a1a1a; margin-bottom:6px; }
+.promo-card-desc { font-size:.83rem; color:#888; line-height:1.55; margin-bottom:12px; }
+.promo-card-pills { display:flex; flex-wrap:wrap; gap:7px; }
+.promo-card-pill { font-size:.7rem; font-weight:600; color:#555; background:#f5f5f5; padding:4px 11px; border-radius:20px; display:inline-flex; align-items:center; gap:4px; }
+
+/* Code row */
+.promo-code-row { padding:14px 24px 20px; background:#fff; display:flex; align-items:center; gap:10px; }
+.promo-code-box { flex:1; background:#f5f5f5; border:2px dashed #e0e0e0; border-radius:8px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; }
+.promo-code-val { font-family:'Courier New',monospace; font-size:1rem; font-weight:900; color:#1a1a1a; letter-spacing:.12em; text-transform:uppercase; }
+.btn-copy-promo { flex-shrink:0; background:#1a1a1a; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; cursor:pointer; transition:all .25s; display:flex; align-items:center; gap:6px; }
+.btn-copy-promo:hover { background:#333; }
+.btn-copy-promo.copied { background:#1bcfb4; }
+
+/* ── Empty ── */
+.promo-empty { text-align:center; padding:80px 20px; color:#ccc; }
+.promo-empty svg { margin-bottom:16px; }
+.promo-empty h3 { font-size:1.2rem; font-weight:600; color:#888; }
+.promo-empty p  { color:#bbb; margin-top:6px; }
+
+/* ── Toast ── */
+.promo-toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px); background:#1a1a1a; color:#fff; padding:12px 24px; border-radius:40px; font-size:.85rem; font-weight:600; display:flex; align-items:center; gap:9px; box-shadow:0 6px 20px rgba(0,0,0,.25); z-index:9999; transition:transform .35s cubic-bezier(.34,1.56,.64,1); white-space:nowrap; }
+.promo-toast.show { transform:translateX(-50%) translateY(0); }
+.promo-toast-tick { color:#1bcfb4; }
+
+@media(max-width:768px){
+    .promotions-grid { grid-template-columns:1fr; }
+    .promo-hero-title { font-size:3rem; letter-spacing:.3rem; }
+}
+</style>
+
+<!-- Breadcrumb -->
+<div class="xo-section color-background-1" style="--margin:0;--pt:15;--pb:15;">
+    <xo-container class="xo-container--box">
+        <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+            <ol class="breadcrumb__list" style="--justify:flex-start">
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item breadcrumb__item--current">
+                    <a aria-current="page" class="breadcrumb__link breadcrumb--current">Promotions</a>
+                </li>
+            </ol>
+        </nav>
+    </xo-container>
+</div>
+
+<!-- Hero Banner (matches site's SALE banner style) -->
+<div class="banner-v270" style="--bg_custom:#1a1a1a;--height-bg:50%">
+    <div class="xo-section xo-section--sale-banner color-inverse promo-hero" style="--margin:0;--pt:70;--pb:70;">
+        <xo-container class="xo-container--wide">
+            <div style="text-align:center;">
+                <xo-animate xo-duration="700" xo-order="1" xo-strength="3" xo-type="fade-up">
+                    <h2 class="promo-hero-title">ACTIVE <span>DEALS</span></h2>
+                </xo-animate>
+                <xo-animate xo-duration="700" xo-order="3" xo-strength="3" xo-type="fade-up">
+                    <p class="promo-hero-sub">Exclusive offers on premium eyewear — limited time only</p>
+                </xo-animate>
+            </div>
+        </xo-container>
+    </div>
+</div>
+
+<!-- Promotions Content -->
+<div class="xo-section color-background-1" style="--margin:0;--pt:60;--pb:80;background:#f8f9fa;">
+    <xo-container class="xo-container--wide">
+
+        <!-- Filter Tabs -->
+        <div class="promo-filter-row">
+            <button class="promo-filter-btn active" onclick="filterPromos(this,'all')">All Deals</button>
+            <button class="promo-filter-btn" onclick="filterPromos(this,'percentage')">% Discount</button>
+            <button class="promo-filter-btn" onclick="filterPromos(this,'fixed_amount')">Fixed Off</button>
+            <button class="promo-filter-btn" onclick="filterPromos(this,'free_shipping')">Free Shipping</button>
+        </div>
+
+        {% if promotions %}
+        <div class="promotions-grid" id="promoGrid">
+            {% for promo in promotions %}
+            <div class="promo-card-wrap type-{{ promo.discount_type }}" data-type="{{ promo.discount_type }}" style="animation-delay:{{ forloop.counter0 }}00ms;">
+
+                <!-- Coloured top -->
+                <div class="promo-card-top">
+                    <div>
+                        {% if promo.discount_type == 'percentage' %}
+                        <div class="promo-val-number">{{ promo.discount_value|floatformat:0 }}<span class="promo-val-unit">%</span></div>
+                        <div class="promo-val-label">Percentage Off</div>
+                        {% elif promo.discount_type == 'fixed_amount' %}
+                        <div class="promo-val-number">{{ promo.discount_value|floatformat:0 }}<span class="promo-val-unit"> QAR</span></div>
+                        <div class="promo-val-label">Fixed Discount</div>
+                        {% else %}
+                        <div class="promo-val-number" style="font-size:2rem;">FREE</div>
+                        <div class="promo-val-label">Shipping Included</div>
+                        {% endif %}
+                    </div>
+                    <div class="promo-top-icon">
+                        {% if promo.discount_type == 'percentage' %}
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1"/></svg>
+                        {% elif promo.discount_type == 'fixed_amount' %}
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                        {% else %}
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Notch divider -->
+                <div class="promo-notch"><div class="promo-notch-dash"></div></div>
+
+                <!-- Body -->
+                <div class="promo-card-body">
+                    <div class="promo-card-name">{{ promo.name }}</div>
+                    {% if promo.description %}
+                    <div class="promo-card-desc">{{ promo.description|truncatewords:20 }}</div>
+                    {% endif %}
+                    <div class="promo-card-pills">
+                        {% if promo.minimum_order_amount %}
+                        <span class="promo-card-pill">
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                            Min. {{ promo.minimum_order_amount }} QAR
+                        </span>
+                        {% endif %}
+                        <span class="promo-card-pill">
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                            Until {{ promo.valid_until|date:"d M Y" }}
+                        </span>
+                        {% if promo.maximum_discount_amount %}
+                        <span class="promo-card-pill">Max: {{ promo.maximum_discount_amount }} QAR</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Code row -->
+                <div class="promo-code-row">
+                    <div class="promo-code-box">
+                        <span class="promo-code-val">{{ promo.code }}</span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                    </div>
+                    <button class="btn-copy-promo" onclick="copyPromo(this,'{{ promo.code }}')">Copy</button>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="promo-empty">
+            <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1"/></svg>
+            <h3>No Active Promotions</h3>
+            <p>Check back soon — new deals drop regularly!</p>
+        </div>
+        {% endif %}
+
+    </xo-container>
+</div>
+
+<!-- Toast -->
+<div class="promo-toast" id="promoToast">
+    <span class="promo-toast-tick">✓</span>
+    <span id="promoToastMsg">Code copied!</span>
+</div>
+
+<script>
+function copyPromo(btn, code) {
+    navigator.clipboard.writeText(code).then(() => {
+        btn.classList.add('copied');
+        btn.textContent = '✓ Copied';
+        showPromoToast('Code "' + code + '" copied!');
+        setTimeout(() => { btn.classList.remove('copied'); btn.textContent = 'Copy'; }, 2500);
+    }).catch(() => {
+        const ta = document.createElement('textarea'); ta.value = code;
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta); showPromoToast('Code "' + code + '" copied!');
+    });
+}
+function showPromoToast(msg) {
+    const t = document.getElementById('promoToast');
+    document.getElementById('promoToastMsg').textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+function filterPromos(btn, type) {
+    document.querySelectorAll('.promo-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.promo-card-wrap').forEach(card => {
+        const show = type === 'all' || card.dataset.type === type;
+        card.style.display = show ? '' : 'none';
+        if (show) { card.style.animation = 'none'; void card.offsetHeight; card.style.animation = 'fadeUp .4s ease'; }
+    });
+}
+</script>
 {% endblock %}
