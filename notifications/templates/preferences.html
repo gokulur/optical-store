@@ -1,42 +1,250 @@
-{% extends 'catalog/base.html' %}{% block title %}Notification Preferences{% endblock %}{% block content %}
-<div class="notification-prefs-page">
-    <div class="container">
-        <h1>Notification Preferences</h1>
-        <p>Choose how you want to receive notifications</p>{% if messages %}{% for message in messages %}<div
-            class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}{% endif %}<form method="post"
-            class="prefs-form">{% csrf_token %}<div class="form-section">
-                <h2>Email Notifications</h2>
-                <div class="form-group checkbox"><label><input type="checkbox" name="email_notifications" {% if
-                            user.email_notifications %}checked{% endif %}> Send me email notifications about:<ul>
-                            <li>Order confirmations and updates</li>
-                            <li>Shipping notifications</li>
-                            <li>Eye test reminders</li>
-                            <li>Prescription expiry alerts</li>
-                            <li>Special offers and promotions</li>
-                        </ul></label></div>
-            </div>
-            <div class="form-section">
-                <h2>SMS Notifications</h2>
-                <div class="form-group checkbox"><label><input type="checkbox" name="sms_notifications" {% if
-                            user.sms_notifications %}checked{% endif %}> Send me SMS notifications about:<ul>
-                            <li>Order confirmations</li>
-                            <li>Shipping updates</li>
-                            <li>Eye test reminders</li>
-                        </ul></label></div>
-                <p class="note">Phone number: {{ user.phone|default:"Not provided" }}</p>{% if not user.phone %}<a
-                    href="{% url 'users:profile' %}" class="btn btn-sm btn-outline">Add Phone Number</a>{% endif %}
-            </div>
-            <div class="form-actions"><button type="submit" class="btn btn-primary">Save Preferences</button><a
-                    href="{% url 'users:dashboard' %}" class="btn btn-outline">Cancel</a></div>
-        </form>
-        <div class="help-section">
-            <h2>About Notifications</h2>
-            <ul>
-                <li>You can unsubscribe from marketing emails at any time</li>
-                <li>Transactional emails (orders, shipping) cannot be disabled</li>
-                <li>SMS notifications are free but carrier charges may apply</li>
-                <li>Stock alerts are sent regardless of these settings</li>
-            </ul>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Notification Preferences – Al Ameen Optics{% endblock %}
+
+{% block content %}
+<style>
+.breadcrumb__list{display:flex;gap:6px;list-style:none;margin:0;padding:0}
+.breadcrumb__link{color:#666;text-decoration:none;font-size:.85rem}
+.breadcrumb__separator{color:#ccc}
+.breadcrumb__item--current .breadcrumb__link{color:#1a1a1a;font-weight:600}
+
+/* ── Messages ── */
+.rv-alert{padding:12px 16px;border-radius:8px;font-size:.86rem;font-weight:500;margin-bottom:10px}
+.rv-alert-success{background:#e6faf7;color:#0f8c6f;border:1px solid #c0ede6}
+.rv-alert-error  {background:#fff0ef;color:#c0392b;border:1px solid #f5c6c2}
+
+/* ── Page Layout ── */
+.np-wrap{max-width:700px;margin:0 auto;padding:40px 20px 80px}
+
+/* ── Pref Card ── */
+.np-card{background:#fff;border-radius:12px;overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:16px}
+.np-card-head{background:#1a1a1a;padding:15px 22px;display:flex;align-items:center;gap:10px}
+.np-card-head svg{color:rgba(255,255,255,.6)}
+.np-card-head h2{font-size:.82rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.09em;color:#fff;margin:0}
+.np-card-body{padding:20px 22px}
+
+/* ── Toggle Row ── */
+.np-toggle-row{display:flex;align-items:center;justify-content:space-between;
+    gap:16px;padding:14px 0;border-bottom:1px solid #f5f5f5}
+.np-toggle-row:last-child{border-bottom:none;padding-bottom:0}
+.np-toggle-info{flex:1}
+.np-toggle-label{font-size:.9rem;font-weight:700;color:#1a1a1a;margin:0 0 3px}
+.np-toggle-desc{font-size:.76rem;color:#aaa;line-height:1.45}
+
+/* Toggle Switch */
+.np-switch{position:relative;width:46px;height:26px;flex-shrink:0}
+.np-switch input{opacity:0;width:0;height:0;position:absolute}
+.np-switch-track{position:absolute;inset:0;background:#e0e0e0;border-radius:20px;
+    cursor:pointer;transition:background .25s}
+.np-switch-track::before{content:'';position:absolute;width:20px;height:20px;
+    left:3px;top:3px;background:#fff;border-radius:50%;
+    transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+    box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.np-switch input:checked + .np-switch-track{background:#1a1a1a}
+.np-switch input:checked + .np-switch-track::before{transform:translateX(20px)}
+
+/* ── Details list ── */
+.np-details-list{list-style:none;margin:12px 0 0;padding:0;
+    display:flex;flex-direction:column;gap:6px}
+.np-details-list li{display:flex;align-items:center;gap:7px;
+    font-size:.78rem;color:#888}
+.np-details-list li svg{color:#1bcfb4;flex-shrink:0}
+
+/* ── Phone Note ── */
+.np-phone-note{background:#f8f9fa;border-radius:8px;padding:12px 15px;
+    margin-top:12px;display:flex;align-items:center;justify-content:space-between;
+    gap:10px;flex-wrap:wrap}
+.np-phone-note p{font-size:.8rem;color:#888;margin:0}
+.np-phone-note p strong{color:#1a1a1a}
+.btn-add-phone{display:inline-flex;align-items:center;gap:5px;background:#1a1a1a;
+    color:#fff;padding:7px 13px;border-radius:6px;font-size:.75rem;font-weight:700;
+    text-decoration:none;transition:background .25s;white-space:nowrap}
+.btn-add-phone:hover{background:#333;color:#fff}
+
+/* ── Info Box ── */
+.np-info-box{background:#f8f9fa;border-radius:10px;padding:18px 20px;margin-top:6px}
+.np-info-title{font-size:.74rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.09em;color:#bbb;margin:0 0 10px;display:flex;align-items:center;gap:7px}
+.np-info-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.np-info-list li{display:flex;align-items:flex-start;gap:7px;font-size:.8rem;color:#888;line-height:1.45}
+.np-info-list li::before{content:'·';color:#ccc;font-size:1.1rem;line-height:1.3;flex-shrink:0}
+
+/* ── Actions ── */
+.np-actions{display:flex;gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.btn-save-np{background:#1a1a1a;color:#fff;border:none;padding:13px 30px;
+    border-radius:8px;font-size:.88rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.06em;cursor:pointer;transition:all .25s;
+    display:inline-flex;align-items:center;gap:7px;font-family:inherit}
+.btn-save-np:hover{background:#333;transform:translateY(-1px)}
+.btn-cancel-np{color:#aaa;font-size:.85rem;font-weight:600;text-decoration:none;
+    padding:13px 16px;transition:color .25s}
+.btn-cancel-np:hover{color:#1a1a1a}
+
+/* ── Toast ── */
+.np-toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);
+    background:#1a1a1a;color:#fff;padding:11px 22px;border-radius:40px;font-size:.83rem;
+    font-weight:600;z-index:9999;display:flex;align-items:center;gap:8px;
+    box-shadow:0 6px 20px rgba(0,0,0,.25);transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.np-toast.show{transform:translateX(-50%) translateY(0)}
+.np-toast-tick{color:#1bcfb4}
+</style>
+
+<!-- Breadcrumb -->
+<div class="xo-section color-background-1" style="--margin:0;--pt:15;--pb:15;">
+    <xo-container class="xo-container--box">
+        <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+            <ol class="breadcrumb__list" style="--justify:flex-start">
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{% url 'notifications:notification_list' %}">Notifications</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item breadcrumb__item--current">
+                    <a aria-current="page" class="breadcrumb__link">Preferences</a>
+                </li>
+            </ol>
+        </nav>
+    </xo-container>
+</div>
+
+<div class="xo-section color-background-1" style="--margin:0;--pt:40;--pb:0;background:#f8f9fa;">
+    <xo-container class="xo-container--box">
+        <div class="np-wrap">
+
+            <h1 class="product-v1__title" style="font-size:3rem;font-weight:500;text-align:center;margin:0 0 32px;">
+                Notification Preferences
+            </h1>
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="rv-alert rv-alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" id="prefForm">
+                {% csrf_token %}
+
+                <!-- Email Notifications -->
+                <div class="np-card">
+                    <div class="np-card-head">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8l10 6 10-6"/></svg>
+                        <h2>Email Notifications</h2>
+                    </div>
+                    <div class="np-card-body">
+                        <div class="np-toggle-row">
+                            <div class="np-toggle-info">
+                                <div class="np-toggle-label">All Email Notifications</div>
+                                <div class="np-toggle-desc">Receive emails for orders, shipping, reminders and offers</div>
+                            </div>
+                            <label class="np-switch">
+                                <input type="checkbox" name="email_notifications"
+                                    id="emailToggle"
+                                    {% if user.email_notifications %}checked{% endif %}
+                                    onchange="updateEmailRows(this.checked)">
+                                <span class="np-switch-track"></span>
+                            </label>
+                        </div>
+                        <ul class="np-details-list" id="emailDetails">
+                            {% for item in "Order confirmations and updates,Shipping & delivery notifications,Eye test appointment reminders,Prescription expiry alerts,Exclusive offers and promotions"|split:"," %}
+                            <li>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                {{ item }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- SMS Notifications -->
+                <div class="np-card">
+                    <div class="np-card-head">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                        <h2>SMS Notifications</h2>
+                    </div>
+                    <div class="np-card-body">
+                        <div class="np-toggle-row">
+                            <div class="np-toggle-info">
+                                <div class="np-toggle-label">SMS Alerts</div>
+                                <div class="np-toggle-desc">Receive text messages for urgent updates</div>
+                            </div>
+                            <label class="np-switch">
+                                <input type="checkbox" name="sms_notifications"
+                                    {% if user.sms_notifications %}checked{% endif %}
+                                    {% if not user.phone %}disabled{% endif %}>
+                                <span class="np-switch-track"></span>
+                            </label>
+                        </div>
+                        <ul class="np-details-list">
+                            {% for item in "Order confirmations,Shipping updates,Eye test reminders"|split:"," %}
+                            <li>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                {{ item }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        <div class="np-phone-note">
+                            <p>Phone number: <strong>{{ user.phone|default:"Not added yet" }}</strong></p>
+                            {% if not user.phone %}
+                            <a href="{% url 'users:profile' %}" class="btn-add-phone">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                Add Phone
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="np-info-box">
+                    <div class="np-info-title">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                        About Notifications
+                    </div>
+                    <ul class="np-info-list">
+                        <li>You can unsubscribe from marketing emails at any time</li>
+                        <li>Transactional emails (orders, shipping) are always sent regardless of settings</li>
+                        <li>SMS messages are free but standard carrier charges may apply</li>
+                        <li>Stock alerts are sent regardless of these preferences</li>
+                    </ul>
+                </div>
+
+                <!-- Actions -->
+                <div class="np-actions" style="margin-top:24px;">
+                    <button type="submit" class="btn-save-np">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Save Preferences
+                    </button>
+                    <a href="{% url 'users:dashboard' %}" class="btn-cancel-np">Cancel</a>
+                </div>
+            </form>
+
         </div>
-    </div>
-</div>{% endblock %}
+    </xo-container>
+</div>
+
+<!-- Toast -->
+<div class="np-toast" id="npToast">
+    <span class="np-toast-tick">✓</span>
+    <span>Preferences saved!</span>
+</div>
+
+<script>
+function updateEmailRows(on) {
+    const list = document.getElementById('emailDetails');
+    list.style.opacity = on ? '1' : '.4';
+}
+updateEmailRows(document.getElementById('emailToggle').checked);
+
+{% if messages %}
+const t = document.getElementById('npToast');
+t.classList.add('show');
+setTimeout(() => t.classList.remove('show'), 3000);
+{% endif %}
+</script>
+{% endblock %}
