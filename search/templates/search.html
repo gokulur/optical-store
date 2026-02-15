@@ -1,63 +1,548 @@
-{% extends 'catalog/base.html' %}{% block title %}Search: {{ query }}{% endblock %}{% block content %}
-<div class="search-page">
-    <div class="container">
-        <div class="search-header">
-            <h1>Search Results{% if query %} for "{{ query }}"{% endif %}</h1>{% if total_results %}<p
-                class="results-count">{{ total_results }} result{{ total_results|pluralize }} found</p>{% endif %}
-        </div>{% if query %}<div class="search-content">
-            <aside class="search-filters">
-                <h3>Filters</h3>
-                <div class="filter-group">
-                    <h4>Brand</h4>{% for brand in available_brands %}<label><input type="checkbox" name="brand"
-                            value="{{ brand.slug }}" {% if filters_applied.brand==brand.slug %}checked{% endif %}
-                            onchange="applyFilter()"> {{ brand.name }}</label>{% endfor %}
-                </div>
-                <div class="filter-group">
-                    <h4>Category</h4>{% for category in available_categories %}<label><input type="checkbox"
-                            name="category" value="{{ category.slug }}" {% if filters_applied.category==category.slug
-                            %}checked{% endif %} onchange="applyFilter()"> {{ category.name }}</label>{% endfor %}
-                </div>
-                <div class="filter-group">
-                    <h4>Price Range</h4><input type="number" name="min_price" placeholder="Min"
-                        value="{{ filters_applied.min_price }}"><input type="number" name="max_price" placeholder="Max"
-                        value="{{ filters_applied.max_price }}"><button onclick="applyFilter()">Apply</button>
-                </div>
-            </aside>
-            <div class="search-results">
-                <div class="results-toolbar">
-                    <div class="sort-by"><label>Sort:</label><select name="sort"
-                            onchange="location.href='?q={{ query }}&sort='+this.value">
-                            <option value="relevance" {% if sort_by=='relevance' %}selected{% endif %}>Relevance
-                            </option>
-                            <option value="price_low" {% if sort_by=='price_low' %}selected{% endif %}>Price: Low to
-                                High</option>
-                            <option value="price_high" {% if sort_by=='price_high' %}selected{% endif %}>Price: High to
-                                Low</option>
-                            <option value="name" {% if sort_by=='name' %}selected{% endif %}>Name</option>
-                        </select></div>
-                </div>{% if products %}<div class="products-grid">{% for product in products %}<div
-                        class="product-card"><a href="{% url 'catalog:product_detail' product.slug %}"><img
-                                src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
-                            <h3>{{ product.name }}</h3>
-                            <p class="brand">{{ product.brand.name }}</p>
-                            <p class="price">{{ product.base_price }} QAR</p>
-                        </a></div>{% endfor %}</div>{% if products.has_other_pages %}<div class="pagination"><a
-                        href="?q={{ query }}&page={{ products.previous_page_number }}">Previous</a><span>Page {{
-                        products.number }}</span><a href="?q={{ query }}&page={{ products.next_page_number }}">Next</a>
-                </div>{% endif %}{% else %}<div class="no-results">
-                    <h2>No results found</h2>
-                    <p>Try different keywords or check spelling</p><a href="{% url 'catalog:home' %}">Browse All
-                        Products</a>
-                </div>{% endif %}
-            </div>
-        </div>{% else %}<div class="search-empty">
-            <h2>Start Your Search</h2>
-            <div class="popular-searches">
-                <h3>Popular Searches:</h3>{% for search in popular_searches %}<a href="?q={{ search.keyword }}"
-                    class="search-tag">{{ search.keyword }}</a>{% endfor %}
-            </div>
-        </div>{% endif %}
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% if query %}Search: "{{ query }}"{% else %}Search{% endif %} - Al Ameen Optics{% endblock %}
+
+{% block content %}
+<style>
+/* ── Breadcrumb ── */
+.breadcrumb__list{display:flex;gap:6px;list-style:none;margin:0;padding:0}
+.breadcrumb__link{color:#666;text-decoration:none;font-size:.85rem}
+.breadcrumb__separator{color:#ccc}
+.breadcrumb__item--current .breadcrumb__link{color:#1a1a1a;font-weight:600}
+
+/* ── Search Hero Bar ── */
+.search-hero{background:#1a1a1a;padding:40px 20px}
+.search-hero-inner{max-width:720px;margin:0 auto}
+.search-hero-title{color:rgba(255,255,255,.5);font-size:.78rem;text-transform:uppercase;
+    letter-spacing:.12em;margin-bottom:12px;text-align:center}
+.search-hero-form{display:flex;background:#fff;border-radius:10px;overflow:hidden;
+    box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.search-hero-input{flex:1;border:none;padding:16px 20px;font-size:1rem;color:#1a1a1a;outline:none;
+    font-family:inherit}
+.search-hero-btn{background:#1a1a1a;color:#fff;border:none;padding:16px 28px;
+    font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;
+    transition:background .25s;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.search-hero-btn:hover{background:#333}
+.search-results-meta{text-align:center;margin-top:14px;color:rgba(255,255,255,.45);font-size:.85rem}
+.search-results-meta strong{color:#fff}
+
+/* ── Main Layout ── */
+.search-page-body{display:grid;grid-template-columns:260px 1fr;gap:32px;
+    max-width:1400px;margin:0 auto;padding:40px 20px 80px}
+
+/* ── Sidebar Filters ── */
+.search-sidebar{}
+.sidebar-sticky{position:sticky;top:100px}
+.filter-card{background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.07);
+    overflow:hidden;margin-bottom:16px}
+.filter-card-header{background:#1a1a1a;color:#fff;padding:13px 18px;
+    font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;
+    display:flex;align-items:center;justify-content:space-between}
+.filter-card-body{padding:16px 18px}
+.filter-option{display:flex;align-items:center;gap:10px;padding:6px 0;cursor:pointer}
+.filter-option input[type=checkbox]{width:16px;height:16px;accent-color:#1a1a1a;cursor:pointer}
+.filter-option label{font-size:.86rem;color:#444;cursor:pointer;flex:1}
+.filter-option:hover label{color:#1a1a1a}
+.price-range-row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.price-input{flex:1;border:1.5px solid #e0e0e0;border-radius:7px;padding:9px 10px;
+    font-size:.82rem;color:#1a1a1a;outline:none;transition:border-color .2s}
+.price-input:focus{border-color:#1a1a1a}
+.price-sep{color:#ccc;font-size:.85rem}
+.btn-apply-price{width:100%;background:#1a1a1a;color:#fff;border:none;padding:10px;
+    border-radius:7px;font-size:.78rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.05em;cursor:pointer;transition:background .25s}
+.btn-apply-price:hover{background:#333}
+.btn-clear-filters{width:100%;background:transparent;color:#888;border:1.5px solid #e0e0e0;
+    padding:10px;border-radius:7px;font-size:.78rem;font-weight:600;cursor:pointer;
+    transition:all .25s;margin-top:8px}
+.btn-clear-filters:hover{border-color:#1a1a1a;color:#1a1a1a}
+
+/* ── Results Area ── */
+.search-results-area{}
+.results-toolbar{display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.results-count-label{font-size:.88rem;color:#888}
+.results-count-label strong{color:#1a1a1a;font-weight:700}
+.sort-select-wrap{display:flex;align-items:center;gap:10px}
+.sort-select-wrap label{font-size:.82rem;color:#888;font-weight:500}
+.sort-select{border:1.5px solid #e0e0e0;border-radius:8px;padding:8px 32px 8px 12px;
+    font-size:.82rem;color:#1a1a1a;outline:none;cursor:pointer;appearance:none;
+    background:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 10px center #fff;
+    transition:border-color .2s}
+.sort-select:focus{border-color:#1a1a1a}
+
+/* ── Active Filters Tags ── */
+.active-filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.filter-tag{display:inline-flex;align-items:center;gap:6px;background:#f5f5f5;
+    border:1.5px solid #e0e0e0;border-radius:20px;padding:5px 12px;
+    font-size:.76rem;font-weight:600;color:#444}
+.filter-tag-remove{background:none;border:none;color:#aaa;cursor:pointer;
+    font-size:1rem;line-height:1;padding:0;transition:color .2s}
+.filter-tag-remove:hover{color:#1a1a1a}
+
+/* ── Products Grid ── */
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1px;
+    background:#e5e5e5;border-radius:12px;overflow:hidden}
+.search-product-card{background:#fff;padding:20px;display:flex;flex-direction:column;
+    position:relative;transition:all .3s;cursor:pointer}
+.search-product-card:hover{transform:translateY(-4px);box-shadow:0 8px 20px rgba(0,0,0,.1);
+    z-index:10}
+.sp-image-wrap{aspect-ratio:1/1;background:#f8f8f8;border-radius:8px;overflow:hidden;
+    margin-bottom:14px;position:relative}
+.sp-image-wrap img{width:100%;height:100%;object-fit:contain;padding:16px;
+    transition:transform .4s ease}
+.search-product-card:hover .sp-image-wrap img{transform:scale(1.06)}
+.sp-brand{font-size:.72rem;font-weight:600;color:#999;text-transform:uppercase;
+    letter-spacing:.06em;margin-bottom:4px}
+.sp-name{font-size:.9rem;font-weight:700;color:#1a1a1a;margin-bottom:8px;line-height:1.35}
+.sp-name a{color:inherit;text-decoration:none}
+.sp-name a:hover{color:#666}
+.sp-price{font-size:1rem;font-weight:700;color:#1a1a1a}
+.sp-badge{position:absolute;top:14px;left:14px;background:#1a1a1a;color:#fff;
+    padding:3px 9px;border-radius:4px;font-size:.67rem;font-weight:700;
+    text-transform:uppercase;letter-spacing:.05em}
+.sp-wishlist{position:absolute;top:12px;right:12px;width:30px;height:30px;
+    border-radius:50%;background:#fff;border:1.5px solid #e0e0e0;display:flex;
+    align-items:center;justify-content:center;cursor:pointer;transition:all .25s}
+.sp-wishlist:hover{border-color:#ff3b30}
+.sp-wishlist svg{width:14px;height:14px}
+
+/* ── No Results ── */
+.no-results-block{text-align:center;padding:70px 30px;background:#fff;
+    border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.no-results-block svg{margin-bottom:20px}
+.no-results-block h2{font-size:1.6rem;font-weight:700;color:#1a1a1a;margin-bottom:10px}
+.no-results-block p{color:#888;margin-bottom:24px}
+.btn-browse-all{display:inline-block;background:#1a1a1a;color:#fff;padding:13px 32px;
+    border-radius:30px;font-size:.88rem;font-weight:700;text-decoration:none;
+    text-transform:uppercase;letter-spacing:.06em;transition:all .3s}
+.btn-browse-all:hover{background:#333;color:#fff;transform:translateY(-2px)}
+.suggestions-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+.suggestion-tag{background:#f5f5f5;color:#555;padding:7px 16px;border-radius:20px;
+    font-size:.82rem;font-weight:600;text-decoration:none;transition:all .25s}
+.suggestion-tag:hover{background:#1a1a1a;color:#fff}
+
+/* ── Empty State (no query) ── */
+.search-empty-state{text-align:center;padding:70px 30px;max-width:600px;margin:0 auto}
+.search-empty-state h2{font-size:2rem;font-weight:700;color:#1a1a1a;margin-bottom:8px}
+.search-empty-state p{color:#888;margin-bottom:30px}
+.popular-searches-title{font-size:.78rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.1em;color:#aaa;margin-bottom:14px}
+.popular-tags{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.popular-tag{display:inline-flex;align-items:center;gap:6px;background:#fff;
+    border:1.5px solid #e0e0e0;border-radius:20px;padding:9px 18px;
+    font-size:.85rem;font-weight:600;color:#444;text-decoration:none;transition:all .25s;
+    box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.popular-tag:hover{background:#1a1a1a;border-color:#1a1a1a;color:#fff;transform:translateY(-2px)}
+
+/* ── Pagination ── */
+.search-pagination{display:flex;justify-content:center;align-items:center;
+    gap:8px;margin-top:40px;flex-wrap:wrap}
+.page-btn{width:40px;height:40px;border-radius:8px;border:1.5px solid #e0e0e0;
+    background:#fff;color:#444;font-size:.85rem;font-weight:600;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all .25s}
+.page-btn:hover,.page-btn.active{background:#1a1a1a;border-color:#1a1a1a;color:#fff}
+.page-btn.disabled{opacity:.35;pointer-events:none}
+.page-ellipsis{color:#ccc;padding:0 4px}
+
+/* ── Mobile ── */
+.mobile-filter-toggle{display:none;width:100%;background:#1a1a1a;color:#fff;border:none;
+    padding:13px 16px;border-radius:10px;font-size:.84rem;font-weight:700;
+    text-transform:uppercase;letter-spacing:.05em;cursor:pointer;
+    align-items:center;justify-content:space-between;margin-bottom:20px}
+.search-sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+    z-index:99;backdrop-filter:blur(2px)}
+.search-sidebar-overlay.active{display:block}
+
+@media(max-width:900px){
+    .search-page-body{grid-template-columns:1fr}
+    .search-sidebar{display:none;position:fixed;left:0;top:0;bottom:0;width:300px;
+        background:#f8f9fa;z-index:100;overflow-y:auto;padding:20px;
+        transform:translateX(-100%);transition:transform .3s ease}
+    .search-sidebar.open{display:block;transform:translateX(0)}
+    .sidebar-sticky{position:static}
+    .mobile-filter-toggle{display:flex}
+    .products-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+}
+@media(max-width:480px){
+    .products-grid{grid-template-columns:1fr 1fr}
+    .search-hero{padding:28px 16px}
+}
+</style>
+
+<!-- Breadcrumb -->
+<div class="xo-section color-background-1" style="--margin:0;--pt:15;--pb:15;">
+    <xo-container class="xo-container--box">
+        <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
+            <ol class="breadcrumb__list" style="--justify:flex-start">
+                <li class="breadcrumb__item">
+                    <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
+                    <span class="breadcrumb__separator">/</span>
+                </li>
+                <li class="breadcrumb__item breadcrumb__item--current">
+                    <a aria-current="page" class="breadcrumb__link">
+                        {% if query %}Search: "{{ query }}"{% else %}Search{% endif %}
+                    </a>
+                </li>
+            </ol>
+        </nav>
+    </xo-container>
+</div>
+
+<!-- Search Hero -->
+<div class="search-hero">
+    <div class="search-hero-inner">
+        <div class="search-hero-title">Find your perfect eyewear</div>
+        <form action="{% url 'search:search' %}" method="get" class="search-hero-form" autocomplete="off">
+            <input type="text" name="q" id="searchInput" class="search-hero-input"
+                placeholder="Search products, brands, categories..."
+                value="{{ query }}" autocomplete="off">
+            <button type="submit" class="search-hero-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                </svg>
+                Search
+            </button>
+        </form>
+        {% if query %}
+        <div class="search-results-meta">
+            {% if total_results %}
+                <strong>{{ total_results }}</strong> result{{ total_results|pluralize }} for "<strong>{{ query }}</strong>"
+            {% else %}
+                No results found for "<strong>{{ query }}</strong>"
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 </div>
-<script>function applyFilter() { const form = new FormData(); form.append('q', '{{ query }}'); document.querySelectorAll('input[name="brand"]:checked').forEach(e => form.append('brand', e.value)); document.querySelectorAll('input[name="category"]:checked').forEach(e => form.append('category', e.value)); const min = document.querySelector('input[name="min_price"]').value; const max = document.querySelector('input[name="max_price"]').value; if (min) form.append('min_price', min); if (max) form.append('max_price', max); location.href = '?' + new URLSearchParams(form).toString(); }</script>
+
+<!-- Autocomplete Dropdown (appended by JS) -->
+<div id="autocompleteDropdown" style="display:none;position:fixed;z-index:1000;background:#fff;
+    border-radius:0 0 10px 10px;box-shadow:0 8px 24px rgba(0,0,0,.15);overflow:hidden;"></div>
+
+<!-- Main Body -->
+{% if query %}
+<div style="background:#f8f9fa;">
+    <div class="search-page-body">
+
+        <!-- Mobile Filter Toggle -->
+        <button class="mobile-filter-toggle" onclick="toggleFilters()">
+            <span style="display:flex;align-items:center;gap:8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="16" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="16" y2="18"/></svg>
+                Filters
+                {% if filters_applied %}<span style="background:#f97316;color:#fff;padding:2px 8px;border-radius:20px;font-size:.72rem;">{{ filters_applied|length }}</span>{% endif %}
+            </span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="search-sidebar-overlay" id="sidebarOverlay" onclick="toggleFilters()"></div>
+
+        <!-- Sidebar Filters -->
+        <aside class="search-sidebar" id="searchSidebar">
+            <form method="get" action="{% url 'search:search' %}" id="filterForm">
+                <input type="hidden" name="q" value="{{ query }}">
+                <input type="hidden" name="sort" value="{{ sort_by }}">
+
+                {% if available_brands %}
+                <div class="filter-card">
+                    <div class="filter-card-header">
+                        Brand
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <div class="filter-card-body">
+                        {% for brand in available_brands %}
+                        <div class="filter-option">
+                            <input type="checkbox" id="brand_{{ brand.slug }}" name="brand"
+                                value="{{ brand.slug }}"
+                                {% if filters_applied.brand == brand.slug %}checked{% endif %}
+                                onchange="document.getElementById('filterForm').submit()">
+                            <label for="brand_{{ brand.slug }}">{{ brand.name }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if available_categories %}
+                <div class="filter-card">
+                    <div class="filter-card-header">
+                        Category
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <div class="filter-card-body">
+                        {% for category in available_categories %}
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat_{{ category.slug }}" name="category"
+                                value="{{ category.slug }}"
+                                {% if filters_applied.category == category.slug %}checked{% endif %}
+                                onchange="document.getElementById('filterForm').submit()">
+                            <label for="cat_{{ category.slug }}">{{ category.name }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="filter-card">
+                    <div class="filter-card-header">Price Range</div>
+                    <div class="filter-card-body">
+                        <div class="price-range-row">
+                            <input type="number" name="min_price" class="price-input" placeholder="Min QAR"
+                                value="{{ filters_applied.min_price|default:'' }}">
+                            <span class="price-sep">—</span>
+                            <input type="number" name="max_price" class="price-input" placeholder="Max QAR"
+                                value="{{ filters_applied.max_price|default:'' }}">
+                        </div>
+                        <button type="submit" class="btn-apply-price">Apply Price</button>
+                        {% if filters_applied %}
+                        <a href="{% url 'search:search' %}?q={{ query }}" style="display:block;text-align:center;margin-top:10px;font-size:.78rem;color:#aaa;text-decoration:none;">
+                            ✕ Clear All Filters
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </aside>
+
+        <!-- Results Column -->
+        <div class="search-results-area">
+
+            <!-- Toolbar -->
+            <div class="results-toolbar">
+                <div class="results-count-label">
+                    {% if total_results %}
+                        <strong>{{ total_results }}</strong> product{{ total_results|pluralize }} found
+                    {% else %}
+                        No products found
+                    {% endif %}
+                </div>
+                <div class="sort-select-wrap">
+                    <label>Sort by:</label>
+                    <select class="sort-select" onchange="applySort(this.value)">
+                        <option value="relevance" {% if sort_by == 'relevance' %}selected{% endif %}>Relevance</option>
+                        <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low → High</option>
+                        <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High → Low</option>
+                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name A–Z</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Active Filter Tags -->
+            {% if filters_applied %}
+            <div class="active-filters">
+                {% if filters_applied.brand %}
+                <span class="filter-tag">
+                    Brand: {{ filters_applied.brand }}
+                    <button class="filter-tag-remove" onclick="removeFilter('brand')">×</button>
+                </span>
+                {% endif %}
+                {% if filters_applied.category %}
+                <span class="filter-tag">
+                    Category: {{ filters_applied.category }}
+                    <button class="filter-tag-remove" onclick="removeFilter('category')">×</button>
+                </span>
+                {% endif %}
+                {% if filters_applied.min_price %}
+                <span class="filter-tag">
+                    Min: {{ filters_applied.min_price }} QAR
+                    <button class="filter-tag-remove" onclick="removeFilter('min_price')">×</button>
+                </span>
+                {% endif %}
+                {% if filters_applied.max_price %}
+                <span class="filter-tag">
+                    Max: {{ filters_applied.max_price }} QAR
+                    <button class="filter-tag-remove" onclick="removeFilter('max_price')">×</button>
+                </span>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Products -->
+            {% if products %}
+            <div class="products-grid">
+                {% for product in products %}
+                <div class="search-product-card">
+                    <span class="sp-badge">
+                        {% if product.stock == 0 or not product.available %}Sold Out{% else %}New{% endif %}
+                    </span>
+                    <button class="sp-wishlist wishlist-btn" data-product-id="{{ product.id }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2">
+                            <path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/>
+                        </svg>
+                    </button>
+                    <a href="{{ product.get_absolute_url }}" style="text-decoration:none;display:block;">
+                        <div class="sp-image-wrap">
+                            {% if product.images.first %}
+                            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" loading="lazy">
+                            {% elif product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                            {% else %}
+                            <img src="/static/img/no-image.jpg" alt="{{ product.name }}" loading="lazy">
+                            {% endif %}
+                        </div>
+                    </a>
+                    <div class="sp-brand">{{ product.brand.name|default:"Al Ameen" }}</div>
+                    <div class="sp-name"><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></div>
+                    <div class="sp-price">{{ product.base_price }} QAR</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if products.has_other_pages %}
+            <div class="search-pagination">
+                {% if products.has_previous %}
+                <a href="?q={{ query }}&page={{ products.previous_page_number }}&sort={{ sort_by }}" class="page-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                </a>
+                {% else %}
+                <span class="page-btn disabled">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                </span>
+                {% endif %}
+
+                {% for num in products.paginator.page_range %}
+                    {% if products.number == num %}
+                    <span class="page-btn active">{{ num }}</span>
+                    {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                    <a href="?q={{ query }}&page={{ num }}&sort={{ sort_by }}" class="page-btn">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if products.has_next %}
+                <a href="?q={{ query }}&page={{ products.next_page_number }}&sort={{ sort_by }}" class="page-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                {% else %}
+                <span class="page-btn disabled">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </span>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% else %}
+            <!-- No Results -->
+            <div class="no-results-block">
+                <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.2">
+                    <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                    <path d="M8 11h6M11 8v6"/>
+                </svg>
+                <h2>No results for "{{ query }}"</h2>
+                <p>Try different keywords, check your spelling, or browse our categories.</p>
+                <a href="{% url 'home' %}" class="btn-browse-all">Browse All Products</a>
+                {% if popular_searches %}
+                <div style="margin-top:30px;">
+                    <div class="popular-searches-title">Try these popular searches</div>
+                    <div class="suggestions-row">
+                        {% for s in popular_searches %}
+                        <a href="{% url 'search:search' %}?q={{ s.keyword }}" class="suggestion-tag">{{ s.keyword }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- Empty State (no query entered) -->
+<div class="xo-section color-background-1" style="--margin:0;--pt:60;--pb:80;background:#f8f9fa;">
+    <xo-container class="xo-container--box">
+        <div class="search-empty-state">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.2" style="margin-bottom:20px;">
+                <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <h2>Find Your Perfect Eyewear</h2>
+            <p>Search by product name, brand, or style</p>
+            {% if popular_searches %}
+            <div class="popular-searches-title">Popular Searches</div>
+            <div class="popular-tags">
+                {% for search in popular_searches %}
+                <a href="{% url 'search:search' %}?q={{ search.keyword }}" class="popular-tag">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                    {{ search.keyword }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </xo-container>
+</div>
+{% endif %}
+
+<script>
+// ── Autocomplete ──
+const searchInput = document.getElementById('searchInput');
+const dropdown = document.getElementById('autocompleteDropdown');
+let acTimeout;
+
+if (searchInput) {
+    searchInput.addEventListener('input', function() {
+        clearTimeout(acTimeout);
+        const q = this.value.trim();
+        if (q.length < 2) { dropdown.style.display = 'none'; return; }
+        acTimeout = setTimeout(() => {
+            fetch(`{% url 'search:autocomplete' %}?q=${encodeURIComponent(q)}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.suggestions.length) { dropdown.style.display = 'none'; return; }
+                    const rect = searchInput.getBoundingClientRect();
+                    dropdown.style.display = 'block';
+                    dropdown.style.left = rect.left + 'px';
+                    dropdown.style.top = (rect.bottom + window.scrollY) + 'px';
+                    dropdown.style.width = rect.width + 'px';
+                    const typeIcons = {
+                        product: '👓', brand: '🏷️', category: '📂', popular: '🔥'
+                    };
+                    dropdown.innerHTML = data.suggestions.map(s => `
+                        <a href="${s.url}" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:#1a1a1a;font-size:.88rem;border-bottom:1px solid #f5f5f5;transition:background .15s;"
+                           onmouseover="this.style.background='#f8f8f8'" onmouseout="this.style.background=''"
+                        >
+                            ${s.image ? `<img src="${s.image}" style="width:36px;height:36px;object-fit:contain;border-radius:4px;background:#f5f5f5;">` :
+                              `<span style="width:36px;height:36px;border-radius:4px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:16px;">${typeIcons[s.type] || '🔍'}</span>`}
+                            <span style="flex:1;">
+                                <span style="display:block;font-weight:600;">${s.name}</span>
+                                ${s.brand ? `<span style="font-size:.75rem;color:#999;">${s.brand}</span>` : ''}
+                            </span>
+                            ${s.price ? `<span style="font-size:.82rem;font-weight:700;color:#1a1a1a;">${s.price} QAR</span>` : ''}
+                        </a>
+                    `).join('');
+                });
+        }, 280);
+    });
+
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') dropdown.style.display = 'none';
+    });
+
+    document.addEventListener('click', e => {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target))
+            dropdown.style.display = 'none';
+    });
+}
+
+// ── Filter helpers ──
+function applySort(val) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sort', val);
+    window.location.href = url.toString();
+}
+
+function removeFilter(key) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete(key);
+    window.location.href = url.toString();
+}
+
+// ── Mobile sidebar ──
+function toggleFilters() {
+    const sidebar = document.getElementById('searchSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+    document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+}
+</script>
 {% endblock %}
