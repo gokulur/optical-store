@@ -7,19 +7,42 @@ from .models import (
     ContactLensProduct, ContactLensColor, LensBrand, 
     LensType, LensOption
 )
-
+from django.utils import timezone
+from content.models import Banner
+from django.db import models as db_models
 
 # Home Page
 def home_view(request):
-    """Homepage with banners and featured products"""
-    featured_products = Product.objects.filter(is_featured=True, is_active=True)[:8]
-    categories = Category.objects.filter(is_active=True, parent=None)
-    brands = Brand.objects.filter(is_active=True)[:12]
-    
+    now = timezone.now()
+
+    # ── Hero Banners (from admin) ────────────────────────────────────
+    hero_slides = Banner.objects.filter(
+        banner_type='homepage',
+        placement='main_slider',
+        is_active=True,
+    ).filter(
+        db_models.Q(start_date__isnull=True) | db_models.Q(start_date__lte=now)
+    ).filter(
+        db_models.Q(end_date__isnull=True) | db_models.Q(end_date__gte=now)
+    ).order_by('display_order')
+
+    # ── Featured Products (is_featured=True in admin) ────────────────
+    featured_products = (
+        Product.objects
+        .filter(is_featured=True, is_active=True)
+        .select_related('brand', 'category')
+        .prefetch_related('images')
+        [:8]
+    )
+
+    categories = Category.objects.filter(is_active=True, parent=None).order_by('display_order')
+    brands     = Brand.objects.filter(is_active=True).order_by('display_order')[:12]
+
     context = {
+        'hero_slides':       hero_slides,
         'featured_products': featured_products,
-        'categories': categories,
-        'brands': brands,
+        'categories':        categories,
+        'brands':            brands,
     }
     return render(request, 'home.html', context)
 
