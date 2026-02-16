@@ -15,36 +15,28 @@ from django.db import models as db_models
 def home_view(request):
     now = timezone.now()
 
-    # ── Hero Banners (from admin) ────────────────────────────────────
     hero_slides = Banner.objects.filter(
-        banner_type='homepage',
-        placement='main_slider',
-        is_active=True,
+        banner_type='homepage', placement='main_slider', is_active=True,
     ).filter(
         db_models.Q(start_date__isnull=True) | db_models.Q(start_date__lte=now)
     ).filter(
         db_models.Q(end_date__isnull=True) | db_models.Q(end_date__gte=now)
     ).order_by('display_order')
 
-    # ── Featured Products (is_featured=True in admin) ────────────────
-    featured_products = (
-        Product.objects
-        .filter(is_featured=True, is_active=True)
-        .select_related('brand', 'category')
-        .prefetch_related('images')
-        [:8]
-    )
+    featured_products   = Product.objects.filter(is_featured=True, is_active=True).select_related('brand').prefetch_related('images')[:8]
+    new_arrivals        = Product.objects.filter(is_active=True).select_related('brand').prefetch_related('images').order_by('-created_at')[:8]
+    eyeglasses_preview  = Product.objects.filter(product_type='eyeglasses', is_active=True).select_related('brand').prefetch_related('images', 'variants')[:3]
+    top_brands          = Brand.objects.filter(is_active=True).order_by('display_order')[:3]
+    brands              = Brand.objects.filter(is_active=True).order_by('display_order')[:12]
 
-    categories = Category.objects.filter(is_active=True, parent=None).order_by('display_order')
-    brands     = Brand.objects.filter(is_active=True).order_by('display_order')[:12]
-
-    context = {
-        'hero_slides':       hero_slides,
-        'featured_products': featured_products,
-        'categories':        categories,
-        'brands':            brands,
-    }
-    return render(request, 'home.html', context)
+    return render(request, 'home.html', {
+        'hero_slides':        hero_slides,
+        'featured_products':  featured_products,
+        'new_arrivals':       new_arrivals,
+        'eyeglasses_preview': eyeglasses_preview,
+        'top_brands':         top_brands,
+        'brands':             brands,
+    })
 
 
 # Product List Views
