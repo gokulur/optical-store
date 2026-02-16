@@ -1,0 +1,2891 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="no-js" dir="ltr" lang="en" xo-money-format="₹{{amount}}" xo-money-with-currency-format="₹{{amount}} USD">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+  <meta content="width=device-width,initial-scale=1" name="viewport" />
+  <meta content="" name="theme-color" />
+  <link href="{% url 'home' %}" rel="canonical" />
+
+  <script>
+    window.Xotiny = {
+      version: '1.0.0',
+      name: 'Engo',
+    };
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+ 
+  <title>{% block title %}Home{% endblock %}</title>
+
+  <meta content="ecommerce" property="og:site_name" />
+  <meta content="ecommerce" property="og:title" />
+  <meta content="website" property="og:type" />
+  <meta content="ecommerce" property="og:description" />
+  <meta content="@#" name="twitter:site" />
+  <meta content="summary_large_image" name="twitter:card" />
+  <meta content="ecommerce" name="twitter:title" />
+  <meta content="ecommerce" name="twitter:description" />
+
+
+  <script>
+    window.performance && window.performance.mark && window.performance.mark('shopify.content_for_header.start');
+  </script>
+
+  <meta content="noindex,nofollow" name="robots" />
+
+  <script async="async" src="{% static 'checkouts/internal/preloads.js' %}"></script>
+
+  <script id="shopify-features" type="application/json">
+    {"accessToken":"afb23f91f8ed940e0353278be484ef77","betas":["rich-media-storefront-analytics"],"predictiveSearch":true,"locale":"en"}
+  </script>
+
+  <script>
+    var Shopify = Shopify || {};
+    Shopify.shop = "borcen-store-newdemo.myshopify.com";
+    Shopify.locale = "en";
+    Shopify.currency = { "active": "USD", "rate": "1.0" };
+    Shopify.country = "IN";
+    Shopify.theme = { "name": "borcen-home5", "schema_name": "Borcen", "schema_version": "1.0.0" };
+    Shopify.routes = Shopify.routes || {};
+    Shopify.routes.root = "/";
+  </script>
+
+  <script type="module">
+    !function (o) { (o.Shopify = o.Shopify || {}).modules = !0 }(window);
+  </script>
+
+  <script async="async" defer="defer" src="{% static 'cdn/shopifycloud/shop-js/client.js' %}"></script>
+  <script crossorigin="" defer="" id="hot-reload-client"
+    src="{% static 'cdn/shopifycloud/theme-hot-reload/theme-hot-reload.js' %}"></script>
+
+  <style data-shopify="">
+    :root,
+    .color-background-1 {
+      --color-background: 255, 255, 255;
+      --gradient-background: #ffffff;
+      --color-accent: 129, 216, 208;
+      --color-foreground: 0, 0, 0;
+      --color-shadow: 18, 18, 18;
+      --color-border: 0, 0, 0;
+      --color-button: 255, 255, 255;
+      --color-button-text: 0, 0, 0;
+      --color-secondary-button: 0, 0, 0;
+      --color-secondary-button-text: 255, 255, 255;
+      --color-tertiary-button: 75, 71, 255;
+      --color-tertiary-button-text: 255, 255, 255;
+      --color-gray-button: 238, 238, 238;
+      --color-gray-button-text: 18, 18, 18;
+      --color-dark-button: 0, 0, 0;
+      --color-dark-button-text: 255, 255, 255;
+      --color-light-button: 255, 255, 255;
+      --color-light-button-text: 0, 0, 0;
+      --color-link: 0, 0, 0;
+      --color-badge-foreground: 0, 0, 0;
+      --color-badge-background: 255, 255, 255;
+      --color-badge-border: 0, 0, 0;
+      --payment-terms-background-color: rgb(255 255 255);
+    }
+
+    .color-background-2 {
+      --color-background: 243, 243, 243;
+      --gradient-background: #f3f3f3;
+      --color-accent: 43, 190, 161;
+      --color-foreground: 18, 18, 18;
+      --color-shadow: 18, 18, 18;
+      --color-border: 18, 18, 18;
+      --color-button: 43, 190, 161;
+      --color-button-text: 243, 243, 243;
+      --color-secondary-button: 255, 100, 100;
+      --color-secondary-button-text: 255, 255, 255;
+      --color-tertiary-button: 75, 71, 255;
+      --color-tertiary-button-text: 255, 255, 255;
+      --color-gray-button: 238, 238, 238;
+      --color-gray-button-text: 18, 18, 18;
+      --color-dark-button: 18, 18, 18;
+      --color-dark-button-text: 255, 255, 255;
+      --color-light-button: 255, 255, 255;
+      --color-light-button-text: 18, 18, 18;
+      --color-link: 243, 243, 243;
+      --color-badge-foreground: 18, 18, 18;
+      --color-badge-background: 243, 243, 243;
+      --color-badge-border: 18, 18, 18;
+      --payment-terms-background-color: rgb(243 243 243);
+    }
+
+    .color-inverse {
+      --color-background: 0, 0, 0;
+      --gradient-background: #000000;
+      --color-accent: 129, 216, 208;
+      --color-foreground: 255, 255, 255;
+      --color-shadow: 18, 18, 18;
+      --color-border: 255, 255, 255;
+      --color-button: 255, 255, 255;
+      --color-button-text: 0, 0, 0;
+      --color-secondary-button: 0, 0, 0;
+      --color-secondary-button-text: 255, 255, 255;
+      --color-tertiary-button: 75, 71, 255;
+      --color-tertiary-button-text: 255, 255, 255;
+      --color-gray-button: 238, 238, 238;
+      --color-gray-button-text: 18, 18, 18;
+      --color-dark-button: 0, 0, 0;
+      --color-dark-button-text: 255, 255, 255;
+      --color-light-button: 255, 255, 255;
+      --color-light-button-text: 0, 0, 0;
+      --color-link: 0, 0, 0;
+      --color-badge-foreground: 255, 255, 255;
+      --color-badge-background: 0, 0, 0;
+      --color-badge-border: 255, 255, 255;
+      --payment-terms-background-color: rgb(0 0 0);
+    }
+
+    .color-accent-1 {
+      --color-background: 36, 16, 78;
+      --gradient-background: #24104e;
+      --color-accent: 43, 190, 161;
+      --color-foreground: 255, 255, 255;
+      --color-shadow: 18, 18, 18;
+      --color-border: 18, 18, 18;
+      --color-button: 255, 255, 255;
+      --color-button-text: 18, 18, 18;
+      --color-secondary-button: 255, 100, 100;
+      --color-secondary-button-text: 255, 255, 255;
+      --color-tertiary-button: 75, 71, 255;
+      --color-tertiary-button-text: 255, 255, 255;
+      --color-gray-button: 238, 238, 238;
+      --color-gray-button-text: 18, 18, 18;
+      --color-dark-button: 18, 18, 18;
+      --color-dark-button-text: 255, 255, 255;
+      --color-light-button: 255, 255, 255;
+      --color-light-button-text: 18, 18, 18;
+      --color-link: 18, 18, 18;
+      --color-badge-foreground: 255, 255, 255;
+      --color-badge-background: 36, 16, 78;
+      --color-badge-border: 255, 255, 255;
+      --payment-terms-background-color: rgb(36 16 78);
+    }
+
+    .color-accent-2 {
+      --color-background: 51, 79, 180;
+      --gradient-background: #334fb4;
+      --color-accent: 43, 190, 161;
+      --color-foreground: 255, 255, 255;
+      --color-shadow: 18, 18, 18;
+      --color-border: 18, 18, 18;
+      --color-button: 255, 255, 255;
+      --color-button-text: 51, 79, 180;
+      --color-secondary-button: 255, 100, 100;
+      --color-secondary-button-text: 255, 255, 255;
+      --color-tertiary-button: 75, 71, 255;
+      --color-tertiary-button-text: 255, 255, 255;
+      --color-gray-button: 238, 238, 238;
+      --color-gray-button-text: 18, 18, 18;
+      --color-dark-button: 18, 18, 18;
+      --color-dark-button-text: 255, 255, 255;
+      --color-light-button: 255, 255, 255;
+      --color-light-button-text: 18, 18, 18;
+      --color-link: 51, 79, 180;
+      --color-badge-foreground: 255, 255, 255;
+      --color-badge-background: 51, 79, 180;
+      --color-badge-border: 255, 255, 255;
+      --payment-terms-background-color: rgb(51 79 180);
+    }
+
+    body,
+    .color-background-1,
+    .color-background-2,
+    .color-inverse,
+    .color-accent-1,
+    .color-accent-2 {
+      color: rgba(var(--color-foreground), 0.75);
+      background-color: rgb(var(--color-background));
+    }
+
+    :root {
+      --font-body-desktop-size: 1.6rem;
+      --font-body-mobile-size: 1.5rem;
+      --font-body-family: Jost, sans-serif;
+      --font-body-style: ;
+      --font-body-weight: 400;
+      --font-body-weight-bold: 400;
+      --font-heading-family: Jost, sans-serif;
+      --font-heading-style: ;
+      --font-heading-weight: 500;
+      --font-body-scale: 1.0;
+      --font-heading-scale: 1.0;
+      --font-body-line-height: calc(1 + 0.8 / var(--font-body-scale));
+      --font-custom-family: Playfair Display, sans-serif;
+      --font-custom-weight: 400;
+
+      --media-padding: px;
+      --media-border-opacity: 0.05;
+      --media-border-width: 0px;
+      --media-radius: 0px;
+      --media-shadow-opacity: 0.0;
+      --media-shadow-horizontal-offset: 0px;
+      --media-shadow-vertical-offset: 4px;
+      --media-shadow-blur-radius: 5px;
+      --media-shadow-visible: 0;
+
+      --page-width: 140rem;
+      --page-width-margin: 0rem;
+
+      --product-card-image-padding: 0.0rem;
+      --product-card-content-padding: 0.0rem;
+      --product-card-corner-radius: 0.0rem;
+      --product-card-text-alignment: center;
+      --product-card-border-width: 0.0rem;
+      --product-card-border-opacity: 0.1;
+      --product-card-shadow-opacity: 0.0;
+      --product-card-shadow-visible: 0;
+      --product-card-shadow-horizontal-offset: 0.0rem;
+      --product-card-shadow-vertical-offset: 0.4rem;
+      --product-card-shadow-blur-radius: 1.2rem;
+
+      --collection-card-image-padding: 0.0rem;
+      --collection-card-content-padding: 0.0rem;
+      --collection-card-corner-radius: 0.8rem;
+      --collection-card-text-alignment: center;
+      --collection-card-border-width: 0.0rem;
+      --collection-card-border-opacity: 0.1;
+      --collection-card-shadow-opacity: 0.0;
+      --collection-card-shadow-visible: 0;
+      --collection-card-shadow-horizontal-offset: 0.0rem;
+      --collection-card-shadow-vertical-offset: 0.4rem;
+      --collection-card-shadow-blur-radius: 1.2rem;
+
+      --article-card-image-padding: 0.0rem;
+      --article-card-content-padding: 0.0rem;
+      --article-card-corner-radius: 0.0rem;
+      --article-card-text-alignment: left;
+      --article-card-border-width: 0.0rem;
+      --article-card-border-opacity: 0.1;
+      --article-card-shadow-opacity: 0.0;
+      --article-card-shadow-visible: 0;
+      --article-card-shadow-horizontal-offset: 0.0rem;
+      --article-card-shadow-vertical-offset: 0.6rem;
+      --article-card-shadow-blur-radius: 1.6rem;
+
+      --badge-corner-radius: 0.0rem;
+
+      --modal-border-width: 0px;
+      --modal-border-opacity: 0.0;
+      --modal-corner-radius: 8px;
+      --modal-shadow-opacity: 0.0;
+      --modal-shadow-horizontal-offset: 0px;
+      --modal-shadow-vertical-offset: 0px;
+      --modal-shadow-blur-radius: 0px;
+      --modal-padding: 20px;
+      --modal-margin: 20px;
+      --modal-backdrop-opacity: 0.5;
+      --modal-backdrop-blur: 0px;
+
+      --drawer-border-width: 0px;
+      --drawer-border-opacity: 0.0;
+      --drawer-corner-radius: 0px;
+      --drawer-shadow-opacity: 0.0;
+      --drawer-shadow-horizontal-offset: 0px;
+      --drawer-shadow-vertical-offset: 0px;
+      --drawer-shadow-blur-radius: 0px;
+      --drawer-padding: 20px;
+      --drawer-margin: 0px;
+      --drawer-backdrop-opacity: 0.4;
+      --drawer-backdrop-blur: 0px;
+
+      --spacing-sections-desktop: 0px;
+      --spacing-sections-mobile: 0px;
+
+      --grid-desktop-vertical-spacing: 30px;
+      --grid-desktop-horizontal-spacing: 30px;
+      --grid-mobile-vertical-spacing: 15px;
+      --grid-mobile-horizontal-spacing: 15px;
+
+      --text-boxes-border-opacity: 0.1;
+      --text-boxes-border-width: 0px;
+      --text-boxes-radius: 8px;
+      --text-boxes-shadow-opacity: 0.0;
+      --text-boxes-shadow-visible: 0;
+      --text-boxes-shadow-horizontal-offset: 0px;
+      --text-boxes-shadow-vertical-offset: 4px;
+      --text-boxes-shadow-blur-radius: 5px;
+
+      --buttons-radius: 8px;
+      --buttons-radius-outset: 10px;
+      --buttons-border-width: 2px;
+      --buttons-border-opacity: 1.0;
+      --buttons-shadow-opacity: 0.05;
+      --buttons-shadow-visible: 1;
+      --buttons-shadow-horizontal-offset: 0px;
+      --buttons-shadow-vertical-offset: 3px;
+      --buttons-shadow-blur-radius: 6px;
+      --buttons-border-offset: 0.3px;
+      --buttons-background-opacity: 1.0;
+      --buttons-scale: 1.0;
+
+      --inputs-radius: 8px;
+      --inputs-border-width: 1px;
+      --inputs-border-opacity: 0.55;
+      --inputs-shadow-opacity: 0.0;
+      --inputs-shadow-background-opacity: 0.0;
+      --inputs-shadow-horizontal-offset: 0px;
+      --inputs-margin-offset: 0px;
+      --inputs-shadow-vertical-offset: 4px;
+      --inputs-shadow-blur-radius: 5px;
+      --inputs-radius-outset: 9px;
+
+      --variant-pills-radius: px;
+      --variant-pills-border-width: px;
+      --variant-pills-border-opacity: 0.0;
+      --variant-pills-shadow-opacity: 0.0;
+      --variant-pills-shadow-horizontal-offset: px;
+      --variant-pills-shadow-vertical-offset: px;
+      --variant-pills-shadow-blur-radius: px;
+    }
+  </style>
+
+  <script>
+    window.settings = {
+      animate_duration: 500,
+      animate_effect: 'fade-up',
+      animate_strength: 1,
+      modal_animate: 'zoom',
+      modal_easing: 'decay',
+      modal_duration: 300,
+      drawer_easing: 'decay',
+      drawer_duration: 400,
+      image_lazyload: true,
+      color_scheme_ids: [
+        "background-1",
+        "background-2",
+        "inverse",
+        "accent-1",
+        "accent-2",
+      ],
+      dark_mode_mapping: `Scheme 1: Scheme 5
+Scheme 2: Scheme 4`,
+      cart_free_shipping_min_amount: 600,
+    }
+  </script>
+  <style>
+    /* Cart Modal Styles */
+    .cart-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      padding: 1rem 0;
+    }
+
+    .cart-item {
+      display: grid;
+      grid-template-columns: 80px 1fr auto auto;
+      gap: 1rem;
+      align-items: center;
+      padding: 1rem;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+    }
+
+    .cart-item__image img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .cart-item__details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .cart-item__title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .cart-item__title a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .cart-item__price {
+      font-weight: 500;
+      color: #666;
+    }
+
+    .cart-item__quantity {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .qty-btn {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #ddd;
+      background: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qty-btn:hover {
+      background: #f5f5f5;
+    }
+
+    .qty-input {
+      width: 50px;
+      text-align: center;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 0.25rem;
+    }
+
+    .cart-item__remove button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      color: #999;
+    }
+
+    .cart-item__remove button:hover {
+      color: #e74c3c;
+    }
+
+    .cart-item__total {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .cart-summary {
+      padding: 1rem;
+      background: #f9f9f9;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .cart-summary__row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+    }
+
+    .cart-summary__total {
+      font-size: 1.2rem;
+      font-weight: 700;
+      border-top: 2px solid #ddd;
+      padding-top: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .checkout-btn {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .xo-notify-cart {
+      display: none;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .collection-product-footer {
+      padding: 1rem;
+    }
+
+    .collection-product-footer__img img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .collection-product-footer__name-product {
+      margin: 0.5rem 0;
+      font-size: 0.95rem;
+    }
+
+    .collection-product-footer__price {
+      font-weight: 600;
+      margin: 0.5rem 0;
+    }
+
+    .add-to-cart-btn {
+      width: 100%;
+      padding: 0.5rem;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .add-to-cart-btn:hover {
+      background: #333;
+    }
+  </style>
+  <link href="{% static 'cdn/shop/t/6/assets/xo-webcomponents.min.css' %}" media="all" rel="stylesheet" type="text/css">
+
+  <link href="{% static 'cdn/shop/t/6/assets/main.css' %}" media="all" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400&display=swap" rel="stylesheet" />
+
+  <script>
+    document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
+    if (Shopify.designMode) {
+      document.documentElement.classList.add('shopify-design-mode');
+    }
+  </script>
+
+  <script defer src="{% static 'cdn/shop/t/6/assets/xo-webcomponents.min.js' %}"></script>
+  <script defer src="{% static 'cdn/shop/t/6/assets/vendors.js' %}"></script>
+  <script defer src="{% static 'cdn/shop/t/6/assets/main.js' %}"></script>
+
+  <!-- Judge.me Reviews Integration -->
+  <script async src="https://cdn.judge.me/shopify_widget.js"></script>
+
+  <style>
+    .jdgm-xx {
+      left: 0
+    }
+
+    :root {
+      --jdgm-primary-color: #000;
+      --jdgm-secondary-color: rgba(0, 0, 0, 0.1);
+      --jdgm-star-color: #F3B962;
+      --jdgm-write-review-text-color: white;
+      --jdgm-write-review-bg-color: #000000;
+      --jdgm-paginate-color: #000;
+      --jdgm-border-radius: 0;
+      --jdgm-reviewer-name-color: #000000
+    }
+
+    .jdgm-histogram__bar-content {
+      background-color: #000
+    }
+
+    .jdgm-rev[data-verified-buyer=true] .jdgm-rev__icon.jdgm-rev__icon:after,
+    .jdgm-rev__buyer-badge.jdgm-rev__buyer-badge {
+      color: white;
+      background-color: #000
+    }
+
+    @font-face {
+      font-family: 'JudgemeStar';
+      src: url("data:application/x-font-woff;charset=utf-8;base64,d09GRgABAAAAAAScAA0AAAAABrAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABGRlRNAAAEgAAAABoAAAAcbyQ+3kdERUYAAARgAAAAHgAAACAAMwAGT1MvMgAAAZgAAABGAAAAVi+vS9xjbWFwAAAB8AAAAEAAAAFKwBMjvmdhc3AAAARYAAAACAAAAAj//wADZ2x5ZgAAAkAAAAEJAAABdH33LXtoZWFkAAABMAAAAC0AAAA2BroQKWhoZWEAAAFgAAAAHAAAACQD5QHQaG10eAAAAeAAAAAPAAAAFAYAAABsb2NhAAACMAAAAA4AAAAOAO4AeG1heHAAAAF8AAAAHAAAACAASgAvbmFtZQAAA0wAAADeAAABkorWfVZwb3N0AAAELAAAACkAAABEp3ubLXgBY2BkYADhPPP4OfH8Nl8ZuJkYQODS2fRrCPr/aSYGxq1ALgcDWBoAO60LkwAAAHgBY2BkYGDc+v80gx4TAwgASaAICmABAFB+Arl4AWNgZGBgYGPQYWBiAAIwyQgWc2AAAwAHVQB6eAFjYGRiYJzAwMrAwejDmMbAwOAOpb8ySDK0MDAwMbByMsCBAAMCBKS5pjA4PGB4wMR44P8BBj3GrQymQGFGkBwAjtgK/gAAeAFjYoAAEA1jAwAAZAAHAHgB3crBCcAwDEPRZydkih567CDdf4ZskmLwFBV8xBfCaC4BXkOUmx4sU0h2ngNb9V0vQCxaRKIAevT7fGWuBrEAAAAAAAAAAAA0AHgAugAAeAF9z79Kw1AUx/FzTm7un6QmJtwmQ5Bg1abgEGr/BAqlU6Gju+Cgg1MkQ/sA7Vj7BOnmO/gUvo2Lo14NqIO6/IazfD8HEODtmQCfoANwNsyp2/GJt3WKQrd1NLiYYWx2PBqOsmJMEOznPOTzfSCrhAtbbLdmeFLJV9eKd63WLrZcIcuaEVdssWCKM6pLCfTVOYbz/0pNSMSZKLIZpvh78sAUH6PlMrreTCabP9r+Z/puPZ2ur/RqpQHgh+MIegCnXeM4MRAPjYN//5tj4ZtTjkFqEdmeMShlEJ7tVAly2TAkx6R68Fl4E/aVvn8JqHFQ4JS1434gXKcuL31dDhzs3YbsEOAd/IU88gAAAHgBfY4xTgMxEEVfkk0AgRCioKFxQYd2ZRtpixxgRU2RfhU5q5VWseQ4JdfgAJyBlmNwAM7ABRhZQ0ORwp7nr+eZAa54YwYg9zm3ynPOeFRe8MCrciXOh/KSS76UV5L/iDmrLiS5AeU519wrL3jmSbkS5115yR2fyivJv9kx0ZMZ2RLZw27q87iNQi8EBo5FSPIMw3HqBboi5lKTGAGDp8FKXWP+t9TU01Lj5His1Ba6uM9dTEMwvrFmbf5GC/q2drW3ruXUhhsCiQOjznFlCzYhHUZp4xp76vsvQh89CQAAeAFjYGJABowM6IANLMrEyMTIzMjCXpyRWJBqZshWXJJYBKOMAFHFBucAAAAAAAAB//8AAngBY2BkYGDgA2IJBhBgAvKZGViBJAuYxwAABJsAOgAAeAFjYGBgZACCk535hiD60tn0azAaAEqpB6wAAA==") format("woff");
+      font-weight: normal;
+      font-style: normal
+    }
+
+    .jdgm-star {
+      font-family: 'JudgemeStar';
+      display: inline !important;
+      text-decoration: none !important;
+      padding: 0 4px 0 0 !important;
+      margin: 0 !important;
+      font-weight: bold;
+      opacity: 1;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale
+    }
+  </style>
+  <style>
+    .toast-container {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1000;
+    }
+
+    .toast {
+      position: relative;
+      width: 320px;
+      border-radius: 12px;
+      background: #fff;
+      padding: 20px 35px 20px 25px;
+      box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      overflow-x: hidden;
+      align-items: center;
+      transform: translateX(calc(100% + 30px));
+      transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.35);
+    }
+
+    .toast.active {
+      transform: translateX(0%);
+    }
+
+    .toast .toast-content {
+      display: flex;
+      align-items: center;
+    }
+
+    .toast-content .icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 35px;
+      min-width: 35px;
+      font-size: 35px;
+      color: #fff;
+    }
+
+    .toast-content .message {
+      display: flex;
+      flex-direction: column;
+      margin-left: 15px;
+    }
+
+    .message .text {
+      font-size: 16px;
+      font-weight: 400;
+      color: #666666;
+      font-family: "Outfit", serif;
+    }
+
+    .message .text.text-1 {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .toast .close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      padding: 5px;
+      cursor: pointer;
+      opacity: 0.7;
+    }
+
+    .toast .close:hover {
+      opacity: 1;
+    }
+
+    .toast .progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      width: 100%;
+    }
+
+    .toast .progress:before {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      height: 100%;
+      width: 100%;
+      background-color: #4070f4;
+    }
+
+    .progress.active:before {
+      animation: progress 5s linear forwards;
+    }
+
+    @keyframes progress {
+      100% {
+        right: 100%;
+      }
+    }
+
+    /* Toast Type Colors */
+    .toast.success .icon {
+      color: rgb(25 135 84);
+    }
+
+    .toast.error .icon {
+      color: rgb(220 53 69);
+    }
+
+    .toast.warning .icon {
+      color: rgb(255 193 7);
+    }
+
+    .toast.info .icon {
+      color: rgb(13 202 240);
+    }
+
+    .toast.success .progress:before {
+      background: rgb(25 135 84);
+    }
+
+    .toast.error .progress:before {
+      background: rgb(220 53 69);
+    }
+
+    .toast.warning .progress:before {
+      background: rgb(255 193 7);
+    }
+
+    .toast.info .progress:before {
+      background: rgb(13 202 240);
+    }
+
+
+    .circle-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+      transition: all 0.2s ease;
+    }
+
+    .circle-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+    }
+
+    .circle-btn svg {
+      pointer-events: none;
+    }
+  </style>
+
+  <script async="async" id="scb4127" src="{% static 'cdn/shopifycloud/privacy-banner/storefront-banner.js' %}"
+    type="text/javascript"></script>
+  <script defer="defer" src="{% static 'shopifycloud/preview-bar/preview-bar-modules.js' %}"
+    type="text/javascript"></script>
+
+
+
+
+</head>
+
+<body class="gradient">
+  <div id="xo-root">
+
+    <div class="toast-container">
+      {% if messages %}
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          {% for message in messages %}
+          showToast("{{ message }}", "{{ message.tags }}");
+          {% endfor %}
+        });
+      </script>
+      {% endif %}
+    </div>
+    <!-- Header Section -->
+    <div class="shopify-section shopify-section-group-header-group section-header">
+      <header class="header-v24">
+        <xo-sticky style="z-index: 10000; height: unset" xo-direction="down">
+          <xo-animate class="xo-header header-v24__sticky color-background-1" style="--bg-color: #ffffff;--margin: 0;"
+            xo-type="fade-up">
+            <xo-animate class="header-bg" xo-disabled="" xo-duration="1000">
+              <xo-parallax class="header-bg-image__item" xo-lerp-ease="0.4">
+                <xo-parallax-scroll class="header-bg-image__url xo-background-lazyload"
+                  xo-keyframes="{'0%': { backgroundPositionY: '200px' },'100%': { backgroundPositionY: '-200px' }}"></xo-parallax-scroll>
+              </xo-parallax>
+            </xo-animate>
+
+            <xo-container class="xo-container--box">
+              <xo-grid>
+                <div class="header-v24__logo" style="--xs: 4; --xl: 2;">
+                  <a class="header-v24__logo-desktop" href="{% url 'home' %}">
+                    <img alt="Riha Zain" height="auto" src="{% static 'cdn/shop/files/rihazain.logo.png' %}"
+                      style="width: 150px; height: 48.89502762430939px" width="auto" />
+                  </a>
+                  <a class="header-v24__logo-mobile" href="{% url 'home' %}">
+                    <img alt="Riha Zain" height="auto" src="{% static 'cdn/shop/files/rihazain.logo.png' %}"
+                      style="width: 100px; height: 32.59668508287293px" width="auto" />
+                  </a>
+                </div>
+
+                <nav class="header-v24__navigation" style="--xs: 4; --order-xs: -1; --xl: 6; --order-xl: 0">
+                  <!-- Desktop Navigation -->
+                  <div class="header-v24__navigation-desktop">
+                    <ul class="xo-menu-horizontal list-unstyled xo-menu-horizontal--hover" role="list">
+                      <li class="xo-menu-horizontal__item xo-menu-horizontal__item--hover" style="--padding:3rem">
+                        <xo-mega-menu class="xo-menu-horizontal__mega-menu" xo-index="0"
+                          xo-name="header-mega-menu"></xo-mega-menu>
+                        <a class="xo-menu-horizontal__link" href="{% url 'home' %}" title="Home">
+                          <span class="xo-menu-horizontal__label">Home</span>
+                        </a>
+                      </li>
+                      <li class="xo-menu-horizontal__item xo-menu-horizontal__item--hover" style="--padding:3rem">
+                        <xo-mega-menu class="xo-menu-horizontal__mega-menu" xo-index="1"
+                          xo-name="header-mega-menu"></xo-mega-menu>
+                        <a class="xo-menu-horizontal__link" href=" " title="Shops">
+                          <span class="xo-menu-horizontal__label">Shops</span>
+                        </a>
+                      </li>
+
+
+                    </ul>
+                  </div>
+
+                  <!-- Mobile Navigation -->
+                  <div class="header-v24__navigation-mobile">
+                    <!-- Desktop Hamburger Menu -->
+                    <xo-modal-trigger class="xo-menu-hamburger__trigger xo-menu-hamburger__trigger--desktop"
+                      xo-name="xo-menu-hamburger">
+                      <div class="xo-menu-hamburger__icon"></div>
+                    </xo-modal-trigger>
+
+                    <xo-modal class="menu-hamburger-drawer-desktop" style="--top:" xo-animate="slide-right"
+                      xo-backdrop-color="rgba(0, 0, 0, 0.2)" xo-duration="1000" xo-name="xo-menu-hamburger"
+                      xo-placement="top-left" xo-portal="">
+                      <div class="menu-hamburger-drawer-desktop__content color-background-1"
+                        style="--drawer-bg-color: #ffffff; --drawer-bg-gradient: ;">
+                        <div>
+                          <xo-modal-trigger class="xo-menu-hamburger__trigger xo-menu-hamburger__trigger--close"
+                            xo-name="xo-menu-hamburger">
+                            <div aria-label="Close" class="xo-menu-hamburger__icon"></div>
+                          </xo-modal-trigger>
+                          <a class="menu-hamburger-drawer-desktop__logo" href="{% url 'home' %}">
+                            <img alt="Riha Zain" height="auto" src="{% static 'cdn/shop/files/rihazain.logo.png' %}"
+                              style="width: 150px; height: 48.89502762430939px" width="auto" />
+                          </a>
+
+                          <ul
+                            class="menu-hamburger-drawer-desktop__list list-unstyled menu-hamburger-drawer-desktop--hover"
+                            role="list">
+                            <li class="menu-hamburger-drawer-desktop__item menu-hamburger-drawer-desktop__item--hover">
+                              <xo-mega-menu class="menu-hamburger-drawer-desktop__mega-menu" xo-index="0"
+                                xo-name="header-mega-menu"></xo-mega-menu>
+                              <a class="menu-hamburger-drawer-desktop__link" href="{% url 'home' %}" title="Home">
+                                <span class="menu-hamburger-drawer-desktop__label">Home</span>
+                                <span
+                                  class="menu-hamburger-drawer-desktop__arrow menu-hamburger-drawer-desktop__arrow--mega-menu">
+                                  <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" viewBox="0 0 24 24" width="1.5rem"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                  </svg>
+                                </span>
+                              </a>
+                            </li>
+
+                          </ul>
+                        </div>
+
+                        <!-- Desktop Drawer Search -->
+                        <div class="menu-hamburger-drawer-desktop__search">
+                          <form action=" " method="get" role="search">
+                            <label class="xo-field-input">
+                              <input class="xo-field-input__input" name="q" placeholder="" type="text" value="" />
+                              <span class="xo-field-input__placeholder">Search</span>
+                            </label>
+                            <span class="menu-hamburger-drawer-desktop__search-icon">
+                              <button type="submit">
+                                <svg viewBox="0 0 400 400" width="24" xmlns="http://www.w3.org/2000/svg">
+                                  <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)">
+                                    <g transform="scale(0.1)">
+                                      <path
+                                        d="m 1312.7,795.5 c -472.7,0 -857.204,384.3 -857.204,856.7 0,472.7 384.504,857.2 857.204,857.2 472.7,0 857.3,-384.5 857.3,-857.2 0,-472.4 -384.6,-856.7 -857.3,-856.7 z M 2783.9,352.699 2172.7,963.898 c 155.8,194.702 241.5,438.602 241.5,688.302 0,607.3 -494.1,1101.4 -1101.5,1101.4 -607.302,0 -1101.399,-494.1 -1101.399,-1101.4 0,-607.4 494.097,-1101.501 1101.399,-1101.501 249.8,0 493.5,85.5 687.7,241 L 2611.7,181 c 23,-23 53.6,-35.699 86.1,-35.699 32.4,0 63,12.699 86,35.699 23.1,22.801 35.8,53.301 35.8,85.898 0,32.602 -12.7,63 -35.7,85.801"
+                                        fill="rgba(var(--color-foreground))"></path>
+                                    </g>
+                                  </g>
+                                </svg>
+                              </button>
+                            </span>
+                          </form>
+                        </div>
+                      </div>
+                    </xo-modal>
+
+                    <!-- Mobile Hamburger Menu Trigger -->
+                    <xo-modal-trigger class="xo-menu-hamburger__trigger xo-menu-hamburger__trigger--mobile"
+                      xo-name="xo-menu-hamburger-mobile">
+                      <div class="xo-menu-hamburger__icon"></div>
+                    </xo-modal-trigger>
+
+                    <!-- Mobile Drawer -->
+                    <xo-modal class="menu-hamburger-drawer-mobile" style="--top:5rem" xo-animate="slide-right"
+                      xo-backdrop-color="rgba(0, 0, 0, 0.2)" xo-duration="1000" xo-name="xo-menu-hamburger-mobile"
+                      xo-placement="top-left" xo-portal="">
+                      <div class="menu-hamburger-drawer-mobile__content color-background-1"
+                        style="--drawer-bg-color: #ffffff; --drawer-bg-gradient: ;">
+                        <div>
+                          <div class="menu-hamburger-drawer-mobile__collapse-wrap">
+                            <xo-collapse-trigger class="menu-hamburger-drawer-mobile__collapse-trigger"
+                              id="menu-hamburger-drawer-trigger" xo-name="menu-hamburger-drawer-mobile-collapse-0">
+                              <a class="menu-hamburger-drawer-mobile__link" href="index.html" title="Home ">
+                                <span class="menu-hamburger-drawer-mobile__label">Home </span>
+                              </a>
+                              <span class="menu-hamburger-drawer-mobile__arrow" id="xo-menu-hamburger__arrow">
+                                <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2" viewbox="0 0 24 22" width="1.5rem"
+                                  xmlns="http://www.w3.org/2000/svg">
+                                  <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                              </span>
+                            </xo-collapse-trigger>
+                            <xo-collapse class="menu-hamburger-drawer-mobile__collapse"
+                              id="menu-hamburger-drawer-content" xo-name="menu-hamburger-drawer-mobile-collapse-0">
+                              <div class="menu-hamburger-drawer-mobile__collapse-content">
+                                <xo-mega-menu class="menu-hamburger-drawer-mobile__mega-menu" xo-index="0"
+                                  xo-name="header-mega-menu"></xo-mega-menu>
+                              </div>
+                            </xo-collapse>
+                          </div>
+                          <div class="menu-hamburger-drawer-mobile__collapse-wrap">
+                            <xo-collapse-trigger class="menu-hamburger-drawer-mobile__collapse-trigger"
+                              id="menu-hamburger-drawer-trigger" xo-name="menu-hamburger-drawer-mobile-collapse-1">
+                              <a class="menu-hamburger-drawer-mobile__link" href="index.html" title="Shops ">
+                                <span class="menu-hamburger-drawer-mobile__label">Shops </span>
+                              </a>
+                              <span class="menu-hamburger-drawer-mobile__arrow" id="xo-menu-hamburger__arrow">
+                                <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2" viewbox="0 0 24 22" width="1.5rem"
+                                  xmlns="http://www.w3.org/2000/svg">
+                                  <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                              </span>
+                            </xo-collapse-trigger>
+                            <xo-collapse class="menu-hamburger-drawer-mobile__collapse"
+                              id="menu-hamburger-drawer-content" xo-name="menu-hamburger-drawer-mobile-collapse-1">
+                              <div class="menu-hamburger-drawer-mobile__collapse-content">
+                                <xo-mega-menu class="menu-hamburger-drawer-mobile__mega-menu" xo-index="1"
+                                  xo-name="header-mega-menu"></xo-mega-menu>
+                              </div>
+                            </xo-collapse>
+                          </div>
+                          <div class="menu-hamburger-drawer-mobile__collapse-wrap">
+                            <xo-collapse-trigger class="menu-hamburger-drawer-mobile__collapse-trigger"
+                              id="menu-hamburger-drawer-trigger" xo-name="menu-hamburger-drawer-mobile-collapse-2">
+                              <a class="menu-hamburger-drawer-mobile__link" href="index.html" title="Products ">
+                                <span class="menu-hamburger-drawer-mobile__label">Products </span>
+                              </a>
+                              <span class="menu-hamburger-drawer-mobile__arrow" id="xo-menu-hamburger__arrow">
+                                <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2" viewbox="0 0 24 22" width="1.5rem"
+                                  xmlns="http://www.w3.org/2000/svg">
+                                  <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                              </span>
+                            </xo-collapse-trigger>
+                            <xo-collapse class="menu-hamburger-drawer-mobile__collapse"
+                              id="menu-hamburger-drawer-content" xo-name="menu-hamburger-drawer-mobile-collapse-2">
+                              <div class="menu-hamburger-drawer-mobile__collapse-content">
+                                <xo-mega-menu class="menu-hamburger-drawer-mobile__mega-menu" xo-index="2"
+                                  xo-name="header-mega-menu"></xo-mega-menu>
+                              </div>
+                            </xo-collapse>
+                          </div>
+
+
+                        </div>
+
+                        <div class="menu-hamburger-drawer-mobile__utilities">
+
+                          {% if not user.is_authenticated %}
+                          <!-- Register -->
+                          <a class="menu-hamburger-drawer-mobile__utility" href="{% url 'users:register' %}">
+                            <svg fill="currentColor" height="18" version="1.1" viewBox="0 0 400 400" width="18"
+                              xmlns="http://www.w3.org/2000/svg">
+                              <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)">
+                                <g transform="scale(0.1)">
+                                  <path
+                                    d="m 1506.87,2587.11 c -225.04,0 -408.14,-183.08 -408.14,-408.11 0,-225.06 183.1,-408.13 408.14,-408.13 225.02,0 408.13,183.07 408.13,408.13 0,225.03 -183.11,408.11 -408.13,408.11 z m 0,-1038.56 c -347.64,0 -630.432,282.79 -630.432,630.45 0,347.63 282.792,630.43 630.432,630.43 347.63,0 630.42,-282.8 630.42,-630.43 0,-347.66 -282.79,-630.45 -630.42,-630.45 v 0"
+                                    fill="currentColor" />
+                                  <path
+                                    d="M 399.648,361.789 H 2614.07 c -25.06,261.531 -139.49,503.461 -327.47,689.831 -124.25,123.14 -300.78,193.96 -483.86,193.96 h -591.76 c -183.61,0 -359.601,-70.82 -483.863,-193.96 C 539.148,865.25 424.719,623.32 399.648,361.789 Z M 2730.69,139.461 H 283.035 c -61.558,0 -111.16,49.59 -111.16,111.16 0,363.438 141.68,704 398.32,959.019 165.657,164.55 399.414,258.82 640.785,258.82 h 591.76 c 241.94,0 475.14,-94.27 640.8,-258.82 256.63,-255.019 398.31,-595.581 398.31,-959.019 0,-61.57 -49.59,-111.16 -111.16,-111.16 v 0"
+                                    fill="currentColor" />
+                                </g>
+                              </g>
+                            </svg>
+                            <span>Register</span>
+                          </a>
+
+                          <!-- Login -->
+                          <a class="menu-hamburger-drawer-mobile__utility" href="{% url 'users:login' %}">
+                            <svg fill="currentColor" height="18" version="1.1" viewBox="0 0 400 400" width="18"
+                              xmlns="http://www.w3.org/2000/svg">
+                              <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)">
+                                <g transform="scale(0.1)">
+                                  <path
+                                    d="m 1506.87,2587.11 c -225.04,0 -408.14,-183.08 -408.14,-408.11 0,-225.06 183.1,-408.13 408.14,-408.13 225.02,0 408.13,183.07 408.13,408.13 0,225.03 -183.11,408.11 -408.13,408.11 z m 0,-1038.56 c -347.64,0 -630.432,282.79 -630.432,630.45 0,347.63 282.792,630.43 630.432,630.43 347.63,0 630.42,-282.8 630.42,-630.43 0,-347.66 -282.79,-630.45 -630.42,-630.45 v 0"
+                                    fill="currentColor" />
+                                  <path
+                                    d="M 399.648,361.789 H 2614.07 c -25.06,261.531 -139.49,503.461 -327.47,689.831 -124.25,123.14 -300.78,193.96 -483.86,193.96 h -591.76 c -183.61,0 -359.601,-70.82 -483.863,-193.96 C 539.148,865.25 424.719,623.32 399.648,361.789 Z M 2730.69,139.461 H 283.035 c -61.558,0 -111.16,49.59 -111.16,111.16 0,363.438 141.68,704 398.32,959.019 165.657,164.55 399.414,258.82 640.785,258.82 h 591.76 c 241.94,0 475.14,-94.27 640.8,-258.82 256.63,-255.019 398.31,-595.581 398.31,-959.019 0,-61.57 -49.59,-111.16 -111.16,-111.16 v 0"
+                                    fill="currentColor" />
+                                </g>
+                              </g>
+                            </svg>
+                            <span>Login</span>
+                          </a>
+                          {% else %}
+                          <!-- My Profile -->
+                          <a class="menu-hamburger-drawer-mobile__utility" href=" ">
+                            <svg fill="currentColor" height="18" viewBox="0 0 400 400" width="18"
+                              xmlns="http://www.w3.org/2000/svg">
+                              <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)">
+                                <g transform="scale(0.1)">
+                                  <path
+                                    d="m1506 2300c-300 0-540-240-540-540s240-540 540-540 540 240 540 540-240 540-540 540zm0-1260c-396 0-720 324-720 720s324 720 720 720 720-324 720-720-324-720-720-720z"
+                                    fill="currentColor" />
+                                </g>
+                              </g>
+                            </svg>
+                            <span>My Profile</span>
+                          </a>
+
+                          <!-- Logout -->
+                          <a class="menu-hamburger-drawer-mobile__utility" href="{% url 'users:logout' %}">
+                            <svg fill="currentColor" height="18" viewBox="0 0 400 400" width="18"
+                              xmlns="http://www.w3.org/2000/svg">
+                              <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)">
+                                <g transform="scale(0.1)">
+                                  <path
+                                    d="M1200 3000h800v-200h-800v-400h800v-200h-800v-400h800v-200h-800v-400h800v-200h-800V0H1000v3000h200zM2800 1600l-400-400v300h-800v200h800v300l400-400z"
+                                    fill="currentColor" />
+                                </g>
+                              </g>
+                            </svg>
+                            <span>Logout</span>
+                          </a>
+                          {% endif %}
+
+                          <!-- Wishlist (Always visible) -->
+                          <a class="menu-hamburger-drawer-mobile__utility" href=" ">
+                            <svg version="1.1" viewBox="0 0 400 400" width="18" xmlns="http://www.w3.org/2000/svg">
+                              <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)">
+                                <g transform="scale(0.1)">
+                                  <path
+                                    d="m903 2424c157 0 306-61 418-173l135-135c20-20 48-32 77-32s56 12 77 32l134 134c112 112 260 173 417 173 157 0 305-61 417-172 111-111 172-259 172-417 0-157-60-305-172-417L1531 373 487 1417c-111 112-173 260-173 418 0 158 61 306 173 417 111 111 259 172 416 172z"
+                                    fill="currentColor" />
+                                </g>
+                              </g>
+                            </svg>
+                            <span style="padding-top:0.3rem">Wishlist</span>
+                          </a>
+
+                        </div>
+
+
+                      </div>
+                    </xo-modal>
+                  </div>
+                </nav>
+
+                <div class="header-v24__utilities-wrap" style="--xs: 4">
+
+
+                  <!-- Header Utilities -->
+                  <div class="header-v24__utilities">
+                    {% if not user.is_authenticated %}
+                    <xo-tooltip class="header-v24__account-text" xo-placement="bottom-center" xo-title="Register">
+                      <a href="{% url 'users:register' %}">Register</a>
+                    </xo-tooltip>
+
+                    <xo-tooltip class="header-v24__account-text" xo-placement="bottom-center" xo-title="Login">
+                      <a href="{% url 'users:login' %}">Login</a>
+                    </xo-tooltip>
+                    {% else %}
+                    <xo-tooltip class="header-v24__account-text" xo-placement="bottom-center" xo-title="My Account">
+                      <a href="{% url 'orders:order_list' %}">Order</a>
+                    </xo-tooltip>
+                    <xo-tooltip class="header-v24__account-text" xo-placement="bottom-center" xo-title="My Account">
+                      <a href="{% url 'users:profile' %}">My Account</a>
+                    </xo-tooltip>
+
+                    <xo-tooltip class="header-v24__account-text" xo-placement="bottom-center" xo-title="Logout">
+                      <a href="{% url 'users:logout' %}">Logout</a>
+                    </xo-tooltip>
+                    {% endif %}
+
+
+                    <xo-tooltip class="header-v24__icon-wrap" xo-placement="bottom-center" xo-title="Search">
+                      <xo-modal-trigger class="header-v24__icon header-v24__icon--search" xo-name="search">
+                        <svg viewBox="0 0 400 400" width="24" xmlns="http://www.w3.org/2000/svg">
+                          <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)">
+                            <g transform="scale(0.1)">
+                              <path
+                                d="m 1312.7,795.5 c -472.7,0 -857.204,384.3 -857.204,856.7 0,472.7 384.504,857.2 857.204,857.2 472.7,0 857.3,-384.5 857.3,-857.2 0,-472.4 -384.6,-856.7 -857.3,-856.7 z M 2783.9,352.699 2172.7,963.898 c 155.8,194.702 241.5,438.602 241.5,688.302 0,607.3 -494.1,1101.4 -1101.5,1101.4 -607.302,0 -1101.399,-494.1 -1101.399,-1101.4 0,-607.4 494.097,-1101.501 1101.399,-1101.501 249.8,0 493.5,85.5 687.7,241 L 2611.7,181 c 23,-23 53.6,-35.699 86.1,-35.699 32.4,0 63,12.699 86,35.699 23.1,22.801 35.8,53.301 35.8,85.898 0,32.602 -12.7,63 -35.7,85.801"
+                                fill="rgba(var(--color-foreground))"></path>
+                            </g>
+                          </g>
+                        </svg>
+                      </xo-modal-trigger>
+                    </xo-tooltip>
+
+                    <xo-tooltip class="header-v24__icon-wrap header-v24__icon-wrap--desktop"
+                      xo-placement="bottom-center" xo-title="Wishlist">
+                      <a aria-label="Wishlist" class="header-v24__icon" href=" "
+                        title="Wishlist">
+                        <svg version="1.1" viewBox="0 0 400 400" width="24" xmlns="http://www.w3.org/2000/svg">
+                          <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)">
+                            <g transform="scale(0.1)">
+                              <path
+                                d="m 903,2424.4 c 157.9,0 306.4,-61.5 418.1,-173.1 l 134.8,-134.9 c 20.7,-20.6 48.1,-32 77.1,-32 29,0 56.4,11.4 77,32 l 133.7,133.7 c 111.7,111.6 259.9,173.1 417.5,173.1 156.91,0 305,-61.3 416.8,-172.5 111.2,-111.3 172.5,-259.5 172.5,-417.5 0.6,-157.3 -60.69,-305.5 -172.5,-417.4 L 1531.5,373.5 487.402,1417.6 c -111.601,111.7 -173.105,259.9 -173.105,417.5 0,158.1 61.199,306.1 172.5,416.8 111.308,111.2 259.101,172.5 416.203,172.5 z m 1829.7,-19.6 c 0,0 0,0 -0.1,0 -152.4,152.4 -355.1,236.3 -570.9,236.3 -215.7,0 -418.7,-84.1 -571.5,-236.9 l -56.9,-57 -58.2,58.2 c -153.1,153.1 -356.3,237.5 -572.1,237.5 -215.305,0 -417.902,-83.9 -570.305,-236.3 -153,-153 -236.8942,-356 -236.2966,-571.5 0,-215 84.4026,-417.8 237.4966,-571 L 1454.7,143.301 c 20.5,-20.403 48.41,-32.199 76.8,-32.199 28.7,0 56.7,11.5 76.7,31.597 L 2731.5,1261.8 c 152.7,152.7 236.8,355.7 236.8,571.4 0.7,216 -83,419 -235.6,571.6"
+                                fill="rgb(var(--color-foreground))"></path>
+                            </g>
+                          </g>
+                        </svg>
+                        <span id="wishlist-count" class="header-v24__wishlist-count">{{ wishlist_count }}</span>
+
+                      </a>
+                    </xo-tooltip>
+
+                    <xo-tooltip class="header-v24__icon-wrap" xo-placement="bottom-center" xo-title="Cart">
+                      <xo-modal-trigger class="header-v24__icon" xo-name="cart">
+                        <svg height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                          <path
+                            d="M12,0C9.1,0,6.7,2.4,6.7,5.3v1h10.5v-1C17.2,2.4,14.9,0,12,0z M12,1.8c1.6,0,3,1.1,3.4,2.7H8.6C9,2.9,10.4,1.8,12,1.8"
+                            fill="rgba(var(--color-foreground))"></path>
+                          <g>
+                            <path
+                              d="M17.6,6.2c0.9,0,1.6,0.7,1.6,1.6v12.9c0,0.9-0.7,1.6-1.6,1.6H6.4c-0.9,0-1.6-0.7-1.6-1.6V7.8c0-0.9,0.7-1.6,1.6-1.6H17.6 M17.6,4.5H6.4C4.5,4.5,3,6,3,7.8v12.9C3,22.5,4.5,24,6.4,24h11.3c1.8,0,3.3-1.5,3.3-3.3V7.8C21,6,19.5,4.5,17.6,4.5L17.6,4.5z"
+                              fill="rgba(var(--color-foreground))"></path>
+                          </g>
+                          <path
+                            d="M14.8,8.8H9.2c-0.4,0-0.7-0.3-0.7-0.7v0c0-0.4,0.3-0.7,0.7-0.7h5.7c0.4,0,0.7,0.3,0.7,0.7v0C15.5,8.5,15.2,8.8,14.8,8.8z"
+                            fill="rgba(var(--color-foreground))"></path>
+                        </svg>
+                        <span class="header-v24__cart-count">
+                          {{ cart_count }}
+
+                        </span>
+                      </xo-modal-trigger>
+                    </xo-tooltip>
+                  </div>
+                </div>
+
+                <!-- Search Modal -->
+                <xo-modal class="search" xo-animate="slide-down" xo-autofocus="" xo-name="search"
+                  xo-placement="top-left" xo-scroll-disabled="">
+                  <div class="xo-modal-content"
+                    style="--width: 50rem; --height: 80vh; --header-height: 7rem; --footer-height: 7rem">
+                    <div class="xo-modal-content__inner xo-modal-content__inner--full-width">
+                      <xo-modal-trigger aria-label="Close" class="xo-modal-content__close xo-modal-content__close--abs">
+                        <svg class="m-svg-icon--large" fill="currentColor" stroke="currentColor" viewBox="0 0 320 512"
+                          width="15" xmlns="http://www.w3.org/2000/svg">
+                          <path
+                            d="M193.94 256L296.5 153.44l21.15-21.15c3.12-3.12 3.12-8.19 0-11.31l-22.63-22.63c-3.12-3.12-8.19-3.12-11.31 0L160 222.06 36.29 98.34c-3.12-3.12-8.19-3.12-11.31 0L2.34 120.97c-3.12 3.12-3.12 8.19 0 11.31L126.06 256 2.34 379.71c-3.12 3.12-3.12 8.19 0 11.31l22.63 22.63c3.12 3.12 8.19 3.12 11.31 0L160 289.94 262.56 392.5l21.15 21.15c3.12 3.12 8.19 3.12 11.31 0l22.63-22.63c3.12-3.12 3.12-8.19 0-11.31L193.94 256z">
+                          </path>
+                        </svg>
+                      </xo-modal-trigger>
+                      <div class="xo-modal-content__body">
+                        <div class="xo-modal-content__content" style="padding: 0">
+                          <div class="xo-section color-background-1" style="--margin: 0;--pt: 40;--pb: 40;">
+                            <xo-container class="xo-container--box">
+                              <form action=" " method="get" role="search">
+                                <div class="xo-predictive-search"
+                                  data-locales='{"pages": "Pages", "collections": "Collections", "products": "Products", "articles": "Articles"}'>
+                                  <xo-animate class="xo-predictive-search__input" xo-cascade="">
+                                    <xo-grid class="xo-predictive-search__box">
+                                      <div class="xo-predictive-search__left" style="--lg:3">
+                                        <a href="{% url 'home' %}">
+                                          <img alt="Riha Zain" height="auto"
+                                            src="{% static 'cdn/shop/files/rihazain.logo.png' %}"
+                                            style="width: 120px; height: 39.11602209944752px" width="auto" />
+                                        </a>
+                                      </div>
+                                      <div class="xo-predictive-search__center" style="--xs:12 ; --lg: 6">
+                                        <label class="xo-field-input">
+                                          <input class="xo-field-input__input" data-predictive-search-input="header"
+                                            id="predictive-search" name="q" placeholder="" type="text" value="" />
+                                          <span class="xo-field-input__placeholder">Search</span>
+                                        </label>
+                                      </div>
+                                      <div class="xo-predictive-search__right" style="--lg:3">
+                                        <xo-tooltip class="xo-predictive-search__icon-wrap" xo-placement="bottom-center"
+                                          xo-title="Login">
+                                          <a class="xo-predictive-search__search-icon" href=" ">
+                                            <!-- SVG icon -->
+                                          </a>
+                                        </xo-tooltip>
+                                        <xo-tooltip class="xo-predictive-search__icon-wrap" xo-placement="bottom-center"
+                                          xo-title="Wishlist">
+                                          <a aria-label="Wishlist" class="xo-predictive-search__search-icon"
+                                            href=" " title="Wishlist">
+                                            <!-- SVG icon -->
+                                          </a>
+                                        </xo-tooltip>
+                                        <xo-tooltip class="xo-predictive-search__icon-wrap" xo-placement="bottom-center"
+                                          xo-title="Cart">
+                                          <xo-modal-trigger class="xo-predictive-search__search-icon" xo-name="cart">
+                                            <!-- SVG icon -->
+                                          </xo-modal-trigger>
+                                        </xo-tooltip>
+                                      </div>
+                                    </xo-grid>
+                                  </xo-animate>
+                                </div>
+                              </form>
+                            </xo-container>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </xo-modal>
+
+
+    </div>
+
+    <!-- END sections: header-group -->
+    {% block content %}
+    <main class="content-for-layout focus-none" id="xo-main-content" role="main" tabindex="-1">
+      <section id="shopify-section-template--19284046119102__slideshow-v3" class="shopify-section section">
+
+        <section class="xo-section--template--19284046119102__slideshow-v3">
+          <xo-carousel xo-render-bullet="&lt;span&gt;&lt;/span&gt;" xo-type="nature" xo-speed="400" xo-loop=""
+            xo-hover-pause=""
+            style="--xo-per-view: 1; --xo-gap: 0px; --xo-speed: 400ms; --xo-pagination-progress: 0%; --xo-mask: url('https://raw.githubusercontent.com/long-hp/storage/main/nature-sprite.png');"
+            xo-mask-initialized="" xo-initialized="">
+            <xo-carousel-inner style="overflow: hidden; height: 900px; transition: height 400ms;">
+              <xo-carousel-list role="list" aria-label="Slider" style="touch-action: none; outline: none;">
+
+                <xo-carousel-slide aria-roledescription="Slide" aria-label="1 / 2" xo-carousel-slide="" role="tabpanel"
+                  xo-active="" xo-center="" xo-visible="">
+                  <div class="xo-slideshow  color-inverse" style="--margin: 0;
+">
+
+
+
+
+
+
+
+                    <xo-animate class="slideshow-bg" xo-disabled="" xo-duration="1000" style="
+      --img-desktop: url(&quot;//feewcx8vv0ntlyby-71784923326.shopifypreview.com/cdn/shop/files/s56-1.jpg?v=1757039722&amp;width=100&quot;);
+      --img-mobile: url(&quot;//feewcx8vv0ntlyby-71784923326.shopifypreview.com/cdn/shop/files/s56-1.jpg?v=1757039722&amp;width=100&quot;);
+">
+
+                      <div class="slideshow-bg-image__item">
+                        <div class="slideshow-bg-image__url xo-background-lazyload"
+                          style="background-image: url(&quot;https://feewcx8vv0ntlyby-71784923326.shopifypreview.com/cdn/shop/files/s56-1.jpg?v=1757039722&amp;width=1920&quot;);">
+                        </div>
+                      </div>
+
+
+                    </xo-animate>
+
+
+                    <xo-container class="xo-container--box">
+                      <xo-grid style="
+                    --height-desktop: 900;
+                    --height-mobile: 500;
+                    --pt: 0;
+                    --pb: 0;
+                  " class="slideshow-v56__content">
+
+
+
+
+                        <div style="--xs: 12;--md: 6; --start-md:7; --align-items: center; --text-align: center;"
+                          class="slideshow-v56__text">
+
+
+
+                          <xo-animate xo-type="fade-up" xo-duration="700" xo-order="3">
+                            <h2 class="slideshow-v56__title" style="--fontsize:6; --fontweight:500">
+                              Whispers Of Perfume
+                            </h2>
+                          </xo-animate>
+
+
+
+
+                          <xo-animate xo-type="fade-up" xo-duration="700" xo-order="5">
+                            <p class="slideshow-v56__description" style="--fontsize:1.6; --fontweight:400">
+                              The perfect harmony between passion, elegance, and desire
+                            </p>
+                          </xo-animate>
+
+
+
+
+                          <xo-animate xo-type="fade-up" xo-duration="700" xo-order="7" xo-strength="3">
+
+
+
+
+
+
+
+
+
+
+
+
+                            <a class="xo-btn xo-btn--light xo-btn--tertiary
+ xo-btn--sm xo-btn--slide-up" style="border-radius: 0rem;padding-left: 1.4rem; padding-right: 1.4rem;"
+                              href="/collections/all">
+
+                              <span class="xo-btn__content">
+
+
+
+                                <span class="xo-btn__text" data-text="shop now">
+                                  shop now
+                                </span>
+
+
+                              </span>
+                              <span class="xo-btn__loading">
+
+
+                                <div class="xo-loader-3" style="--size: 8; --color: currentColor; --duration: 1000;">
+                                  <div></div>
+                                </div>
+
+                              </span>
+
+                            </a>
+
+
+
+
+                          </xo-animate>
+                        </div>
+
+                        <div class="carousel-pagination-style3 slideshow-v56__pagination ">
+                          <div class="carousel-pagination-style3__pagination-wrap">
+                            <xo-carousel-pagination class="carousel-pagination-style3__pagination">
+                              <xo-carousel-bullet xo-index="0" xo-page="1" role="button" tabindex="0"
+                                aria-label="Bullet 1" xo-active="">
+                                <span></span>
+                              </xo-carousel-bullet>
+
+                              <xo-carousel-bullet xo-index="1" xo-page="2" role="button" tabindex="0"
+                                aria-label="Bullet 2">
+                                <span></span>
+                              </xo-carousel-bullet>
+                            </xo-carousel-pagination>
+                            <xo-carousel-pagination-bullet-active
+                              xo-carousel-bullet-selector=".carousel-pagination-style3__pagination xo-carousel-bullet"
+                              xo-duration="100"
+                              style="--xo-duration: 100ms; opacity: 1; height: 8px; left: 0px; width: 8px;"></xo-carousel-pagination-bullet-active>
+                          </div>
+                        </div>
+
+                      </xo-grid>
+                    </xo-container>
+
+                    <div class="slideshow-v56__arrows">
+
+
+
+
+                      <xo-carousel-prev class="carousel-navigation-style3" aria-label="Slide left">
+                        <div
+                          class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--left">
+
+
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                          </svg>
+
+
+                        </div>
+                        <div
+                          class="carousel-navigation-style3__icon-after carousel-navigation-style3__icon-after--left">
+
+
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                          </svg>
+
+
+                        </div>
+                      </xo-carousel-prev>
+                      <xo-carousel-next class="carousel-navigation-style3" aria-label="Slide right">
+                        <div
+                          class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--right">
+
+
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+
+
+                        </div>
+                        <div
+                          class="carousel-navigation-style3__icon-after carousel-navigation-style3__icon-after--right">
+
+
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+
+
+                        </div>
+                      </xo-carousel-next>
+
+                    </div>
+
+                  </div>
+                </xo-carousel-slide>
+
+                <xo-carousel-slide aria-roledescription="Slide" aria-label="2 / 2" xo-carousel-slide="" role="tabpanel"
+                  xo-next="">
+                  <div class="xo-slideshow  color-inverse" style="--margin: 0;
+">
+
+
+
+
+
+
+
+                    <xo-animate class="slideshow-bg" xo-disabled="" xo-duration="1000" style="
+      --img-desktop: url(&quot;//feewcx8vv0ntlyby-71784923326.shopifypreview.com/cdn/shop/files/s56-2.jpg?v=1757039722&amp;width=100&quot;);
+      --img-mobile: url(&quot;//feewcx8vv0ntlyby-71784923326.shopifypreview.com/cdn/shop/files/s56-2.jpg?v=1757039722&amp;width=100&quot;);
+">
+
+                      <div class="slideshow-bg-image__item">
+                        <div class="slideshow-bg-image__url xo-background-lazyload"
+                          style="background-image: url(&quot;https://feewcx8vv0ntlyby-71784923326.shopifypreview.com/cdn/shop/files/s56-2.jpg?v=1757039722&amp;width=1920&quot;);">
+                        </div>
+                      </div>
+
+
+                    </xo-animate>
+
+
+                    <xo-container class="xo-container--box">
+                      <xo-grid style="
+                    --height-desktop: 900;
+                    --height-mobile: 500;
+                    --pt: 0;
+                    --pb: 0;
+                  " class="slideshow-v56__content">
+
+
+
+
+                        <div style="--xs: 12;--md: 6; --start-md:7; --align-items: center; --text-align: center;"
+                          class="slideshow-v56__text">
+
+
+
+                          <xo-animate xo-type="fade-up" xo-duration="700" xo-order="3">
+                            <h2 class="slideshow-v56__title" style="--fontsize:6; --fontweight:500">
+                              Fragrance Beyond Time
+                            </h2>
+                          </xo-animate>
+
+
+
+
+                          <xo-animate xo-type="fade-up" xo-duration="700" xo-order="5">
+                            <p class="slideshow-v56__description" style="--fontsize:1.6; --fontweight:400">
+                              The perfect harmony between passion, elegance, and desire
+                            </p>
+                          </xo-animate>
+
+
+
+
+                          <xo-animate xo-type="fade-up" xo-duration="700" xo-order="7" xo-strength="3">
+
+
+
+
+
+
+
+
+
+
+
+
+                            <a class="xo-btn xo-btn--light xo-btn--tertiary
+ xo-btn--sm xo-btn--slide-up" style="border-radius: 0rem;padding-left: 1.4rem; padding-right: 1.4rem;"
+                              href="/collections/all">
+
+                              <span class="xo-btn__content">
+
+
+
+                                <span class="xo-btn__text" data-text="shop now">
+                                  shop now
+                                </span>
+
+
+                              </span>
+                              <span class="xo-btn__loading">
+
+
+                                <div class="xo-loader-3" style="--size: 8; --color: currentColor; --duration: 1000;">
+                                  <div></div>
+                                </div>
+
+                              </span>
+
+                            </a>
+
+
+
+
+                          </xo-animate>
+                        </div>
+
+                        <div class="carousel-pagination-style3 slideshow-v56__pagination ">
+                          <div class="carousel-pagination-style3__pagination-wrap">
+                            <xo-carousel-pagination class="carousel-pagination-style3__pagination">
+                              <xo-carousel-bullet xo-index="0" xo-page="1" role="button" tabindex="0"
+                                aria-label="Bullet 1" xo-active="">
+                                <span></span>
+                              </xo-carousel-bullet>
+
+                              <xo-carousel-bullet xo-index="1" xo-page="2" role="button" tabindex="0"
+                                aria-label="Bullet 2">
+                                <span></span>
+                              </xo-carousel-bullet>
+                            </xo-carousel-pagination>
+                            <xo-carousel-pagination-bullet-active
+                              xo-carousel-bullet-selector=".carousel-pagination-style3__pagination xo-carousel-bullet"
+                              xo-duration="100"
+                              style="--xo-duration: 100ms; opacity: 1; height: 8px; left: 0px; width: 8px;"></xo-carousel-pagination-bullet-active>
+                          </div>
+                        </div>
+
+                      </xo-grid>
+                    </xo-container>
+
+                    <div class="slideshow-v56__arrows">
+
+
+
+
+                      <xo-carousel-prev class="carousel-navigation-style3" aria-label="Slide left">
+                        <div
+                          class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--left">
+
+
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                          </svg>
+
+
+                        </div>
+                        <div
+                          class="carousel-navigation-style3__icon-after carousel-navigation-style3__icon-after--left">
+
+
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                          </svg>
+
+
+                        </div>
+                      </xo-carousel-prev>
+                      <xo-carousel-next class="carousel-navigation-style3" aria-label="Slide right">
+                        <div
+                          class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--right">
+
+
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+
+
+                        </div>
+                        <div
+                          class="carousel-navigation-style3__icon-after carousel-navigation-style3__icon-after--right">
+
+
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+
+
+                        </div>
+                      </xo-carousel-next>
+
+                    </div>
+
+                  </div>
+                </xo-carousel-slide>
+
+              </xo-carousel-list>
+            </xo-carousel-inner>
+          </xo-carousel>
+        </section>
+
+
+      </section>
+      <section class="shopify-section section" id="shopify-section-template--19284046119102__collection-v1">
+        <section class="xo-section xo-section--template--19284046119102__collection-v1 color-background-1" style="--margin: 0;--pt: 50;--pb: 50;
+">
+          <xo-animate class="xo-section-bg" style="
+      
+      
+" xo-disabled="" xo-duration="1000">
+            <xo-parallax class="xo-section-bg-image__item" xo-lerp-ease="0.4">
+              <xo-parallax-scroll class="xo-section-bg-image__url xo-background-lazyload" xo-keyframes="
+              {
+                '0%': { backgroundPositionY: '200px' },
+                '100%': { backgroundPositionY: '-200px' },
+              }
+            "></xo-parallax-scroll>
+            </xo-parallax>
+          </xo-animate>
+          <xo-container class="xo-container--wide">
+            <xo-animate xo-cascade="">
+              <h2 class="collection-v6__title">Shop By Brand</h2>
+            </xo-animate>
+
+            <xo-carousel xo-breakpoints='{
+      "1200": { "perView": 5 },
+      "992": { "perView": 4 },
+      "768": { "perView": 2 },
+      "576": { "perView": 1 }
+    }' xo-gap="30" xo-per-view="6" xo-render-bullet="<span></span>" xo-speed="400">
+              <xo-carousel-inner>
+                <xo-carousel-list aria-label="Slider" role="list">
+
+                  {% for c in collections %}
+                  <xo-carousel-slide class="collection-v1">
+                    <xo-animate class="collection-v6__item" xo-cascade="">
+                      <a class="hover-style--scale-up" href="{% url 'product_by_collection' c.slug %}">
+                        <div class="xo-image" style="--xo-ratio-percent: 4/4;">
+                          <img src="{{ c.image.url }}" alt="{{ c.name }}" width="400" height="400" loading="lazy" />
+                        </div>
+                      </a>
+
+                      <a class="collection-v6__item-label" href=" ">
+                        <h3 class="collection-v6__item-title">{{ c.name }}</h3>
+                      </a>
+                    </xo-animate>
+                  </xo-carousel-slide>
+                  {% endfor %}
+
+                </xo-carousel-list>
+              </xo-carousel-inner>
+            </xo-carousel>
+          </xo-container>
+
+          <div class="shopify-section" id="shopify-section-template--19284046119102__banner-v9">
+            <div class="banner-v270" style="--bg_custom : #33543d; --height-bg : 50% ">
+              <div class="xo-section xo-section--template--19284046119102__banner-v9 color-background-1" style="--margin: 0;--pt: 100;--pb: 50;
+">
+                <xo-animate class="xo-section-bg" style="
+      
+      
+" xo-disabled="" xo-duration="1000">
+                  <xo-parallax class="xo-section-bg-image__item" xo-lerp-ease="0.4">
+                    <xo-parallax-scroll class="xo-section-bg-image__url xo-background-lazyload" xo-keyframes="
+              {
+                '0%': { backgroundPositionY: '200px' },
+                '100%': { backgroundPositionY: '-200px' },
+              }
+            "></xo-parallax-scroll>
+                  </xo-parallax>
+                </xo-animate>
+                <xo-container class="xo-container--wide">
+                  <div class="banner-v270__heading">
+                    <xo-animate xo-duration="700" xo-order="1" xo-strength="3" xo-type="fade-up">
+                      <h2 class="banner-v270__title">Best Sellers</h2>
+                    </xo-animate>
+                    <xo-animate xo-duration="700" xo-order="3" xo-strength="3" xo-type="fade-up">
+                      <div class="banner-v270__description">Dive into the world of golf with exclusive events, community
+                        vibes, and beginner-friendly resources.</div>
+                    </xo-animate>
+                  </div>
+                  <div class="banner-v270__gallery">
+                    <xo-grid style="--xs: 1; --lg:3; gap:0">
+
+                      {% for product in products|slice:":3" %}
+                      <xo-animate xo-duration="700" xo-order="{{ forloop.counter }}" xo-strength="3" xo-type="fade-up">
+                        <a class="banner-v270__item hover-style--scale-up"
+                          href="{% url 'product_detail' product.slug %}">
+
+                          <div class="xo-image" style="--xo-ratio-percent: 4/3; --x-pos: 50%; --y-pos: 50%;">
+                            <img alt="{{ product.name }}" fetchpriority="auto" height="520" is="xo-lazyload"
+                              loading="lazy" sizes="100vw" src="{{ product.images.first.image.url }}"
+                              srcset="{{ product.images.first.image.url }} 100w" width="700" xo-intrinsic-height="520"
+                              xo-intrinsic-width="700" />
+                            <div class="xo-image__overlay xo-lazyload-overlay">
+                              <div class="xo-image__loading">
+                                <div class="xo-loader-3"
+                                  style="--size: 10; --color: rgb(var(--color-foreground)); --duration: 1000;">
+                                  <div></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <h4 class="banner-v270__title-item">{{ product.name }}</h4>
+
+                        </a>
+                      </xo-animate>
+                      {% endfor %}
+
+                    </xo-grid>
+                  </div>
+                </xo-container>
+              </div>
+            </div>
+          </div>
+          <section class="shopify-section section" id="shopify-section-template--19284046119102__product-v1">
+            <div class="xo-section xo-section--template--19284046119102__product-v1 color-background-1" style="--margin: 0;--pt: 50;--pb: 50;
+z-index:98">
+              <xo-animate class="xo-section-bg" style="
+      
+      
+" xo-disabled="" xo-duration="1000">
+                <xo-parallax class="xo-section-bg-image__item" xo-lerp-ease="0.4">
+                  <xo-parallax-scroll class="xo-section-bg-image__url xo-background-lazyload" xo-keyframes="
+              {
+                '0%': { backgroundPositionY: '200px' },
+                '100%': { backgroundPositionY: '-200px' },
+              }
+            "></xo-parallax-scroll>
+                </xo-parallax>
+              </xo-animate>
+              <xo-container class="xo-container--wide">
+                <xo-animate class="product-v1__heading" xo-cascade="">
+                  <h3 class="product-v1__subtitle"></h3>
+                  <div class="product-v1__title-wrap">
+                    <h2 class="product-v1__title">Featured Products</h2>
+                  </div>
+                </xo-animate>
+                <xo-grid style="--xs:1;--sm:2;--xl:4">
+
+                  {% for product in products %}
+                  <xo-product xo-product-id="{{ product.id }}" xo-section-id="template--main-collection">
+                    <xo-animate class="xo-product-card xo-product-card--style9 color-background-1" xo-cascade="">
+                      <div class="xo-product-card__header xo-product-card__header--style9">
+                        <a href="{{ product.get_absolute_url }}">
+                          <xo-product-media style="--xo-auto-play: 1500ms" xo-binding="img" xo-carousel-active-index="0"
+                            xo-carousel-autoplay="1500"
+                            xo-carousel-bullet-content="&lt;span class='xo-product-card__bullet'&gt;&lt;/span&gt;"
+                            xo-carousel-pagination-enabled="" xo-type="auto">
+                            <div class="xo-product-image">
+                              <div class="xo-image" style="--xo-ratio-percent: 1/1; --x-pos: %; --y-pos: %;">
+                                {% if product.images.all %}
+                                {% with first_image=product.images.first %}
+                                {% if first_image %}
+                                <img alt="{{ product.name }}" src="{{ first_image.image.url }}" width="1000"
+                                  height="1000" loading="lazy" />
+                                {% endif %}
+                                {% endwith %}
+                                {% elif product.image %}
+                                <img alt="{{ product.name }}" src="{{ product.image.url }}" width="1000" height="1000"
+                                  loading="lazy" />
+                                {% else %}
+                                <img alt="No Image" src="/static/img/no-image.jpg" width="1000" height="1000"
+                                  loading="lazy" />
+                                {% endif %}
+                              </div>
+                            </div>
+                          </xo-product-media>
+                        </a>
+                        <div class="xo-product-card__badge">
+                          {% if product.stock == 0 or not product.available %}
+                          <div class="xo-badge-sold-out">
+                            <span class="xo-badge-sold-out__title" id="Badge-{{ product.id }}">Sold out</span>
+                          </div>
+                          {% else %}
+                          <div class="xo-badge-sale" id="Badge-{{ product.id }}">Sale
+                          </div>
+                          {% endif %}
+                        </div>
+                        <div class="xo-product-card__actions xo-product-card__actions--style9">
+                          <!-- base.html - Product grid add to cart -->
+                          <xo-tooltip class="xo-product-card__icon" xo-title="Add to Cart">
+                            <form method="POST" action="{% url 'add_to_cart' product.id %}" class="add-to-cart-form">
+                              {% csrf_token %}
+                              <input type="hidden" name="quantity" value="1">
+
+                              <button type="button"
+                                class="xo-btn xo-btn--light xo-btn--primary xo-btn--circle xo-btn--sm xo-btn--slide-up circle add-to-cart-grid-btn"
+                                data-product-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}">
+                                <span class="xo-btn__content">
+                                  <span class="xo-btn__icon">
+                                    <!-- cart icon SVG -->
+                                    <svg height="20" id="Layer_1" style="enable-background:new 0 0 24 24;" version="1.1"
+                                      viewbox="0 0 24 24" width="20" x="0px" xml:space="preserve"
+                                      xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                      y="0px">
+                                      <path
+                                        d="M12,0C9.1,0,6.7,2.4,6.7,5.3v1h10.5v-1C17.2,2.4,14.9,0,12,0z M12,1.8c1.6,0,3,1.1,3.4,2.7H8.6C9,2.9,10.4,1.8,12,1.8"
+                                        fill="currentColor"></path>
+                                      <g>
+                                        <path
+                                          d="M17.6,6.2c0.9,0,1.6,0.7,1.6,1.6v12.9c0,0.9-0.7,1.6-1.6,1.6H6.4c-0.9,0-1.6-0.7-1.6-1.6V7.8c0-0.9,0.7-1.6,1.6-1.6H17.6 M17.6,4.5H6.4C4.5,4.5,3,6,3,7.8v12.9C3,22.5,4.5,24,6.4,24h11.3c1.8,0,3.3-1.5,3.3-3.3V7.8C21,6,19.5,4.5,17.6,4.5L17.6,4.5z"
+                                          fill="currentColor"></path>
+                                      </g>
+                                      <path
+                                        d="M14.8,8.8H9.2c-0.4,0-0.7-0.3-0.7-0.7v0c0-0.4,0.3-0.7,0.7-0.7h5.7c0.4,0,0.7,0.3,0.7,0.7v0C15.5,8.5,15.2,8.8,14.8,8.8z"
+                                        fill="currentColor"></path>
+                                    </svg>
+                                  </span>
+                                </span>
+                                <span class="xo-btn__loading">
+                                  <div class="xo-loader-3" style="--size: 8; --color: currentColor; --duration: 1000;">
+                                    <div></div>
+                                  </div>
+                                </span>
+                              </button>
+                            </form>
+                          </xo-tooltip>
+
+                          <!-- <xo-tooltip class="xo-product-card__icon" xo-title="Quickview">
+                            <xo-product-quick-view-trigger xo-modal-name="quick-view"
+                              xo-product-url="{{ product.get_absolute_url }}">
+                              <button
+                                class="xo-btn xo-btn--light xo-btn--primary xo-btn--circle xo-btn--sm xo-btn--slide-up circle"
+                                style="">
+                                <span class="xo-btn__content">
+                                  <span class="xo-btn__icon">
+                                    <svg id="svg2" version="1.1" viewbox="0 0 400 400" width="20" xml:space="preserve"
+                                      xmlns="http://www.w3.org/2000/svg">
+                                      <g id="g10" transform="matrix(1.3333333,0,0,-1.3333333,0,400)">
+                                        <g id="g12" transform="scale(0.1)">
+                                          <path
+                                            d="m 1312.7,795.5 c -472.7,0 -857.204,384.3 -857.204,856.7 0,472.7 384.504,857.2 857.204,857.2 472.7,0 857.3,-384.5 857.3,-857.2 0,-472.4 -384.6,-856.7 -857.3,-856.7 z M 2783.9,352.699 2172.7,963.898 c 155.8,194.702 241.5,438.602 241.5,688.302 0,607.3 -494.1,1101.4 -1101.5,1101.4 -607.302,0 -1101.399,-494.1 -1101.399,-1101.4 0,-607.4 494.097,-1101.501 1101.399,-1101.501 249.8,0 493.5,85.5 687.7,241 L 2611.7,181 c 23,-23 53.6,-35.699 86.1,-35.699 32.4,0 63,12.699 86,35.699 23.1,22.801 35.8,53.301 35.8,85.898 0,32.602 -12.7,63 -35.7,85.801"
+                                            fill="currentColor" id="path14"
+                                            style="fill-opacity:1;fill-rule:nonzero;stroke:none">
+                                          </path>
+                                        </g>
+                                      </g>
+                                    </svg>
+                                  </span>
+                                </span>
+                                <span class="xo-btn__loading">
+                                  <div class="xo-loader-3" style="--size: 8; --color: currentColor; --duration: 1000;">
+                                    <div></div>
+                                  </div>
+                                </span>
+                              </button>
+                            </xo-product-quick-view-trigger>
+                          </xo-tooltip> -->
+                          <xo-tooltip class="xo-product-card__icon" xo-title="Add to wishlist">
+                            <button class="wishlist-btn circle-btn" data-product-id="{{ product.id }}">
+                              {% if product in request.user.wishlist.products.all %}
+                              <!-- Filled heart -->
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="red">
+                                <path
+                                  d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" />
+                              </svg>
+                              {% else %}
+                              <!-- Outline heart -->
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black"
+                                stroke-width="2">
+                                <path
+                                  d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" />
+                              </svg>
+                              {% endif %}
+                            </button>
+                          </xo-tooltip>
+
+                        </div>
+                      </div>
+                      <div class="xo-product-card__information">
+                        <h2 class="xo-product-card__title" id="title-{{ product.id }}">
+                          <a aria-labelledby="CardLink-{{ product.id }}" href="{{ product.get_absolute_url }}"
+                            id="CardLink-{{ product.id }}">
+                            {{ product.name }}
+                          </a>
+                        </h2>
+                        <div class="xo-product-card__price">
+                          <div class="xo-product-card__price-inner" xo-binding="price">
+                            <div class="xo-price" role="status">
+                              <div class="xo-price__container">
+                                <div class="xo-price__sale xo-price__sale--column">
+                                  <div class="xo-visually-hidden xo-visually-hidden--inline">
+                                    Sale price</div>
+                                  <span class="xo-price__item xo-price__item--accent">
+                                    ₹{{ product.price }}</span>
+
+                                </div>
+                                <small class="xo-unit-price xo-unit-price--hidden">
+                                  <span class="xo-visually-hidden">Unit
+                                    price</span>
+                                  <span>
+                                    <span></span>
+                                    <span aria-hidden="true">/</span>
+                                    <div class="xo-visually-hidden xo-visually-hidden--inline">
+                                      per</div>
+                                    <span></span>
+                                  </span>
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <xo-product-data>
+                        <script type="application/json">
+            {
+                "id": {{ product.id }},
+                "handle": "{{ product.slug }}",
+                "variants": [{
+                    "id": {{ product.id }},
+                    "title": "Default Title",
+                    "option1": "Default Title",
+                    "option2": null,
+                    "option3": null,
+                    "sku": null,
+                    "requires_shipping": true,
+                    "taxable": true,
+                    "featured_image": null,
+                    "available": {% if product.available and product.stock > 0 %}true{% else %}false{% endif %},
+                    "name": "{{ product.name|escapejs }}",
+                    "public_title": null,
+                    "options": ["Default Title"],
+                    "price": {{ product.price|floatformat:2 }},
+                    "weight": 0,
+                    "compare_at_price": null,
+                    "inventory_management": "shopify",
+                    "barcode": null,
+                    "requires_selling_plan": false,
+                    "selling_plan_allocations": [],
+                    "quantity_rule": {"min": 1, "max": null, "increment": 1}
+                }],
+                "media": [
+                    {% if product.image %}
+                    {
+                        "alt": "{{ product.name|escapejs }}",
+                        "id": {{ product.id }},
+                        "position": 1,
+                        "preview_image": {
+                            "aspect_ratio": 1.0,
+                            "height": 1000,
+                            "width": 1000,
+                            "src": "{{ product.image.url }}"
+                        },
+                        "aspect_ratio": 1.0,
+                        "height": 1000,
+                        "media_type": "image",
+                        "src": "{{ product.image.url }}",
+                        "width": 1000
+                    }{% if product.images.all %},{% endif %}
+                    {% endif %}
+                    {% for img in product.images.all %}
+                    {
+                        "alt": "{{ product.name|escapejs }}",
+                        "id": {{ img.id }},
+                        "position": {{ forloop.counter|add:1 }},
+                        "preview_image": {
+                            "aspect_ratio": 1.0,
+                            "height": 1000,
+                            "width": 1000,
+                            "src": "{{ img.image.url }}"
+                        },
+                        "aspect_ratio": 1.0,
+                        "height": 1000,
+                        "media_type": "image",
+                        "src": "{{ img.image.url }}",
+                        "width": 1000
+                    }{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                "options": ["Title"],
+                "available": {% if product.available and product.stock > 0 %}true{% else %}false{% endif %}
+            }
+            </script>
+                      </xo-product-data>
+                    </xo-animate>
+                  </xo-product>
+                  {% endfor %}
+
+                </xo-grid>
+              </xo-container>
+            </div>
+          </section>
+          <section class="shopify-section section" id="shopify-section-template--19284046119102__banner-v3">
+            <div class="xo-section xo-section--template--19284046119102__banner-v3 color-background-1" style="--bg-color: #f3ede6;--margin: 0;--pt: 100;--pb: 100;
+">
+              <xo-animate class="xo-section-bg" style="
+      
+      
+" xo-disabled="" xo-duration="1000">
+                <xo-parallax class="xo-section-bg-image__item" xo-lerp-ease="0.4">
+                  <xo-parallax-scroll class="xo-section-bg-image__url xo-background-lazyload" xo-keyframes="
+              {
+                '0%': { backgroundPositionY: '200px' },
+                '100%': { backgroundPositionY: '-200px' },
+              }
+            "></xo-parallax-scroll>
+                </xo-parallax>
+              </xo-animate>
+              <xo-container class="xo-container--fullwidth" style="--padding: 30">
+                <xo-grid class="banner-v124" style="--xs: 1; --md: 2; --xo-grid-col-gap: 30px; --xo-grid-row-gap: 30px">
+                  <xo-animate class="banner-v124__item" xo-cascade="">
+                    <a class="banner-v124__img hover-style--scale-up" href="collections/all.html">
+                      <div class="xo-image" style="--xo-ratio-percent: 1.0; --x-pos: 50.0%; --y-pos: 50.0%;"><img
+                          alt="image" fetchpriority="auto" height="1080" is="xo-lazyload" loading="lazy" sizes="100vw"
+                          src="{% static 'cdn/shop/files/b124-1.webp' %}"
+                          srcset="{% static 'cdn/shop/files/b124-1.webp' %} 100w" width="1080"
+                          xo-intrinsic-height="1080" xo-intrinsic-width="1080" />
+                        <div class="xo-image__overlay xo-lazyload-overlay">
+                          <div class="xo-image__loading">
+                            <div class="xo-loader-3"
+                              style="--size: 10; --color: rgb(var(--color-foreground)); --duration: 1000;">
+                              <div></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                    <div class="banner-v124__content">
+                      <h3 class="banner-v124__title">Start your journey</h3>
+                      <div class="banner-v124__subtitle">As the seasons start to shift, add something richer to your
+                        fragrance wardrobe with warming notes of amber and spice.</div>
+                      <a class="xo-btn xo-btn--dark xo-btn--link xo-btn--sm xo-btn--slide-up"
+                        href="collections/all.html" style="border-radius: 0.8rem;">
+                        <span class="xo-btn__content">
+                          <span class="xo-btn__text" data-text="SHOP NOW">
+                            SHOP NOW
+                          </span>
+                        </span>
+                        <span class="xo-btn__loading">
+                          <div class="xo-loader-3" style="--size: 8; --color: currentColor; --duration: 1000;">
+                            <div></div>
+                          </div>
+                        </span>
+                      </a>
+                    </div>
+                  </xo-animate>
+                  <xo-animate class="banner-v124__item" xo-cascade="">
+                    <a class="banner-v124__img hover-style--scale-up" href="collections/all.html">
+                      <div class="xo-image" style="--xo-ratio-percent: 1.0; --x-pos: 50.0%; --y-pos: 50.0%;"><img
+                          alt="image" fetchpriority="auto" height="1080" is="xo-lazyload" loading="lazy" sizes="100vw"
+                          src="{% static 'cdn/shop/files/b124-2.jpg' %}"
+                          srcset="{% static 'cdn/shop/files/b124-2.jpg' %} 100w" width="1080" xo-intrinsic-height="1080"
+                          xo-intrinsic-width="1080" />
+                        <div class="xo-image__overlay xo-lazyload-overlay">
+                          <div class="xo-image__loading">
+                            <div class="xo-loader-3"
+                              style="--size: 10; --color: rgb(var(--color-foreground)); --duration: 1000;">
+                              <div></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                    <div class="banner-v124__content">
+                      <h3 class="banner-v124__title">Autumn Scents</h3>
+                      <div class="banner-v124__subtitle">As the seasons start to shift, add something richer to your
+                        fragrance wardrobe with warming notes of amber and spice.</div>
+                      <a class="xo-btn xo-btn--dark xo-btn--link xo-btn--sm xo-btn--slide-up"
+                        href="collections/all.html" style="border-radius: 0.8rem;">
+                        <span class="xo-btn__content">
+                          <span class="xo-btn__text" data-text="SHOP NOW">
+                            SHOP NOW
+                          </span>
+                        </span>
+                        <span class="xo-btn__loading">
+                          <div class="xo-loader-3" style="--size: 8; --color: currentColor; --duration: 1000;">
+                            <div></div>
+                          </div>
+                        </span>
+                      </a>
+                    </div>
+                  </xo-animate>
+                </xo-grid>
+              </xo-container>
+            </div>
+          </section>
+    </main>
+
+
+    {% endblock %}
+
+
+    <!-- BEGIN sections: footer-group -->
+    <div class="shopify-section shopify-section-group-footer-group section-footer"
+      id="shopify-section-sections--19284031406270__footer">
+      <xo-sticky-hidden xo-name="sticky-addcart"></xo-sticky-hidden>
+      <footer class="xo-section xo-section--sections--19284031406270__footer color-background-1" style="--margin: 0;--pt: 0;--pb: 0;
+--pb-mobile: 53px">
+        <xo-animate class="xo-section-bg" style="" xo-disabled="" xo-duration="1000">
+          <xo-parallax class="xo-section-bg-image__item" xo-lerp-ease="0.4">
+            <xo-parallax-scroll class="xo-section-bg-image__url xo-background-lazyload" xo-keyframes="
+          {
+            '0%': { backgroundPositionY: '200px' },
+            '100%': { backgroundPositionY: '-200px' },
+          }
+        "></xo-parallax-scroll>
+          </xo-parallax>
+        </xo-animate>
+        <div class="footer-v26__top">
+          <xo-container class="xo-container--box">
+            <xo-grid>
+              <xo-animate class="footer-v26__left" style="--xs: 12; --lg: 6; --xxl: 3;" xo-cascade="">
+                <a class="footer-v26__logo" href="{% url 'home' %}">
+                  <img alt="Riha Zain" height="auto" src="{% static 'cdn/shop/files/rihazain.logo.png' %}"
+                    style="width: 150px; height: 48.89502762430939px" width="auto" />
+                </a>
+              </xo-animate>
+              <xo-animate class="footer-v26__center" style="--xs: 12; --order-xs: 2; --xxl: 6; --order-xxl: 1"
+                xo-cascade="">
+                <ul class="list-unstyled footer-v26__list" role="list">
+                  <li class="footer-v26__list-item">
+                    <a href="{% url 'about' %}">About</a>
+                  </li>
+                  <li class="footer-v26__list-item">
+                    <a href=" ">Privacy Policy</a>
+                  </li>
+                  <li class="footer-v26__list-item">
+                    <a href=" ">Terms Of Services</a>
+                  </li>
+                  <li class="footer-v26__list-item">
+                    <a href="{% url 'contact' %}">Contact</a>
+                  </li>
+                </ul>
+              </xo-animate>
+
+            </xo-grid>
+          </xo-container>
+        </div>
+        <xo-container class="xo-container--box">
+          <div class="footer-v26__bottom">
+            <ul class="footer-v26__social list-unstyled" role="list">
+
+              <!-- WhatsApp -->
+              <li>
+                <a class="footer-v26__social-link" href="https://wa.me/XXXXXXXXXX" target="_blank">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-whatsapp" viewBox="0 0 16 16">
+                    <path
+                      d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232" />
+                  </svg>
+                </a>
+              </li>
+
+              <!-- Instagram -->
+              <li>
+                <a class="footer-v26__social-link" href="#" target="_blank">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-instagram" viewBox="0 0 16 16">
+                    <path
+                      d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334" />
+                  </svg>
+                </a>
+              </li>
+
+              <!-- Facebook -->
+              <li>
+                <a class="footer-v26__social-link" href="#" target="_blank">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-facebook" viewBox="0 0 16 16">
+                    <path
+                      d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951" />
+                  </svg>
+                </a>
+              </li>
+
+            </ul>
+
+            <div class="footer-v26__copyright">
+              © Copyright {% now "Y" %} |
+              <a class="footer-v26__theme-name" href="{% url 'home' %}" rel="nofollow" target="_blank">
+                Riha Zain. All rights reserved.
+              </a>
+            </div>
+          </div>
+        </xo-container>
+
+      </footer>
+    </div>
+    <!-- END sections: footer-group -->
+    <div class="shopify-section shopify-section-group-overlay-group section-xo-cart-mini"
+      id="shopify-section-sections--19284033667262__cart">
+      <xo-modal class="color-" style="z-index: 9999;" xo-animate="slide-left" xo-duration="1000" xo-for-cart-mini=""
+        xo-name="cart" xo-placement="top-right" xo-portal="" xo-section-select="">
+        <xo-cart-mini aria-label="Shopping Cart" id="xo-cart-mini" role="dialog">
+          <div class="xo-modal-content-style1"
+            style="--width: 50rem; --height: 80vh; --header-height: 5.5rem; --footer-height: 7rem">
+            <div class="xo-modal-content-style1__inner xo-modal-content-style1__inner--full-height">
+              <xo-animate xo-cascade="" xo-duration="1000">
+                <div class="xo-modal-content-style1__header">
+                  <h2 class="xo-modal-content-style1__title">Shopping Cart</h2>
+                  <xo-modal-trigger aria-label="Close" class="xo-modal-content-style1__close">
+                    <svg class="m-svg-icon--large" fill="currentColor" stroke="currentColor" viewbox="0 0 320 512"
+                      width="15" xmlns="http://www.w3.org/2000/svg">
+                      <path
+                        d="M193.94 256L296.5 153.44l21.15-21.15c3.12-3.12 3.12-8.19 0-11.31l-22.63-22.63c-3.12-3.12-8.19-3.12-11.31 0L160 222.06 36.29 98.34c-3.12-3.12-8.19-3.12-11.31 0L2.34 120.97c-3.12 3.12-3.12 8.19 0 11.31L126.06 256 2.34 379.71c-3.12 3.12-3.12 8.19 0 11.31l22.63 22.63c3.12 3.12 8.19 3.12 11.31 0L160 289.94 262.56 392.5l21.15 21.15c3.12 3.12 8.19 3.12 11.31 0l22.63-22.63c3.12-3.12 3.12-8.19 0-11.31L193.94 256z">
+                      </path>
+                    </svg>
+                  </xo-modal-trigger>
+                </div>
+                <div class="xo-modal-content-style1__separator"></div>
+              </xo-animate>
+
+              <xo-cart-scroll class="xo-modal-content-style1__body xo-scrollbar">
+                <div class="xo-modal-content-style1__content">
+                  <!-- <xo-animate xo-cascade="">
+                     Free Shipping Progress Bar  
+                    {% if cart.items.exists %}
+                    <xo-cart-free-shipping-custom xo-free-shipping-notice="Congrats! You are eligible for FREE Shipping"
+                      xo-free-shipping-progress="Buy {{ money }} more to enjoy FREE shipping">
+                      <div class="xo-cart-free-shipping">
+                        <div class="xo-cart-free-shipping__position">
+                          <div class="xo-cart-free-shipping__text">
+                            {% if cart.get_total >= 500 %}
+                            Congrats! You are eligible for FREE Shipping
+                            {% else %}
+                            Buy ₹{{ cart.get_shipping_threshold|floatformat:2 }} more to enjoy FREE shipping
+                            {% endif %}
+                          </div>
+                          <div class="xo-cart-free-shipping__progress">
+                            <div class="progress-bar" style="width: {{ cart.get_shipping_progress }}%"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </xo-cart-free-shipping-custom>
+                    {% endif %}
+                  </xo-animate> -->
+
+                  <!-- Success Notification -->
+                  <div aria-label="Item added to your cart" class="xo-notify-cart" id="xo-notify" role="dialog"
+                    style="display: none;">
+                    <svg class="m-svg-icon--large" fill="none" stroke="#5fd321" viewbox="0 0 24 24" width="20"
+                      xmlns="http://www.w3.org/2000/svg">
+                      <path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    <span>Product added to cart successfully</span>
+                  </div>
+
+                  <!-- Empty Cart -->
+                  {% if not cart.items.exists %}
+                  <xo-animate class="xo-cart-empty" xo-cascade="">
+                    <div class="xo-empty" style="--align: center">
+                      <div class="xo-empty__icon">
+                        <svg viewbox="0 0 32 32" width="8rem" xmlns="http://www.w3.org/2000/svg">
+                          <path
+                            d="M31.71,15.29c-4.09-4.08-4-4.07-4.28-4.19l-7-3.19a1,1,0,1,0-.82,1.82l5,2.27L16,15.9,7.42,12l5-2.27a1,1,0,0,0-.82-1.82c-4.87,2.21-7.13,3.25-7,3.19-.24.12-.13.05-4.28,4.19a1,1,0,0,0,.30,1.62l11,5a1,1,0,0,0,1.12-.2L15,19.41v10L6,25.36V22a1,1,0,0,0-2,0c0,4.42,0,4.2.18,4.54a.6.6,0,0,0,.3.29c.1.07,0,.05.13.09C16.59,32.36,15.69,32,16,32s-.5.32,11.41-5.09A1,1,0,0,0,28,26V18.46l3.41-1.55A1,1,0,0,0,31.71,15.29ZM11.78,19.8l-9-4.11L5.22,13.2l9.05,4.11ZM26,25.36l-9,4.09v-10C19.46,21.87,19.45,22,20,22c.33,0,.07.07,6-2.63ZM20.22,19.8l-2.49-2.49,9.05-4.11,2.49,2.49Z"
+                            fill="currentColor"></path>
+                          <path
+                            d="M15,8.91a3.61,3.61,0,0,1,2-3.16,2,2,0,0,0,1-2.12,2,2,0,1,0-3.86,1,1,1,0,0,1-.6,1.27,1,1,0,0,1-1.28-.61,4,4,0,1,1,5.7,2.17A1.67,1.67,0,0,0,17,8.91,1,1,0,1,1,15,8.91Z"
+                            fill="currentColor"></path>
+                          <path d="M16,13a1,1,0,1,1,1-1A1,1,0,0,1,16,13Z" fill="currentColor"></path>
+                        </svg>
+                      </div>
+                      <h2 class="xo-empty__title">Your cart is empty</h2>
+                      <p class="xo-empty__subtitle">You may check out all the available products and buy some in the
+                        shop.</p>
+                      <div class="xo-empty__content">
+                        <a class="xo-btn xo-btn--dark xo-btn--secondary xo-btn--md xo-btn--slide-up"
+                          href="{% url 'home' %}" style="">
+                          <span class="xo-btn__content">
+                            <span class="xo-btn__text" data-text="Continue shopping">Continue shopping</span>
+                          </span>
+                        </a>
+                      </div>
+                    </div>
+                  </xo-animate>
+                  {% else %}
+
+                  <!-- Cart Items -->
+                  <div class="cart-items-list">
+                    {% for item in cart.items.all %}
+                    <div class="cart-item" data-item-id="{{ item.id }}">
+                      <div class="cart-item__image">
+                        <a href="{{ item.product.get_absolute_url }}">
+                          {% if item.product.images.all %}
+                          {% with first_image=item.product.images.first %}
+                          {% if first_image %}
+                          <img alt="{{ item.product.name }}" src="{{ first_image.image.url }}" width="1000"
+                            height="1000" loading="lazy" />
+                          {% endif %}
+                          {% endwith %}
+                          {% elif item.product.image %}
+                          <img alt="{{ item.product.name }}" src="{{ item.product.image.url }}" width="1000"
+                            height="1000" loading="lazy" />
+                          {% else %}
+                          <img alt="No Image" src="/static/img/no-image.jpg" width="1000" height="1000"
+                            loading="lazy" />
+                          {% endif %}
+
+                        </a>
+                      </div>
+                      <div class="cart-item__details">
+                        <h3 class="cart-item__title">
+                          <a href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a>
+                        </h3>
+                        <div class="cart-item__price">₹{{ item.product.price }}</div>
+                        <xo-product xo-section-id="template--19284044447934__cart-items"
+                          xo-product-id="{{ item.product.id }}" xo-line="{{ forloop.index }}">
+                          <div class="xo-cart-table__quantity">
+                            <xo-cart-quantity class="xo-quantity-style2" style="--width: 10rem; --height: 4rem"
+                              data-item-id="{{ item.id }}"
+                              aria-labelledby="quantity-template--19284044447934__cart-items">
+
+                              <a href=" " class="xo-quantity-style2__button decrease-qty"
+                                data-item-id="{{ item.id }}" data-url=" ">–</a>
+
+                              <input type="text" value="{{ item.quantity }}" readonly
+                                class="xo-quantity-style2__number item-quantity-{{ item.id }}">
+
+                              <a href=" " class="xo-quantity-style2__button increase-qty"
+                                data-item-id="{{ item.id }}" data-url=" ">+</a>
+                            </xo-cart-quantity>
+                          </div>
+                        </xo-product>
+                      </div>
+                      <div class=" " id="cart-item-{{ item.id }}" data-item-id="{{ item.id }}">
+
+                        <div class="cart-item__remove">
+                          <button class="remove-item" data-item-id="{{ item.id }}"
+                            data-url=" ">
+                            <svg width="16" height="16" viewBox="0 0 320 512" fill="currentColor">
+                              <path
+                                d="M193.94 256L296.5 153.44l21.15-21.15c3.12-3.12 3.12-8.19 0-11.31l-22.63-22.63c-3.12-3.12-8.19-3.12-11.31 0L160 222.06 36.29 98.34c-3.12-3.12-8.19-3.12-11.31 0L2.34 120.97c-3.12 3.12-3.12 8.19 0 11.31L126.06 256 2.34 379.71c-3.12 3.12-3.12 8.19 0 11.31l22.63 22.63c3.12 3.12 8.19 3.12 11.31 0L160 289.94 262.56 392.5l21.15 21.15c3.12 3.12 8.19 3.12 11.31 0l22.63-22.63c3.12-3.12 3.12-8.19 0-11.31L193.94 256z">
+                              </path>
+                            </svg>
+                          </button>
+                        </div>
+
+                      </div>
+                      <div class="cart-item__total item-total-{{ item.id }}">₹{{ item.total_price }}</div>
+
+                    </div>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </xo-cart-scroll>
+
+              <div class="xo-modal-content-style1__separator"></div>
+
+              <!-- Cart Footer -->
+              <div class="xo-modal-content-style1__footer flex-v">
+                {% if cart.items.exists %}
+                <div class="cart-summary">
+                  <div class="cart-summary__row">
+                    <span>Subtotal:</span>
+                    <span class="cart-subtotal">₹{{ cart.get_subtotal|floatformat:2 }}</span>
+                  </div>
+                  <div class="cart-summary__row">  
+                    <span>Total:</span>
+                    <span id="cart-total">₹{{ cart.get_total }}</span>
+                  </div>
+
+                  <div class="checkout-row" style="display:flex; gap:1rem; margin-top:1rem;">
+
+                    <a href="?from=cart"
+                      class="xo-btn xo-btn--dark xo-btn--primary xo-btn--md xo-btn--slide-up"
+                      style="flex:1; text-align:center;">
+                      <span class="xo-btn__content">
+                        <span class="xo-btn__text" data-text="Proceed to Checkout">
+                          Proceed to Checkout
+                        </span>
+                      </span>
+                    </a>
+
+                    <a href=" "
+                      class="xo-btn xo-btn--light xo-btn--primary xo-btn--md xo-btn--slide-up"
+                      style="flex:1; text-align:center;">
+                      <span class="xo-btn__content">
+                        <span class="xo-btn__text" data-text="View Cart">
+                          View Cart
+                        </span>
+                      </span>
+                    </a>
+
+                  </div>
+                </div>
+                {% endif %}
+
+                <!-- Recommended Products -->
+                <h5 class="title-collection-cart">You may also like</h5>
+                <xo-carousel xo-breakpoints='{"375": {"perView": 1.2}}' xo-per-view="1.53">
+                  <div class="cart-carousel-btn__wrap">
+                    <xo-carousel-prev class="cart-carousel-btn">
+                      <button class="button-trans">
+                        <svg height="12" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
+                          <path
+                            d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"
+                            fill="currentColor"></path>
+                        </svg>
+                      </button>
+                    </xo-carousel-prev>
+                    <xo-carousel-next class="cart-carousel-btn">
+                      <button class="button-trans">
+                        <svg height="12" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
+                          <path
+                            d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"
+                            fill="currentColor"></path>
+                        </svg>
+                      </button>
+                    </xo-carousel-next>
+                  </div>
+                  <xo-carousel-inner>
+                    <xo-carousel-list aria-label="Slider" role="list">
+                      {% for product in recommended_products %}
+                      <xo-carousel-slide aria-label="{{ forloop.counter }} of {{ recommended_products|length }}"
+                        aria-roledescription="Slide">
+                        <xo-product class="collection-product-footer">
+                          <div class="collection-product-footer__header">
+                            <div style="overflow: hidden;">
+                              <a class="collection-product-footer__img" href="{{ product.get_absolute_url }}">
+                                <div class="xo-image" style="--xo-ratio-percent: 1/1;">
+                                  {% if product.images.all %}
+                                  {% with first_image=product.images.first %}
+                                  {% if first_image %}
+                                  <img alt="{{ product.name }}" src="{{ first_image.image.url }}" width="1000"
+                                    height="1000" loading="lazy" />
+                                  {% endif %}
+                                  {% endwith %}
+                                  {% elif product.image %}
+                                  <img alt="{{ product.name }}" src="{{ product.image.url }}" width="1000" height="1000"
+                                    loading="lazy" />
+                                  {% else %}
+                                  <img alt="No Image" src="/static/img/no-image.jpg" width="1000" height="1000"
+                                    loading="lazy" />
+                                  {% endif %}
+                                </div>
+                              </a>
+                            </div>
+                          </div>
+                          <div class="collection-product-footer__content">
+                            <h2 class="collection-product-footer__name-product">
+                              <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                            </h2>
+                            <div class="collection-product-footer__price">
+                              <span class="xo-price__item">₹{{ product.price }}</span>
+                            </div>
+                            <!-- <button class="xo-cart-add add-to-cart-btn" data-product-id="{{ product.id }}">
+                              <span>+ Add to Cart</span>
+                            </button> -->
+                          </div>
+                        </xo-product>
+                      </xo-carousel-slide>
+                      {% endfor %}
+                    </xo-carousel-list>
+                  </xo-carousel-inner>
+                </xo-carousel>
+              </div>
+            </div>
+          </div>
+
+
+
+
+
+          <script>
+            function updateWishlistUI(added, btn, newCount) {
+              // change button icon
+              if (added) {
+                btn.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="red">
+                <path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" />
+            </svg>
+        `;
+              } else {
+                btn.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
+                <path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/>
+            </svg>
+        `;
+              }
+
+              // update header count instantly
+              const headerCount = document.getElementById("wishlist-count");
+              if (headerCount) {
+                headerCount.textContent = newCount;
+                headerCount.classList.add("wishlist-count-bump");
+                setTimeout(() => headerCount.classList.remove("wishlist-count-bump"), 300);
+              }
+            }
+
+
+            // wishlist button click
+            document.querySelectorAll(".wishlist-btn").forEach(btn => {
+              btn.addEventListener("click", function () {
+                const productId = this.dataset.productId;
+
+                fetch(`/wishlist/toggle/${productId}/`, {
+                  method: "POST",
+                  headers: { "X-CSRFToken": "{{ csrf_token }}" }
+                })
+                  .then(res => res.json())
+                  .then(data => {
+                    updateWishlistUI(data.added, this, data.wishlist_count);
+                  });
+              });
+            });
+          </script>
+
+
+
+
+          <script>
+            document.addEventListener("DOMContentLoaded", function () {
+              refreshCartModal();   // Load totals + wishlist states AFTER all JS is ready
+            });
+
+            /* -----------------------------
+               GET CSRF TOKEN
+            ----------------------------- */
+            function getCookie(name) {
+              let cookieValue = null;
+              if (document.cookie) {
+                document.cookie.split(";").forEach(cookie => {
+                  cookie = cookie.trim();
+                  if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
+                  }
+                });
+              }
+              return cookieValue;
+            }
+            const csrftoken = getCookie("csrftoken");
+
+            /* -----------------------------
+               NOTIFICATION POPUP
+            ----------------------------- */
+            function showNotification(message, type = "success") {
+              document.querySelectorAll(".custom-notification").forEach(n => n.remove());
+
+              const el = document.createElement("div");
+              el.className = `custom-notification custom-notification--${type}`;
+              el.innerHTML = `
+        <div class="custom-notification__content">
+            <span class="custom-notification__icon">
+                ${type === "success" ? "✓" : type === "warning" ? "⚠" : "✕"}
+            </span>
+            <span class="custom-notification__message">${message}</span>
+        </div>`;
+
+              document.body.appendChild(el);
+
+              setTimeout(() => el.classList.add("show"), 10);
+              setTimeout(() => {
+                el.classList.remove("show");
+                setTimeout(() => el.remove(), 300);
+              }, 3000);
+            }
+
+            /* -----------------------------
+               UPDATE CART COUNT IN HEADER
+            ----------------------------- */
+            function updateCartCount(count) {
+              document.querySelectorAll(".header-v24__cart-count, .cart-count, #cart-count")
+                .forEach(el => {
+                  el.textContent = count;
+                  el.style.transform = "scale(1.3)";
+                  setTimeout(() => el.style.transform = "scale(1)", 300);
+                });
+
+            }
+
+            /* -----------------------------
+                NEW: REFRESH CART MODAL
+            ----------------------------- */
+            function refreshCartModal() {
+              fetch(window.location.href, {
+                headers: {
+                  'X-Requested-With': 'XMLHttpRequest'
+                }
+              })
+                .then(res => res.text())
+                .then(html => {
+                  const parser = new DOMParser();
+                  const doc = parser.parseFromString(html, 'text/html');
+
+                  // Extract the cart modal content from the fresh HTML
+                  const newCartModal = doc.querySelector('#xo-cart-mini .xo-modal-content-style1__inner');
+                  const currentCartModal = document.querySelector('#xo-cart-mini .xo-modal-content-style1__inner');
+
+                  if (newCartModal && currentCartModal) {
+                    currentCartModal.innerHTML = newCartModal.innerHTML;
+                    console.log('✅ Cart modal refreshed');
+                  }
+                })
+                .catch(err => console.error('Cart modal refresh error:', err));
+            }
+
+            /* -----------------------------
+               UNIVERSAL AJAX ADD TO CART
+            ----------------------------- */
+            function ajaxAddToCart(url, formData, btn) {
+              if (btn) {
+                btn.disabled = true;
+                btn.style.opacity = "0.6";
+              }
+
+              let icon = btn?.querySelector(".xo-btn__icon");
+              let loading = btn?.querySelector(".xo-btn__loading");
+
+              if (icon) icon.style.display = "none";
+              if (loading) loading.style.display = "block";
+
+              fetch(url, {
+                method: "POST",
+                headers: {
+                  "X-Requested-With": "XMLHttpRequest",
+                  "X-CSRFToken": csrftoken
+                },
+                body: formData
+              })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.success) {
+                    updateCartCount(data.cart_count);
+                    showNotification(data.message || "Added to cart!", "success");
+
+                    // 🔥 REFRESH CART MODAL INSTANTLY
+                    refreshCartModal();
+                    setTimeout(() => {
+                      let total = document.getElementById("cart-total");
+                      if (total) total.innerHTML = "₹" + data.cart_total;
+
+                      let subtotal = document.querySelector(".cart-subtotal");
+                      if (subtotal) subtotal.innerHTML = "₹" + data.cart_total;
+                    }, 150);
+
+
+                  } else if (data.limit) {
+                    showNotification(data.message, "warning");
+                    updateCartCount(data.cart_count);
+
+                    // 🔥 REFRESH CART MODAL FOR STOCK LIMITS TOO
+                    refreshCartModal();
+                  } else {
+                    showNotification("Failed to add product", "error");
+                  }
+                })
+                .catch(() => showNotification("Something went wrong!", "error"))
+                .finally(() => {
+                  if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = "1";
+                  }
+                  if (icon) icon.style.display = "inline-block";
+                  if (loading) loading.style.display = "none";
+                });
+            }
+
+            /* -----------------------------
+               CLICK HANDLER FOR ADD TO CART
+            ----------------------------- */
+            document.addEventListener("click", function (e) {
+
+
+              // PRODUCT DETAIL PAGE
+              if (e.target.closest(".add-to-cart-btn")) {
+                e.preventDefault();
+                let btn = e.target.closest(".add-to-cart-btn");
+                let form = btn.closest("form");
+                ajaxAddToCart(btn.dataset.url, new FormData(form), btn);
+
+              }
+
+              // BASE.html GRID BUTTON
+              if (e.target.closest(".add-to-cart-grid-btn")) {
+                e.preventDefault();
+                let btn = e.target.closest(".add-to-cart-grid-btn");
+                let form = btn.closest("form");
+                ajaxAddToCart(btn.dataset.url, new FormData(form), btn);
+              }
+
+              // WISHLIST PAGE BUTTON
+              if (e.target.closest(".add-to-cart-wishlist-btn")) {
+                e.preventDefault();
+                let btn = e.target.closest(".add-to-cart-wishlist-btn");
+                let form = btn.closest("form");
+                ajaxAddToCart(btn.dataset.url, new FormData(form), btn);
+              }
+            });
+
+            /* -----------------------------
+               CATCH ANY ADD TO CART FORMS
+            ----------------------------- */
+            document.addEventListener("submit", function (e) {
+              let form = e.target;
+
+              if (form.action.includes("add_to_cart")) {
+                e.preventDefault();
+                let btn = form.querySelector('button[type="submit"], button');
+                ajaxAddToCart(form.action, new FormData(form), btn);
+              }
+            }, true);
+
+            /* -----------------------------
+               CART QUANTITY + REMOVE
+            ----------------------------- */
+            document.addEventListener("click", function (e) {
+
+              // Increase / Decrease quantity
+              if (e.target.classList.contains("increase-qty") || e.target.classList.contains("decrease-qty")) {
+                e.preventDefault();
+                let btn = e.target;
+                fetch(btn.dataset.url, {
+                  method: "GET",
+                  headers: { "X-Requested-With": "XMLHttpRequest" }
+                })
+                  .then(res => res.json())
+                  .then(data => {
+
+                    if (data.deleted) {
+                      document.querySelector(`.cart-item[data-item-id="${btn.dataset.itemId}"]`).remove();
+
+                      // 🔥 CHECK IF CART IS EMPTY AND REFRESH MODAL
+                      setTimeout(() => {
+                        if (document.querySelectorAll('.cart-item').length === 0) {
+                          refreshCartModal();
+                        }
+                      }, 300);
+                      return;
+                    }
+
+                    document.querySelectorAll(".item-quantity-" + btn.dataset.itemId)
+                      .forEach(el => el.value = data.quantity);
+
+                    let itemTotal = document.querySelector(".item-total-" + btn.dataset.itemId);
+                    if (itemTotal) itemTotal.innerHTML = "₹" + data.item_total;
+
+                    let cartTotal = document.getElementById("cart-total");
+                    if (cartTotal) cartTotal.innerHTML = "₹" + data.cart_total;
+
+                    let cartSubtotal = document.querySelector(".cart-subtotal");
+                    if (cartSubtotal) cartSubtotal.innerHTML = "₹" + data.cart_total;
+                  });
+              }
+
+              // Remove item
+              if (e.target.closest(".remove-item")) {
+                e.preventDefault();
+                let btn = e.target.closest(".remove-item");
+
+                fetch(btn.dataset.url, {
+                  method: "GET",
+                  headers: { "X-Requested-With": "XMLHttpRequest" }
+                })
+                  .then(res => res.json())
+                  .then(data => {
+                    if (data.success) {
+                      let item = document.querySelector(`.cart-item[data-item-id="${btn.dataset.itemId}"]`);
+                      if (item) {
+                        item.style.opacity = "0";
+                        setTimeout(() => {
+                          item.remove();
+
+                          // 🔥 CHECK IF CART IS EMPTY AND REFRESH MODAL
+                          if (document.querySelectorAll('.cart-item').length === 0) {
+                            refreshCartModal();
+                          }
+                        }, 300);
+                      }
+
+                      updateCartCount(data.cart_count);
+
+                      let total = document.getElementById("cart-total");
+                      if (total) total.innerHTML = "₹" + data.cart_total;
+
+                      let subtotal = document.querySelector(".cart-subtotal");
+                      if (subtotal) subtotal.innerHTML = "₹" + data.cart_total;
+
+                      showNotification(data.message, "success");
+                    }
+                  });
+              }
+            });
+
+            /* -----------------------------
+               WISHLIST TOGGLE
+            ----------------------------- */
+            // document.addEventListener("click", function (e) {
+            //     if (e.target.closest(".wishlist-btn")) {
+            //         e.preventDefault();
+            //         let btn = e.target.closest(".wishlist-btn");
+
+            //         fetch(`/wishlist/toggle/${btn.dataset.productId}/`, {
+            //             method: "POST",
+            //             headers: { "X-CSRFToken": csrftoken }
+            //         })
+            //         .then(res => res.json())
+            //         .then(data => {
+            //             btn.innerHTML = data.added
+            //                 ? `<svg width="20" height="20" fill="red"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/></svg>`
+            //                 : `<svg width="20" height="20" fill="none" stroke="black" stroke-width="2"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/></svg>`;
+            //         });
+            //     }
+            // });
+          </script>
+
+          <style>
+            /*** NOTIFICATION ***/
+            .custom-notification {
+              position: fixed;
+              top: 100px;
+              right: 20px;
+              background: #fff;
+              padding: 16px 24px;
+              border-radius: 8px;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+              z-index: 99999;
+              transform: translateX(400px);
+              transition: .3s ease;
+            }
+
+            .custom-notification.show {
+              transform: translateX(0);
+            }
+
+            .custom-notification__content {
+              display: flex;
+              gap: 12px;
+              align-items: center;
+            }
+
+            .custom-notification__icon {
+              width: 24px;
+              height: 24px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 14px;
+              font-weight: bold;
+              color: white;
+            }
+
+            .custom-notification--success .custom-notification__icon {
+              background: #10b981;
+            }
+
+            .custom-notification--warning .custom-notification__icon {
+              background: #f59e0b;
+            }
+
+            .custom-notification--error .custom-notification__icon {
+              background: #ef4444;
+            }
+
+            .xo-btn__loading {
+              display: none;
+            }
+
+            @media (max-width: 768px) {
+              .custom-notification {
+                right: 10px;
+                left: 10px;
+              }
+            }
+          </style>
+</body>
+
+</html>
