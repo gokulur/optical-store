@@ -416,11 +416,12 @@ const CONV_ID = '{{ conversation.conversation_id }}';
 const CSRF    = '{{ csrf_token }}';
 
 /* ── URL paths — match chat_support/urls.py exactly ── */
-const URL_SEND     = `/chat/conversation/${CONV_ID}/send/`;
-const URL_MESSAGES = (lastId) => `/chat/conversation/${CONV_ID}/messages/?last_message_id=${lastId}`;
-const URL_ASSIGN   = `/chat/agent/conversation/${CONV_ID}/assign/`;
-const URL_STATUS   = `/chat/agent/conversation/${CONV_ID}/status/`;
-const URL_PRIORITY = `/chat/agent/conversation/${CONV_ID}/priority/`;
+// NEW — Django resolves the correct paths
+const URL_SEND     = "{% url 'chat:send_message' conversation.conversation_id %}";
+const URL_MESSAGES = (lastId) => "{% url 'chat:get_messages' conversation.conversation_id %}" + `?last_message_id=${lastId}`;
+const URL_ASSIGN   = "{% url 'chat:assign_conversation' conversation.conversation_id %}";
+const URL_STATUS   = "{% url 'chat:update_status' conversation.conversation_id %}";
+const URL_PRIORITY = "{% url 'chat:update_priority' conversation.conversation_id %}";
 const URL_QR       = (id) => `/chat/agent/quick-reply/${id}/`;
 
 const msgInput    = document.getElementById('msgInput');
