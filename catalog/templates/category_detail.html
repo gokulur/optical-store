@@ -1,113 +1,1624 @@
-<!-- category_detail.html -->
 {% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
 
-{% block title %}{{ category.name }} - Eyewear Store{% endblock %}
+{% block title %}{{ category.name }} — Al Ameen Optics{% endblock %}
 
 {% block content %}
-<div class="category-page">
-    <!-- Category Header -->
-    <div class="category-header">
+
+<style>
+/* ============================================================
+   CATEGORY DETAIL — WARM ORGANIC BOUTIQUE
+   Fonts: Libre Baskerville (display) + Nunito Sans (body)
+   Palette: Sand #f4ede4 / Clay #c2715a / Warm white #fdfaf7 / Charcoal #2d2926
+   Direction: Organic warmth meets editorial precision — 
+               a luxury lifestyle boutique catalogue
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Nunito+Sans:ital,opsz,wght@0,6..12,300;0,6..12,400;0,6..12,500;0,6..12,600;0,6..12,700;0,6..12,800;1,6..12,300&display=swap');
+
+:root {
+  --cd-sand:       #f4ede4;
+  --cd-sand-dk:    #e8ddd1;
+  --cd-cream:      #fdfaf7;
+  --cd-clay:       #c2715a;
+  --cd-clay-lt:    #d9927e;
+  --cd-clay-dk:    #a35844;
+  --cd-charcoal:   #2d2926;
+  --cd-charcoal2:  #3f3b37;
+  --cd-muted:      #8a7f75;
+  --cd-rule:       rgba(45,41,38,.1);
+  --cd-white:      #ffffff;
+  --cd-radius:     14px;
+  --cd-radius-lg:  22px;
+  --cd-ease:       cubic-bezier(.22,1,.36,1);
+  --cd-transition: .5s var(--cd-ease);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Base ── */
+.cd-page {
+  font-family: 'Nunito Sans', sans-serif;
+  background: var(--cd-cream);
+  color: var(--cd-charcoal);
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   HERO BANNER
+   ============================================================ */
+.cd-hero {
+  position: relative;
+  min-height: 72vh;
+  display: grid;
+  overflow: hidden;
+  background: var(--cd-sand);
+}
+
+/* Grid: image left, text right (reversed = image right, text left) */
+.cd-hero__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 72vh;
+}
+
+/* Image pane */
+.cd-hero__img-pane {
+  position: relative;
+  overflow: hidden;
+}
+
+.cd-hero__img-pane img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.06);
+  transition: transform 8s var(--cd-ease);
+  filter: saturate(.95) contrast(1.05);
+}
+
+.cd-hero.loaded .cd-hero__img-pane img {
+  transform: scale(1);
+}
+
+/* Soft warm vignette on image */
+.cd-hero__img-pane::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 60%, rgba(244,237,228,.6) 100%);
+  pointer-events: none;
+}
+
+/* Text pane */
+.cd-hero__text-pane {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px 72px 80px 64px;
+  background: var(--cd-sand);
+  position: relative;
+  z-index: 1;
+}
+
+/* Decorative corner accent */
+.cd-hero__text-pane::before {
+  content: '';
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  width: 80px;
+  height: 80px;
+  border-top: 2px solid rgba(194,113,90,.25);
+  border-right: 2px solid rgba(194,113,90,.25);
+  pointer-events: none;
+}
+
+/* Breadcrumb */
+.cd-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 36px;
+  opacity: 0;
+  animation: cd-fadeUp .6s .1s forwards;
+}
+
+.cd-breadcrumb a,
+.cd-breadcrumb span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--cd-muted);
+  text-decoration: none;
+  transition: color .25s;
+}
+
+.cd-breadcrumb a:hover { color: var(--cd-clay); }
+.cd-breadcrumb__sep { width: 18px; height: 1px; background: var(--cd-rule); }
+.cd-breadcrumb span:last-child { color: var(--cd-clay); }
+
+/* Category icon badge */
+.cd-hero__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(194,113,90,.12);
+  border: 1.5px solid rgba(194,113,90,.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 24px;
+  opacity: 0;
+  animation: cd-popIn .7s .2s forwards;
+}
+
+/* Headline */
+.cd-hero__title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  color: var(--cd-charcoal);
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: cd-fadeUp .8s .3s forwards;
+}
+
+.cd-hero__title em {
+  font-style: italic;
+  color: var(--cd-clay);
+}
+
+/* Description */
+.cd-hero__desc {
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.85;
+  color: var(--cd-muted);
+  max-width: 420px;
+  margin-bottom: 40px;
+  opacity: 0;
+  animation: cd-fadeUp .8s .45s forwards;
+}
+
+/* Stat pills */
+.cd-hero__stats {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 48px;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: cd-fadeUp .8s .55s forwards;
+}
+
+.cd-hero__stat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 100px;
+  background: rgba(194,113,90,.08);
+  border: 1px solid rgba(194,113,90,.2);
+}
+
+.cd-hero__stat-num {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--cd-clay);
+  line-height: 1;
+}
+
+.cd-hero__stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--cd-muted);
+}
+
+/* Scroll indicator */
+.cd-hero__scroll {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  animation: cd-fadeUp .8s .7s forwards;
+}
+
+.cd-hero__scroll-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cd-clay);
+  animation: cd-pulse 2s ease-in-out infinite;
+}
+
+.cd-hero__scroll-text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--cd-muted);
+}
+
+/* ============================================================
+   SUBCATEGORIES
+   ============================================================ */
+.cd-subcats {
+  background: var(--cd-cream);
+  padding: 60px;
+}
+
+.cd-subcats__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.cd-section-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: var(--cd-clay);
+  margin-bottom: 12px;
+}
+
+.cd-section-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  color: var(--cd-charcoal);
+  margin-bottom: 36px;
+  line-height: 1.2;
+}
+
+.cd-section-title em { font-style: italic; }
+
+.cd-subcats__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.cd-subcat-card {
+  display: block;
+  text-decoration: none;
+  border-radius: var(--cd-radius);
+  overflow: hidden;
+  background: var(--cd-sand);
+  border: 1.5px solid transparent;
+  transition: border-color .3s, transform var(--cd-transition), box-shadow .4s;
+  position: relative;
+}
+
+.cd-subcat-card:hover {
+  border-color: var(--cd-clay-lt);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(45,41,38,.1);
+}
+
+.cd-subcat-card__img {
+  aspect-ratio: 4/3;
+  overflow: hidden;
+}
+
+.cd-subcat-card__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .6s var(--cd-ease);
+  filter: saturate(.9);
+}
+
+.cd-subcat-card:hover .cd-subcat-card__img img {
+  transform: scale(1.08);
+}
+
+.cd-subcat-card__body {
+  padding: 16px 18px 18px;
+}
+
+.cd-subcat-card__name {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--cd-charcoal);
+  margin-bottom: 4px;
+}
+
+.cd-subcat-card__arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--cd-clay);
+  transition: gap .25s;
+}
+
+.cd-subcat-card:hover .cd-subcat-card__arrow { gap: 10px; }
+
+/* ============================================================
+   PRODUCTS SECTION
+   ============================================================ */
+.cd-products {
+  padding: 0 60px 100px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ── Sticky filter toolbar ── */
+.cd-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--cd-cream);
+  border-bottom: 1px solid var(--cd-rule);
+  padding: 16px 0;
+  margin-bottom: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  box-shadow: 0 4px 24px rgba(45,41,38,.06);
+}
+
+/* Gender tabs */
+.cd-gender-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--cd-sand);
+  border-radius: 100px;
+  padding: 4px;
+  border: 1px solid var(--cd-rule);
+}
+
+.cd-gender-tab {
+  padding: 8px 20px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--cd-muted);
+  text-decoration: none;
+  transition: all .3s;
+  white-space: nowrap;
+}
+
+.cd-gender-tab:hover { color: var(--cd-charcoal); }
+
+.cd-gender-tab.active {
+  background: var(--cd-charcoal);
+  color: var(--cd-white);
+  box-shadow: 0 2px 8px rgba(45,41,38,.2);
+}
+
+/* Right controls */
+.cd-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cd-count-badge {
+  padding: 6px 16px;
+  background: rgba(194,113,90,.08);
+  border: 1px solid rgba(194,113,90,.2);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cd-clay);
+  white-space: nowrap;
+}
+
+.cd-sort-wrap {
+  position: relative;
+}
+
+.cd-sort-select {
+  appearance: none;
+  padding: 9px 38px 9px 16px;
+  font-family: 'Nunito Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--cd-charcoal);
+  background: var(--cd-white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%232d2926' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 14px center;
+  border: 1.5px solid var(--cd-rule);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: border-color .25s;
+}
+
+.cd-sort-select:focus {
+  outline: none;
+  border-color: var(--cd-clay);
+}
+
+/* View toggle */
+.cd-view-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.cd-view-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1.5px solid var(--cd-rule);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--cd-muted);
+  transition: all .25s;
+}
+
+.cd-view-btn:hover { border-color: var(--cd-charcoal); color: var(--cd-charcoal); }
+.cd-view-btn.active { background: var(--cd-charcoal); border-color: var(--cd-charcoal); color: #fff; }
+
+/* ── Section heading ── */
+.cd-products-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* ── Product Grid ── */
+.cd-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.cd-grid.list-view {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+/* ── Product Card ── */
+.cd-card {
+  background: var(--cd-white);
+  border-radius: var(--cd-radius-lg);
+  overflow: hidden;
+  border: 1.5px solid transparent;
+  transition: border-color .4s, transform var(--cd-transition), box-shadow .5s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.cd-card:hover {
+  border-color: rgba(194,113,90,.35);
+  transform: translateY(-8px);
+  box-shadow: 0 28px 60px rgba(45,41,38,.1);
+}
+
+/* Media */
+.cd-card__media {
+  position: relative;
+  aspect-ratio: 1/1;
+  overflow: hidden;
+  background: var(--cd-sand);
+}
+
+.cd-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 20px;
+  transition: transform .6s var(--cd-ease);
+}
+
+.cd-card:hover .cd-card__img { transform: scale(1.06); }
+
+/* Overlay */
+.cd-card__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(0deg, rgba(45,41,38,.35) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity .4s;
+}
+
+.cd-card:hover .cd-card__overlay { opacity: 1; }
+
+.cd-card__quick-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: var(--cd-white);
+  border: none;
+  border-radius: 100px;
+  font-family: 'Nunito Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--cd-charcoal);
+  cursor: pointer;
+  text-decoration: none;
+  transform: translateY(10px);
+  opacity: 0;
+  transition: transform .35s .05s, opacity .35s .05s, background .25s;
+}
+
+.cd-card:hover .cd-card__quick-btn {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.cd-card__quick-btn:hover {
+  background: var(--cd-clay);
+  color: var(--cd-white);
+}
+
+/* Badges */
+.cd-card__badges {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 2;
+}
+
+.cd-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 7px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.cd-badge--new    { background: var(--cd-charcoal); color: var(--cd-white); }
+.cd-badge--sale   { background: var(--cd-clay);     color: var(--cd-white); }
+.cd-badge--out    { background: rgba(45,41,38,.5);  color: var(--cd-white); }
+
+/* Wishlist */
+.cd-card__wish {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(45,41,38,.12);
+  background: rgba(255,255,255,.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .3s, background .25s, border-color .25s;
+}
+
+.cd-card:hover .cd-card__wish { opacity: 1; }
+.cd-card__wish:hover { background: var(--cd-clay); border-color: var(--cd-clay); }
+.cd-card__wish svg { stroke: var(--cd-charcoal); transition: stroke .25s; }
+.cd-card__wish:hover svg { stroke: #fff; }
+.cd-card__wish.active { background: var(--cd-clay); border-color: var(--cd-clay); opacity: 1; }
+.cd-card__wish.active svg { stroke: #fff; fill: #fff; }
+
+/* Body */
+.cd-card__body {
+  padding: 18px 20px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.cd-card__brand {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--cd-clay);
+  margin-bottom: 5px;
+}
+
+.cd-card__name {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--cd-charcoal);
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.cd-card__name a {
+  text-decoration: none;
+  color: inherit;
+  transition: color .25s;
+}
+
+.cd-card__name a:hover { color: var(--cd-clay); }
+
+.cd-card__meta {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--cd-muted);
+  margin-bottom: 12px;
+  text-transform: capitalize;
+}
+
+/* Color swatches */
+.cd-card__swatches {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 16px;
+}
+
+.cd-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1.5px rgba(45,41,38,.18);
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+}
+
+.cd-swatch:hover { transform: scale(1.2); }
+.cd-swatch.active { box-shadow: 0 0 0 2px var(--cd-clay); }
+
+/* Price row */
+.cd-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  gap: 10px;
+}
+
+.cd-card__price-group {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.cd-card__price {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--cd-charcoal);
+}
+
+.cd-card__price-old {
+  font-size: .8rem;
+  color: var(--cd-muted);
+  text-decoration: line-through;
+}
+
+.cd-card__save {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  color: var(--cd-clay);
+  background: rgba(194,113,90,.1);
+  border: 1px solid rgba(194,113,90,.2);
+  padding: 2px 8px;
+  border-radius: 5px;
+}
+
+.cd-card__add {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--cd-sand);
+  border: 1.5px solid var(--cd-rule);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--cd-charcoal);
+  flex-shrink: 0;
+  transition: background .3s, border-color .3s, transform .25s;
+}
+
+.cd-card__add:hover {
+  background: var(--cd-clay);
+  border-color: var(--cd-clay);
+  color: #fff;
+  transform: scale(1.1);
+}
+
+/* ── LIST VIEW ── */
+.cd-grid.list-view .cd-card {
+  flex-direction: row;
+  border-radius: var(--cd-radius);
+  border: none;
+  border-bottom: 1px solid var(--cd-rule);
+  transform: none !important;
+  box-shadow: none !important;
+  padding: 16px 0;
+  gap: 24px;
+}
+
+.cd-grid.list-view .cd-card:hover { border-color: transparent; }
+.cd-grid.list-view .cd-card:hover .cd-card__img { transform: none; }
+
+.cd-grid.list-view .cd-card__media {
+  width: 120px;
+  min-width: 120px;
+  aspect-ratio: 1/1;
+  border-radius: var(--cd-radius);
+  flex-shrink: 0;
+}
+
+.cd-grid.list-view .cd-card__overlay { display: none; }
+.cd-grid.list-view .cd-card__wish { opacity: 1; }
+
+.cd-grid.list-view .cd-card__body {
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  gap: 0;
+  flex: 1;
+}
+
+.cd-grid.list-view .cd-card__body > * { flex-shrink: 0; }
+
+.cd-grid.list-view .cd-card__brand { width: 100px; margin: 0; }
+.cd-grid.list-view .cd-card__name  { flex: 1; margin: 0; font-size: .95rem; }
+.cd-grid.list-view .cd-card__meta  { width: 80px; margin: 0; }
+.cd-grid.list-view .cd-card__swatches { margin: 0; width: 80px; }
+.cd-grid.list-view .cd-card__footer { width: 160px; }
+
+/* ── Empty State ── */
+.cd-empty {
+  grid-column: 1/-1;
+  text-align: center;
+  padding: 80px 24px;
+  background: var(--cd-sand);
+  border-radius: var(--cd-radius-lg);
+}
+
+.cd-empty__icon { font-size: 4rem; display: block; margin-bottom: 20px; }
+
+.cd-empty__title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--cd-charcoal);
+  margin-bottom: 10px;
+}
+
+.cd-empty__sub {
+  font-size: .95rem;
+  color: var(--cd-muted);
+  margin-bottom: 28px;
+}
+
+.cd-empty__btn {
+  display: inline-block;
+  padding: 14px 36px;
+  background: var(--cd-clay);
+  color: #fff;
+  border-radius: 100px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  transition: background .3s;
+}
+
+.cd-empty__btn:hover { background: var(--cd-clay-dk); }
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+.cd-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 60px 0 0;
+}
+
+.cd-pagination__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 100px;
+  font-family: 'Nunito Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--cd-muted);
+  border: 1.5px solid var(--cd-rule);
+  background: var(--cd-white);
+  transition: all .25s;
+  white-space: nowrap;
+}
+
+.cd-pagination__btn:hover {
+  border-color: var(--cd-charcoal);
+  color: var(--cd-charcoal);
+  background: var(--cd-sand);
+}
+
+.cd-pagination__btn.current {
+  background: var(--cd-charcoal);
+  border-color: var(--cd-charcoal);
+  color: var(--cd-white);
+}
+
+.cd-pagination__btn.disabled {
+  opacity: .35;
+  pointer-events: none;
+}
+
+.cd-pagination__ellipsis {
+  font-size: 12px;
+  color: var(--cd-muted);
+  padding: 0 4px;
+}
+
+/* ============================================================
+   FEATURE STRIP
+   ============================================================ */
+.cd-feature-strip {
+  background: var(--cd-sand);
+  padding: 60px;
+  margin: 0 60px 80px;
+  border-radius: var(--cd-radius-lg);
+}
+
+.cd-feature-strip__grid {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
+}
+
+.cd-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.cd-feature-item__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(194,113,90,.12);
+  border: 1.5px solid rgba(194,113,90,.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--cd-clay);
+}
+
+.cd-feature-item__title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--cd-charcoal);
+  margin-bottom: 4px;
+}
+
+.cd-feature-item__desc {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--cd-muted);
+  line-height: 1.6;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes cd-fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cd-popIn {
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes cd-pulse {
+  0%, 100% { opacity: .5; transform: scale(1); }
+  50%       { opacity: 1; transform: scale(1.3); }
+}
+
+/* Scroll reveal */
+.cd-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .7s var(--cd-ease), transform .7s var(--cd-ease);
+}
+.cd-reveal.visible { opacity: 1; transform: none; }
+
+/* Card staggered reveal */
+.cd-card {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .6s var(--cd-ease),
+              transform .6s var(--cd-ease),
+              border-color .4s,
+              box-shadow .5s;
+}
+.cd-card.visible { opacity: 1; transform: translateY(0); }
+.cd-card:hover   { transform: translateY(-8px) !important; }
+.cd-grid.list-view .cd-card:hover { transform: translateY(0) !important; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1200px) {
+  .cd-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 1024px) {
+  .cd-hero__grid { grid-template-columns: 1fr; }
+  .cd-hero__img-pane { min-height: 45vh; }
+  .cd-hero__text-pane { padding: 60px 40px; }
+  .cd-subcats { padding: 48px 40px; }
+  .cd-products { padding: 0 40px 80px; }
+  .cd-feature-strip { margin: 0 40px 60px; padding: 48px 40px; }
+  .cd-feature-strip__grid { grid-template-columns: repeat(2, 1fr); gap: 28px; }
+}
+
+@media (max-width: 768px) {
+  .cd-hero__text-pane { padding: 48px 24px; }
+  .cd-hero__title { font-size: clamp(2.2rem, 8vw, 3.2rem); }
+  .cd-subcats { padding: 48px 20px; }
+  .cd-products { padding: 0 20px 60px; }
+  .cd-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .cd-toolbar { flex-wrap: wrap; gap: 12px; }
+  .cd-feature-strip { margin: 0 20px 48px; padding: 40px 24px; }
+  .cd-feature-strip__grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .cd-products-header { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 480px) {
+  .cd-grid { grid-template-columns: 1fr; }
+  .cd-hero__stats { flex-direction: column; gap: 12px; }
+  .cd-feature-strip__grid { grid-template-columns: 1fr; }
+  .cd-toolbar-right { flex-wrap: wrap; gap: 8px; }
+  .cd-gender-tabs { overflow-x: auto; scrollbar-width: none; }
+  .cd-gender-tabs::-webkit-scrollbar { display: none; }
+}
+</style>
+
+
+<div class="cd-page">
+
+  <!-- ══════════════════════════════════════════════
+       HERO
+  ══════════════════════════════════════════════ -->
+  <section class="cd-hero" id="cd-hero">
+    <div class="cd-hero__grid">
+
+      <!-- Image pane -->
+      <div class="cd-hero__img-pane">
         {% if category.image %}
-        <div class="category-banner">
-            <img src="{{ category.image.url }}" alt="{{ category.name }}">
-        </div>
-        {% endif %}
-        <div class="category-info">
-            <h1>{{ category.name }}</h1>
-            {% if category.description %}
-            <p>{{ category.description }}</p>
-            {% endif %}
-        </div>
-    </div>
-    
-    <!-- Gender Filter -->
-    <div class="gender-filter">
-        <a href="?gender=all" class="{% if selected_gender == 'all' %}active{% endif %}">All</a>
-        <a href="?gender=men" class="{% if selected_gender == 'men' %}active{% endif %}">For Him</a>
-        <a href="?gender=women" class="{% if selected_gender == 'women' %}active{% endif %}">For Her</a>
-        <a href="?gender=kids" class="{% if selected_gender == 'kids' %}active{% endif %}">For Kids</a>
-    </div>
-    
-    <!-- Subcategories (if any) -->
-    {% if category.subcategories.all %}
-    <div class="subcategories">
-        <h2>Shop by Subcategory</h2>
-        <div class="subcategories-grid">
-            {% for subcategory in category.subcategories.all %}
-            <div class="subcategory-card">
-                <a href="{% url 'catalog:category_detail' subcategory.slug %}">
-                    {% if subcategory.image %}
-                    <img src="{{ subcategory.image.url }}" alt="{{ subcategory.name }}">
-                    {% endif %}
-                    <h3>{{ subcategory.name }}</h3>
-                </a>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-    
-    <!-- Products -->
-    <div class="category-products">
-        <h2>{{ category.name }} Products</h2>
-        
-        <!-- Toolbar -->
-        <div class="products-toolbar">
-            <div class="showing-count">
-                Showing {{ products.count }} products
-            </div>
-            <div class="sort-by">
-                <label>Sort by:</label>
-                <select name="sort" onchange="window.location.href='?sort=' + this.value + '&gender={{ selected_gender }}'">
-                    <option value="-created_at">Newest</option>
-                    <option value="base_price">Price: Low to High</option>
-                    <option value="-base_price">Price: High to Low</option>
-                    <option value="name">Name: A-Z</option>
-                </select>
-            </div>
-        </div>
-        
-        {% if products %}
-        <div class="products-grid">
-            {% for product in products %}
-            <div class="product-card">
-                <a href="{% url 'catalog:product_detail' product.slug %}">
-                    <div class="product-image">
-                        {% if product.images.first %}
-                        <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
-                        {% endif %}
-                    </div>
-                    <div class="product-info">
-                        <p class="brand">{{ product.brand.name }}</p>
-                        <h3 class="product-name">{{ product.name }}</h3>
-                        <p class="gender">{{ product.get_gender_display }}</p>
-                        <div class="price-section">
-                            <span class="price">{{ product.base_price }} QAR</span>
-                            {% if product.compare_at_price %}
-                            <span class="compare-price">{{ product.compare_at_price }} QAR</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </a>
-                <div class="product-actions">
-                    <button class="add-to-cart">Add to Cart</button>
-                    <button class="wishlist">♡</button>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
+        <img src="{{ category.image.url }}" alt="{{ category.name }}"
+             loading="eager" width="900" height="700">
         {% else %}
-        <p class="no-products">No products found in this category.</p>
+        <img src="https://images.unsplash.com/photo-1556306535-38febf6782e7?w=900&h=700&fit=crop&q=85"
+             alt="{{ category.name }}" loading="eager" width="900" height="700">
         {% endif %}
-        
-        <!-- Pagination -->
-        <div class="pagination">
-            <a href="#" class="prev">Previous</a>
-            <a href="#" class="page active">1</a>
-            <a href="#" class="page">2</a>
-            <a href="#" class="page">3</a>
-            <a href="#" class="next">Next</a>
+      </div>
+
+      <!-- Text pane -->
+      <div class="cd-hero__text-pane">
+
+        <!-- Breadcrumb -->
+        <nav class="cd-breadcrumb" aria-label="Breadcrumb">
+          <a href="/">{% trans "Home" %}</a>
+          <div class="cd-breadcrumb__sep"></div>
+          {% if category.parent %}
+          <a href="{% url 'catalog:category_detail' category.parent.slug %}">{{ category.parent.name }}</a>
+          <div class="cd-breadcrumb__sep"></div>
+          {% endif %}
+          <span>{{ category.name }}</span>
+        </nav>
+
+        <!-- Icon -->
+        <div class="cd-hero__icon" aria-hidden="true">
+          {% if category.has_lens_selection %}🔭
+          {% elif category.has_power %}👁️
+          {% elif category.has_color_variants %}🎨
+          {% elif 'sunglass' in category.name|lower %}🕶️
+          {% elif 'kids' in category.name|lower %}⭐
+          {% elif 'contact' in category.name|lower %}👁️
+          {% else %}✦{% endif %}
         </div>
+
+        <!-- Title -->
+        <h1 class="cd-hero__title">
+          <em>{{ category.name }}</em>
+        </h1>
+
+        {% if category.description %}
+        <p class="cd-hero__desc">{{ category.description }}</p>
+        {% else %}
+        <p class="cd-hero__desc">
+          {% blocktrans with name=category.name %}
+            Discover our complete {{ name }} collection — thoughtfully curated
+            for style, comfort and clarity.
+          {% endblocktrans %}
+        </p>
+        {% endif %}
+
+        <!-- Stats -->
+        <div class="cd-hero__stats">
+          <div class="cd-hero__stat">
+            <span class="cd-hero__stat-num">{{ products.count }}</span>
+            <span class="cd-hero__stat-label">{% trans "Products" %}</span>
+          </div>
+          {% if category.has_prescription %}
+          <div class="cd-hero__stat">
+            <span class="cd-hero__stat-num">Rx</span>
+            <span class="cd-hero__stat-label">{% trans "Prescription" %}</span>
+          </div>
+          {% endif %}
+          <div class="cd-hero__stat">
+            <span class="cd-hero__stat-num">✓</span>
+            <span class="cd-hero__stat-label">{% trans "Authentic" %}</span>
+          </div>
+        </div>
+
+        <!-- Scroll cue -->
+        <div class="cd-hero__scroll" aria-hidden="true">
+          <div class="cd-hero__scroll-dot"></div>
+          <span class="cd-hero__scroll-text">{% trans "Scroll to browse" %}</span>
+        </div>
+
+      </div>
     </div>
-</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       SUBCATEGORIES
+  ══════════════════════════════════════════════ -->
+  {% if category.subcategories.all %}
+  <section class="cd-subcats">
+    <div class="cd-subcats__inner">
+      <span class="cd-section-label">{% trans "Browse" %}</span>
+      <h2 class="cd-section-title">{% trans "Shop by " %}<em>{% trans "Subcategory" %}</em></h2>
+
+      <div class="cd-subcats__grid">
+        {% for sub in category.subcategories.all %}
+        <a href="{% url 'catalog:category_detail' sub.slug %}" class="cd-subcat-card cd-reveal">
+          {% if sub.image %}
+          <div class="cd-subcat-card__img">
+            <img src="{{ sub.image.url }}" alt="{{ sub.name }}" loading="lazy">
+          </div>
+          {% endif %}
+          <div class="cd-subcat-card__body">
+            <h3 class="cd-subcat-card__name">{{ sub.name }}</h3>
+            <span class="cd-subcat-card__arrow">
+              {% trans "Browse" %}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ══════════════════════════════════════════════
+       PRODUCTS
+  ══════════════════════════════════════════════ -->
+  <div class="cd-products">
+
+    <!-- ── Sticky Toolbar ── -->
+    <div class="cd-toolbar" role="toolbar" aria-label="Filter and sort products">
+
+      <!-- Gender tabs -->
+      <div class="cd-gender-tabs" role="group" aria-label="Filter by gender">
+        <a href="?gender=all{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+           class="cd-gender-tab {% if selected_gender == 'all' or not selected_gender %}active{% endif %}">
+          {% trans "All" %}
+        </a>
+        <a href="?gender=men{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+           class="cd-gender-tab {% if selected_gender == 'men' %}active{% endif %}">
+          {% trans "For Him" %}
+        </a>
+        <a href="?gender=women{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+           class="cd-gender-tab {% if selected_gender == 'women' %}active{% endif %}">
+          {% trans "For Her" %}
+        </a>
+        <a href="?gender=kids{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+           class="cd-gender-tab {% if selected_gender == 'kids' %}active{% endif %}">
+          {% trans "Kids" %}
+        </a>
+        <a href="?gender=unisex{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+           class="cd-gender-tab {% if selected_gender == 'unisex' %}active{% endif %}">
+          {% trans "Unisex" %}
+        </a>
+      </div>
+
+      <!-- Right: count + sort + view -->
+      <div class="cd-toolbar-right">
+        <span class="cd-count-badge">
+          {{ products.count }} {% trans "item(s)" %}
+        </span>
+
+        <div class="cd-sort-wrap">
+          <form method="GET" id="sort-form">
+            <input type="hidden" name="gender" value="{{ selected_gender|default:'all' }}">
+            <select name="sort" class="cd-sort-select" onchange="document.getElementById('sort-form').submit()">
+              <option value="-created_at"  {% if not request.GET.sort or request.GET.sort == '-created_at'  %}selected{% endif %}>{% trans "Newest" %}</option>
+              <option value="base_price"   {% if request.GET.sort == 'base_price'   %}selected{% endif %}>{% trans "Price ↑" %}</option>
+              <option value="-base_price"  {% if request.GET.sort == '-base_price'  %}selected{% endif %}>{% trans "Price ↓" %}</option>
+              <option value="name"         {% if request.GET.sort == 'name'         %}selected{% endif %}>{% trans "A – Z" %}</option>
+              <option value="-name"        {% if request.GET.sort == '-name'        %}selected{% endif %}>{% trans "Z – A" %}</option>
+            </select>
+          </form>
+        </div>
+
+        <div class="cd-view-toggle" role="group" aria-label="View mode">
+          <button class="cd-view-btn active" id="cd-grid-btn" aria-label="Grid view" title="Grid view">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </button>
+          <button class="cd-view-btn" id="cd-list-btn" aria-label="List view" title="List view">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section header ── -->
+    <div class="cd-products-header cd-reveal">
+      <div>
+        <span class="cd-section-label">{{ category.name }}</span>
+        <h2 class="cd-section-title">{% trans "The " %}<em>{% trans "Collection" %}</em></h2>
+      </div>
+    </div>
+
+    <!-- ── Grid ── -->
+    <div class="cd-grid" id="cd-grid" role="list">
+      {% for product in products %}
+      <article class="cd-card" role="listitem">
+
+        <!-- Badges -->
+        <div class="cd-card__badges">
+          {% if product.stock_quantity == 0 %}
+            <span class="cd-badge cd-badge--out">{% trans "Sold Out" %}</span>
+          {% elif product.compare_at_price and product.compare_at_price > product.base_price %}
+            <span class="cd-badge cd-badge--sale">{% trans "Sale" %}</span>
+          {% else %}
+            <span class="cd-badge cd-badge--new">{% trans "New" %}</span>
+          {% endif %}
+        </div>
+
+        <!-- Wishlist -->
+        <button class="cd-card__wish wishlist-btn" data-product-id="{{ product.id }}"
+                aria-label="{% trans 'Add to wishlist' %}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+          </svg>
+        </button>
+
+        <!-- Media -->
+        <div class="cd-card__media">
+          <a href="
+            {% if product.product_type == 'sunglasses' %}{% url 'catalog:sunglass_detail' product.slug %}
+            {% elif product.product_type == 'eyeglasses' %}{% url 'catalog:eyeglass_detail' product.slug %}
+            {% elif product.product_type == 'contact_lenses' %}{% url 'catalog:contact_lens_detail' product.slug %}
+            {% else %}{% url 'catalog:product_detail' product.slug %}
+            {% endif %}
+          " tabindex="-1" aria-hidden="true">
+            {% with img=product.images.first %}
+            {% if img %}
+            <img src="{{ img.image.url }}" alt="{{ product.name }}" class="cd-card__img" loading="lazy" width="500" height="500">
+            {% elif product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="cd-card__img" loading="lazy" width="500" height="500">
+            {% else %}
+            <img src="{% static 'img/no-image.jpg' %}" alt="{{ product.name }}" class="cd-card__img" loading="lazy" width="500" height="500">
+            {% endif %}
+            {% endwith %}
+          </a>
+
+          <div class="cd-card__overlay" aria-hidden="true">
+            <a href="
+              {% if product.product_type == 'sunglasses' %}{% url 'catalog:sunglass_detail' product.slug %}
+              {% elif product.product_type == 'eyeglasses' %}{% url 'catalog:eyeglass_detail' product.slug %}
+              {% elif product.product_type == 'contact_lenses' %}{% url 'catalog:contact_lens_detail' product.slug %}
+              {% else %}{% url 'catalog:product_detail' product.slug %}
+              {% endif %}
+            " class="cd-card__quick-btn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              {% trans "Quick View" %}
+            </a>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="cd-card__body">
+          {% if product.brand %}
+          <span class="cd-card__brand">{{ product.brand.name }}</span>
+          {% endif %}
+
+          <h3 class="cd-card__name">
+            <a href="
+              {% if product.product_type == 'sunglasses' %}{% url 'catalog:sunglass_detail' product.slug %}
+              {% elif product.product_type == 'eyeglasses' %}{% url 'catalog:eyeglass_detail' product.slug %}
+              {% elif product.product_type == 'contact_lenses' %}{% url 'catalog:contact_lens_detail' product.slug %}
+              {% else %}{% url 'catalog:product_detail' product.slug %}
+              {% endif %}
+            ">{{ product.name }}</a>
+          </h3>
+
+          <p class="cd-card__meta">
+            {{ product.get_gender_display }}
+            {% if product.product_type %}· {{ product.get_product_type_display }}{% endif %}
+          </p>
+
+          <!-- Color swatches -->
+          {% with variants=product.variants.all %}
+          {% if variants %}
+          <div class="cd-card__swatches">
+            {% for v in variants|slice:":5" %}
+            {% if v.color_code %}
+            <div class="cd-swatch {% if forloop.first %}active{% endif %}"
+                 style="background:{{ v.color_code }};"
+                 title="{{ v.color_name }}"></div>
+            {% endif %}
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% endwith %}
+
+          <!-- Price + add -->
+          <div class="cd-card__footer">
+            <div class="cd-card__price-group">
+              <span class="cd-card__price">₹{{ product.base_price }}</span>
+              {% if product.compare_at_price and product.compare_at_price > product.base_price %}
+              <span class="cd-card__price-old">₹{{ product.compare_at_price }}</span>
+              {% endif %}
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              {% if product.compare_at_price and product.compare_at_price > product.base_price %}
+              <span class="cd-card__save">{% trans "SALE" %}</span>
+              {% endif %}
+              <form method="POST" action=" " style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="cd-card__add" aria-label="{% trans 'Add to cart' %}">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+      </article>
+      {% empty %}
+      <div class="cd-empty">
+        <span class="cd-empty__icon">🕶️</span>
+        <h3 class="cd-empty__title">{% trans "Nothing here yet" %}</h3>
+        <p class="cd-empty__sub">
+          {% if selected_gender != 'all' %}
+            {% trans "Try a different gender filter or clear your selection." %}
+          {% else %}
+            {% trans "Products are on their way. Check back soon!" %}
+          {% endif %}
+        </p>
+        <a href="?gender=all" class="cd-empty__btn">{% trans "Clear Filters" %}</a>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- ── Pagination ── -->
+    {% if is_paginated or page_obj.has_other_pages %}
+    <nav class="cd-pagination" aria-label="Pagination">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% if selected_gender %}&gender={{ selected_gender }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+         class="cd-pagination__btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        {% trans "Prev" %}
+      </a>
+      {% else %}
+      <span class="cd-pagination__btn disabled">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        {% trans "Prev" %}
+      </span>
+      {% endif %}
+
+      {% for pg in page_obj.paginator.page_range %}
+        {% if pg == page_obj.number %}
+        <span class="cd-pagination__btn current">{{ pg }}</span>
+        {% elif pg == 1 or pg == page_obj.paginator.num_pages or pg >= page_obj.number|add:"-2" and pg <= page_obj.number|add:"2" %}
+        <a href="?page={{ pg }}{% if selected_gender %}&gender={{ selected_gender }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+           class="cd-pagination__btn">{{ pg }}</a>
+        {% elif pg == page_obj.number|add:"-3" or pg == page_obj.number|add:"3" %}
+        <span class="cd-pagination__ellipsis">…</span>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if selected_gender %}&gender={{ selected_gender }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+         class="cd-pagination__btn">
+        {% trans "Next" %}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </a>
+      {% else %}
+      <span class="cd-pagination__btn disabled">
+        {% trans "Next" %}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </span>
+      {% endif %}
+    </nav>
+    {% endif %}
+
+  </div><!-- /.cd-products -->
+
+  <!-- ══════════════════════════════════════════════
+       FEATURE STRIP
+  ══════════════════════════════════════════════ -->
+  <div class="cd-feature-strip cd-reveal">
+    <div class="cd-feature-strip__grid">
+      <div class="cd-feature-item">
+        <div class="cd-feature-item__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="cd-feature-item__title">{% trans "100% Authentic" %}</div>
+          <div class="cd-feature-item__desc">{% trans "Every product is sourced directly from authorised distributors." %}</div>
+        </div>
+      </div>
+      <div class="cd-feature-item">
+        <div class="cd-feature-item__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 8v4l3 3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="cd-feature-item__title">{% trans "Free Eye Test" %}</div>
+          <div class="cd-feature-item__desc">{% trans "Book a complimentary vision check at any Al Ameen branch." %}</div>
+        </div>
+      </div>
+      <div class="cd-feature-item">
+        <div class="cd-feature-item__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="14" rx="2"/>
+            <path d="M2 10h20"/>
+          </svg>
+        </div>
+        <div>
+          <div class="cd-feature-item__title">{% trans "Secure Payment" %}</div>
+          <div class="cd-feature-item__desc">{% trans "Safe, encrypted checkout with multiple payment methods." %}</div>
+        </div>
+      </div>
+      <div class="cd-feature-item">
+        <div class="cd-feature-item__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="cd-feature-item__title">{% trans "In-Store Fitting" %}</div>
+          <div class="cd-feature-item__desc">{% trans "Professional frame fitting by our certified optometrists." %}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.cd-page -->
+
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── Hero entrance ── */
+  const hero = document.getElementById('cd-hero');
+  if (hero) hero.classList.add('loaded');
+
+  /* ── Scroll reveal ── */
+  const io = ('IntersectionObserver' in window)
+    ? new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.06, rootMargin: '0px 0px -30px 0px' })
+    : null;
+
+  document.querySelectorAll('.cd-reveal').forEach(el =>
+    io ? io.observe(el) : el.classList.add('visible')
+  );
+
+  /* ── Card staggered reveal ── */
+  const cardIO = ('IntersectionObserver' in window)
+    ? new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            const allCards = [...document.querySelectorAll('.cd-card')];
+            const idx   = allCards.indexOf(e.target);
+            const cols  = window.innerWidth > 1200 ? 4 : window.innerWidth > 768 ? 3 : window.innerWidth > 480 ? 2 : 1;
+            const delay = (idx % cols) * 80;
+            setTimeout(() => e.target.classList.add('visible'), delay);
+            cardIO.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.04 })
+    : null;
+
+  document.querySelectorAll('.cd-card').forEach(card =>
+    cardIO ? cardIO.observe(card) : card.classList.add('visible')
+  );
+
+  /* ── View toggle (grid / list) ── */
+  const grid    = document.getElementById('cd-grid');
+  const gridBtn = document.getElementById('cd-grid-btn');
+  const listBtn = document.getElementById('cd-list-btn');
+
+  if (gridBtn && listBtn && grid) {
+    gridBtn.addEventListener('click', () => {
+      grid.classList.remove('list-view');
+      gridBtn.classList.add('active');
+      listBtn.classList.remove('active');
+    });
+    listBtn.addEventListener('click', () => {
+      grid.classList.add('list-view');
+      listBtn.classList.add('active');
+      gridBtn.classList.remove('active');
+    });
+  }
+
+  /* ── Wishlist toggle ── */
+  document.querySelectorAll('.wishlist-btn').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.classList.toggle('active');
+      const id = this.dataset.productId;
+      if (!id) return;
+      fetch('/wishlist/toggle/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+        body: JSON.stringify({ product_id: id }),
+      }).catch(() => this.classList.toggle('active'));
+    });
+  });
+
+  /* ── Add to cart ── */
+  document.querySelectorAll('.cd-card form').forEach(form => {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const btn = this.querySelector('button');
+      if (btn) btn.disabled = true;
+      fetch(this.action, {
+        method: 'POST',
+        body: new FormData(this),
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
+        .then(r => r.json())
+        .then(d => toast(d.message || '{% trans "Added to cart!" %}'))
+        .catch(() => toast('{% trans "Added to cart!" %}'))
+        .finally(() => { if (btn) btn.disabled = false; });
+    });
+  });
+
+  /* ── Color swatches ── */
+  document.querySelectorAll('.cd-card__swatches').forEach(group => {
+    group.querySelectorAll('.cd-swatch').forEach(sw => {
+      sw.addEventListener('click', function (e) {
+        e.stopPropagation();
+        group.querySelectorAll('.cd-swatch').forEach(s => s.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  });
+
+  /* ── Smooth sort submission ── */
+  const sortForm = document.getElementById('sort-form');
+  if (sortForm) {
+    const sel = sortForm.querySelector('select');
+    if (sel) {
+      sel.addEventListener('change', () => sortForm.submit());
+    }
+  }
+
+  /* ── Toast ── */
+  function toast(msg) {
+    const old = document.querySelector('.cd-toast');
+    if (old) old.remove();
+    const t = document.createElement('div');
+    t.className = 'cd-toast';
+    t.style.cssText = `
+      position:fixed; bottom:28px; right:28px; z-index:99999;
+      background:var(--cd-charcoal); color:#fff;
+      padding:14px 24px; border-radius:100px;
+      font-family:'Nunito Sans',sans-serif; font-size:13px; font-weight:600;
+      box-shadow:0 10px 32px rgba(45,41,38,.25);
+      display:flex; align-items:center; gap:10px;
+      animation:cdToastIn .4s cubic-bezier(.22,1,.36,1) forwards;
+    `;
+    t.innerHTML = `<span style="color:var(--cd-clay);font-size:16px;">✓</span>${msg}`;
+    document.body.appendChild(t);
+    setTimeout(() => {
+      t.style.animation = 'cdToastOut .35s forwards';
+      setTimeout(() => t.remove(), 350);
+    }, 2500);
+  }
+
+  /* ── CSRF ── */
+  function getCsrf() {
+    const m = document.cookie.match(/csrftoken=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+
+  /* ── Inject keyframes ── */
+  const s = document.createElement('style');
+  s.textContent = `
+    @keyframes cdToastIn  { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+    @keyframes cdToastOut { from { opacity:1; } to { opacity:0; transform:translateY(10px); } }
+  `;
+  document.head.appendChild(s);
+
+  console.log('✦ Category Detail — Al Ameen Optics');
+})();
+</script>
+
 {% endblock %}
