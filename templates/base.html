@@ -1,1272 +1,1774 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
-<html class="no-js" dir="ltr" lang="en" xo-money-format="₹{{amount}}" xo-money-with-currency-format="₹{{amount}} USD">
+<html class="no-js" dir="ltr" lang="en">
 
 <head>
   <meta charset="utf-8" />
   <meta content="IE=edge" http-equiv="X-UA-Compatible" />
   <meta content="width=device-width,initial-scale=1" name="viewport" />
-  <meta content="" name="theme-color" />
   <link href="{% url 'home' %}" rel="canonical" />
 
-  <script>
-    window.Xotiny = { version: '1.0.0', name: 'Engo' };
-  </script>
+  <title>{% block title %}Al Ameen Optics{% endblock %}</title>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <meta property="og:site_name" content="Al Ameen Optics" />
+  <meta property="og:title" content="Al Ameen Optics - Your Vision Matters More" />
+  <meta property="og:type" content="website" />
+  <meta name="description" content="Al Ameen Optics - Premium eyewear, sunglasses, contact lenses and eye care since 1927." />
 
-  <title>{% block title %}Home{% endblock %}</title>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet" />
 
-  <meta content="ecommerce" property="og:site_name" />
-  <meta content="ecommerce" property="og:title" />
-  <meta content="website" property="og:type" />
-  <meta content="ecommerce" property="og:description" />
-  <meta content="@#" name="twitter:site" />
-  <meta content="summary_large_image" name="twitter:card" />
-  <meta content="ecommerce" name="twitter:title" />
-  <meta content="ecommerce" name="twitter:description" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
-  <meta content="noindex,nofollow" name="robots" />
-
-  <script async="async" src="{% static 'checkouts/internal/preloads.js' %}"></script>
-
-  <script id="shopify-features" type="application/json">
-    {"accessToken":"afb23f91f8ed940e0353278be484ef77","betas":["rich-media-storefront-analytics"],"predictiveSearch":true,"locale":"en"}
-  </script>
-
-  <script>
-    var Shopify = Shopify || {};
-    Shopify.shop = "borcen-store-newdemo.myshopify.com";
-    Shopify.locale = "en";
-    Shopify.currency = { "active": "USD", "rate": "1.0" };
-    Shopify.country = "IN";
-    Shopify.theme = { "name": "borcen-home5", "schema_name": "Borcen", "schema_version": "1.0.0" };
-    Shopify.routes = Shopify.routes || {};
-    Shopify.routes.root = "/";
-  </script>
-
-  <script type="module">
-    !function (o) { (o.Shopify = o.Shopify || {}).modules = !0 }(window);
-  </script>
-
-  <script async="async" defer="defer" src="{% static 'cdn/shopifycloud/shop-js/client.js' %}"></script>
-  <script crossorigin="" defer="" id="hot-reload-client"
-    src="{% static 'cdn/shopifycloud/theme-hot-reload/theme-hot-reload.js' %}"></script>
-
-  <style data-shopify="">
-    :root,
-    .color-background-1 {
-      --color-background: 255, 255, 255;
-      --gradient-background: #ffffff;
-      --color-accent: 129, 216, 208;
-      --color-foreground: 0, 0, 0;
-      --color-shadow: 18, 18, 18;
-      --color-border: 0, 0, 0;
-      --color-button: 255, 255, 255;
-      --color-button-text: 0, 0, 0;
-      --color-secondary-button: 0, 0, 0;
-      --color-secondary-button-text: 255, 255, 255;
-      --color-tertiary-button: 75, 71, 255;
-      --color-tertiary-button-text: 255, 255, 255;
-      --color-gray-button: 238, 238, 238;
-      --color-gray-button-text: 18, 18, 18;
-      --color-dark-button: 0, 0, 0;
-      --color-dark-button-text: 255, 255, 255;
-      --color-light-button: 255, 255, 255;
-      --color-light-button-text: 0, 0, 0;
-      --color-link: 0, 0, 0;
-      --color-badge-foreground: 0, 0, 0;
-      --color-badge-background: 255, 255, 255;
-      --color-badge-border: 0, 0, 0;
-      --payment-terms-background-color: rgb(255 255 255);
-    }
-    .color-background-2 {
-      --color-background: 243, 243, 243;
-      --gradient-background: #f3f3f3;
-      --color-accent: 43, 190, 161;
-      --color-foreground: 18, 18, 18;
-      --color-shadow: 18, 18, 18;
-      --color-border: 18, 18, 18;
-      --color-button: 43, 190, 161;
-      --color-button-text: 243, 243, 243;
-      --color-secondary-button: 255, 100, 100;
-      --color-secondary-button-text: 255, 255, 255;
-      --color-tertiary-button: 75, 71, 255;
-      --color-tertiary-button-text: 255, 255, 255;
-      --color-gray-button: 238, 238, 238;
-      --color-gray-button-text: 18, 18, 18;
-      --color-dark-button: 18, 18, 18;
-      --color-dark-button-text: 255, 255, 255;
-      --color-light-button: 255, 255, 255;
-      --color-light-button-text: 18, 18, 18;
-      --color-link: 243, 243, 243;
-      --color-badge-foreground: 18, 18, 18;
-      --color-badge-background: 243, 243, 243;
-      --color-badge-border: 18, 18, 18;
-      --payment-terms-background-color: rgb(243 243 243);
-    }
-    .color-inverse {
-      --color-background: 0, 0, 0;
-      --gradient-background: #000000;
-      --color-accent: 129, 216, 208;
-      --color-foreground: 255, 255, 255;
-      --color-shadow: 18, 18, 18;
-      --color-border: 255, 255, 255;
-      --color-button: 255, 255, 255;
-      --color-button-text: 0, 0, 0;
-      --color-secondary-button: 0, 0, 0;
-      --color-secondary-button-text: 255, 255, 255;
-      --color-tertiary-button: 75, 71, 255;
-      --color-tertiary-button-text: 255, 255, 255;
-      --color-gray-button: 238, 238, 238;
-      --color-gray-button-text: 18, 18, 18;
-      --color-dark-button: 0, 0, 0;
-      --color-dark-button-text: 255, 255, 255;
-      --color-light-button: 255, 255, 255;
-      --color-light-button-text: 0, 0, 0;
-      --color-link: 0, 0, 0;
-      --color-badge-foreground: 255, 255, 255;
-      --color-badge-background: 0, 0, 0;
-      --color-badge-border: 255, 255, 255;
-      --payment-terms-background-color: rgb(0 0 0);
-    }
-    .color-accent-1 {
-      --color-background: 36, 16, 78;
-      --gradient-background: #24104e;
-      --color-accent: 43, 190, 161;
-      --color-foreground: 255, 255, 255;
-      --color-shadow: 18, 18, 18;
-      --color-border: 18, 18, 18;
-      --color-button: 255, 255, 255;
-      --color-button-text: 18, 18, 18;
-      --color-secondary-button: 255, 100, 100;
-      --color-secondary-button-text: 255, 255, 255;
-      --color-tertiary-button: 75, 71, 255;
-      --color-tertiary-button-text: 255, 255, 255;
-      --color-gray-button: 238, 238, 238;
-      --color-gray-button-text: 18, 18, 18;
-      --color-dark-button: 18, 18, 18;
-      --color-dark-button-text: 255, 255, 255;
-      --color-light-button: 255, 255, 255;
-      --color-light-button-text: 18, 18, 18;
-      --color-link: 18, 18, 18;
-      --color-badge-foreground: 255, 255, 255;
-      --color-badge-background: 36, 16, 78;
-      --color-badge-border: 255, 255, 255;
-      --payment-terms-background-color: rgb(36 16 78);
-    }
-    .color-accent-2 {
-      --color-background: 51, 79, 180;
-      --gradient-background: #334fb4;
-      --color-accent: 43, 190, 161;
-      --color-foreground: 255, 255, 255;
-      --color-shadow: 18, 18, 18;
-      --color-border: 18, 18, 18;
-      --color-button: 255, 255, 255;
-      --color-button-text: 51, 79, 180;
-      --color-secondary-button: 255, 100, 100;
-      --color-secondary-button-text: 255, 255, 255;
-      --color-tertiary-button: 75, 71, 255;
-      --color-tertiary-button-text: 255, 255, 255;
-      --color-gray-button: 238, 238, 238;
-      --color-gray-button-text: 18, 18, 18;
-      --color-dark-button: 18, 18, 18;
-      --color-dark-button-text: 255, 255, 255;
-      --color-light-button: 255, 255, 255;
-      --color-light-button-text: 18, 18, 18;
-      --color-link: 51, 79, 180;
-      --color-badge-foreground: 255, 255, 255;
-      --color-badge-background: 51, 79, 180;
-      --color-badge-border: 255, 255, 255;
-      --payment-terms-background-color: rgb(51 79 180);
-    }
-    body, .color-background-1, .color-background-2, .color-inverse, .color-accent-1, .color-accent-2 {
-      color: rgba(var(--color-foreground), 0.75);
-      background-color: rgb(var(--color-background));
-    }
-    :root {
-      --font-body-desktop-size: 1.6rem;
-      --font-body-mobile-size: 1.5rem;
-      --font-body-family: Jost, sans-serif;
-      --font-body-style: ;
-      --font-body-weight: 400;
-      --font-body-weight-bold: 400;
-      --font-heading-family: Jost, sans-serif;
-      --font-heading-style: ;
-      --font-heading-weight: 500;
-      --font-body-scale: 1.0;
-      --font-heading-scale: 1.0;
-      --font-body-line-height: calc(1 + 0.8 / var(--font-body-scale));
-      --font-custom-family: Playfair Display, sans-serif;
-      --font-custom-weight: 400;
-      --media-padding: px;
-      --media-border-opacity: 0.05;
-      --media-border-width: 0px;
-      --media-radius: 0px;
-      --media-shadow-opacity: 0.0;
-      --media-shadow-horizontal-offset: 0px;
-      --media-shadow-vertical-offset: 4px;
-      --media-shadow-blur-radius: 5px;
-      --media-shadow-visible: 0;
-      --page-width: 140rem;
-      --page-width-margin: 0rem;
-      --product-card-image-padding: 0.0rem;
-      --product-card-content-padding: 0.0rem;
-      --product-card-corner-radius: 0.0rem;
-      --product-card-text-alignment: center;
-      --product-card-border-width: 0.0rem;
-      --product-card-border-opacity: 0.1;
-      --product-card-shadow-opacity: 0.0;
-      --product-card-shadow-visible: 0;
-      --product-card-shadow-horizontal-offset: 0.0rem;
-      --product-card-shadow-vertical-offset: 0.4rem;
-      --product-card-shadow-blur-radius: 1.2rem;
-      --collection-card-image-padding: 0.0rem;
-      --collection-card-content-padding: 0.0rem;
-      --collection-card-corner-radius: 0.8rem;
-      --collection-card-text-alignment: center;
-      --collection-card-border-width: 0.0rem;
-      --collection-card-border-opacity: 0.1;
-      --collection-card-shadow-opacity: 0.0;
-      --collection-card-shadow-visible: 0;
-      --collection-card-shadow-horizontal-offset: 0.0rem;
-      --collection-card-shadow-vertical-offset: 0.4rem;
-      --collection-card-shadow-blur-radius: 1.2rem;
-      --article-card-image-padding: 0.0rem;
-      --article-card-content-padding: 0.0rem;
-      --article-card-corner-radius: 0.0rem;
-      --article-card-text-alignment: left;
-      --article-card-border-width: 0.0rem;
-      --article-card-border-opacity: 0.1;
-      --article-card-shadow-opacity: 0.0;
-      --article-card-shadow-visible: 0;
-      --article-card-shadow-horizontal-offset: 0.0rem;
-      --article-card-shadow-vertical-offset: 0.6rem;
-      --article-card-shadow-blur-radius: 1.6rem;
-      --badge-corner-radius: 0.0rem;
-      --modal-border-width: 0px;
-      --modal-border-opacity: 0.0;
-      --modal-corner-radius: 8px;
-      --modal-shadow-opacity: 0.0;
-      --modal-shadow-horizontal-offset: 0px;
-      --modal-shadow-vertical-offset: 0px;
-      --modal-shadow-blur-radius: 0px;
-      --modal-padding: 20px;
-      --modal-margin: 20px;
-      --modal-backdrop-opacity: 0.5;
-      --modal-backdrop-blur: 0px;
-      --drawer-border-width: 0px;
-      --drawer-border-opacity: 0.0;
-      --drawer-corner-radius: 0px;
-      --drawer-shadow-opacity: 0.0;
-      --drawer-shadow-horizontal-offset: 0px;
-      --drawer-shadow-vertical-offset: 0px;
-      --drawer-shadow-blur-radius: 0px;
-      --drawer-padding: 20px;
-      --drawer-margin: 0px;
-      --drawer-backdrop-opacity: 0.4;
-      --drawer-backdrop-blur: 0px;
-      --spacing-sections-desktop: 0px;
-      --spacing-sections-mobile: 0px;
-      --grid-desktop-vertical-spacing: 30px;
-      --grid-desktop-horizontal-spacing: 30px;
-      --grid-mobile-vertical-spacing: 15px;
-      --grid-mobile-horizontal-spacing: 15px;
-      --text-boxes-border-opacity: 0.1;
-      --text-boxes-border-width: 0px;
-      --text-boxes-radius: 8px;
-      --text-boxes-shadow-opacity: 0.0;
-      --text-boxes-shadow-visible: 0;
-      --text-boxes-shadow-horizontal-offset: 0px;
-      --text-boxes-shadow-vertical-offset: 4px;
-      --text-boxes-shadow-blur-radius: 5px;
-      --buttons-radius: 8px;
-      --buttons-radius-outset: 10px;
-      --buttons-border-width: 2px;
-      --buttons-border-opacity: 1.0;
-      --buttons-shadow-opacity: 0.05;
-      --buttons-shadow-visible: 1;
-      --buttons-shadow-horizontal-offset: 0px;
-      --buttons-shadow-vertical-offset: 3px;
-      --buttons-shadow-blur-radius: 6px;
-      --buttons-border-offset: 0.3px;
-      --buttons-background-opacity: 1.0;
-      --buttons-scale: 1.0;
-      --inputs-radius: 8px;
-      --inputs-border-width: 1px;
-      --inputs-border-opacity: 0.55;
-      --inputs-shadow-opacity: 0.0;
-      --inputs-shadow-background-opacity: 0.0;
-      --inputs-shadow-horizontal-offset: 0px;
-      --inputs-margin-offset: 0px;
-      --inputs-shadow-vertical-offset: 4px;
-      --inputs-shadow-blur-radius: 5px;
-      --inputs-radius-outset: 9px;
-      --variant-pills-radius: px;
-      --variant-pills-border-width: px;
-      --variant-pills-border-opacity: 0.0;
-      --variant-pills-shadow-opacity: 0.0;
-      --variant-pills-shadow-horizontal-offset: px;
-      --variant-pills-shadow-vertical-offset: px;
-      --variant-pills-shadow-blur-radius: px;
-    }
-  </style>
-
-  <script>
-    window.settings = {
-      animate_duration: 500,
-      animate_effect: 'fade-up',
-      animate_strength: 1,
-      modal_animate: 'zoom',
-      modal_easing: 'decay',
-      modal_duration: 300,
-      drawer_easing: 'decay',
-      drawer_duration: 400,
-      image_lazyload: true,
-      color_scheme_ids: ["background-1","background-2","inverse","accent-1","accent-2"],
-      dark_mode_mapping: `Scheme 1: Scheme 5\nScheme 2: Scheme 4`,
-      cart_free_shipping_min_amount: 600,
-    }
-  </script>
-
-  <style>
-    /* ── Cart Modal ── */
-    .cart-items-list { display:flex; flex-direction:column; gap:1.5rem; padding:1rem 0; }
-    .cart-item { display:grid; grid-template-columns:80px 1fr auto auto; gap:1rem; align-items:center; padding:1rem; border:1px solid #e5e5e5; border-radius:8px; }
-    .cart-item__image img { width:80px; height:80px; object-fit:cover; border-radius:4px; }
-    .cart-item__details { display:flex; flex-direction:column; gap:.5rem; }
-    .cart-item__title { font-size:1rem; font-weight:600; margin:0; }
-    .cart-item__title a { color:inherit; text-decoration:none; }
-    .cart-item__price { font-weight:500; color:#666; }
-    .cart-item__quantity { display:flex; align-items:center; gap:.5rem; }
-    .qty-btn { width:30px; height:30px; border:1px solid #ddd; background:white; cursor:pointer; border-radius:4px; font-size:18px; display:flex; align-items:center; justify-content:center; }
-    .qty-btn:hover { background:#f5f5f5; }
-    .qty-input { width:50px; text-align:center; border:1px solid #ddd; border-radius:4px; padding:.25rem; }
-    .cart-item__remove button { background:none; border:none; cursor:pointer; padding:.5rem; color:#999; }
-    .cart-item__remove button:hover { color:#e74c3c; }
-    .cart-item__total { font-weight:600; font-size:1.1rem; }
-    .cart-summary { padding:1rem; background:#f9f9f9; border-radius:8px; margin-bottom:1rem; }
-    .cart-summary__row { display:flex; justify-content:space-between; padding:.5rem 0; }
-    .cart-summary__total { font-size:1.2rem; font-weight:700; border-top:2px solid #ddd; padding-top:1rem; margin-top:.5rem; }
-    .checkout-btn { width:100%; margin-top:1rem; padding:1rem; text-align:center; }
-    .xo-notify-cart { display:none; align-items:center; gap:1rem; padding:1rem; background:#d4edda; border:1px solid #c3e6cb; border-radius:8px; margin-bottom:1rem; }
-    .collection-product-footer { padding:1rem; }
-    .collection-product-footer__img img { width:100%; height:auto; border-radius:8px; }
-    .collection-product-footer__name-product { margin:.5rem 0; font-size:.95rem; }
-    .collection-product-footer__price { font-weight:600; margin:.5rem 0; }
-    .add-to-cart-btn { width:100%; padding:.5rem; background:#000; color:#fff; border:none; border-radius:4px; cursor:pointer; }
-    .add-to-cart-btn:hover { background:#333; }
-
-    /* ── Toast ── */
-    .toast-container { position:fixed; top:25px; right:30px; display:flex; flex-direction:column; gap:10px; z-index:1000; }
-    .toast { position:relative; width:320px; border-radius:12px; background:#fff; padding:20px 35px 20px 25px; box-shadow:0 6px 20px -5px rgba(0,0,0,.1); display:flex; overflow-x:hidden; align-items:center; transform:translateX(calc(100% + 30px)); transition:all .5s cubic-bezier(.68,-.55,.265,1.35); }
-    .toast.active { transform:translateX(0%); }
-    .toast .toast-content { display:flex; align-items:center; }
-    .toast-content .icon { display:flex; align-items:center; justify-content:center; height:35px; min-width:35px; font-size:35px; color:#fff; }
-    .toast-content .message { display:flex; flex-direction:column; margin-left:15px; }
-    .message .text { font-size:16px; font-weight:400; color:#666; font-family:"Outfit",serif; }
-    .message .text.text-1 { font-weight:600; color:#333; }
-    .toast .close { position:absolute; top:10px; right:15px; padding:5px; cursor:pointer; opacity:.7; }
-    .toast .close:hover { opacity:1; }
-    .toast .progress { position:absolute; bottom:0; left:0; height:3px; width:100%; }
-    .toast .progress:before { content:""; position:absolute; bottom:0; right:0; height:100%; width:100%; background-color:#4070f4; }
-    .progress.active:before { animation:progress 5s linear forwards; }
-    @keyframes progress { 100% { right:100%; } }
-    .toast.success .icon { color:rgb(25 135 84); }
-    .toast.error   .icon { color:rgb(220 53 69); }
-    .toast.warning .icon { color:rgb(255 193 7); }
-    .toast.info    .icon { color:rgb(13 202 240); }
-    .toast.success .progress:before { background:rgb(25 135 84); }
-    .toast.error   .progress:before { background:rgb(220 53 69); }
-    .toast.warning .progress:before { background:rgb(255 193 7); }
-    .toast.info    .progress:before { background:rgb(13 202 240); }
-
-    /* ── Circle button (wishlist) ── */
-    .circle-btn { width:42px; height:42px; border-radius:50%; background:white; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,.12); transition:all .2s ease; }
-    .circle-btn:hover { transform:scale(1.05); box-shadow:0 6px 14px rgba(0,0,0,.18); }
-    .circle-btn svg { pointer-events:none; }
-  </style>
-
+  <!-- Theme CSS -->
   <link href="{% static 'cdn/shop/t/6/assets/xo-webcomponents.min.css' %}" media="all" rel="stylesheet" type="text/css">
   <link href="{% static 'cdn/shop/t/6/assets/main.css' %}" media="all" rel="stylesheet" type="text/css">
-  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400&display=swap" rel="stylesheet" />
-
-  <script>
-    document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
-    if (Shopify.designMode) { document.documentElement.classList.add('shopify-design-mode'); }
-  </script>
 
   <script defer src="{% static 'cdn/shop/t/6/assets/xo-webcomponents.min.js' %}"></script>
   <script defer src="{% static 'cdn/shop/t/6/assets/vendors.js' %}"></script>
   <script defer src="{% static 'cdn/shop/t/6/assets/main.js' %}"></script>
 
-  <!-- Judge.me Reviews -->
-  <script async src="https://cdn.judge.me/shopify_widget.js"></script>
   <style>
-    .jdgm-xx { left:0 }
+    /* ============================================================
+       CSS CUSTOM PROPERTIES — AL AMEEN OPTICS THEME
+       ============================================================ */
     :root {
-      --jdgm-primary-color:#000;
-      --jdgm-secondary-color:rgba(0,0,0,.1);
-      --jdgm-star-color:#F3B962;
-      --jdgm-write-review-text-color:white;
-      --jdgm-write-review-bg-color:#000000;
-      --jdgm-paginate-color:#000;
-      --jdgm-border-radius:0;
-      --jdgm-reviewer-name-color:#000000
+      --aa-white:        #ffffff;
+      --aa-bg:           #eef3f8;          /* light blue-grey site background */
+      --aa-bg-header:    #d8e6f0;          /* header bar background */
+      --aa-bg-topbar:    #c9dcea;          /* announcement bar */
+      --aa-bg-nav:       #eef3f8;          /* nav strip background */
+      --aa-bg-footer:    #d8e6f0;          /* footer background */
+      --aa-dark:         #1a2a3a;          /* primary dark text */
+      --aa-mid:          #3a5068;          /* secondary text */
+      --aa-accent:       #1a6fa8;          /* primary blue accent */
+      --aa-accent-hover: #155f90;
+      --aa-red:          #e03030;          /* sale/alert red */
+      --aa-border:       #c5d8e8;
+      --aa-radius:       8px;
+      --aa-shadow:       0 2px 12px rgba(26,42,58,.10);
+      --font-body:       'Jost', sans-serif;
+      --font-display:    'Playfair Display', serif;
     }
-    .jdgm-histogram__bar-content { background-color:#000 }
-    .jdgm-rev[data-verified-buyer=true] .jdgm-rev__icon.jdgm-rev__icon:after,
-    .jdgm-rev__buyer-badge.jdgm-rev__buyer-badge { color:white; background-color:#000 }
-    @font-face {
-      font-family:'JudgemeStar';
-      src:url("data:application/x-font-woff;charset=utf-8;base64,d09GRgABAAAAAAScAA0AAAAABrAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABGRlRNAAAEgAAAABoAAAAcbyQ+3kdERUYAAARgAAAAHgAAACAAMwAGT1MvMgAAAZgAAABGAAAAVi+vS9xjbWFwAAAB8AAAAEAAAAFKwBMjvmdhc3AAAARYAAAACAAAAAj//wADZ2x5ZgAAAkAAAAEJAAABdH33LXtoZWFkAAABMAAAAC0AAAA2BroQKWhoZWEAAAFgAAAAHAAAACQD5QHQaG10eAAAAeAAAAAPAAAAFAYAAABsb2NhAAACMAAAAA4AAAAOAO4AeG1heHAAAAF8AAAAHAAAACAASgAvbmFtZQAAA0wAAADeAAABkorWfVZwb3N0AAAELAAAACkAAABEp3ubLXgBY2BkYADhPPP4OfH8Nl8ZuJkYQODS2fRrCPr/aSYGxq1ALgcDWBoAO60LkwAAAHgBY2BkYGDc+v80gx4TAwgASaAICmABAFB+Arl4AWNgZGBgYGPQYWBiAAIwyQgWc2AAAwAHVQB6eAFjYGRiYJzAwMrAwejDmMbAwOAOpb8ySDK0MDAwMbByMsCBAAMCBKS5pjA4PGB4wMR44P8BBj3GrQymQGFGkBwAjtgK/gAAeAFjYoAAEA1jAwAAZAAHAHgB3crBCcAwDEPRZydkih567CDdf4ZskmLwFBV8xBfCaC4BXkOUmx4sU0h2ngNb9V0vQCxaRKIAevT7fGWuBrEAAAAAAAAAAAA0AHgAugAAeAF9z79Kw1AUx/FzTm7un6QmJtwmQ5Bg1abgEGr/BAqlU6Gju+Cgg1MkQ/sA7Vj7BOnmO/gUvo2Lo14NqIO6/IazfD8HEODtmQCfoANwNsyp2/GJt3WKQrd1NLiYYWx2PBqOsmJMEOznPOTzfSCrhAtbbLdmeFLJV9eKd63WLrZcIcuaEVdssWCKM6pLCfTVOYbz/0pNSMSZKLIZpvh78sAUH6PlMrreTCabP9r+Z/puPZ2ur/RqpQHgh+MIegCnXeM4MRAPjYN//5tj4ZtTjkFqEdmeMShlEJ7tVAly2TAkx6R68Fl4E/aVvn8JqHFQ4JS1434gXKcuL31dDhzs3YbsEOAd/IU88gAAAHgBfY4xTgMxEEVfkk0AgRCioKFxQYd2ZRtpixxgRU2RfhU5q5VWseQ4JdfgAJyBlmNwAM7ABRhZQ0ORwp7nr+eZAa54YwYg9zm3ynPOeFRe8MCrciXOh/KSS76UV5L/iDmrLiS5AeU519wrL3jmSbkS5115yR2fyivJv9kx0ZMZ2RLZw27q87iNQi8EBo5FSPIMw3HqBboi5lKTGAGDp8FKXWP+t9TU01Lj5His1Ba6uM9dTEMwvrFmbf5GC/q2drW3ruXUhhsCiQOjznFlCzYhHUZp4xp76vsvQh89CQAAeAFjYGJABowM6IANLMrEyMTIzMjCXpyRWJBqZshWXJJYBKOMAFHFBucAAAAAAAAB//8AAngBY2BkYGDgA2IJBhBgAvKZGViBJAuYxwAABJsAOgAAeAFjYGBgZACCk535hiD60tn0azAaAEqpB6wAAA==") format("woff");
-      font-weight:normal;font-style:normal
+
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 62.5%; scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      font-size: 1.5rem;
+      color: var(--aa-dark);
+      background: var(--aa-bg);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
     }
-    .jdgm-star { font-family:'JudgemeStar'; display:inline !important; text-decoration:none !important; padding:0 4px 0 0 !important; margin:0 !important; font-weight:bold; opacity:1; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale }
+    a { text-decoration: none; color: inherit; }
+    ul, ol { list-style: none; }
+    img { display: block; max-width: 100%; }
+    button { cursor: pointer; font-family: inherit; }
+
+    /* ============================================================
+       ANNOUNCEMENT / TOP BAR
+       ============================================================ */
+    .aa-topbar {
+      background: var(--aa-accent);
+      color: #fff;
+      text-align: center;
+      padding: 8px 20px;
+      font-size: 1.3rem;
+      font-weight: 500;
+      letter-spacing: .04em;
+      position: relative;
+    }
+    .aa-topbar a { color: #fff; text-decoration: underline; }
+    .aa-topbar__close {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.6rem;
+      line-height: 1;
+      opacity: .8;
+    }
+    .aa-topbar__close:hover { opacity: 1; }
+
+    /* ============================================================
+       HEADER  (matches screenshot: light-blue, logo centre, icons)
+       ============================================================ */
+    .aa-header-wrap {
+      background: var(--aa-bg-header);
+      border-bottom: 1px solid var(--aa-border);
+      position: sticky;
+      top: 0;
+      z-index: 10000;
+      box-shadow: var(--aa-shadow);
+    }
+
+    .aa-header {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 10px 24px;
+    }
+
+    /* LEFT — eyetest button */
+    .aa-header__left { display: flex; align-items: center; gap: 12px; }
+
+    .aa-eyetest-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--aa-white);
+      border: 1.5px solid var(--aa-border);
+      border-radius: 50px;
+      padding: 7px 14px 7px 8px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--aa-dark);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      transition: all .25s;
+      white-space: nowrap;
+    }
+    .aa-eyetest-btn:hover {
+      background: var(--aa-accent);
+      border-color: var(--aa-accent);
+      color: #fff;
+    }
+    .aa-eyetest-btn__avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--aa-accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .aa-eyetest-btn__avatar svg { fill: #fff; }
+    .aa-eyetest-btn__text { display: flex; flex-direction: column; line-height: 1.2; }
+    .aa-eyetest-btn__sub { font-size: .9rem; font-weight: 400; opacity: .7; }
+
+    /* CENTRE — Logo */
+    .aa-header__logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .aa-header__logo a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .aa-logo-img { height: 56px; width: auto; }
+
+    /* Logo text fallback (if no image) */
+    .aa-logo-text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1.1;
+    }
+    .aa-logo-text__ar {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--aa-accent);
+      letter-spacing: .02em;
+    }
+    .aa-logo-text__en {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--aa-dark);
+      letter-spacing: .08em;
+    }
+    .aa-logo-text__sub {
+      font-size: 1rem;
+      letter-spacing: .15em;
+      color: var(--aa-mid);
+      text-transform: uppercase;
+      margin-top: 1px;
+    }
+
+    /* RIGHT — search, wishlist, cart, account, hamburger */
+    .aa-header__right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .aa-header__icon-btn {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--aa-dark);
+      font-size: 2rem;
+      transition: background .2s, color .2s;
+    }
+    .aa-header__icon-btn:hover {
+      background: rgba(26,111,168,.1);
+      color: var(--aa-accent);
+    }
+
+    .aa-header__badge {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: var(--aa-red);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      line-height: 1;
+    }
+
+    /* Search bar inside header */
+    .aa-header__search {
+      display: flex;
+      align-items: center;
+      background: var(--aa-white);
+      border: 1.5px solid var(--aa-border);
+      border-radius: 50px;
+      overflow: hidden;
+      height: 40px;
+      flex: 1;
+      max-width: 400px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .aa-header__search:focus-within {
+      border-color: var(--aa-accent);
+      box-shadow: 0 0 0 3px rgba(26,111,168,.12);
+    }
+    .aa-header__search input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 0 16px;
+      font-family: var(--font-body);
+      font-size: 1.4rem;
+      color: var(--aa-dark);
+      background: transparent;
+    }
+    .aa-header__search input::placeholder { color: #9ab; }
+    .aa-header__search button {
+      width: 44px;
+      height: 100%;
+      border: none;
+      background: var(--aa-accent);
+      color: #fff;
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .2s;
+      flex-shrink: 0;
+    }
+    .aa-header__search button:hover { background: var(--aa-accent-hover); }
+
+    /* Account text links (desktop) */
+    .aa-header__account-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .aa-header__account-links a {
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: var(--aa-mid);
+      padding: 4px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      transition: color .2s;
+    }
+    .aa-header__account-links a:hover { color: var(--aa-accent); }
+    .aa-header__account-links .divider {
+      width: 1px;
+      height: 16px;
+      background: var(--aa-border);
+    }
+
+    /* ============================================================
+       NAVIGATION BAR
+       ============================================================ */
+    .aa-nav-wrap {
+      background: var(--aa-bg-nav);
+      border-bottom: 1px solid var(--aa-border);
+    }
+    .aa-nav {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .aa-nav__list {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      flex: 1;
+    }
+    .aa-nav__item { position: relative; }
+
+    .aa-nav__link {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 14px 18px;
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--aa-dark);
+      letter-spacing: .03em;
+      white-space: nowrap;
+      border-bottom: 3px solid transparent;
+      transition: color .2s, border-color .2s;
+      text-transform: uppercase;
+    }
+    .aa-nav__link:hover,
+    .aa-nav__link.active {
+      color: var(--aa-accent);
+      border-bottom-color: var(--aa-accent);
+    }
+    .aa-nav__link .bi-chevron-down {
+      font-size: 1rem;
+      transition: transform .2s;
+    }
+    .aa-nav__item:hover .aa-nav__link .bi-chevron-down {
+      transform: rotate(180deg);
+    }
+
+    /* SALE badge on nav */
+    .aa-nav__sale-tag {
+      background: var(--aa-red);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-left: 4px;
+      letter-spacing: .03em;
+    }
+
+    /* MEGA/DROPDOWN */
+    .aa-nav__dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      min-width: 220px;
+      background: var(--aa-white);
+      border: 1px solid var(--aa-border);
+      border-top: 3px solid var(--aa-accent);
+      border-radius: 0 0 var(--aa-radius) var(--aa-radius);
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      z-index: 9999;
+      padding: 8px 0;
+      animation: dropIn .18s ease;
+    }
+    @keyframes dropIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .aa-nav__item:hover .aa-nav__dropdown { display: block; }
+
+    .aa-nav__dropdown a {
+      display: block;
+      padding: 10px 20px;
+      font-size: 1.35rem;
+      color: var(--aa-dark);
+      font-weight: 500;
+      transition: background .15s, color .15s, padding-left .15s;
+    }
+    .aa-nav__dropdown a:hover {
+      background: var(--aa-bg);
+      color: var(--aa-accent);
+      padding-left: 26px;
+    }
+    .aa-nav__dropdown hr {
+      margin: 6px 16px;
+      border: none;
+      border-top: 1px solid var(--aa-border);
+    }
+
+    /* Mega dropdown */
+    .aa-nav__mega {
+      left: 0;
+      min-width: 700px;
+      padding: 28px 32px;
+      display: none;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+    .aa-nav__item:hover .aa-nav__mega { display: grid; }
+
+    .aa-mega__col h4 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--aa-accent);
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--aa-border);
+    }
+    .aa-mega__col a {
+      display: block;
+      padding: 6px 0;
+      font-size: 1.3rem;
+      color: var(--aa-mid);
+    }
+    .aa-mega__col a:hover { color: var(--aa-accent); padding-left: 6px; }
+
+    /* ============================================================
+       MOBILE HEADER (hamburger side)
+       ============================================================ */
+    .aa-mobile-menu-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 20000;
+      animation: fadeIn .2s;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .aa-mobile-menu-overlay.open { display: block; }
+
+    .aa-mobile-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 300px;
+      background: var(--aa-white);
+      z-index: 20001;
+      transform: translateX(-100%);
+      transition: transform .3s ease;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .aa-mobile-menu.open { transform: translateX(0); }
+
+    .aa-mobile-menu__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--aa-border);
+      background: var(--aa-bg-header);
+    }
+    .aa-mobile-menu__close {
+      background: none;
+      border: none;
+      font-size: 2.4rem;
+      color: var(--aa-dark);
+      line-height: 1;
+    }
+    .aa-mobile-menu__search {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--aa-border);
+    }
+    .aa-mobile-menu__search form {
+      display: flex;
+      background: var(--aa-bg);
+      border: 1px solid var(--aa-border);
+      border-radius: 50px;
+      overflow: hidden;
+    }
+    .aa-mobile-menu__search input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 10px 14px;
+      font-size: 1.4rem;
+      outline: none;
+    }
+    .aa-mobile-menu__search button {
+      padding: 0 14px;
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      color: var(--aa-accent);
+    }
+    .aa-mobile-nav__item { border-bottom: 1px solid var(--aa-border); }
+    .aa-mobile-nav__link {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--aa-dark);
+    }
+    .aa-mobile-nav__link:hover { color: var(--aa-accent); background: var(--aa-bg); }
+    .aa-mobile-nav__sub { display: none; background: var(--aa-bg); padding: 4px 0 8px; }
+    .aa-mobile-nav__sub.open { display: block; }
+    .aa-mobile-nav__sub a { display: block; padding: 9px 32px; font-size: 1.35rem; color: var(--aa-mid); }
+    .aa-mobile-nav__sub a:hover { color: var(--aa-accent); }
+    .aa-mobile-menu__footer {
+      padding: 20px;
+      margin-top: auto;
+      border-top: 1px solid var(--aa-border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .aa-mobile-menu__footer a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: var(--aa-mid);
+      padding: 8px 0;
+    }
+    .aa-mobile-menu__footer a:hover { color: var(--aa-accent); }
+    .aa-mobile-menu__footer i { font-size: 1.8rem; }
+
+    /* ============================================================
+       PAGE CONTENT WRAPPER
+       ============================================================ */
+    #aa-content { min-height: 60vh; }
+
+    /* ============================================================
+       FLASH MESSAGES
+       ============================================================ */
+    .aa-messages {
+      max-width: 900px;
+      margin: 16px auto;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .aa-message {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      border-radius: var(--aa-radius);
+      font-size: 1.4rem;
+      font-weight: 500;
+      border-left: 4px solid;
+    }
+    .aa-message--success { background: #e6f9ee; border-color: #2eb85c; color: #1a5c35; }
+    .aa-message--error,
+    .aa-message--danger  { background: #fdf0f0; border-color: var(--aa-red); color: #7a1a1a; }
+    .aa-message--warning { background: #fff8e6; border-color: #f0ad00; color: #6b4d00; }
+    .aa-message--info    { background: #e8f2fb; border-color: var(--aa-accent); color: #0d3c65; }
+    .aa-message__close {
+      margin-left: auto;
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      opacity: .6;
+      line-height: 1;
+    }
+    .aa-message__close:hover { opacity: 1; }
+
+    /* ============================================================
+       TOAST NOTIFICATION
+       ============================================================ */
+    #aa-toast-container {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .aa-toast {
+      pointer-events: all;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--aa-white);
+      padding: 14px 20px;
+      border-radius: var(--aa-radius);
+      box-shadow: 0 8px 24px rgba(0,0,0,.16);
+      min-width: 280px;
+      max-width: 360px;
+      transform: translateX(120%);
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+      border-left: 4px solid var(--aa-accent);
+      font-size: 1.4rem;
+      font-weight: 500;
+    }
+    .aa-toast.show { transform: translateX(0); }
+    .aa-toast.success { border-color: #2eb85c; }
+    .aa-toast.error   { border-color: var(--aa-red); }
+    .aa-toast.warning { border-color: #f0ad00; }
+    .aa-toast i { font-size: 2rem; }
+    .aa-toast.success i { color: #2eb85c; }
+    .aa-toast.error   i { color: var(--aa-red); }
+    .aa-toast.warning i { color: #f0ad00; }
+    .aa-toast.info    i { color: var(--aa-accent); }
+
+    /* ============================================================
+       MINI CART DRAWER
+       ============================================================ */
+    .aa-cart-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      z-index: 19000;
+    }
+    .aa-cart-overlay.open { display: block; }
+    .aa-cart-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 420px;
+      background: var(--aa-white);
+      z-index: 19001;
+      transform: translateX(100%);
+      transition: transform .3s ease;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -4px 0 24px rgba(0,0,0,.12);
+    }
+    .aa-cart-drawer.open { transform: translateX(0); }
+    .aa-cart-drawer__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--aa-border);
+      background: var(--aa-bg-header);
+    }
+    .aa-cart-drawer__header h3 { font-size: 1.8rem; font-weight: 700; }
+    .aa-cart-drawer__close { background: none; border: none; font-size: 2.2rem; color: var(--aa-dark); }
+    .aa-cart-drawer__body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+    }
+    .aa-cart-empty {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--aa-mid);
+    }
+    .aa-cart-empty i { font-size: 5rem; margin-bottom: 16px; opacity: .4; }
+    .aa-cart-empty p { font-size: 1.5rem; }
+    .aa-cart-item {
+      display: grid;
+      grid-template-columns: 72px 1fr auto;
+      gap: 12px;
+      align-items: start;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--aa-border);
+    }
+    .aa-cart-item img { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; }
+    .aa-cart-item__name { font-size: 1.35rem; font-weight: 600; margin-bottom: 4px; }
+    .aa-cart-item__price { font-size: 1.3rem; color: var(--aa-mid); }
+    .aa-cart-item__qty {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .aa-cart-item__qty button {
+      width: 26px; height: 26px;
+      border: 1px solid var(--aa-border);
+      background: var(--aa-bg);
+      border-radius: 4px;
+      font-size: 1.6rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .aa-cart-item__qty span { font-size: 1.35rem; font-weight: 600; min-width: 24px; text-align: center; }
+    .aa-cart-item__remove { background: none; border: none; font-size: 1.8rem; color: #bbb; }
+    .aa-cart-item__remove:hover { color: var(--aa-red); }
+    .aa-cart-drawer__footer {
+      padding: 18px 24px;
+      border-top: 1px solid var(--aa-border);
+      background: var(--aa-bg);
+    }
+    .aa-cart-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.7rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    .aa-cart-drawer__actions { display: flex; gap: 10px; }
+    .aa-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 50px;
+      font-size: 1.4rem;
+      font-weight: 600;
+      border: 2px solid transparent;
+      transition: all .25s;
+      letter-spacing: .03em;
+    }
+    .aa-btn--primary { background: var(--aa-accent); color: #fff; border-color: var(--aa-accent); flex: 1; }
+    .aa-btn--primary:hover { background: var(--aa-accent-hover); border-color: var(--aa-accent-hover); }
+    .aa-btn--outline { background: transparent; color: var(--aa-dark); border-color: var(--aa-border); }
+    .aa-btn--outline:hover { border-color: var(--aa-accent); color: var(--aa-accent); }
+    .aa-btn--dark { background: var(--aa-dark); color: #fff; border-color: var(--aa-dark); flex: 1; }
+    .aa-btn--dark:hover { background: #2a3d52; }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    .aa-footer {
+      background: var(--aa-bg-footer);
+      border-top: 1px solid var(--aa-border);
+      margin-top: 60px;
+    }
+
+    /* Top footer: logo + tagline */
+    .aa-footer__top {
+      background: var(--aa-dark);
+      color: #fff;
+      padding: 40px 24px;
+    }
+    .aa-footer__top-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      align-items: center;
+      gap: 30px;
+    }
+    .aa-footer__brand-logo { height: 56px; width: auto; filter: brightness(0) invert(1); }
+    .aa-footer__tagline {
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 400;
+      font-style: italic;
+      opacity: .9;
+      letter-spacing: .03em;
+    }
+    .aa-footer__top-cta {
+      text-align: right;
+    }
+    .aa-footer__top-cta a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 24px;
+      background: var(--aa-accent);
+      color: #fff;
+      border-radius: 50px;
+      font-size: 1.35rem;
+      font-weight: 600;
+      transition: background .2s;
+    }
+    .aa-footer__top-cta a:hover { background: var(--aa-accent-hover); }
+
+    /* Middle footer: main link columns */
+    .aa-footer__main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 48px 24px 36px;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr 1.4fr;
+      gap: 32px;
+    }
+    .aa-footer__col h4 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--aa-dark);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--aa-accent);
+      display: inline-block;
+    }
+    .aa-footer__col ul { display: flex; flex-direction: column; gap: 9px; }
+    .aa-footer__col ul li a {
+      font-size: 1.35rem;
+      color: var(--aa-mid);
+      transition: color .2s, padding-left .2s;
+    }
+    .aa-footer__col ul li a:hover { color: var(--aa-accent); padding-left: 4px; }
+
+    /* Newsletter col */
+    .aa-footer__newsletter p {
+      font-size: 1.35rem;
+      color: var(--aa-mid);
+      margin-bottom: 14px;
+      line-height: 1.6;
+    }
+    .aa-footer__newsletter-form {
+      display: flex;
+      border: 1.5px solid var(--aa-border);
+      border-radius: 50px;
+      overflow: hidden;
+      background: var(--aa-white);
+    }
+    .aa-footer__newsletter-form input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 11px 16px;
+      font-size: 1.35rem;
+      font-family: var(--font-body);
+      background: transparent;
+      color: var(--aa-dark);
+    }
+    .aa-footer__newsletter-form button {
+      background: var(--aa-accent);
+      border: none;
+      color: #fff;
+      padding: 0 18px;
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .2s;
+    }
+    .aa-footer__newsletter-form button:hover { background: var(--aa-accent-hover); }
+
+    /* Social icons */
+    .aa-footer__social {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .aa-footer__social a {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--aa-dark);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      transition: background .2s, transform .2s;
+    }
+    .aa-footer__social a:hover {
+      background: var(--aa-accent);
+      transform: translateY(-3px);
+    }
+
+    /* Bottom footer bar */
+    .aa-footer__bottom {
+      background: var(--aa-dark);
+      color: rgba(255,255,255,.65);
+      padding: 16px 24px;
+    }
+    .aa-footer__bottom-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .aa-footer__bottom p { font-size: 1.25rem; }
+    .aa-footer__bottom-links {
+      display: flex;
+      gap: 20px;
+    }
+    .aa-footer__bottom-links a {
+      font-size: 1.25rem;
+      color: rgba(255,255,255,.55);
+      transition: color .2s;
+    }
+    .aa-footer__bottom-links a:hover { color: #fff; }
+    .aa-footer__payments {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.25rem;
+    }
+    .aa-footer__payments i { font-size: 2rem; opacity: .7; }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 1100px) {
+      .aa-footer__main { grid-template-columns: 1fr 1fr 1fr; }
+      .aa-footer__top-inner { grid-template-columns: 1fr 1fr; }
+      .aa-footer__top-cta { display: none; }
+    }
+    @media (max-width: 900px) {
+      .aa-nav-wrap { display: none; }
+      .aa-header { grid-template-columns: auto 1fr auto; }
+      .aa-header__search { display: none; }
+      .aa-header__account-links { display: none; }
+      .aa-footer__main { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .aa-footer__main { grid-template-columns: 1fr; }
+      .aa-footer__top-inner { grid-template-columns: 1fr; text-align: center; }
+      .aa-footer__tagline { font-size: 1.8rem; }
+      .aa-footer__bottom-inner { flex-direction: column; text-align: center; }
+      .aa-header { padding: 8px 14px; gap: 10px; }
+      .aa-eyetest-btn__text { display: none; }
+      .aa-eyetest-btn { padding: 7px 8px; }
+    }
+
+    /* ============================================================
+       UTILITY CLASSES
+       ============================================================ */
+    .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    .aa-container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+    .aa-section { padding: 60px 0; }
+
+    {% block extra_styles %}{% endblock %}
   </style>
 
   {% block extra_head %}{% endblock %}
-
-  <script async="async" id="scb4127"
-    src="{% static 'cdn/shopifycloud/privacy-banner/storefront-banner.js' %}" type="text/javascript"></script>
-  <script defer="defer"
-    src="{% static 'shopifycloud/preview-bar/preview-bar-modules.js' %}" type="text/javascript"></script>
 </head>
 
-<body class="gradient">
+<body>
 <div id="xo-root">
 
-  <!-- ── Toast container ── -->
-  <div class="toast-container">
-    {% if messages %}
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        {% for message in messages %}
-        showToast("{{ message }}", "{{ message.tags }}");
-        {% endfor %}
-      });
-    </script>
-    {% endif %}
+  <!-- ============================================================
+       TOAST NOTIFICATION CONTAINER
+       ============================================================ -->
+  <div id="aa-toast-container" aria-live="polite"></div>
+
+  <!-- ============================================================
+       ANNOUNCEMENT BAR
+       ============================================================ -->
+  <div class="aa-topbar" id="aa-topbar">
+    🎉 Free Eye Test in Store — 
+    <a href="{% url 'content:eye_test_booking' %}">Book Now</a>
+    &nbsp;·&nbsp; 
+    Free Shipping on orders above ₹500
+    <button class="aa-topbar__close" onclick="document.getElementById('aa-topbar').style.display='none'" aria-label="Close">×</button>
   </div>
 
-  <!-- ================================================
+  <!-- ============================================================
        HEADER
-       ================================================ -->
-  <div class="shopify-section shopify-section-group-header-group section-header">
-    <header class="header-v24">
-      <xo-sticky style="z-index:10000; height:unset" xo-direction="down">
-        <xo-animate class="xo-header header-v24__sticky color-background-1" style="--bg-color:#ffffff;--margin:0;" xo-type="fade-up">
-          <xo-animate class="header-bg" xo-disabled="" xo-duration="1000">
-            <xo-parallax class="header-bg-image__item" xo-lerp-ease="0.4">
-              <xo-parallax-scroll class="header-bg-image__url xo-background-lazyload"
-                xo-keyframes="{'0%':{ backgroundPositionY:'200px' },'100%':{ backgroundPositionY:'-200px' }}"></xo-parallax-scroll>
-            </xo-parallax>
-          </xo-animate>
+       ============================================================ -->
+  <div class="aa-header-wrap">
+    <header class="aa-header">
 
-          <xo-container class="xo-container--box">
-            <xo-grid>
-
-              <!-- Logo -->
-              <div class="header-v24__logo" style="--xs:4; --xl:2;">
-                <a class="header-v24__logo-desktop" href="{% url 'home' %}">
-                  <img alt="Riha Zain" height="auto" src="{% static 'cdn/shop/files/rihazain.logo.png' %}"
-                    style="width:150px; height:48.89502762430939px" width="auto" />
-                </a>
-                <a class="header-v24__logo-mobile" href="{% url 'home' %}">
-                  <img alt="Riha Zain" height="auto" src="{% static 'cdn/shop/files/rihazain.logo.png' %}"
-                    style="width:100px; height:32.59668508287293px" width="auto" />
-                </a>
-              </div>
-
-              <!-- Navigation -->
-              <nav class="header-v24__navigation" style="--xs:4; --order-xs:-1; --xl:6; --order-xl:0">
-
-                <!-- Desktop nav -->
-                <div class="header-v24__navigation-desktop">
-                  <ul class="xo-menu-horizontal list-unstyled xo-menu-horizontal--hover" role="list">
-                    <li class="xo-menu-horizontal__item xo-menu-horizontal__item--hover" style="--padding:3rem">
-                      <xo-mega-menu class="xo-menu-horizontal__mega-menu" xo-index="0" xo-name="header-mega-menu"></xo-mega-menu>
-                      <a class="xo-menu-horizontal__link" href="{% url 'home' %}" title="Home">
-                        <span class="xo-menu-horizontal__label">Home</span>
-                      </a>
-                    </li>
-                    <li class="xo-menu-horizontal__item xo-menu-horizontal__item--hover" style="--padding:3rem">
-                      <xo-mega-menu class="xo-menu-horizontal__mega-menu" xo-index="1" xo-name="header-mega-menu"></xo-mega-menu>
-                      <a class="xo-menu-horizontal__link" href=" " title="Shops">
-                        <span class="xo-menu-horizontal__label">Shops</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-
-                <!-- Mobile nav -->
-                <div class="header-v24__navigation-mobile">
-                  <!-- Desktop hamburger trigger -->
-                  <xo-modal-trigger class="xo-menu-hamburger__trigger xo-menu-hamburger__trigger--desktop" xo-name="xo-menu-hamburger">
-                    <div class="xo-menu-hamburger__icon"></div>
-                  </xo-modal-trigger>
-
-                  <!-- Desktop drawer -->
-                  <xo-modal class="menu-hamburger-drawer-desktop" style="--top:" xo-animate="slide-right"
-                    xo-backdrop-color="rgba(0,0,0,0.2)" xo-duration="1000" xo-name="xo-menu-hamburger"
-                    xo-placement="top-left" xo-portal="">
-                    <div class="menu-hamburger-drawer-desktop__content color-background-1"
-                      style="--drawer-bg-color:#ffffff; --drawer-bg-gradient:;">
-                      <div>
-                        <xo-modal-trigger class="xo-menu-hamburger__trigger xo-menu-hamburger__trigger--close" xo-name="xo-menu-hamburger">
-                          <div aria-label="Close" class="xo-menu-hamburger__icon"></div>
-                        </xo-modal-trigger>
-                        <a class="menu-hamburger-drawer-desktop__logo" href="{% url 'home' %}">
-                          <img alt="Riha Zain" height="auto" src="{% static 'cdn/shop/files/rihazain.logo.png' %}"
-                            style="width:150px; height:48.89502762430939px" width="auto" />
-                        </a>
-                        <ul class="menu-hamburger-drawer-desktop__list list-unstyled menu-hamburger-drawer-desktop--hover" role="list">
-                          <li class="menu-hamburger-drawer-desktop__item menu-hamburger-drawer-desktop__item--hover">
-                            <xo-mega-menu class="menu-hamburger-drawer-desktop__mega-menu" xo-index="0" xo-name="header-mega-menu"></xo-mega-menu>
-                            <a class="menu-hamburger-drawer-desktop__link" href="{% url 'home' %}" title="Home">
-                              <span class="menu-hamburger-drawer-desktop__label">Home</span>
-                              <span class="menu-hamburger-drawer-desktop__arrow menu-hamburger-drawer-desktop__arrow--mega-menu">
-                                <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="1.5rem" xmlns="http://www.w3.org/2000/svg">
-                                  <polyline points="9 18 15 12 9 6"></polyline>
-                                </svg>
-                              </span>
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-                      <div class="menu-hamburger-drawer-desktop__search">
-                        <form action=" " method="get" role="search">
-                          <label class="xo-field-input">
-                            <input class="xo-field-input__input" name="q" placeholder="" type="text" value="" />
-                            <span class="xo-field-input__placeholder">Search</span>
-                          </label>
-                          <span class="menu-hamburger-drawer-desktop__search-icon">
-                            <button type="submit">
-                              <svg viewBox="0 0 400 400" width="24" xmlns="http://www.w3.org/2000/svg">
-                                <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)"><g transform="scale(0.1)">
-                                  <path d="m 1312.7,795.5 c -472.7,0 -857.204,384.3 -857.204,856.7 0,472.7 384.504,857.2 857.204,857.2 472.7,0 857.3,-384.5 857.3,-857.2 0,-472.4 -384.6,-856.7 -857.3,-856.7 z M 2783.9,352.699 2172.7,963.898 c 155.8,194.702 241.5,438.602 241.5,688.302 0,607.3 -494.1,1101.4 -1101.5,1101.4 -607.302,0 -1101.399,-494.1 -1101.399,-1101.4 0,-607.4 494.097,-1101.501 1101.399,-1101.501 249.8,0 493.5,85.5 687.7,241 L 2611.7,181 c 23,-23 53.6,-35.699 86.1,-35.699 32.4,0 63,12.699 86,35.699 23.1,22.801 35.8,53.301 35.8,85.898 0,32.602 -12.7,63 -35.7,85.801" fill="rgba(var(--color-foreground))"></path>
-                                </g></g>
-                              </svg>
-                            </button>
-                          </span>
-                        </form>
-                      </div>
-                    </div>
-                  </xo-modal>
-
-                  <!-- Mobile hamburger trigger -->
-                  <xo-modal-trigger class="xo-menu-hamburger__trigger xo-menu-hamburger__trigger--mobile" xo-name="xo-menu-hamburger-mobile">
-                    <div class="xo-menu-hamburger__icon"></div>
-                  </xo-modal-trigger>
-
-                  <!-- Mobile drawer -->
-                  <xo-modal class="menu-hamburger-drawer-mobile" style="--top:5rem" xo-animate="slide-right"
-                    xo-backdrop-color="rgba(0,0,0,0.2)" xo-duration="1000" xo-name="xo-menu-hamburger-mobile"
-                    xo-placement="top-left" xo-portal="">
-                    <div class="menu-hamburger-drawer-mobile__content color-background-1"
-                      style="--drawer-bg-color:#ffffff; --drawer-bg-gradient:;">
-                      <div>
-                        {% for label, href, index in mobile_nav_items|default:"" %}
-                        {% empty %}
-                        <!-- Home -->
-                        <div class="menu-hamburger-drawer-mobile__collapse-wrap">
-                          <xo-collapse-trigger class="menu-hamburger-drawer-mobile__collapse-trigger"
-                            xo-name="menu-hamburger-drawer-mobile-collapse-0">
-                            <a class="menu-hamburger-drawer-mobile__link" href="{% url 'home' %}" title="Home">
-                              <span class="menu-hamburger-drawer-mobile__label">Home</span>
-                            </a>
-                            <span class="menu-hamburger-drawer-mobile__arrow">
-                              <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 22" width="1.5rem" xmlns="http://www.w3.org/2000/svg">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                              </svg>
-                            </span>
-                          </xo-collapse-trigger>
-                          <xo-collapse class="menu-hamburger-drawer-mobile__collapse" xo-name="menu-hamburger-drawer-mobile-collapse-0">
-                            <div class="menu-hamburger-drawer-mobile__collapse-content">
-                              <xo-mega-menu class="menu-hamburger-drawer-mobile__mega-menu" xo-index="0" xo-name="header-mega-menu"></xo-mega-menu>
-                            </div>
-                          </xo-collapse>
-                        </div>
-                        <!-- Shops -->
-                        <div class="menu-hamburger-drawer-mobile__collapse-wrap">
-                          <xo-collapse-trigger class="menu-hamburger-drawer-mobile__collapse-trigger"
-                            xo-name="menu-hamburger-drawer-mobile-collapse-1">
-                            <a class="menu-hamburger-drawer-mobile__link" href=" " title="Shops">
-                              <span class="menu-hamburger-drawer-mobile__label">Shops</span>
-                            </a>
-                            <span class="menu-hamburger-drawer-mobile__arrow">
-                              <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 22" width="1.5rem" xmlns="http://www.w3.org/2000/svg">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                              </svg>
-                            </span>
-                          </xo-collapse-trigger>
-                          <xo-collapse class="menu-hamburger-drawer-mobile__collapse" xo-name="menu-hamburger-drawer-mobile-collapse-1">
-                            <div class="menu-hamburger-drawer-mobile__collapse-content">
-                              <xo-mega-menu class="menu-hamburger-drawer-mobile__mega-menu" xo-index="1" xo-name="header-mega-menu"></xo-mega-menu>
-                            </div>
-                          </xo-collapse>
-                        </div>
-                        <!-- Products -->
-                        <div class="menu-hamburger-drawer-mobile__collapse-wrap">
-                          <xo-collapse-trigger class="menu-hamburger-drawer-mobile__collapse-trigger"
-                            xo-name="menu-hamburger-drawer-mobile-collapse-2">
-                            <a class="menu-hamburger-drawer-mobile__link" href=" " title="Products">
-                              <span class="menu-hamburger-drawer-mobile__label">Products</span>
-                            </a>
-                            <span class="menu-hamburger-drawer-mobile__arrow">
-                              <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 22" width="1.5rem" xmlns="http://www.w3.org/2000/svg">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                              </svg>
-                            </span>
-                          </xo-collapse-trigger>
-                          <xo-collapse class="menu-hamburger-drawer-mobile__collapse" xo-name="menu-hamburger-drawer-mobile-collapse-2">
-                            <div class="menu-hamburger-drawer-mobile__collapse-content">
-                              <xo-mega-menu class="menu-hamburger-drawer-mobile__mega-menu" xo-index="2" xo-name="header-mega-menu"></xo-mega-menu>
-                            </div>
-                          </xo-collapse>
-                        </div>
-                        {% endfor %}
-                      </div>
-
-                      <!-- Mobile utility links -->
-                      <div class="menu-hamburger-drawer-mobile__utilities">
-                        {% if not user.is_authenticated %}
-                        <a class="menu-hamburger-drawer-mobile__utility" href="{% url 'users:register' %}">
-                          <svg fill="currentColor" height="18" viewBox="0 0 400 400" width="18" xmlns="http://www.w3.org/2000/svg">
-                            <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)"><g transform="scale(0.1)">
-                              <path d="m 1506.87,2587.11 c -225.04,0 -408.14,-183.08 -408.14,-408.11 0,-225.06 183.1,-408.13 408.14,-408.13 225.02,0 408.13,183.07 408.13,408.13 0,225.03 -183.11,408.11 -408.13,408.11 z m 0,-1038.56 c -347.64,0 -630.432,282.79 -630.432,630.45 0,347.63 282.792,630.43 630.432,630.43 347.63,0 630.42,-282.8 630.42,-630.43 0,-347.66 -282.79,-630.45 -630.42,-630.45 v 0" fill="currentColor" />
-                              <path d="M 399.648,361.789 H 2614.07 c -25.06,261.531 -139.49,503.461 -327.47,689.831 -124.25,123.14 -300.78,193.96 -483.86,193.96 h -591.76 c -183.61,0 -359.601,-70.82 -483.863,-193.96 C 539.148,865.25 424.719,623.32 399.648,361.789 Z M 2730.69,139.461 H 283.035 c -61.558,0 -111.16,49.59 -111.16,111.16 0,363.438 141.68,704 398.32,959.019 165.657,164.55 399.414,258.82 640.785,258.82 h 591.76 c 241.94,0 475.14,-94.27 640.8,-258.82 256.63,-255.019 398.31,-595.581 398.31,-959.019 0,-61.57 -49.59,-111.16 -111.16,-111.16 v 0" fill="currentColor" />
-                            </g></g>
-                          </svg>
-                          <span>Register</span>
-                        </a>
-                        <a class="menu-hamburger-drawer-mobile__utility" href="{% url 'users:login' %}">
-                          <svg fill="currentColor" height="18" viewBox="0 0 400 400" width="18" xmlns="http://www.w3.org/2000/svg">
-                            <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)"><g transform="scale(0.1)">
-                              <path d="m 1506.87,2587.11 c -225.04,0 -408.14,-183.08 -408.14,-408.11 0,-225.06 183.1,-408.13 408.14,-408.13 225.02,0 408.13,183.07 408.13,408.13 0,225.03 -183.11,408.11 -408.13,408.11 z m 0,-1038.56 c -347.64,0 -630.432,282.79 -630.432,630.45 0,347.63 282.792,630.43 630.432,630.43 347.63,0 630.42,-282.8 630.42,-630.43 0,-347.66 -282.79,-630.45 -630.42,-630.45 v 0" fill="currentColor" />
-                              <path d="M 399.648,361.789 H 2614.07 c -25.06,261.531 -139.49,503.461 -327.47,689.831 -124.25,123.14 -300.78,193.96 -483.86,193.96 h -591.76 c -183.61,0 -359.601,-70.82 -483.863,-193.96 C 539.148,865.25 424.719,623.32 399.648,361.789 Z M 2730.69,139.461 H 283.035 c -61.558,0 -111.16,49.59 -111.16,111.16 0,363.438 141.68,704 398.32,959.019 165.657,164.55 399.414,258.82 640.785,258.82 h 591.76 c 241.94,0 475.14,-94.27 640.8,-258.82 256.63,-255.019 398.31,-595.581 398.31,-959.019 0,-61.57 -49.59,-111.16 -111.16,-111.16 v 0" fill="currentColor" />
-                            </g></g>
-                          </svg>
-                          <span>Login</span>
-                        </a>
-                        {% else %}
-                        <a class="menu-hamburger-drawer-mobile__utility" href="{% url 'users:profile' %}">
-                          <svg fill="currentColor" height="18" viewBox="0 0 400 400" width="18" xmlns="http://www.w3.org/2000/svg">
-                            <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)"><g transform="scale(0.1)">
-                              <path d="m1506 2300c-300 0-540-240-540-540s240-540 540-540 540 240 540 540-240 540-540 540zm0-1260c-396 0-720 324-720 720s324 720 720 720 720-324 720-720-324-720-720-720z" fill="currentColor" />
-                            </g></g>
-                          </svg>
-                          <span>My Profile</span>
-                        </a>
-                        <a class="menu-hamburger-drawer-mobile__utility" href="{% url 'users:logout' %}">
-                          <svg fill="currentColor" height="18" viewBox="0 0 400 400" width="18" xmlns="http://www.w3.org/2000/svg">
-                            <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)"><g transform="scale(0.1)">
-                              <path d="M1200 3000h800v-200h-800v-400h800v-200h-800v-400h800v-200h-800v-400h800v-200h-800V0H1000v3000h200zM2800 1600l-400-400v300h-800v200h800v300l400-400z" fill="currentColor" />
-                            </g></g>
-                          </svg>
-                          <span>Logout</span>
-                        </a>
-                        {% endif %}
-                        <a class="menu-hamburger-drawer-mobile__utility" href=" ">
-                          <svg version="1.1" viewBox="0 0 400 400" width="18" xmlns="http://www.w3.org/2000/svg">
-                            <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)"><g transform="scale(0.1)">
-                              <path d="m903 2424c157 0 306-61 418-173l135-135c20-20 48-32 77-32s56 12 77 32l134 134c112 112 260 173 417 173 157 0 305-61 417-172 111-111 172-259 172-417 0-157-60-305-172-417L1531 373 487 1417c-111 112-173 260-173 418 0 158 61 306 173 417 111 111 259 172 416 172z" fill="currentColor" />
-                            </g></g>
-                          </svg>
-                          <span style="padding-top:.3rem">Wishlist</span>
-                        </a>
-                      </div>
-                    </div>
-                  </xo-modal>
-                </div>
-              </nav>
-
-              <!-- Utilities -->
-              <div class="header-v24__utilities-wrap" style="--xs:4">
-                <div class="header-v24__utilities">
-                  {% if not user.is_authenticated %}
-                  <xo-tooltip class="header-v24__account-text" xo-placement="bottom-center" xo-title="Register">
-                    <a href="{% url 'users:register' %}">Register</a>
-                  </xo-tooltip>
-                  <xo-tooltip class="header-v24__account-text" xo-placement="bottom-center" xo-title="Login">
-                    <a href="{% url 'users:login' %}">Login</a>
-                  </xo-tooltip>
-                  {% else %}
-                  <xo-tooltip class="header-v24__account-text" xo-placement="bottom-center" xo-title="My Account">
-                    <a href="{% url 'orders:order_list' %}">Order</a>
-                  </xo-tooltip>
-                  <xo-tooltip class="header-v24__account-text" xo-placement="bottom-center" xo-title="My Account">
-                    <a href="{% url 'users:profile' %}">My Account</a>
-                  </xo-tooltip>
-                  <xo-tooltip class="header-v24__account-text" xo-placement="bottom-center" xo-title="Logout">
-                    <a href="{% url 'users:logout' %}">Logout</a>
-                  </xo-tooltip>
-                  {% endif %}
-
-                  <!-- Search trigger -->
-                  <xo-tooltip class="header-v24__icon-wrap" xo-placement="bottom-center" xo-title="Search">
-                    <xo-modal-trigger class="header-v24__icon header-v24__icon--search" xo-name="search">
-                      <svg viewBox="0 0 400 400" width="24" xmlns="http://www.w3.org/2000/svg">
-                        <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)"><g transform="scale(0.1)">
-                          <path d="m 1312.7,795.5 c -472.7,0 -857.204,384.3 -857.204,856.7 0,472.7 384.504,857.2 857.204,857.2 472.7,0 857.3,-384.5 857.3,-857.2 0,-472.4 -384.6,-856.7 -857.3,-856.7 z M 2783.9,352.699 2172.7,963.898 c 155.8,194.702 241.5,438.602 241.5,688.302 0,607.3 -494.1,1101.4 -1101.5,1101.4 -607.302,0 -1101.399,-494.1 -1101.399,-1101.4 0,-607.4 494.097,-1101.501 1101.399,-1101.501 249.8,0 493.5,85.5 687.7,241 L 2611.7,181 c 23,-23 53.6,-35.699 86.1,-35.699 32.4,0 63,12.699 86,35.699 23.1,22.801 35.8,53.301 35.8,85.898 0,32.602 -12.7,63 -35.7,85.801" fill="rgba(var(--color-foreground))"></path>
-                        </g></g>
-                      </svg>
-                    </xo-modal-trigger>
-                  </xo-tooltip>
-
-                  <!-- Wishlist -->
-                  <xo-tooltip class="header-v24__icon-wrap header-v24__icon-wrap--desktop" xo-placement="bottom-center" xo-title="Wishlist">
-                    <a aria-label="Wishlist" class="header-v24__icon" href=" " title="Wishlist">
-                      <svg version="1.1" viewBox="0 0 400 400" width="24" xmlns="http://www.w3.org/2000/svg">
-                        <g transform="matrix(1.3333333,0,0,-1.3333333,0,400)"><g transform="scale(0.1)">
-                          <path d="m 903,2424.4 c 157.9,0 306.4,-61.5 418.1,-173.1 l 134.8,-134.9 c 20.7,-20.6 48.1,-32 77.1,-32 29,0 56.4,11.4 77,32 l 133.7,133.7 c 111.7,111.6 259.9,173.1 417.5,173.1 156.91,0 305,-61.3 416.8,-172.5 111.2,-111.3 172.5,-259.5 172.5,-417.5 0.6,-157.3 -60.69,-305.5 -172.5,-417.4 L 1531.5,373.5 487.402,1417.6 c -111.601,111.7 -173.105,259.9 -173.105,417.5 0,158.1 61.199,306.1 172.5,416.8 111.308,111.2 259.101,172.5 416.203,172.5 z m 1829.7,-19.6 c 0,0 0,0 -0.1,0 -152.4,152.4 -355.1,236.3 -570.9,236.3 -215.7,0 -418.7,-84.1 -571.5,-236.9 l -56.9,-57 -58.2,58.2 c -153.1,153.1 -356.3,237.5 -572.1,237.5 -215.305,0 -417.902,-83.9 -570.305,-236.3 -153,-153 -236.8942,-356 -236.2966,-571.5 0,-215 84.4026,-417.8 237.4966,-571 L 1454.7,143.301 c 20.5,-20.403 48.41,-32.199 76.8,-32.199 28.7,0 56.7,11.5 76.7,31.597 L 2731.5,1261.8 c 152.7,152.7 236.8,355.7 236.8,571.4 0.7,216 -83,419 -235.6,571.6" fill="rgb(var(--color-foreground))"></path>
-                        </g></g>
-                      </svg>
-                      <span id="wishlist-count" class="header-v24__wishlist-count">{{ wishlist_count }}</span>
-                    </a>
-                  </xo-tooltip>
-
-                  <!-- Cart trigger -->
-                  <xo-tooltip class="header-v24__icon-wrap" xo-placement="bottom-center" xo-title="Cart">
-                    <xo-modal-trigger class="header-v24__icon" xo-name="cart">
-                      <svg height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12,0C9.1,0,6.7,2.4,6.7,5.3v1h10.5v-1C17.2,2.4,14.9,0,12,0z M12,1.8c1.6,0,3,1.1,3.4,2.7H8.6C9,2.9,10.4,1.8,12,1.8" fill="rgba(var(--color-foreground))"></path>
-                        <g><path d="M17.6,6.2c0.9,0,1.6,0.7,1.6,1.6v12.9c0,0.9-0.7,1.6-1.6,1.6H6.4c-0.9,0-1.6-0.7-1.6-1.6V7.8c0-0.9,0.7-1.6,1.6-1.6H17.6 M17.6,4.5H6.4C4.5,4.5,3,6,3,7.8v12.9C3,22.5,4.5,24,6.4,24h11.3c1.8,0,3.3-1.5,3.3-3.3V7.8C21,6,19.5,4.5,17.6,4.5L17.6,4.5z" fill="rgba(var(--color-foreground))"></path></g>
-                        <path d="M14.8,8.8H9.2c-0.4,0-0.7-0.3-0.7-0.7v0c0-0.4,0.3-0.7,0.7-0.7h5.7c0.4,0,0.7,0.3,0.7,0.7v0C15.5,8.5,15.2,8.8,14.8,8.8z" fill="rgba(var(--color-foreground))"></path>
-                      </svg>
-                      <span class="header-v24__cart-count">{{ cart_count }}</span>
-                    </xo-modal-trigger>
-                  </xo-tooltip>
-                </div>
-              </div>
-
-              <!-- Search Modal -->
-              <xo-modal class="search" xo-animate="slide-down" xo-autofocus="" xo-name="search"
-                xo-placement="top-left" xo-scroll-disabled="">
-                <div class="xo-modal-content" style="--width:50rem; --height:80vh; --header-height:7rem; --footer-height:7rem">
-                  <div class="xo-modal-content__inner xo-modal-content__inner--full-width">
-                    <xo-modal-trigger aria-label="Close" class="xo-modal-content__close xo-modal-content__close--abs">
-                      <svg class="m-svg-icon--large" fill="currentColor" stroke="currentColor" viewBox="0 0 320 512" width="15" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M193.94 256L296.5 153.44l21.15-21.15c3.12-3.12 3.12-8.19 0-11.31l-22.63-22.63c-3.12-3.12-8.19-3.12-11.31 0L160 222.06 36.29 98.34c-3.12-3.12-8.19-3.12-11.31 0L2.34 120.97c-3.12 3.12-3.12 8.19 0 11.31L126.06 256 2.34 379.71c-3.12 3.12-3.12 8.19 0 11.31l22.63 22.63c3.12 3.12 8.19 3.12 11.31 0L160 289.94 262.56 392.5l21.15 21.15c3.12 3.12 8.19 3.12 11.31 0l22.63-22.63c3.12-3.12 3.12-8.19 0-11.31L193.94 256z"></path>
-                      </svg>
-                    </xo-modal-trigger>
-                    <div class="xo-modal-content__body">
-                      <div class="xo-modal-content__content" style="padding:0">
-                        <div class="xo-section color-background-1" style="--margin:0;--pt:40;--pb:40;">
-                          <xo-container class="xo-container--box">
-                            <form action=" " method="get" role="search">
-                              <div class="xo-predictive-search"
-                                data-locales='{"pages":"Pages","collections":"Collections","products":"Products","articles":"Articles"}'>
-                                <xo-animate class="xo-predictive-search__input" xo-cascade="">
-                                  <xo-grid class="xo-predictive-search__box">
-                                    <div class="xo-predictive-search__left" style="--lg:3">
-                                      <a href="{% url 'home' %}">
-                                        <img alt="Riha Zain" height="auto" src="{% static 'cdn/shop/files/rihazain.logo.png' %}"
-                                          style="width:120px; height:39.11602209944752px" width="auto" />
-                                      </a>
-                                    </div>
-                                    <div class="xo-predictive-search__center" style="--xs:12; --lg:6">
-                                      <label class="xo-field-input">
-                                        <input class="xo-field-input__input" data-predictive-search-input="header"
-                                          id="predictive-search" name="q" placeholder="" type="text" value="" />
-                                        <span class="xo-field-input__placeholder">Search</span>
-                                      </label>
-                                    </div>
-                                    <div class="xo-predictive-search__right" style="--lg:3"></div>
-                                  </xo-grid>
-                                </xo-animate>
-                              </div>
-                            </form>
-                          </xo-container>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </xo-modal>
-
-            </xo-grid>
-          </xo-container>
-        </xo-animate>
-      </xo-sticky>
-    </header>
-  </div>
-  <!-- END header -->
-
-
-  <!-- ================================================
-       PAGE CONTENT BLOCK
-       ================================================ -->
-  {% block content %}{% endblock %}
-
-
-  <!-- ================================================
-       FOOTER
-       ================================================ -->
-  <div class="shopify-section shopify-section-group-footer-group section-footer"
-    id="shopify-section-sections--footer">
-    <xo-sticky-hidden xo-name="sticky-addcart"></xo-sticky-hidden>
-    <footer class="xo-section xo-section--footer color-background-1" style="--margin:0;--pt:0;--pb:0;--pb-mobile:53px">
-      <xo-animate class="xo-section-bg" xo-disabled="" xo-duration="1000">
-        <xo-parallax class="xo-section-bg-image__item" xo-lerp-ease="0.4">
-          <xo-parallax-scroll class="xo-section-bg-image__url xo-background-lazyload"
-            xo-keyframes="{'0%':{ backgroundPositionY:'200px' },'100%':{ backgroundPositionY:'-200px' }}"></xo-parallax-scroll>
-        </xo-parallax>
-      </xo-animate>
-
-      <div class="footer-v26__top">
-        <xo-container class="xo-container--box">
-          <xo-grid>
-            <xo-animate class="footer-v26__left" style="--xs:12; --lg:6; --xxl:3;" xo-cascade="">
-              <a class="footer-v26__logo" href="{% url 'home' %}">
-                <img alt="Riha Zain" height="auto" src="{% static 'cdn/shop/files/rihazain.logo.png' %}"
-                  style="width:150px; height:48.89502762430939px" width="auto" />
-              </a>
-            </xo-animate>
-            <xo-animate class="footer-v26__center" style="--xs:12; --order-xs:2; --xxl:6; --order-xxl:1" xo-cascade="">
-              <ul class="list-unstyled footer-v26__list" role="list">
-                <li class="footer-v26__list-item"><a href="{% url 'about' %}">About</a></li>
-                <li class="footer-v26__list-item"><a href=" ">Privacy Policy</a></li>
-                <li class="footer-v26__list-item"><a href=" ">Terms Of Services</a></li>
-                <li class="footer-v26__list-item"><a href="{% url 'contact' %}">Contact</a></li>
-              </ul>
-            </xo-animate>
-          </xo-grid>
-        </xo-container>
+      <!-- LEFT: Book Free Eyetest -->
+      <div class="aa-header__left">
+        <a href="{% url 'content:eye_test_booking' %}" class="aa-eyetest-btn">
+          <div class="aa-eyetest-btn__avatar">
+            <svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="aa-eyetest-btn__text">
+            <span>Book Free Eyetest</span>
+          </div>
+        </a>
       </div>
 
-      <xo-container class="xo-container--box">
-        <div class="footer-v26__bottom">
-          <ul class="footer-v26__social list-unstyled" role="list">
-            <li>
-              <a class="footer-v26__social-link" href="https://wa.me/XXXXXXXXXX" target="_blank">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>
-                </svg>
-              </a>
-            </li>
-            <li>
-              <a class="footer-v26__social-link" href="#" target="_blank">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334"/>
-                </svg>
-              </a>
-            </li>
-            <li>
-              <a class="footer-v26__social-link" href="#" target="_blank">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951"/>
-                </svg>
-              </a>
-            </li>
-          </ul>
-          <div class="footer-v26__copyright">
-            © Copyright {% now "Y" %} |
-            <a class="footer-v26__theme-name" href="{% url 'home' %}" rel="nofollow" target="_blank">
-              Riha Zain. All rights reserved.
+      <!-- CENTRE: Logo -->
+      <div class="aa-header__logo">
+        <a href="{% url 'home' %}">
+          {% if LOGO_URL %}
+            <img src="{{ LOGO_URL }}" alt="Al Ameen Optics" class="aa-logo-img">
+          {% else %}
+          <div class="aa-logo-text">
+            <span class="aa-logo-text__ar">نظارات الأمين</span>
+            <span class="aa-logo-text__en">Al Am<span style="color:var(--aa-accent)">een</span></span>
+            <span class="aa-logo-text__sub">Optics</span>
+          </div>
+          {% endif %}
+        </a>
+      </div>
+
+      <!-- RIGHT: Icons -->
+      <div class="aa-header__right">
+
+        <!-- Account links (desktop) -->
+        <div class="aa-header__account-links">
+          {% if user.is_authenticated %}
+            <a href="{% url 'users:profile' %}">My Account</a>
+            <span class="divider"></span>
+            <a href="{% url 'orders:order_list' %}">Orders</a>
+            <span class="divider"></span>
+            <a href="{% url 'users:logout' %}">Logout</a>
+          {% else %}
+            <a href="{% url 'users:login' %}">Login</a>
+            <span class="divider"></span>
+            <a href="{% url 'users:register' %}">Register</a>
+          {% endif %}
+        </div>
+
+        <!-- Search icon (mobile) / inline search (desktop handled in nav) -->
+        <button class="aa-header__icon-btn" id="aa-search-toggle" aria-label="Search">
+          <i class="bi bi-search"></i>
+        </button>
+
+        <!-- Wishlist -->
+        <a href="{% url 'catalog:brand_list' %}" class="aa-header__icon-btn" aria-label="Wishlist">
+          <i class="bi bi-heart"></i>
+          <span class="aa-header__badge" id="aa-wishlist-count"
+                style=" ">
+            {{ wishlist_count|default:0 }}
+          </span>
+        </a>
+
+        <!-- Cart -->
+        <button class="aa-header__icon-btn" id="aa-cart-toggle" aria-label="Shopping Cart">
+          <i class="bi bi-bag"></i>
+          <span class="aa-header__badge" id="aa-cart-count">{{ cart_count|default:0 }}</span>
+        </button>
+
+        <!-- Hamburger (mobile) -->
+        <button class="aa-header__icon-btn" id="aa-menu-toggle" aria-label="Menu" style="display:none">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+
+    </header>
+
+    <!-- Inline search bar (shows below header on mobile when toggled) -->
+    <div id="aa-search-bar" style="display:none; background:var(--aa-bg-header); padding:10px 24px; border-top:1px solid var(--aa-border);">
+      <form method="get" action="{% url 'catalog:search' %}">
+        <div class="aa-header__search" style="max-width:100%;">
+          <input type="text" name="q" placeholder="Search glasses, brands, lenses…"
+                 value="{{ request.GET.q }}" autocomplete="off">
+          <button type="submit"><i class="bi bi-search"></i></button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ============================================================
+         NAVIGATION
+         ============================================================ -->
+    <nav class="aa-nav-wrap" aria-label="Main navigation">
+      <div class="aa-nav">
+
+        <!-- SEARCH in nav bar (desktop) -->
+        <form method="get" action="{% url 'catalog:search' %}" style="margin-right:24px;">
+          <div class="aa-header__search">
+            <input type="text" name="q" placeholder="Search…" value="{{ request.GET.q }}">
+            <button type="submit"><i class="bi bi-search"></i></button>
+          </div>
+        </form>
+
+        <ul class="aa-nav__list" role="list">
+
+          <!-- New Arrivals -->
+          <li class="aa-nav__item">
+            <a href="{% url 'catalog:sunglasses_list' %}?sort=-created_at" class="aa-nav__link">
+              New Arrivals
             </a>
-          </div>
-        </div>
-      </xo-container>
-    </footer>
-  </div>
-  <!-- END footer -->
+          </li>
 
+          <!-- Gift Shop -->
+          <li class="aa-nav__item">
+            <a href="{% url 'catalog:product_list' 'accessories' %}" class="aa-nav__link">
+              Gift Shop
+            </a>
+          </li>
 
-  <!-- ================================================
-       CART MINI MODAL
-       ================================================ -->
-  <div class="shopify-section shopify-section-group-overlay-group section-xo-cart-mini"
-    id="shopify-section-cart">
-    <xo-modal class="color-" style="z-index:9999;" xo-animate="slide-left" xo-duration="1000"
-      xo-for-cart-mini="" xo-name="cart" xo-placement="top-right" xo-portal="" xo-section-select="">
-      <xo-cart-mini aria-label="Shopping Cart" id="xo-cart-mini" role="dialog">
-        <div class="xo-modal-content-style1"
-          style="--width:50rem; --height:80vh; --header-height:5.5rem; --footer-height:7rem">
-          <div class="xo-modal-content-style1__inner xo-modal-content-style1__inner--full-height">
-            <xo-animate xo-cascade="" xo-duration="1000">
-              <div class="xo-modal-content-style1__header">
-                <h2 class="xo-modal-content-style1__title">Shopping Cart</h2>
-                <xo-modal-trigger aria-label="Close" class="xo-modal-content-style1__close">
-                  <svg class="m-svg-icon--large" fill="currentColor" stroke="currentColor" viewBox="0 0 320 512" width="15" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M193.94 256L296.5 153.44l21.15-21.15c3.12-3.12 3.12-8.19 0-11.31l-22.63-22.63c-3.12-3.12-8.19-3.12-11.31 0L160 222.06 36.29 98.34c-3.12-3.12-8.19-3.12-11.31 0L2.34 120.97c-3.12 3.12-3.12 8.19 0 11.31L126.06 256 2.34 379.71c-3.12 3.12-3.12 8.19 0 11.31l22.63 22.63c3.12 3.12 8.19 3.12 11.31 0L160 289.94 262.56 392.5l21.15 21.15c3.12 3.12 8.19 3.12 11.31 0l22.63-22.63c3.12-3.12 3.12-8.19 0-11.31L193.94 256z"></path>
-                  </svg>
-                </xo-modal-trigger>
+          <!-- Sunglasses (mega menu) -->
+          <li class="aa-nav__item">
+            <a href="{% url 'catalog:sunglasses_list' %}" class="aa-nav__link">
+              Sunglasses <i class="bi bi-chevron-down"></i>
+            </a>
+            <div class="aa-nav__dropdown aa-nav__mega">
+              <div class="aa-mega__col">
+                <h4>By Gender</h4>
+                <a href="{% url 'catalog:sunglasses_list' %}?gender=men">Men's Sunglasses</a>
+                <a href="{% url 'catalog:sunglasses_list' %}?gender=women">Women's Sunglasses</a>
+                <a href="{% url 'catalog:sunglasses_list' %}?gender=unisex">Unisex</a>
+                <a href="{% url 'catalog:product_list' 'reading_glasses' %}">Kids</a>
               </div>
-              <div class="xo-modal-content-style1__separator"></div>
-            </xo-animate>
-
-            <xo-cart-scroll class="xo-modal-content-style1__body xo-scrollbar">
-              <div class="xo-modal-content-style1__content">
-
-                <!-- Added notification -->
-                <div aria-label="Item added to your cart" class="xo-notify-cart" id="xo-notify" role="dialog" style="display:none;">
-                  <svg class="m-svg-icon--large" fill="none" stroke="#5fd321" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-                  </svg>
-                  <span>Product added to cart successfully</span>
-                </div>
-
-                <!-- Empty cart -->
-                {% if not cart.items.exists %}
-                <xo-animate class="xo-cart-empty" xo-cascade="">
-                  <div class="xo-empty" style="--align:center">
-                    <div class="xo-empty__icon">
-                      <svg viewBox="0 0 32 32" width="8rem" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M31.71,15.29c-4.09-4.08-4-4.07-4.28-4.19l-7-3.19a1,1,0,1,0-.82,1.82l5,2.27L16,15.9,7.42,12l5-2.27a1,1,0,0,0-.82-1.82c-4.87,2.21-7.13,3.25-7,3.19-.24.12-.13.05-4.28,4.19a1,1,0,0,0,.30,1.62l11,5a1,1,0,0,0,1.12-.2L15,19.41v10L6,25.36V22a1,1,0,0,0-2,0c0,4.42,0,4.2.18,4.54a.6.6,0,0,0,.3.29c.1.07,0,.05.13.09C16.59,32.36,15.69,32,16,32s-.5.32,11.41-5.09A1,1,0,0,0,28,26V18.46l3.41-1.55A1,1,0,0,0,31.71,15.29ZM11.78,19.8l-9-4.11L5.22,13.2l9.05,4.11ZM26,25.36l-9,4.09v-10C19.46,21.87,19.45,22,20,22c.33,0,.07.07,6-2.63ZM20.22,19.8l-2.49-2.49,9.05-4.11,2.49,2.49Z" fill="currentColor"></path>
-                        <path d="M15,8.91a3.61,3.61,0,0,1,2-3.16,2,2,0,0,0,1-2.12,2,2,0,1,0-3.86,1,1,1,0,0,1-.6,1.27,1,1,0,0,1-1.28-.61,4,4,0,1,1,5.7,2.17A1.67,1.67,0,0,0,17,8.91,1,1,0,1,1,15,8.91Z" fill="currentColor"></path>
-                        <path d="M16,13a1,1,0,1,1,1-1A1,1,0,0,1,16,13Z" fill="currentColor"></path>
-                      </svg>
-                    </div>
-                    <h2 class="xo-empty__title">Your cart is empty</h2>
-                    <p class="xo-empty__subtitle">You may check out all the available products and buy some in the shop.</p>
-                    <div class="xo-empty__content">
-                      <a class="xo-btn xo-btn--dark xo-btn--secondary xo-btn--md xo-btn--slide-up" href="{% url 'home' %}">
-                        <span class="xo-btn__content">
-                          <span class="xo-btn__text" data-text="Continue shopping">Continue shopping</span>
-                        </span>
-                      </a>
-                    </div>
-                  </div>
-                </xo-animate>
-                {% else %}
-
-                <!-- Cart items -->
-                <div class="cart-items-list">
-                  {% for item in cart.items.all %}
-                  <div class="cart-item" data-item-id="{{ item.id }}">
-                    <div class="cart-item__image">
-                      <a href="{{ item.product.get_absolute_url }}">
-                        {% if item.product.images.all %}
-                          {% with first_image=item.product.images.first %}
-                            {% if first_image %}<img alt="{{ item.product.name }}" src="{{ first_image.image.url }}" width="80" height="80" loading="lazy" />{% endif %}
-                          {% endwith %}
-                        {% elif item.product.image %}
-                          <img alt="{{ item.product.name }}" src="{{ item.product.image.url }}" width="80" height="80" loading="lazy" />
-                        {% else %}
-                          <img alt="No Image" src="/static/img/no-image.jpg" width="80" height="80" loading="lazy" />
-                        {% endif %}
-                      </a>
-                    </div>
-                    <div class="cart-item__details">
-                      <h3 class="cart-item__title"><a href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a></h3>
-                      <div class="cart-item__price">₹{{ item.product.price }}</div>
-                      <xo-product xo-section-id="template--cart-items" xo-product-id="{{ item.product.id }}" xo-line="{{ forloop.index }}">
-                        <div class="xo-cart-table__quantity">
-                          <xo-cart-quantity class="xo-quantity-style2" style="--width:10rem; --height:4rem" data-item-id="{{ item.id }}">
-                            <a href=" " class="xo-quantity-style2__button decrease-qty" data-item-id="{{ item.id }}" data-url=" ">–</a>
-                            <input type="text" value="{{ item.quantity }}" readonly class="xo-quantity-style2__number item-quantity-{{ item.id }}">
-                            <a href=" " class="xo-quantity-style2__button increase-qty" data-item-id="{{ item.id }}" data-url=" ">+</a>
-                          </xo-cart-quantity>
-                        </div>
-                      </xo-product>
-                    </div>
-                    <div id="cart-item-{{ item.id }}" data-item-id="{{ item.id }}">
-                      <div class="cart-item__remove">
-                        <button class="remove-item" data-item-id="{{ item.id }}" data-url=" ">
-                          <svg width="16" height="16" viewBox="0 0 320 512" fill="currentColor">
-                            <path d="M193.94 256L296.5 153.44l21.15-21.15c3.12-3.12 3.12-8.19 0-11.31l-22.63-22.63c-3.12-3.12-8.19-3.12-11.31 0L160 222.06 36.29 98.34c-3.12-3.12-8.19-3.12-11.31 0L2.34 120.97c-3.12 3.12-3.12 8.19 0 11.31L126.06 256 2.34 379.71c-3.12 3.12-3.12 8.19 0 11.31l22.63 22.63c3.12 3.12 8.19 3.12 11.31 0L160 289.94 262.56 392.5l21.15 21.15c3.12 3.12 8.19 3.12 11.31 0l22.63-22.63c3.12-3.12 3.12-8.19 0-11.31L193.94 256z"></path>
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="cart-item__total item-total-{{ item.id }}">₹{{ item.total_price }}</div>
-                  </div>
-                  {% endfor %}
-                </div>
-                {% endif %}
-
+              <div class="aa-mega__col">
+                <h4>By Style</h4>
+                <a href="{% url 'catalog:sunglasses_list' %}">Aviator</a>
+                <a href="{% url 'catalog:sunglasses_list' %}">Wayfarer</a>
+                <a href="{% url 'catalog:sunglasses_list' %}">Sport</a>
+                <a href="{% url 'catalog:sunglasses_list' %}">Oversized</a>
+                <a href="{% url 'catalog:sunglasses_list' %}">Cat Eye</a>
               </div>
-            </xo-cart-scroll>
-
-            <div class="xo-modal-content-style1__separator"></div>
-
-            <!-- Cart footer -->
-            <div class="xo-modal-content-style1__footer flex-v">
-              {% if cart.items.exists %}
-              <div class="cart-summary">
-                <div class="cart-summary__row">
-                  <span>Subtotal:</span>
-                  <span class="cart-subtotal">₹{{ cart.get_subtotal|floatformat:2 }}</span>
-                </div>
-                <div class="cart-summary__row">
-                  <span>Total:</span>
-                  <span id="cart-total">₹{{ cart.get_total }}</span>
-                </div>
-                <div class="checkout-row" style="display:flex; gap:1rem; margin-top:1rem;">
-                  <a href="?from=cart" class="xo-btn xo-btn--dark xo-btn--primary xo-btn--md xo-btn--slide-up" style="flex:1; text-align:center;">
-                    <span class="xo-btn__content"><span class="xo-btn__text" data-text="Proceed to Checkout">Proceed to Checkout</span></span>
-                  </a>
-                  <a href=" " class="xo-btn xo-btn--light xo-btn--primary xo-btn--md xo-btn--slide-up" style="flex:1; text-align:center;">
-                    <span class="xo-btn__content"><span class="xo-btn__text" data-text="View Cart">View Cart</span></span>
-                  </a>
-                </div>
+              <div class="aa-mega__col">
+                <h4>Top Brands</h4>
+                {% for brand in nav_brands|slice:":5" %}
+                  <a href="{% url 'catalog:brand_detail' brand.slug %}">{{ brand.name }}</a>
+                {% empty %}
+                  <a href="{% url 'catalog:brand_list' %}">Ray-Ban</a>
+                  <a href="{% url 'catalog:brand_list' %}">Oakley</a>
+                  <a href="{% url 'catalog:brand_list' %}">Tom Ford</a>
+                  <a href="{% url 'catalog:brand_list' %}">Prada</a>
+                {% endfor %}
               </div>
-              {% endif %}
-
-              <!-- Recommended products carousel -->
-              <h5 class="title-collection-cart">You may also like</h5>
-              <xo-carousel xo-breakpoints='{"375":{"perView":1.2}}' xo-per-view="1.53">
-                <div class="cart-carousel-btn__wrap">
-                  <xo-carousel-prev class="cart-carousel-btn"><button class="button-trans">
-                    <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg"><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" fill="currentColor"></path></svg>
-                  </button></xo-carousel-prev>
-                  <xo-carousel-next class="cart-carousel-btn"><button class="button-trans">
-                    <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="currentColor"></path></svg>
-                  </button></xo-carousel-next>
-                </div>
-                <xo-carousel-inner>
-                  <xo-carousel-list aria-label="Slider" role="list">
-                    {% for product in recommended_products %}
-                    <xo-carousel-slide aria-label="{{ forloop.counter }} of {{ recommended_products|length }}" aria-roledescription="Slide">
-                      <xo-product class="collection-product-footer">
-                        <div class="collection-product-footer__header">
-                          <div style="overflow:hidden;">
-                            <a class="collection-product-footer__img" href="{{ product.get_absolute_url }}">
-                              <div class="xo-image" style="--xo-ratio-percent:1/1;">
-                                {% if product.images.all %}
-                                  {% with first_image=product.images.first %}
-                                    {% if first_image %}<img alt="{{ product.name }}" src="{{ first_image.image.url }}" width="1000" height="1000" loading="lazy" />{% endif %}
-                                  {% endwith %}
-                                {% elif product.image %}
-                                  <img alt="{{ product.name }}" src="{{ product.image.url }}" width="1000" height="1000" loading="lazy" />
-                                {% else %}
-                                  <img alt="No Image" src="/static/img/no-image.jpg" width="1000" height="1000" loading="lazy" />
-                                {% endif %}
-                              </div>
-                            </a>
-                          </div>
-                        </div>
-                        <div class="collection-product-footer__content">
-                          <h2 class="collection-product-footer__name-product">
-                            <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
-                          </h2>
-                          <div class="collection-product-footer__price">
-                            <span class="xo-price__item">₹{{ product.price }}</span>
-                          </div>
-                        </div>
-                      </xo-product>
-                    </xo-carousel-slide>
-                    {% endfor %}
-                  </xo-carousel-list>
-                </xo-carousel-inner>
-              </xo-carousel>
+              <div class="aa-mega__col">
+                <h4>Quick Links</h4>
+                <a href="{% url 'catalog:sunglasses_list' %}">All Sunglasses</a>
+                <a href="{% url 'catalog:sunglasses_list' %}?sort=base_price">Under ₹999</a>
+                <a href="{% url 'content:eye_test_booking' %}">Book Eye Test</a>
+                <a href="{% url 'content:store_locations' %}">Find a Store</a>
+              </div>
             </div>
+          </li>
 
+          <!-- Eyeglasses -->
+          <li class="aa-nav__item">
+            <a href="{% url 'catalog:eyeglasses_list' %}" class="aa-nav__link">
+              Eyeglasses <i class="bi bi-chevron-down"></i>
+            </a>
+            <div class="aa-nav__dropdown">
+              <a href="{% url 'catalog:eyeglasses_list' %}?gender=men">Men's Frames</a>
+              <a href="{% url 'catalog:eyeglasses_list' %}?gender=women">Women's Frames</a>
+              <a href="{% url 'catalog:eyeglasses_list' %}?gender=unisex">Unisex Frames</a>
+              <hr>
+              <a href="{% url 'catalog:eyeglasses_list' %}">Progressive Lenses</a>
+              <a href="{% url 'catalog:eyeglasses_list' %}">Blue Light Glasses</a>
+              <a href="{% url 'catalog:eyeglasses_list' %}">Reading Glasses</a>
+              <hr>
+              <a href="{% url 'content:eye_test_booking' %}">📅 Book Free Eye Test</a>
+            </div>
+          </li>
+
+          <!-- Contact Lenses -->
+          <li class="aa-nav__item">
+            <a href="{% url 'catalog:contact_lenses_list' %}" class="aa-nav__link">
+              Contact Lenses <i class="bi bi-chevron-down"></i>
+            </a>
+            <div class="aa-nav__dropdown">
+              <a href="{% url 'catalog:contact_lenses_list' %}?lens_type=clear">Clear Lenses</a>
+              <a href="{% url 'catalog:contact_lenses_list' %}?lens_type=color">Coloured Lenses</a>
+              <hr>
+              <a href="{% url 'catalog:contact_lenses_list' %}?schedule=daily">Daily</a>
+              <a href="{% url 'catalog:contact_lenses_list' %}?schedule=monthly">Monthly</a>
+              <a href="{% url 'catalog:contact_lenses_list' %}?schedule=yearly">Yearly</a>
+            </div>
+          </li>
+
+          <!-- Brands -->
+          <li class="aa-nav__item">
+            <a href="{% url 'catalog:brand_list' %}" class="aa-nav__link">
+              Brands <i class="bi bi-chevron-down"></i>
+            </a>
+            <div class="aa-nav__dropdown">
+              {% for brand in nav_brands|slice:":8" %}
+              <a href="{% url 'catalog:brand_detail' brand.slug %}">{{ brand.name }}</a>
+              {% empty %}
+              <a href="{% url 'catalog:brand_list' %}">All Brands</a>
+              {% endfor %}
+              <hr>
+              <a href="{% url 'catalog:brand_list' %}"><strong>View All Brands →</strong></a>
+            </div>
+          </li>
+
+          <!-- Eye Care / Services -->
+          <li class="aa-nav__item">
+            <a href="{% url 'content:eye_test_booking' %}" class="aa-nav__link">
+              Eye Care <i class="bi bi-chevron-down"></i>
+            </a>
+            <div class="aa-nav__dropdown">
+              <a href="{% url 'content:eye_test_booking' %}">Book Eye Test</a>
+              <a href="{% url 'content:store_locations' %}">Find a Store</a>
+              <hr>
+              <a href="{% url 'catalog:brand_list' %}">Lens Cleaning Services</a>
+              <a href="{% url 'catalog:brand_list' %}">Frame Adjustments</a>
+              <a href="{% url 'catalog:brand_list' %}">Prescription Upload</a>
+            </div>
+          </li>
+
+          <!-- SALE -->
+          <li class="aa-nav__item">
+            <a href="{% url 'catalog:sunglasses_list' %}" class="aa-nav__link" style="color:var(--aa-red)">
+              Sale <span class="aa-nav__sale-tag">50% OFF</span>
+            </a>
+          </li>
+
+        </ul>
+      </div>
+    </nav>
+  </div>
+  <!-- END HEADER -->
+
+  <!-- ============================================================
+       MOBILE SIDE MENU
+       ============================================================ -->
+  <div class="aa-mobile-menu-overlay" id="aa-mobile-overlay"></div>
+  <nav class="aa-mobile-menu" id="aa-mobile-menu" aria-label="Mobile navigation">
+    <div class="aa-mobile-menu__header">
+      <a href="{% url 'home' %}">
+        <div class="aa-logo-text" style="--aa-accent:#1a6fa8">
+          <span style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;color:var(--aa-accent)">Al Ameen</span>
+          <span style="font-size:1.1rem;letter-spacing:.1em;color:var(--aa-mid)">OPTICS</span>
+        </div>
+      </a>
+      <button class="aa-mobile-menu__close" id="aa-mobile-close">×</button>
+    </div>
+    <div class="aa-mobile-menu__search">
+      <form method="get" action="{% url 'catalog:search' %}">
+        <input type="text" name="q" placeholder="Search…" value="{{ request.GET.q }}">
+        <button type="submit"><i class="bi bi-search"></i></button>
+      </form>
+    </div>
+    <ul>
+      <li class="aa-mobile-nav__item">
+        <div class="aa-mobile-nav__link" onclick="toggleMobileSub(this)">
+          <a href="{% url 'catalog:sunglasses_list' %}">Sunglasses</a>
+          <i class="bi bi-chevron-down"></i>
+        </div>
+        <div class="aa-mobile-nav__sub">
+          <a href="{% url 'catalog:sunglasses_list' %}?gender=men">Men's Sunglasses</a>
+          <a href="{% url 'catalog:sunglasses_list' %}?gender=women">Women's Sunglasses</a>
+          <a href="{% url 'catalog:sunglasses_list' %}">All Sunglasses</a>
+        </div>
+      </li>
+      <li class="aa-mobile-nav__item">
+        <div class="aa-mobile-nav__link" onclick="toggleMobileSub(this)">
+          <a href="{% url 'catalog:eyeglasses_list' %}">Eyeglasses</a>
+          <i class="bi bi-chevron-down"></i>
+        </div>
+        <div class="aa-mobile-nav__sub">
+          <a href="{% url 'catalog:eyeglasses_list' %}?gender=men">Men's Frames</a>
+          <a href="{% url 'catalog:eyeglasses_list' %}?gender=women">Women's Frames</a>
+          <a href="{% url 'catalog:eyeglasses_list' %}">All Eyeglasses</a>
+        </div>
+      </li>
+      <li class="aa-mobile-nav__item">
+        <div class="aa-mobile-nav__link">
+          <a href="{% url 'catalog:contact_lenses_list' %}">Contact Lenses</a>
+        </div>
+      </li>
+      <li class="aa-mobile-nav__item">
+        <div class="aa-mobile-nav__link">
+          <a href="{% url 'catalog:brand_list' %}">Brands</a>
+        </div>
+      </li>
+      <li class="aa-mobile-nav__item">
+        <div class="aa-mobile-nav__link">
+          <a href="{% url 'catalog:product_list' 'accessories' %}">Gift Shop</a>
+        </div>
+      </li>
+      <li class="aa-mobile-nav__item">
+        <div class="aa-mobile-nav__link">
+          <a href="{% url 'content:eye_test_booking' %}">Book Eye Test</a>
+        </div>
+      </li>
+      <li class="aa-mobile-nav__item">
+        <div class="aa-mobile-nav__link" style="color:var(--aa-red)">
+          <a href="{% url 'catalog:sunglasses_list' %}" style="color:var(--aa-red)">Sale — Up to 50% Off</a>
+        </div>
+      </li>
+    </ul>
+    <div class="aa-mobile-menu__footer">
+      {% if user.is_authenticated %}
+        <a href="{% url 'users:profile' %}"><i class="bi bi-person"></i> My Account</a>
+        <a href="{% url 'orders:order_list' %}"><i class="bi bi-box"></i> My Orders</a>
+        <a href="{% url 'users:logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+      {% else %}
+        <a href="{% url 'users:login' %}"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+        <a href="{% url 'users:register' %}"><i class="bi bi-person-plus"></i> Create Account</a>
+      {% endif %}
+      <a href="{% url 'content:store_locations' %}"><i class="bi bi-geo-alt"></i> Find a Store</a>
+    </div>
+  </nav>
+
+  <!-- ============================================================
+       FLASH MESSAGES
+       ============================================================ -->
+  {% if messages %}
+  <div class="aa-messages">
+    {% for message in messages %}
+    <div class="aa-message aa-message--{{ message.tags }}">
+      {% if 'success' in message.tags %}<i class="bi bi-check-circle-fill"></i>
+      {% elif 'error' in message.tags or 'danger' in message.tags %}<i class="bi bi-exclamation-circle-fill"></i>
+      {% elif 'warning' in message.tags %}<i class="bi bi-exclamation-triangle-fill"></i>
+      {% else %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+      {{ message }}
+      <button class="aa-message__close" onclick="this.parentElement.remove()" aria-label="Close">×</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <main id="aa-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ============================================================
+       MINI CART DRAWER
+       ============================================================ -->
+  <div class="aa-cart-overlay" id="aa-cart-overlay"></div>
+  <aside class="aa-cart-drawer" id="aa-cart-drawer" aria-label="Shopping cart">
+    <div class="aa-cart-drawer__header">
+      <h3><i class="bi bi-bag" style="margin-right:8px;"></i> Shopping Cart</h3>
+      <button class="aa-cart-drawer__close" id="aa-cart-close">×</button>
+    </div>
+    <div class="aa-cart-drawer__body" id="aa-cart-body">
+      {% if cart and cart.items.exists %}
+        {% for item in cart.items.all %}
+        <div class="aa-cart-item" data-item-id="{{ item.id }}">
+          <a href="{{ item.product.get_absolute_url }}">
+            {% with img=item.product.images.first %}
+              {% if img %}<img src="{{ img.image.url }}" alt="{{ item.product.name }}">
+              {% elif item.product.image %}<img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+              {% else %}<img src="{% static 'img/no-image.jpg' %}" alt="No image">{% endif %}
+            {% endwith %}
+          </a>
+          <div>
+            <div class="aa-cart-item__name">{{ item.product.name }}</div>
+            <div class="aa-cart-item__price">₹{{ item.unit_price }}</div>
+            <div class="aa-cart-item__qty">
+              <button class="decrease-qty" data-item-id="{{ item.id }}">–</button>
+              <span class="item-qty-{{ item.id }}">{{ item.quantity }}</span>
+              <button class="increase-qty" data-item-id="{{ item.id }}">+</button>
+            </div>
+          </div>
+          <button class="aa-cart-item__remove remove-item" data-item-id="{{ item.id }}">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="aa-cart-empty">
+          <i class="bi bi-bag-x"></i>
+          <p>Your cart is empty</p>
+          <a href="{% url 'catalog:sunglasses_list' %}" class="aa-btn aa-btn--primary" style="margin-top:20px; display:inline-flex;">
+            Shop Now
+          </a>
+        </div>
+      {% endif %}
+    </div>
+    <div class="aa-cart-drawer__footer">
+      <div class="aa-cart-total">
+        <span>Total</span>
+        <span id="aa-cart-total">₹{{ cart.get_total|default:"0.00" }}</span>
+      </div>
+      <div class="aa-cart-drawer__actions">
+        <a href="{% url 'orders:checkout' %}" class="aa-btn aa-btn--dark">
+          Checkout <i class="bi bi-arrow-right"></i>
+        </a>
+        <a href="{% url 'cart:cart_view' %}" class="aa-btn aa-btn--outline">View Cart</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer class="aa-footer">
+
+    <!-- Top bar: brand identity -->
+    <div class="aa-footer__top">
+      <div class="aa-footer__top-inner">
+        <div>
+          <div style="font-family:var(--font-display);font-size:2.6rem;color:#fff;font-weight:500;font-style:italic;line-height:1.2;">
+            نظارات الأمين
+          </div>
+          <div style="font-size:1.2rem;color:rgba(255,255,255,.55);letter-spacing:.12em;margin-top:4px;text-transform:uppercase;">
+            Al Ameen Optics
           </div>
         </div>
-      </xo-cart-mini>
-    </xo-modal>
-  </div>
-  <!-- END cart modal -->
+        <div class="aa-footer__tagline">
+          "Your Vision Matters More"
+        </div>
+        <div class="aa-footer__top-cta">
+          <a href="{% url 'content:eye_test_booking' %}">
+            <i class="bi bi-calendar-check"></i>
+            Book Free Eye Test
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main link columns -->
+    <div class="aa-footer__main">
+
+      <!-- Col 1: About / Company -->
+      <div class="aa-footer__col">
+        <h4>About Us</h4>
+        <ul>
+          <li><a href="{% url 'about' %}">Our Story</a></li>
+          <li><a href="{% url 'about' %}">Trusted Since 1927</a></li>
+          <li><a href="{% url 'content:store_locations' %}">Store Locations</a></li>
+          <li><a href="{% url 'contact' %}">Careers</a></li>
+          <li><a href="{% url 'contact' %}">Press & Media</a></li>
+          <li><a href="{% url 'about' %}">CSR Initiatives</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 2: Customer Service -->
+      <div class="aa-footer__col">
+        <h4>Customer Service</h4>
+        <ul>
+          <li><a href="{% url 'contact' %}">Contact Us</a></li>
+          <li><a href="{% url 'catalog:brand_list' %}">FAQ</a></li>
+          <li><a href="{% url 'catalog:brand_list' %}">Shipping Policy</a></li>
+          <li><a href="{% url 'catalog:brand_list' %}">Return & Exchange</a></li>
+          <li><a href="{% url 'catalog:brand_list' %}">Warranty Policy</a></li>
+          <li><a href="{% url 'catalog:brand_list' %}">Track My Order</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 3: Shop -->
+      <div class="aa-footer__col">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="{% url 'catalog:sunglasses_list' %}">Sunglasses</a></li>
+          <li><a href="{% url 'catalog:eyeglasses_list' %}">Eyeglasses</a></li>
+          <li><a href="{% url 'catalog:contact_lenses_list' %}">Contact Lenses</a></li>
+          <li><a href="{% url 'catalog:product_list' 'accessories' %}">Accessories</a></li>
+          <li><a href="{% url 'catalog:brand_list' %}">All Brands</a></li>
+          <li><a href="{% url 'catalog:sunglasses_list' %}">Sale — 50% Off</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 4: Eye Care -->
+      <div class="aa-footer__col">
+        <h4>Eye Care</h4>
+        <ul>
+          <li><a href="{% url 'content:eye_test_booking' %}">Book Free Eye Test</a></li>
+          <li><a href="{% url 'content:store_locations' %}">Find a Store</a></li>
+          <li><a href="{% url 'catalog:brand_list' %}">Frame Adjustments</a></li>
+          <li><a href="{% url 'catalog:brand_list' %}">Lens Cleaning</a></li>
+          <li><a href="{% url 'catalog:brand_list' %}">Prescription Guide</a></li>
+          <li><a href="{% url 'catalog:brand_list' %}">Vision Health Blog</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 5: Newsletter + Social -->
+      <div class="aa-footer__col aa-footer__newsletter">
+        <h4>Newsletter</h4>
+        <p>Subscribe for exclusive deals, eye care tips and new arrivals.</p>
+        <div class="aa-footer__newsletter-form">
+          <input type="email" placeholder="Type your e-mail…" aria-label="Email for newsletter">
+          <button type="button" aria-label="Subscribe"><i class="bi bi-arrow-right"></i></button>
+        </div>
+
+        <div class="aa-footer__social">
+          <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook">
+            <i class="bi bi-facebook"></i>
+          </a>
+          <a href="https://x.com" target="_blank" rel="noopener" aria-label="X / Twitter">
+            <i class="bi bi-twitter-x"></i>
+          </a>
+          <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram">
+            <i class="bi bi-instagram"></i>
+          </a>
+          <a href="https://youtube.com" target="_blank" rel="noopener" aria-label="YouTube">
+            <i class="bi bi-youtube"></i>
+          </a>
+          <a href="https://wa.me/XXXXXXXXXX" target="_blank" rel="noopener" aria-label="WhatsApp">
+            <i class="bi bi-whatsapp"></i>
+          </a>
+        </div>
+
+        <!-- Store badges -->
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+          <a href="#" style="display:flex;align-items:center;gap:6px;background:var(--aa-dark);color:#fff;padding:8px 14px;border-radius:8px;font-size:1.2rem;">
+            <i class="bi bi-apple" style="font-size:1.8rem;"></i>
+            <div><div style="font-size:.9rem;opacity:.7">Download on</div><div style="font-weight:700;">App Store</div></div>
+          </a>
+          <a href="#" style="display:flex;align-items:center;gap:6px;background:var(--aa-dark);color:#fff;padding:8px 14px;border-radius:8px;font-size:1.2rem;">
+            <i class="bi bi-google-play" style="font-size:1.8rem;color:#0fa958;"></i>
+            <div><div style="font-size:.9rem;opacity:.7">Get it on</div><div style="font-weight:700;">Google Play</div></div>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="aa-footer__bottom">
+      <div class="aa-footer__bottom-inner">
+        <p>© {% now "Y" %} Al Ameen Optics. All rights reserved. Trusted since 1927.</p>
+        <div class="aa-footer__bottom-links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Cookie Policy</a>
+          <a href="{% url 'catalog:brand_list' %}">Sitemap</a>
+        </div>
+        <div class="aa-footer__payments">
+          <span style="opacity:.5;font-size:1.1rem;">We accept:</span>
+          <i class="bi bi-credit-card-2-front"></i>
+          <i class="bi bi-paypal"></i>
+          <i class="bi bi-cash-coin"></i>
+          <span style="opacity:.5;font-size:1.1rem;">+ Cash on Delivery</span>
+        </div>
+      </div>
+    </div>
+
+  </footer>
+  <!-- END FOOTER -->
 
 
-  <!-- ================================================
-       GLOBAL SCRIPTS
-       ================================================ -->
+  <!-- ============================================================
+       SCRIPTS
+       ============================================================ -->
   <script>
-    /* ── Wishlist UI update ── */
-    function updateWishlistUI(added, btn, newCount) {
-      btn.innerHTML = added
-        ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="red"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" /></svg>`
-        : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/></svg>`;
-      const headerCount = document.getElementById("wishlist-count");
-      if (headerCount) {
-        headerCount.textContent = newCount;
-        headerCount.classList.add("wishlist-count-bump");
-        setTimeout(() => headerCount.classList.remove("wishlist-count-bump"), 300);
-      }
+    // ── Mobile menu ──────────────────────────────────────────────
+    const mobileMenu    = document.getElementById('aa-mobile-menu');
+    const mobileOverlay = document.getElementById('aa-mobile-overlay');
+    const menuToggle    = document.getElementById('aa-menu-toggle');
+    const mobileClose   = document.getElementById('aa-mobile-close');
+
+    function openMobileMenu() {
+      mobileMenu.classList.add('open');
+      mobileOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileMenu() {
+      mobileMenu.classList.remove('open');
+      mobileOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    if (menuToggle)    menuToggle.addEventListener('click', openMobileMenu);
+    if (mobileClose)   mobileClose.addEventListener('click', closeMobileMenu);
+    if (mobileOverlay) mobileOverlay.addEventListener('click', closeMobileMenu);
+
+    function toggleMobileSub(trigger) {
+      const sub = trigger.nextElementSibling;
+      const icon = trigger.querySelector('i');
+      if (!sub) return;
+      sub.classList.toggle('open');
+      if (icon) icon.style.transform = sub.classList.contains('open') ? 'rotate(180deg)' : '';
     }
 
-    document.querySelectorAll(".wishlist-btn").forEach(btn => {
-      btn.addEventListener("click", function () {
-        fetch(`/wishlist/toggle/${this.dataset.productId}/`, {
-          method: "POST",
-          headers: { "X-CSRFToken": "{{ csrf_token }}" }
-        }).then(r => r.json()).then(data => updateWishlistUI(data.added, this, data.wishlist_count));
-      });
-    });
+    // Show hamburger on small screens
+    function checkMobileHeader() {
+      if (window.innerWidth <= 900) {
+        if (menuToggle) menuToggle.style.display = 'flex';
+      } else {
+        if (menuToggle) menuToggle.style.display = 'none';
+        closeMobileMenu();
+      }
+    }
+    checkMobileHeader();
+    window.addEventListener('resize', checkMobileHeader);
 
-    /* ── CSRF helper ── */
+    // ── Mobile search toggle ─────────────────────────────────────
+    const searchToggle = document.getElementById('aa-search-toggle');
+    const searchBar    = document.getElementById('aa-search-bar');
+    if (searchToggle && searchBar) {
+      searchToggle.addEventListener('click', () => {
+        const isVisible = searchBar.style.display !== 'none';
+        searchBar.style.display = isVisible ? 'none' : 'block';
+        if (!isVisible) searchBar.querySelector('input').focus();
+      });
+    }
+
+    // ── Mini cart drawer ─────────────────────────────────────────
+    const cartToggle  = document.getElementById('aa-cart-toggle');
+    const cartClose   = document.getElementById('aa-cart-close');
+    const cartOverlay = document.getElementById('aa-cart-overlay');
+    const cartDrawer  = document.getElementById('aa-cart-drawer');
+
+    function openCart() {
+      cartDrawer.classList.add('open');
+      cartOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeCart() {
+      cartDrawer.classList.remove('open');
+      cartOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    if (cartToggle)  cartToggle.addEventListener('click', openCart);
+    if (cartClose)   cartClose.addEventListener('click', closeCart);
+    if (cartOverlay) cartOverlay.addEventListener('click', closeCart);
+
+    // ── Toast notifications ──────────────────────────────────────
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('aa-toast-container');
+      const icons = { success: 'bi-check-circle-fill', error: 'bi-x-circle-fill', warning: 'bi-exclamation-triangle-fill', info: 'bi-info-circle-fill' };
+      const toast = document.createElement('div');
+      toast.className = `aa-toast ${type}`;
+      toast.innerHTML = `<i class="bi ${icons[type] || icons.info}"></i><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.add('show'), 10);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 350);
+      }, 4000);
+    }
+
+    // Show Django messages as toasts
+    {% if messages %}
+    document.addEventListener('DOMContentLoaded', () => {
+      {% for message in messages %}
+      setTimeout(() => showToast("{{ message|escapejs }}", "{{ message.tags }}"), {{ forloop.counter0 }} * 200);
+      {% endfor %}
+    });
+    {% endif %}
+
+    // ── CSRF helper ──────────────────────────────────────────────
     function getCookie(name) {
       let val = null;
       if (document.cookie) {
-        document.cookie.split(";").forEach(c => {
+        document.cookie.split(';').forEach(c => {
           c = c.trim();
-          if (c.startsWith(name + "=")) val = decodeURIComponent(c.slice(name.length + 1));
+          if (c.startsWith(name + '=')) val = decodeURIComponent(c.slice(name.length + 1));
         });
       }
       return val;
     }
-    const csrftoken = getCookie("csrftoken");
+    const csrftoken = getCookie('csrftoken');
 
-    /* ── Cart count update ── */
+    // ── Cart count update ─────────────────────────────────────────
     function updateCartCount(count) {
-      document.querySelectorAll(".header-v24__cart-count, .cart-count, #cart-count").forEach(el => {
-        el.textContent = count;
-        el.style.transform = "scale(1.3)";
-        setTimeout(() => el.style.transform = "scale(1)", 300);
-      });
+      const badge = document.getElementById('aa-cart-count');
+      if (badge) {
+        badge.textContent = count;
+        badge.style.transform = 'scale(1.4)';
+        setTimeout(() => badge.style.transform = 'scale(1)', 300);
+      }
     }
 
-    /* ── Notification popup ── */
-    function showNotification(message, type = "success") {
-      document.querySelectorAll(".custom-notification").forEach(n => n.remove());
-      const el = document.createElement("div");
-      el.className = `custom-notification custom-notification--${type}`;
-      el.innerHTML = `<div class="custom-notification__content">
-        <span class="custom-notification__icon">${type==="success"?"✓":type==="warning"?"⚠":"✕"}</span>
-        <span class="custom-notification__message">${message}</span>
-      </div>`;
-      document.body.appendChild(el);
-      setTimeout(() => el.classList.add("show"), 10);
-      setTimeout(() => { el.classList.remove("show"); setTimeout(() => el.remove(), 300); }, 3000);
+    // ── Wishlist count update ─────────────────────────────────────
+    function updateWishlistCount(count) {
+      const badge = document.getElementById('aa-wishlist-count');
+      if (badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'flex' : 'none';
+      }
     }
 
-    /* ── Refresh cart modal ── */
-    function refreshCartModal() {
+    // ── AJAX Add to cart ──────────────────────────────────────────
+    function ajaxAddToCart(url, formData, btn) {
+      if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
+      fetch(url, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrftoken },
+        body: formData
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success || data.cart_count !== undefined) {
+          updateCartCount(data.cart_count || 0);
+          showToast(data.message || 'Added to cart!', 'success');
+          if (data.cart_count > 0) openCart();
+          refreshCartDrawer();
+        } else if (data.limit) {
+          showToast(data.message, 'warning');
+        } else {
+          showToast('Could not add to cart.', 'error');
+        }
+      })
+      .catch(() => showToast('Something went wrong!', 'error'))
+      .finally(() => { if (btn) { btn.disabled = false; btn.style.opacity = '1'; } });
+    }
+
+    // ── Refresh cart drawer content ───────────────────────────────
+    function refreshCartDrawer() {
       fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
         .then(r => r.text())
         .then(html => {
           const doc = new DOMParser().parseFromString(html, 'text/html');
-          const newInner = doc.querySelector('#xo-cart-mini .xo-modal-content-style1__inner');
-          const curInner = document.querySelector('#xo-cart-mini .xo-modal-content-style1__inner');
-          if (newInner && curInner) curInner.innerHTML = newInner.innerHTML;
+          const newBody = doc.querySelector('#aa-cart-body');
+          const curBody = document.querySelector('#aa-cart-body');
+          if (newBody && curBody) curBody.innerHTML = newBody.innerHTML;
+          const newTotal = doc.querySelector('#aa-cart-total');
+          const curTotal = document.querySelector('#aa-cart-total');
+          if (newTotal && curTotal) curTotal.textContent = newTotal.textContent;
         });
     }
 
-    /* ── AJAX Add to cart ── */
-    function ajaxAddToCart(url, formData, btn) {
-      if (btn) { btn.disabled = true; btn.style.opacity = "0.6"; }
-      let icon = btn?.querySelector(".xo-btn__icon");
-      let loading = btn?.querySelector(".xo-btn__loading");
-      if (icon) icon.style.display = "none";
-      if (loading) loading.style.display = "block";
-
-      fetch(url, {
-        method: "POST",
-        headers: { "X-Requested-With": "XMLHttpRequest", "X-CSRFToken": csrftoken },
-        body: formData
-      })
+    // ── Wishlist toggle ───────────────────────────────────────────
+    document.querySelectorAll('.wishlist-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const pid = this.dataset.productId;
+        fetch(`/wishlist/toggle/${pid}/`, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': csrftoken }
+        })
         .then(r => r.json())
         .then(data => {
-          if (data.success) {
-            updateCartCount(data.cart_count);
-            showNotification(data.message || "Added to cart!", "success");
-            refreshCartModal();
-            setTimeout(() => {
-              let total = document.getElementById("cart-total");
-              if (total) total.innerHTML = "₹" + data.cart_total;
-              let subtotal = document.querySelector(".cart-subtotal");
-              if (subtotal) subtotal.innerHTML = "₹" + data.cart_total;
-            }, 150);
-          } else if (data.limit) {
-            showNotification(data.message, "warning");
-            updateCartCount(data.cart_count);
-            refreshCartModal();
-          } else {
-            showNotification("Failed to add product", "error");
+          updateWishlistCount(data.wishlist_count);
+          showToast(data.added ? 'Added to wishlist!' : 'Removed from wishlist.', data.added ? 'success' : 'info');
+          const svg = this.querySelector('svg');
+          if (svg) {
+            svg.setAttribute('fill', data.added ? 'red' : 'none');
+            svg.setAttribute('stroke', data.added ? 'red' : 'black');
           }
-        })
-        .catch(() => showNotification("Something went wrong!", "error"))
-        .finally(() => {
-          if (btn) { btn.disabled = false; btn.style.opacity = "1"; }
-          if (icon) icon.style.display = "inline-block";
-          if (loading) loading.style.display = "none";
         });
-    }
+      });
+    });
 
-    /* ── Click handlers ── */
-    document.addEventListener("click", function (e) {
-      if (e.target.closest(".add-to-cart-btn")) {
+    // ── Click handler delegation ──────────────────────────────────
+    document.addEventListener('click', e => {
+      // Add to cart forms
+      const addBtn = e.target.closest('.add-to-cart-grid-btn, .add-to-cart-btn, .add-to-cart-wishlist-btn');
+      if (addBtn) {
         e.preventDefault();
-        let btn = e.target.closest(".add-to-cart-btn");
-        ajaxAddToCart(btn.dataset.url, new FormData(btn.closest("form")), btn);
+        ajaxAddToCart(addBtn.dataset.url || addBtn.closest('form').action, new FormData(addBtn.closest('form')), addBtn);
+        return;
       }
-      if (e.target.closest(".add-to-cart-grid-btn")) {
+      // Cart quantity increase
+      if (e.target.classList.contains('increase-qty') || e.target.closest('.increase-qty')) {
         e.preventDefault();
-        let btn = e.target.closest(".add-to-cart-grid-btn");
-        ajaxAddToCart(btn.dataset.url, new FormData(btn.closest("form")), btn);
+        const btn = e.target.closest('.increase-qty') || e.target;
+        fetch(`/cart/update/${btn.dataset.itemId}/increase/`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+          .then(r => r.json()).then(data => { updateCartCount(data.cart_count); refreshCartDrawer(); });
+        return;
       }
-      if (e.target.closest(".add-to-cart-wishlist-btn")) {
+      // Cart quantity decrease
+      if (e.target.classList.contains('decrease-qty') || e.target.closest('.decrease-qty')) {
         e.preventDefault();
-        let btn = e.target.closest(".add-to-cart-wishlist-btn");
-        ajaxAddToCart(btn.dataset.url, new FormData(btn.closest("form")), btn);
+        const btn = e.target.closest('.decrease-qty') || e.target;
+        fetch(`/cart/update/${btn.dataset.itemId}/decrease/`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+          .then(r => r.json()).then(data => { updateCartCount(data.cart_count); refreshCartDrawer(); });
+        return;
       }
-      /* Qty increase / decrease */
-      if (e.target.classList.contains("increase-qty") || e.target.classList.contains("decrease-qty")) {
+      // Remove item
+      const removeBtn = e.target.closest('.remove-item');
+      if (removeBtn) {
         e.preventDefault();
-        let btn = e.target;
-        fetch(btn.dataset.url, { method: "GET", headers: { "X-Requested-With": "XMLHttpRequest" } })
-          .then(r => r.json())
-          .then(data => {
-            if (data.deleted) {
-              document.querySelector(`.cart-item[data-item-id="${btn.dataset.itemId}"]`)?.remove();
-              setTimeout(() => { if (!document.querySelectorAll('.cart-item').length) refreshCartModal(); }, 300);
-              return;
-            }
-            document.querySelectorAll(".item-quantity-" + btn.dataset.itemId).forEach(el => el.value = data.quantity);
-            let itemTotal = document.querySelector(".item-total-" + btn.dataset.itemId);
-            if (itemTotal) itemTotal.innerHTML = "₹" + data.item_total;
-            let cartTotal = document.getElementById("cart-total");
-            if (cartTotal) cartTotal.innerHTML = "₹" + data.cart_total;
-            let cartSubtotal = document.querySelector(".cart-subtotal");
-            if (cartSubtotal) cartSubtotal.innerHTML = "₹" + data.cart_total;
+        const itemId = removeBtn.dataset.itemId;
+        fetch(`/cart/remove/${itemId}/`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+          .then(r => r.json()).then(data => {
+            updateCartCount(data.cart_count);
+            const itemEl = document.querySelector(`.aa-cart-item[data-item-id="${itemId}"]`);
+            if (itemEl) { itemEl.style.opacity = '0'; setTimeout(() => { itemEl.remove(); refreshCartDrawer(); }, 280); }
+            showToast(data.message || 'Item removed.', 'info');
           });
-      }
-      /* Remove item */
-      if (e.target.closest(".remove-item")) {
-        e.preventDefault();
-        let btn = e.target.closest(".remove-item");
-        fetch(btn.dataset.url, { method: "GET", headers: { "X-Requested-With": "XMLHttpRequest" } })
-          .then(r => r.json())
-          .then(data => {
-            if (data.success) {
-              let item = document.querySelector(`.cart-item[data-item-id="${btn.dataset.itemId}"]`);
-              if (item) {
-                item.style.opacity = "0";
-                setTimeout(() => {
-                  item.remove();
-                  if (!document.querySelectorAll('.cart-item').length) refreshCartModal();
-                }, 300);
-              }
-              updateCartCount(data.cart_count);
-              let total = document.getElementById("cart-total");
-              if (total) total.innerHTML = "₹" + data.cart_total;
-              let subtotal = document.querySelector(".cart-subtotal");
-              if (subtotal) subtotal.innerHTML = "₹" + data.cart_total;
-              showNotification(data.message, "success");
-            }
-          });
+        return;
       }
     });
 
-    /* ── Form submit intercept ── */
-    document.addEventListener("submit", function (e) {
-      if (e.target.action && e.target.action.includes("add_to_cart")) {
+    // ── Form submit intercept ─────────────────────────────────────
+    document.addEventListener('submit', e => {
+      if (e.target.classList.contains('add-to-cart-form')) {
         e.preventDefault();
-        let btn = e.target.querySelector('button[type="submit"], button');
+        const btn = e.target.querySelector('button[type="submit"]');
         ajaxAddToCart(e.target.action, new FormData(e.target), btn);
       }
     }, true);
 
-    document.addEventListener("DOMContentLoaded", function () {
-      refreshCartModal();
+    // ── Auto-dismiss flash messages ───────────────────────────────
+    document.querySelectorAll('.aa-message').forEach(msg => {
+      setTimeout(() => { msg.style.opacity = '0'; msg.style.transform = 'translateY(-8px)'; setTimeout(() => msg.remove(), 300); }, 5000);
     });
   </script>
 
-  <style>
-    .custom-notification { position:fixed; top:100px; right:20px; background:#fff; padding:16px 24px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,.15); z-index:99999; transform:translateX(400px); transition:.3s ease; }
-    .custom-notification.show { transform:translateX(0); }
-    .custom-notification__content { display:flex; gap:12px; align-items:center; }
-    .custom-notification__icon { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; color:white; }
-    .custom-notification--success .custom-notification__icon { background:#10b981; }
-    .custom-notification--warning .custom-notification__icon { background:#f59e0b; }
-    .custom-notification--error   .custom-notification__icon { background:#ef4444; }
-    .xo-btn__loading { display:none; }
-    @media (max-width:768px) { .custom-notification { right:10px; left:10px; } }
-  </style>
+  {% block extra_scripts %}{% endblock %}
 
 </div><!-- #xo-root -->
 </body>

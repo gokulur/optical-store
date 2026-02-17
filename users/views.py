@@ -244,7 +244,7 @@ def redirect_after_login(user):
     elif user.is_staff or user.user_type == 'staff':
         return redirect('/adminpanel/')
     else:
-        return redirect('users:dashboard')
+        return redirect('catalog:home')
 
 
 # ==================== LOGOUT ====================
