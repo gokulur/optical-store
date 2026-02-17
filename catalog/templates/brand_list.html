@@ -1,128 +1,1392 @@
-<!-- brand_list.html -->
 {% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
 
-{% block title %}Brands - Eyewear Store{% endblock %}
+{% block title %}{% trans "All Brands" %} — Al Ameen Optics{% endblock %}
 
 {% block content %}
-<div class="brands-page">
-    <!-- Page Header -->
-    <div class="page-header">
-        <h1>Our Brands</h1>
-        <p>Discover premium eyewear from world-renowned brands</p>
+
+<style>
+/* ============================================================
+   BRAND LIST PAGE — BOLD ARCHITECTURAL EDITORIAL
+   Fonts: Cormorant Garamond (display) + Outfit (body)
+   Palette: Pure white #ffffff / Ink black #111 / Electric teal #00c9b1 accents
+   Direction: Magazine-grid meets luxury fashion catalogue
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+/* ── Tokens ── */
+:root {
+  --bl-ink:       #111111;
+  --bl-ink2:      #1f1f1f;
+  --bl-off:       #f8f7f5;
+  --bl-white:     #ffffff;
+  --bl-rule:      rgba(17,17,17,.1);
+  --bl-muted:     #888;
+  --bl-teal:      #00c9b1;
+  --bl-teal-dk:   #009e8c;
+  --bl-gold:      #c9a96e;
+  --bl-red:       #e63946;
+  --bl-radius:    12px;
+  --bl-transition: .5s cubic-bezier(.22,1,.36,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Page wrapper ── */
+.bl-page {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bl-white);
+  color: var(--bl-ink);
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   HEADER — Cinematic title block
+   ============================================================ */
+.bl-header {
+  position: relative;
+  padding: 120px 60px 80px;
+  background: var(--bl-ink);
+  overflow: hidden;
+}
+
+/* Decorative diagonal rule */
+.bl-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    repeating-linear-gradient(
+      -55deg,
+      transparent,
+      transparent 60px,
+      rgba(255,255,255,.018) 60px,
+      rgba(255,255,255,.018) 61px
+    );
+  pointer-events: none;
+}
+
+/* Grain */
+.bl-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: .035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px;
+  pointer-events: none;
+}
+
+.bl-header__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: flex-end;
+  gap: 40px;
+}
+
+/* Breadcrumb */
+.bl-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: bl-riseIn .6s .05s forwards;
+}
+
+.bl-breadcrumb a,
+.bl-breadcrumb span {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.4);
+  text-decoration: none;
+  transition: color .25s;
+}
+.bl-breadcrumb a:hover { color: var(--bl-teal); }
+.bl-breadcrumb__sep {
+  width: 20px;
+  height: 1px;
+  background: rgba(255,255,255,.2);
+}
+.bl-breadcrumb span:last-child { color: var(--bl-teal); }
+
+/* Giant headline */
+.bl-header__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(4rem, 10vw, 8.5rem);
+  font-weight: 300;
+  line-height: .95;
+  letter-spacing: -.02em;
+  color: var(--bl-white);
+  opacity: 0;
+  animation: bl-riseIn .9s .15s forwards;
+}
+
+.bl-header__title strong {
+  font-weight: 700;
+  display: block;
+  font-style: italic;
+  color: var(--bl-teal);
+}
+
+/* Sub-copy */
+.bl-header__sub {
+  font-size: 1rem;
+  font-weight: 300;
+  color: rgba(255,255,255,.5);
+  letter-spacing: .03em;
+  margin-top: 20px;
+  max-width: 460px;
+  line-height: 1.7;
+  opacity: 0;
+  animation: bl-riseIn .9s .3s forwards;
+}
+
+/* Right stats */
+.bl-header__stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  padding-bottom: 8px;
+  opacity: 0;
+  animation: bl-riseIn .9s .4s forwards;
+}
+
+.bl-header__stat-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--bl-white);
+}
+
+.bl-header__stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  text-align: right;
+}
+
+/* ============================================================
+   SEARCH + FILTER BAR
+   ============================================================ */
+.bl-toolbar {
+  background: var(--bl-white);
+  border-bottom: 1px solid var(--bl-rule);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 20px rgba(0,0,0,.05);
+}
+
+.bl-toolbar__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 64px;
+  flex-wrap: wrap;
+}
+
+/* Search input */
+.bl-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid rgba(0,0,0,.12);
+  border-radius: 100px;
+  padding: 8px 18px;
+  background: #fff;
+  transition: border-color .25s;
+}
+
+.bl-search-wrap:focus-within {
+  border-color: var(--bl-ink);
+}
+
+.bl-search-wrap svg {
+  flex-shrink: 0;
+  color: var(--bl-muted);
+  transition: color .25s;
+}
+
+.bl-search-wrap:focus-within svg { color: var(--bl-ink); }
+
+.bl-search-input {
+  border: none;
+  outline: none;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--bl-ink);
+  background: transparent;
+  width: 200px;
+}
+
+.bl-search-input::placeholder { color: var(--bl-muted); }
+
+/* Category filter pills */
+.bl-cat-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.bl-cat-filters::-webkit-scrollbar { display: none; }
+
+.bl-cat-pill {
+  flex-shrink: 0;
+  padding: 7px 18px;
+  border: 1.5px solid rgba(0,0,0,.1);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: var(--bl-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: all .25s;
+  white-space: nowrap;
+}
+
+.bl-cat-pill:hover {
+  border-color: var(--bl-ink);
+  color: var(--bl-ink);
+}
+
+.bl-cat-pill.active {
+  background: var(--bl-ink);
+  border-color: var(--bl-ink);
+  color: var(--bl-white);
+}
+
+/* View toggles */
+.bl-view-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.bl-view-btn {
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid rgba(0,0,0,.1);
+  border-radius: 8px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--bl-muted);
+  transition: all .25s;
+}
+
+.bl-view-btn:hover,
+.bl-view-btn.active {
+  border-color: var(--bl-ink);
+  background: var(--bl-ink);
+  color: var(--bl-white);
+}
+
+/* ============================================================
+   RESULTS COUNT BAR
+   ============================================================ */
+.bl-results-bar {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 60px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bl-results-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bl-muted);
+  letter-spacing: .05em;
+}
+
+.bl-results-count strong {
+  color: var(--bl-ink);
+  font-weight: 700;
+}
+
+/* ============================================================
+   FEATURED BRANDS — 3-col asymmetric spotlight
+   ============================================================ */
+.bl-featured {
+  max-width: 1400px;
+  margin: 48px auto 0;
+  padding: 0 60px;
+}
+
+.bl-featured__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--bl-teal);
+  margin-bottom: 20px;
+  display: block;
+}
+
+.bl-featured__grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 340px;
+  gap: 16px;
+  margin-bottom: 60px;
+}
+
+/* Featured brand card */
+.bl-feat-card {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--bl-ink);
+  cursor: pointer;
+  transition: transform var(--bl-transition);
+  text-decoration: none;
+  display: block;
+}
+
+.bl-feat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 32px 64px rgba(0,0,0,.18);
+}
+
+.bl-feat-card__bg {
+  position: absolute;
+  inset: 0;
+}
+
+.bl-feat-card__bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .45;
+  transition: transform .8s var(--bl-transition), opacity .4s;
+  filter: grayscale(20%);
+}
+
+.bl-feat-card:hover .bl-feat-card__bg img {
+  transform: scale(1.07);
+  opacity: .55;
+}
+
+.bl-feat-card__bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, rgba(0,0,0,.05) 0%, rgba(0,0,0,.7) 100%);
+}
+
+.bl-feat-card__body {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 28px;
+  z-index: 2;
+}
+
+.bl-feat-card__category {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.bl-feat-badge {
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.bl-feat-badge--sun     { background: rgba(201,169,110,.25); color: var(--bl-gold); border: 1px solid rgba(201,169,110,.35); }
+.bl-feat-badge--eye     { background: rgba(0,201,177,.18);   color: var(--bl-teal);  border: 1px solid rgba(0,201,177,.3);  }
+.bl-feat-badge--kids    { background: rgba(255,107,107,.18); color: #ff6b6b;         border: 1px solid rgba(255,107,107,.3); }
+.bl-feat-badge--contact { background: rgba(108,117,255,.18); color: #6c75ff;         border: 1px solid rgba(108,117,255,.3); }
+
+.bl-feat-card__name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: .02em;
+}
+
+.bl-feat-card--large .bl-feat-card__name {
+  font-size: 3.2rem;
+}
+
+.bl-feat-card__sub {
+  font-size: 12px;
+  font-weight: 300;
+  color: rgba(255,255,255,.6);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.bl-feat-card__arrow {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity .3s, transform .3s;
+  z-index: 2;
+}
+
+.bl-feat-card:hover .bl-feat-card__arrow {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   BRANDS GRID
+   ============================================================ */
+.bl-grid-section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 60px 100px;
+}
+
+.bl-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.bl-divider__rule {
+  flex: 1;
+  height: 1px;
+  background: var(--bl-rule);
+}
+
+.bl-divider__text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--bl-muted);
+  white-space: nowrap;
+}
+
+/* Grid layout — 4 cols default */
+.bl-brands-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  background: var(--bl-rule);
+  border: 1px solid var(--bl-rule);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.bl-brands-grid.list-view {
+  grid-template-columns: 1fr;
+  gap: 0;
+  background: transparent;
+  border: 1px solid var(--bl-rule);
+}
+
+/* ── Brand Card ── */
+.bl-card {
+  background: var(--bl-white);
+  padding: 32px 28px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--bl-transition);
+  overflow: hidden;
+  min-height: 260px;
+}
+
+.bl-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--bl-ink);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform .5s cubic-bezier(.22,1,.36,1);
+  z-index: 0;
+}
+
+.bl-card:hover::before {
+  transform: scaleY(1);
+}
+
+/* All direct children need z-index above the overlay */
+.bl-card > * { position: relative; z-index: 1; }
+
+/* Logo area */
+.bl-card__logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.bl-card__logo img {
+  max-width: 100%;
+  max-height: 60px;
+  object-fit: contain;
+  filter: grayscale(100%) contrast(1.2);
+  opacity: .75;
+  transition: filter .4s, opacity .4s, transform .5s var(--bl-transition);
+}
+
+.bl-card:hover .bl-card__logo img {
+  filter: grayscale(0%) brightness(10);
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+/* Text name fallback */
+.bl-card__logo-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--bl-ink);
+  transition: color .4s;
+}
+.bl-card:hover .bl-card__logo-text { color: #fff; }
+
+/* Card body */
+.bl-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bl-card__name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--bl-ink);
+  letter-spacing: .02em;
+  line-height: 1.2;
+  transition: color .4s;
+}
+.bl-card:hover .bl-card__name { color: #fff; }
+
+.bl-card__desc {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--bl-muted);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color .4s;
+}
+.bl-card:hover .bl-card__desc { color: rgba(255,255,255,.6); }
+
+/* Category pills */
+.bl-card__cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.bl-cat-tag {
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  border: 1px solid rgba(0,0,0,.1);
+  color: var(--bl-muted);
+  transition: all .4s;
+}
+.bl-card:hover .bl-cat-tag {
+  border-color: rgba(255,255,255,.2);
+  color: rgba(255,255,255,.6);
+  background: rgba(255,255,255,.08);
+}
+
+/* CTA line */
+.bl-card__cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0,0,0,.06);
+  transition: border-color .4s;
+}
+
+.bl-card:hover .bl-card__cta { border-color: rgba(255,255,255,.1); }
+
+.bl-card__cta-text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--bl-muted);
+  transition: color .4s;
+}
+.bl-card:hover .bl-card__cta-text { color: var(--bl-teal); }
+
+.bl-card__cta-arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.05);
+  border: 1px solid rgba(0,0,0,.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .35s;
+}
+.bl-card:hover .bl-card__cta-arrow {
+  background: var(--bl-teal);
+  border-color: var(--bl-teal);
+  transform: rotate(45deg);
+}
+
+.bl-card__cta-arrow svg { color: var(--bl-ink); transition: color .35s; }
+.bl-card:hover .bl-card__cta-arrow svg { color: var(--bl-ink); }
+
+/* ── LIST VIEW MODE ── */
+.bl-brands-grid.list-view .bl-card {
+  flex-direction: row;
+  align-items: center;
+  min-height: auto;
+  padding: 20px 28px;
+  gap: 28px;
+  border-bottom: 1px solid var(--bl-rule);
+}
+
+.bl-brands-grid.list-view .bl-card:last-child { border-bottom: none; }
+
+.bl-brands-grid.list-view .bl-card__logo {
+  width: 100px;
+  height: 50px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.bl-brands-grid.list-view .bl-card__body {
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+}
+
+.bl-brands-grid.list-view .bl-card__name {
+  width: 200px;
+  flex-shrink: 0;
+  font-size: 1.2rem;
+}
+
+.bl-brands-grid.list-view .bl-card__desc {
+  flex: 1;
+  -webkit-line-clamp: 1;
+}
+
+.bl-brands-grid.list-view .bl-card__cats {
+  margin: 0;
+  width: 200px;
+  flex-shrink: 0;
+  justify-content: flex-end;
+}
+
+.bl-brands-grid.list-view .bl-card__cta {
+  border-top: none;
+  padding-top: 0;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* ── EMPTY STATE ── */
+.bl-empty {
+  grid-column: 1/-1;
+  text-align: center;
+  padding: 80px 24px;
+  background: var(--bl-off);
+  border-radius: 16px;
+  margin: 20px;
+}
+
+.bl-empty__icon { font-size: 3.5rem; margin-bottom: 16px; display: block; }
+
+.bl-empty__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--bl-ink);
+}
+
+.bl-empty__sub {
+  font-size: .95rem;
+  color: var(--bl-muted);
+  margin-bottom: 28px;
+}
+
+/* ============================================================
+   MARQUEE — teal version
+   ============================================================ */
+.bl-marquee {
+  background: var(--bl-teal);
+  padding: 14px 0;
+  overflow: hidden;
+  margin: 60px 0;
+}
+
+.bl-marquee__track {
+  display: flex;
+  width: max-content;
+  animation: bl-marqueeRoll 30s linear infinite;
+}
+
+.bl-marquee__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 28px;
+  white-space: nowrap;
+}
+
+.bl-marquee__text {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--bl-ink);
+}
+
+.bl-marquee__star {
+  font-size: 10px;
+  color: rgba(17,17,17,.35);
+}
+
+/* ============================================================
+   CTA BANNER
+   ============================================================ */
+.bl-cta-banner {
+  max-width: 1400px;
+  margin: 0 auto 100px;
+  padding: 0 60px;
+}
+
+.bl-cta-inner {
+  background: var(--bl-ink);
+  border-radius: 24px;
+  padding: 72px 80px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bl-cta-inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 80% at 80% 50%, rgba(0,201,177,.08) 0%, transparent 60%),
+    repeating-linear-gradient(-55deg, transparent, transparent 50px, rgba(255,255,255,.012) 50px, rgba(255,255,255,.012) 51px);
+  pointer-events: none;
+}
+
+.bl-cta-label {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--bl-teal);
+  margin-bottom: 16px;
+}
+
+.bl-cta-heading {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 300;
+  color: var(--bl-white);
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.bl-cta-heading strong {
+  font-weight: 700;
+  font-style: italic;
+  color: var(--bl-teal);
+}
+
+.bl-cta-sub {
+  font-size: .95rem;
+  color: rgba(255,255,255,.5);
+  line-height: 1.7;
+  max-width: 500px;
+}
+
+.bl-cta-actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+  flex-direction: column;
+}
+
+.bl-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 32px;
+  border-radius: 100px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all .35s var(--bl-transition);
+  white-space: nowrap;
+}
+
+.bl-cta-btn--primary {
+  background: var(--bl-teal);
+  color: var(--bl-ink);
+  border: 2px solid var(--bl-teal);
+}
+
+.bl-cta-btn--primary:hover {
+  background: transparent;
+  color: var(--bl-teal);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,201,177,.25);
+}
+
+.bl-cta-btn--outline {
+  background: transparent;
+  color: rgba(255,255,255,.7);
+  border: 1.5px solid rgba(255,255,255,.2);
+}
+
+.bl-cta-btn--outline:hover {
+  border-color: rgba(255,255,255,.6);
+  color: #fff;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes bl-riseIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bl-marqueeRoll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Scroll reveal */
+.bl-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .7s var(--bl-transition), transform .7s var(--bl-transition);
+}
+.bl-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger children inside grid */
+.bl-brands-grid .bl-card {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .6s var(--bl-transition),
+              transform .6s var(--bl-transition),
+              background .5s var(--bl-transition);
+}
+.bl-brands-grid .bl-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1200px) {
+  .bl-brands-grid { grid-template-columns: repeat(3, 1fr); }
+  .bl-featured__grid { grid-template-columns: 1.5fr 1fr; grid-template-rows: auto; }
+  .bl-featured__grid .bl-feat-card:nth-child(3) { display: none; }
+}
+
+@media (max-width: 1024px) {
+  .bl-header { padding: 80px 40px 60px; }
+  .bl-header__inner { grid-template-columns: 1fr; }
+  .bl-header__stats { align-items: flex-start; }
+  .bl-toolbar__inner { padding: 0 40px; }
+  .bl-featured,
+  .bl-grid-section,
+  .bl-results-bar,
+  .bl-cta-banner { padding-left: 40px; padding-right: 40px; }
+  .bl-cta-inner { padding: 56px; grid-template-columns: 1fr; gap: 32px; }
+  .bl-cta-actions { flex-direction: row; }
+}
+
+@media (max-width: 768px) {
+  .bl-header { padding: 80px 24px 50px; }
+  .bl-toolbar__inner { padding: 0 20px; }
+  .bl-featured,
+  .bl-grid-section,
+  .bl-results-bar,
+  .bl-cta-banner { padding-left: 20px; padding-right: 20px; }
+  .bl-brands-grid { grid-template-columns: repeat(2, 1fr); }
+  .bl-featured__grid { grid-template-columns: 1fr; height: auto; }
+  .bl-feat-card { min-height: 240px; }
+  .bl-featured__grid .bl-feat-card:nth-child(2),
+  .bl-featured__grid .bl-feat-card:nth-child(3) { display: none; }
+  .bl-cta-inner { padding: 40px 28px; }
+  .bl-cta-actions { flex-direction: column; }
+  .bl-brands-grid.list-view .bl-card { flex-direction: column; align-items: flex-start; }
+  .bl-brands-grid.list-view .bl-card__body { flex-direction: column; }
+  .bl-brands-grid.list-view .bl-card__name,
+  .bl-brands-grid.list-view .bl-card__cats { width: auto; }
+}
+
+@media (max-width: 480px) {
+  .bl-brands-grid { grid-template-columns: 1fr; }
+  .bl-header__title { font-size: clamp(3rem, 14vw, 5rem); }
+  .bl-search-input { width: 140px; }
+}
+</style>
+
+
+<div class="bl-page">
+
+  <!-- ══════════════════════════════════════════════
+       HERO HEADER
+  ══════════════════════════════════════════════ -->
+  <header class="bl-header">
+    <div class="bl-header__inner">
+      <div>
+        <!-- Breadcrumb -->
+        <nav class="bl-breadcrumb" aria-label="Breadcrumb">
+          <a href="/">{% trans "Home" %}</a>
+          <div class="bl-breadcrumb__sep"></div>
+          <span>{% trans "Brands" %}</span>
+        </nav>
+
+        <h1 class="bl-header__title">
+          {% trans "Our" %}<br>
+          <strong>{% trans "Brands" %}</strong>
+        </h1>
+        <p class="bl-header__sub">
+          {% trans "Explore an exclusive collection of the world's most prestigious eyewear labels — all available at Al Ameen Optics." %}
+        </p>
+      </div>
+
+      <div class="bl-header__stats">
+        <span class="bl-header__stat-num">{{ brands|length }}</span>
+        <span class="bl-header__stat-label">{% trans "Premium" %}<br>{% trans "Brands" %}</span>
+      </div>
     </div>
-    
-    <!-- Brands Grid -->
-    <div class="brands-grid-large">
-        {% for brand in brands %}
-        <div class="brand-card-large">
-            <a href="{% url 'catalog:brand_detail' brand.slug %}">
-                <div class="brand-logo">
-                    {% if brand.logo %}
-                    <img src="{{ brand.logo.url }}" alt="{{ brand.name }}">
-                    {% else %}
-                    <h2>{{ brand.name }}</h2>
-                    {% endif %}
-                </div>
-                <div class="brand-info">
-                    <h3>{{ brand.name }}</h3>
-                    {% if brand.description %}
-                    <p>{{ brand.description|truncatewords:20 }}</p>
-                    {% endif %}
-                    <div class="brand-categories">
-                        {% if brand.available_for_sunglasses %}
-                        <span class="category-tag">Sunglasses</span>
-                        {% endif %}
-                        {% if brand.available_for_eyeglasses %}
-                        <span class="category-tag">Eyeglasses</span>
-                        {% endif %}
-                        {% if brand.available_for_kids %}
-                        <span class="category-tag">Kids</span>
-                        {% endif %}
-                        {% if brand.available_for_contact_lenses %}
-                        <span class="category-tag">Contact Lenses</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </a>
+  </header>
+
+  <!-- ══════════════════════════════════════════════
+       STICKY TOOLBAR
+  ══════════════════════════════════════════════ -->
+  <div class="bl-toolbar" role="navigation" aria-label="Filter brands">
+    <div class="bl-toolbar__inner">
+      <!-- Search -->
+      <div class="bl-search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" class="bl-search-input" id="bl-search"
+               placeholder="{% trans 'Search brands…' %}"
+               aria-label="{% trans 'Search brands' %}">
+      </div>
+
+      <!-- Category filters -->
+      <div class="bl-cat-filters" role="group" aria-label="Filter by category">
+        <button class="bl-cat-pill active" data-filter="all">{% trans "All" %}</button>
+        <button class="bl-cat-pill" data-filter="sunglasses">{% trans "Sunglasses" %}</button>
+        <button class="bl-cat-pill" data-filter="eyeglasses">{% trans "Eyeglasses" %}</button>
+        <button class="bl-cat-pill" data-filter="contact_lenses">{% trans "Contact Lenses" %}</button>
+        <button class="bl-cat-pill" data-filter="kids">{% trans "Kids" %}</button>
+      </div>
+
+      <!-- View toggle -->
+      <div class="bl-view-toggle" role="group" aria-label="View mode">
+        <button class="bl-view-btn active" id="grid-btn" aria-label="Grid view" title="Grid view">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </button>
+        <button class="bl-view-btn" id="list-btn" aria-label="List view" title="List view">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       RESULTS COUNT
+  ══════════════════════════════════════════════ -->
+  <div class="bl-results-bar bl-reveal">
+    <p class="bl-results-count">
+      {% trans "Showing" %} <strong id="visible-count">{{ brands|length }}</strong>
+      {% trans "of" %} <strong>{{ brands|length }}</strong> {% trans "brands" %}
+    </p>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       FEATURED BRANDS SPOTLIGHT
+  ══════════════════════════════════════════════ -->
+  {% if brands|length >= 2 %}
+  <div class="bl-featured bl-reveal">
+    <span class="bl-featured__label">{% trans "Spotlight" %}</span>
+    <div class="bl-featured__grid">
+
+      {% for brand in brands|slice:":3" %}
+      <a href="{% url 'catalog:brand_detail' brand.slug %}"
+         class="bl-feat-card {% if forloop.first %}bl-feat-card--large{% endif %}">
+
+        <div class="bl-feat-card__bg">
+          {% if brand.logo %}
+          <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
+          {% else %}
+          <img src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&h=500&fit=crop&q=80"
+               alt="{{ brand.name }}" loading="lazy">
+          {% endif %}
         </div>
-        {% endfor %}
-    </div>
-</div>
-{% endblock %}
 
-
-<!-- brand_detail.html -->
-{% extends 'base.html' %}
-
-{% block title %}{{ brand.name }} - Eyewear Store{% endblock %}
-
-{% block content %}
-<div class="brand-detail-page">
-    <!-- Brand Header -->
-    <div class="brand-header">
-        <div class="brand-logo-large">
-            {% if brand.logo %}
-            <img src="{{ brand.logo.url }}" alt="{{ brand.name }}">
+        <div class="bl-feat-card__body">
+          <div class="bl-feat-card__category">
+            {% if brand.available_for_sunglasses %}
+            <span class="bl-feat-badge bl-feat-badge--sun">{% trans "Sun" %}</span>
             {% endif %}
-        </div>
-        <div class="brand-header-info">
-            <h1>{{ brand.name }}</h1>
-            {% if brand.description %}
-            <p>{{ brand.description }}</p>
+            {% if brand.available_for_eyeglasses %}
+            <span class="bl-feat-badge bl-feat-badge--eye">{% trans "Optical" %}</span>
             {% endif %}
+            {% if brand.available_for_kids %}
+            <span class="bl-feat-badge bl-feat-badge--kids">{% trans "Kids" %}</span>
+            {% endif %}
+            {% if brand.available_for_contact_lenses %}
+            <span class="bl-feat-badge bl-feat-badge--contact">{% trans "Lenses" %}</span>
+            {% endif %}
+          </div>
+          <h2 class="bl-feat-card__name">{{ brand.name }}</h2>
+          {% if brand.description %}
+          <p class="bl-feat-card__sub">{{ brand.description|truncatewords:10 }}</p>
+          {% endif %}
         </div>
-    </div>
-    
-    <!-- Product Type Filter -->
-    <div class="product-type-filter">
-        <a href="?" class="{% if not request.GET.type %}active{% endif %}">All Products</a>
-        {% if brand.available_for_sunglasses %}
-        <a href="?type=sunglasses" class="{% if request.GET.type == 'sunglasses' %}active{% endif %}">Sunglasses</a>
-        {% endif %}
-        {% if brand.available_for_eyeglasses %}
-        <a href="?type=eyeglasses" class="{% if request.GET.type == 'eyeglasses' %}active{% endif %}">Eyeglasses</a>
-        {% endif %}
-        {% if brand.available_for_contact_lenses %}
-        <a href="?type=contact_lenses" class="{% if request.GET.type == 'contact_lenses' %}active{% endif %}">Contact Lenses</a>
-        {% endif %}
-    </div>
-    
-    <!-- Products Grid -->
-    <div class="brand-products">
-        <h2>{{ brand.name }} Products</h2>
-        
-        {% if products %}
-        <div class="products-grid">
-            {% for product in products %}
-            <div class="product-card">
-                <a href="{% url 'catalog:product_detail' product.slug %}">
-                    <div class="product-image">
-                        {% if product.images.first %}
-                        <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
-                        {% endif %}
-                    </div>
-                    <div class="product-info">
-                        <h3>{{ product.name }}</h3>
-                        <p class="product-type">{{ product.get_product_type_display }}</p>
-                        <p class="gender">{{ product.get_gender_display }}</p>
-                        <div class="price-section">
-                            <span class="price">{{ product.base_price }} QAR</span>
-                            {% if product.compare_at_price %}
-                            <span class="compare-price">{{ product.compare_at_price }} QAR</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </a>
-                <div class="product-actions">
-                    <button class="add-to-cart">Add to Cart</button>
-                    <button class="wishlist">♡</button>
-                </div>
-            </div>
-            {% endfor %}
+
+        <div class="bl-feat-card__arrow" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 17L17 7M17 7H7M17 7v10"/>
+          </svg>
         </div>
-        {% else %}
-        <p class="no-products">No products found for this brand.</p>
-        {% endif %}
+      </a>
+      {% endfor %}
+
     </div>
-</div>
+  </div>
+  {% endif %}
+
+  <!-- ══════════════════════════════════════════════
+       ALL BRANDS GRID
+  ══════════════════════════════════════════════ -->
+  <div class="bl-grid-section">
+    <div class="bl-divider bl-reveal">
+      <div class="bl-divider__rule"></div>
+      <span class="bl-divider__text">{% trans "All Brands" %}</span>
+      <div class="bl-divider__rule"></div>
+    </div>
+
+    <div class="bl-brands-grid" id="brands-grid" role="list">
+      {% for brand in brands %}
+      <a href="{% url 'catalog:brand_detail' brand.slug %}"
+         class="bl-card"
+         role="listitem"
+         data-name="{{ brand.name|lower }}"
+         data-sunglasses="{{ brand.available_for_sunglasses|yesno:'true,false' }}"
+         data-eyeglasses="{{ brand.available_for_eyeglasses|yesno:'true,false' }}"
+         data-contact_lenses="{{ brand.available_for_contact_lenses|yesno:'true,false' }}"
+         data-kids="{{ brand.available_for_kids|yesno:'true,false' }}"
+         aria-label="{{ brand.name }}">
+
+        <!-- Logo -->
+        <div class="bl-card__logo">
+          {% if brand.logo %}
+          <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" loading="lazy" width="160" height="60">
+          {% else %}
+          <span class="bl-card__logo-text">{{ brand.name|slice:":3"|upper }}</span>
+          {% endif %}
+        </div>
+
+        <!-- Info -->
+        <div class="bl-card__body">
+          <h3 class="bl-card__name">{{ brand.name }}</h3>
+
+          {% if brand.description %}
+          <p class="bl-card__desc">{{ brand.description|truncatewords:15 }}</p>
+          {% endif %}
+
+          <div class="bl-card__cats">
+            {% if brand.available_for_sunglasses %}
+            <span class="bl-cat-tag">{% trans "Sunglasses" %}</span>
+            {% endif %}
+            {% if brand.available_for_eyeglasses %}
+            <span class="bl-cat-tag">{% trans "Eyeglasses" %}</span>
+            {% endif %}
+            {% if brand.available_for_kids %}
+            <span class="bl-cat-tag">{% trans "Kids" %}</span>
+            {% endif %}
+            {% if brand.available_for_contact_lenses %}
+            <span class="bl-cat-tag">{% trans "Lenses" %}</span>
+            {% endif %}
+          </div>
+
+          <div class="bl-card__cta">
+            <span class="bl-card__cta-text">{% trans "View Collection" %}</span>
+            <span class="bl-card__cta-arrow">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+
+      </a>
+      {% empty %}
+      <div class="bl-empty">
+        <span class="bl-empty__icon">🕶️</span>
+        <h3 class="bl-empty__title">{% trans "No brands yet" %}</h3>
+        <p class="bl-empty__sub">{% trans "We're curating the finest brands. Check back soon." %}</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- No results message (hidden by default, shown by JS) -->
+    <div id="no-results" style="display:none; text-align:center; padding:60px 0;">
+      <span style="font-size:3rem; display:block; margin-bottom:16px;">🔍</span>
+      <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:600; margin-bottom:8px;">{% trans "No brands found" %}</h3>
+      <p style="color:#888; font-size:.95rem;">{% trans "Try a different search term or category." %}</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       MARQUEE
+  ══════════════════════════════════════════════ -->
+  <div class="bl-marquee" aria-hidden="true">
+    <div class="bl-marquee__track">
+      {% with items="100% Authentic,Expert Eye Care,Premium Brands,Free Eye Test,In-Store Fitting,Extended Warranty,Trusted Since 1927,World Class Selection,100% Authentic,Expert Eye Care,Premium Brands,Free Eye Test,In-Store Fitting,Extended Warranty,Trusted Since 1927,World Class Selection" %}
+      {% for item in items|split:"," %}
+      <div class="bl-marquee__item">
+        <span class="bl-marquee__text">{{ item }}</span>
+        <span class="bl-marquee__star">✦</span>
+      </div>
+      {% endfor %}
+      {% endwith %}
+      {% with items2="100% Authentic,Expert Eye Care,Premium Brands,Free Eye Test,In-Store Fitting,Extended Warranty,Trusted Since 1927,World Class Selection,100% Authentic,Expert Eye Care,Premium Brands,Free Eye Test,In-Store Fitting,Extended Warranty,Trusted Since 1927,World Class Selection" %}
+      {% for item in items2|split:"," %}
+      <div class="bl-marquee__item">
+        <span class="bl-marquee__text">{{ item }}</span>
+        <span class="bl-marquee__star">✦</span>
+      </div>
+      {% endfor %}
+      {% endwith %}
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       BOTTOM CTA BANNER
+  ══════════════════════════════════════════════ -->
+  <div class="bl-cta-banner">
+    <div class="bl-cta-inner bl-reveal">
+      <div>
+        <span class="bl-cta-label">{% trans "In-Store Experience" %}</span>
+        <h2 class="bl-cta-heading">
+          {% trans "Can't decide?" %}<br>
+          <strong>{% trans "Let our experts guide you." %}</strong>
+        </h2>
+        <p class="bl-cta-sub">
+          {% trans "Visit any Al Ameen Optics branch for a free eye test and personalised frame consultation. Our certified optometrists are here to help." %}
+        </p>
+      </div>
+      <div class="bl-cta-actions">
+        <a href="{% url 'content:eye_test_booking' %}" class="bl-cta-btn bl-cta-btn--primary">
+          {% trans "Book Free Eye Test" %}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+        <a href="{% url 'content:store_locations' %}" class="bl-cta-btn bl-cta-btn--outline">
+          {% trans "Find a Store" %}
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.bl-page -->
+
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── Scroll reveal ── */
+  const io = ('IntersectionObserver' in window)
+    ? new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.06, rootMargin: '0px 0px -30px 0px' })
+    : null;
+
+  document.querySelectorAll('.bl-reveal').forEach(el => io ? io.observe(el) : el.classList.add('visible'));
+
+  /* ── Cards staggered reveal ── */
+  const cardObserver = ('IntersectionObserver' in window)
+    ? new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            // stagger each card in a row
+            const allCards = [...document.querySelectorAll('.bl-card')];
+            const idx = allCards.indexOf(e.target);
+            const delay = (idx % 4) * 80;
+            setTimeout(() => e.target.classList.add('visible'), delay);
+            cardObserver.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.05 })
+    : null;
+
+  document.querySelectorAll('.bl-card').forEach(card => {
+    if (cardObserver) cardObserver.observe(card);
+    else card.classList.add('visible');
+  });
+
+  /* ── Search ── */
+  const searchInput  = document.getElementById('bl-search');
+  const grid         = document.getElementById('brands-grid');
+  const noResults    = document.getElementById('no-results');
+  const visibleCount = document.getElementById('visible-count');
+  let   activeFilter = 'all';
+
+  function filterCards() {
+    const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    const cards = grid.querySelectorAll('.bl-card');
+    let shown = 0;
+
+    cards.forEach(card => {
+      const name       = card.dataset.name || '';
+      const matchName  = name.includes(q);
+      const matchCat   =
+        activeFilter === 'all' ||
+        card.dataset[activeFilter] === 'true';
+
+      if (matchName && matchCat) {
+        card.style.display = '';
+        shown++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    if (visibleCount) visibleCount.textContent = shown;
+    if (noResults)    noResults.style.display   = shown === 0 ? 'block' : 'none';
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', filterCards);
+  }
+
+  /* ── Category filter pills ── */
+  document.querySelectorAll('.bl-cat-pill').forEach(pill => {
+    pill.addEventListener('click', function () {
+      document.querySelectorAll('.bl-cat-pill').forEach(p => p.classList.remove('active'));
+      this.classList.add('active');
+      activeFilter = this.dataset.filter;
+      filterCards();
+    });
+  });
+
+  /* ── View toggle (grid / list) ── */
+  const gridBtn = document.getElementById('grid-btn');
+  const listBtn = document.getElementById('list-btn');
+
+  if (gridBtn && listBtn && grid) {
+    gridBtn.addEventListener('click', () => {
+      grid.classList.remove('list-view');
+      gridBtn.classList.add('active');
+      listBtn.classList.remove('active');
+    });
+    listBtn.addEventListener('click', () => {
+      grid.classList.add('list-view');
+      listBtn.classList.add('active');
+      gridBtn.classList.remove('active');
+    });
+  }
+
+  /* ── Header parallax ── */
+  const header = document.querySelector('.bl-header');
+  if (header) {
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      header.style.backgroundPositionY = (y * .25) + 'px';
+    }, { passive: true });
+  }
+
+  console.log('✦ Al Ameen Optics — Brand List loaded.');
+})();
+</script>
+
 {% endblock %}
