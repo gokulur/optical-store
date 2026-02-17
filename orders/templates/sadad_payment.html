@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sadad Payment - Order {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<style>
+    .payment-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 40px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .payment-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .payment-header h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+        color: #1a1a2e;
+    }
+
+    .sadad-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .sadad-logo-text {
+        font-size: 26px;
+        font-weight: 800;
+        color: #00a651;
+        letter-spacing: 2px;
+    }
+
+    .order-summary {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 15px;
+        color: #444;
+    }
+
+    .summary-row.total {
+        border-top: 2px solid #ddd;
+        padding-top: 15px;
+        margin-top: 10px;
+        font-size: 20px;
+        font-weight: bold;
+        color: #1a1a2e;
+    }
+
+    .payment-methods {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 20px 0;
+    }
+
+    .payment-method-icon {
+        background: #f0faf4;
+        border: 1px solid #c3e6cb;
+        padding: 14px;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 12px;
+        color: #155724;
+    }
+
+    .payment-button {
+        width: 100%;
+        padding: 16px;
+        background: #00a651;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 17px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        letter-spacing: 0.5px;
+    }
+
+    .payment-button:hover {
+        background: #008f44;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(0, 166, 81, 0.35);
+    }
+
+    .payment-button:active {
+        transform: translateY(0);
+    }
+
+    .secure-badge {
+        text-align: center;
+        margin-top: 20px;
+        color: #666;
+        font-size: 13px;
+    }
+
+    .sadad-redirect-note {
+        background: #e8f5e9;
+        border-left: 4px solid #00a651;
+        padding: 14px 18px;
+        border-radius: 6px;
+        margin-bottom: 24px;
+        font-size: 14px;
+        color: #2e7d32;
+    }
+
+    .spinner {
+        display: none;
+        width: 22px;
+        height: 22px;
+        border: 3px solid rgba(255,255,255,0.4);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .btn-loading .btn-text { display: none; }
+    .btn-loading .spinner  { display: block; }
+</style>
+
+<div class="payment-container">
+
+    <!-- Header -->
+    <div class="payment-header">
+        <div class="sadad-logo">
+            <span class="sadad-logo-text">SADAD</span>
+        </div>
+        <h1>Complete Payment</h1>
+        <p style="color:#888; font-size:14px;">Order #{{ order.order_number }}</p>
+    </div>
+
+    <!-- Redirect note -->
+    <div class="sadad-redirect-note">
+        ℹ️ You will be redirected to <strong>Sadad's secure payment page</strong> to complete your payment with Credit/Debit card, QPay, or Sadad Balance.
+    </div>
+
+    <!-- Order summary -->
+    <div class="order-summary">
+        <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>{{ order.currency }} {{ order.subtotal }}</span>
+        </div>
+        {% if order.shipping_amount %}
+        <div class="summary-row">
+            <span>Shipping:</span>
+            <span>{{ order.currency }} {{ order.shipping_amount }}</span>
+        </div>
+        {% endif %}
+        {% if order.tax_amount %}
+        <div class="summary-row">
+            <span>Tax:</span>
+            <span>{{ order.currency }} {{ order.tax_amount }}</span>
+        </div>
+        {% endif %}
+        <div class="summary-row total">
+            <span>Total:</span>
+            <span>{{ order.currency }} {{ order.total_amount }}</span>
+        </div>
+    </div>
+
+    <!-- Accepted payment methods -->
+    <div class="payment-methods">
+        <div class="payment-method-icon">💳 Credit / Debit</div>
+        <div class="payment-method-icon">📱 QPay</div>
+        <div class="payment-method-icon">💚 Sadad Balance</div>
+    </div>
+
+    <!-- Pay button — submits form to Django view which redirects to Sadad -->
+    <form method="POST" action="{% url 'orders:sadad_payment' order.order_number %}" id="sadad-form">
+        {% csrf_token %}
+        <button type="submit" class="payment-button" id="sadad-btn"
+                onclick="handleSubmit(this)">
+            <span class="btn-text">Pay {{ order.currency }} {{ order.total_amount }} with Sadad</span>
+            <div class="spinner"></div>
+        </button>
+    </form>
+
+    <div class="secure-badge">
+        <p>🔒 Secured by Sadad | PCI-DSS Compliant | Qatar Central Bank Licensed</p>
+        <p style="margin-top:6px; font-size:12px;">
+            Powered by <strong>NAPS / QPay</strong> · Visa · Mastercard
+        </p>
+    </div>
+
+</div>
+
+<script>
+    function handleSubmit(btn) {
+        // Show spinner so user knows something is happening
+        btn.classList.add('btn-loading');
+        btn.disabled = true;
+        // Let the form submit naturally (POST → Django view → redirect to Sadad)
+    }
+</script>
+
+{% endblock %}
