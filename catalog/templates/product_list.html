@@ -1,116 +1,1835 @@
+{% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Products</title>
-    <style>
-        body { font-family: Arial; }
-        .container { display: flex; gap: 20px; }
-        .sidebar { width: 250px; border-right: 1px solid #eee; padding: 10px; }
-        .products { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-        .card { border: 1px solid #eee; padding: 10px; }
-        .card img { width: 100%; height: 200px; object-fit: cover; }
-        .filters h4 { margin-top: 20px; }
-        .pagination { margin-top: 30px; }
-        a { text-decoration: none; color: black; }
-    </style>
-</head>
-<body>
+{% block title %}
+  {% if product_type %}{{ product_type|title }}{% else %}{% trans "All Products" %}{% endif %} — Al Ameen Optics
+{% endblock %}
 
-<h2>{{ product_type|title }}</h2>
+{% block content %}
 
-<div class="container">
+<style>
+/* ============================================================
+   PRODUCT LIST — SHARP DARK-MODE TECH LUXURY
+   Fonts: Syne (display headers) + IBM Plex Sans (body/UI)
+   Palette: Deep charcoal #141417 / Slate #1e1e24 / Electric blue #3b82f6 / Pure white
+   Direction: Premium modern retailer — think Apple Store meets Acne Studios
+   ============================================================ */
 
-    <!-- ================= SIDEBAR FILTERS ================= -->
-    <div class="sidebar">
-        <form method="get" class="filters">
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap');
 
-            <!-- Search -->
-            <input type="text" name="search" placeholder="Search..." value="{{ request.GET.search }}">
+:root {
+  --pl-bg:        #141417;
+  --pl-surface:   #1e1e24;
+  --pl-surface2:  #26262e;
+  --pl-border:    rgba(255,255,255,.08);
+  --pl-border-lt: rgba(255,255,255,.13);
+  --pl-white:     #ffffff;
+  --pl-off:       rgba(255,255,255,.6);
+  --pl-muted:     rgba(255,255,255,.35);
+  --pl-blue:      #3b82f6;
+  --pl-blue-lt:   #60a5fa;
+  --pl-blue-glow: rgba(59,130,246,.2);
+  --pl-red:       #ef4444;
+  --pl-green:     #22c55e;
+  --pl-amber:     #f59e0b;
+  --pl-radius:    12px;
+  --pl-radius-lg: 18px;
+  --pl-ease:      cubic-bezier(.22,1,.36,1);
+  --pl-trans:     .45s var(--pl-ease);
+  --sidebar-w:    280px;
+}
 
-            <!-- Gender -->
-            <h4>Gender</h4>
-            <select name="gender">
-                <option value="all">All</option>
-                <option value="men" {% if selected_gender == 'men' %}selected{% endif %}>Men</option>
-                <option value="women" {% if selected_gender == 'women' %}selected{% endif %}>Women</option>
-                <option value="kids" {% if selected_gender == 'kids' %}selected{% endif %}>Kids</option>
-            </select>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-            <!-- Brand -->
-            <h4>Brands</h4>
-            {% for brand in brands %}
-                <div>
-                    <input type="radio" name="brand" value="{{ brand.slug }}"
-                        {% if request.GET.brand == brand.slug %}checked{% endif %}>
-                    {{ brand.name }}
-                </div>
-            {% endfor %}
+.pl-page {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--pl-bg);
+  color: var(--pl-white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-            <!-- Category -->
-            <h4>Categories</h4>
-            {% for cat in categories %}
-                <div>
-                    <input type="radio" name="category" value="{{ cat.slug }}"
-                        {% if request.GET.category == cat.slug %}checked{% endif %}>
-                    {{ cat.name }}
-                </div>
-            {% endfor %}
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+.pl-header {
+  background: var(--pl-surface);
+  border-bottom: 1px solid var(--pl-border);
+  padding: 0 48px;
+  position: relative;
+  overflow: hidden;
+}
 
-            <!-- Price -->
-            <h4>Price</h4>
-            <input type="number" name="min_price" placeholder="Min" value="{{ request.GET.min_price }}">
-            <input type="number" name="max_price" placeholder="Max" value="{{ request.GET.max_price }}">
+/* Subtle grid texture */
+.pl-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--pl-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--pl-border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  opacity: .5;
+}
 
-            <!-- Sort -->
-            <h4>Sort</h4>
-            <select name="sort">
-                <option value="-created_at">Newest</option>
-                <option value="base_price">Price Low → High</option>
-                <option value="-base_price">Price High → Low</option>
-                <option value="name">A → Z</option>
-            </select>
+/* Blue glow orb */
+.pl-header::after {
+  content: '';
+  position: absolute;
+  top: -60px;
+  left: -60px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--pl-blue-glow) 0%, transparent 70%);
+  pointer-events: none;
+}
 
-            <br><br>
-            <button type="submit">Apply Filters</button>
-        </form>
+.pl-header__inner {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 52px 0 40px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+/* Breadcrumb */
+.pl-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  opacity: 0;
+  animation: pl-rise .6s .05s forwards;
+}
+
+.pl-breadcrumb a,
+.pl-breadcrumb span {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--pl-muted);
+  text-decoration: none;
+  transition: color .2s;
+}
+
+.pl-breadcrumb a:hover { color: var(--pl-blue-lt); }
+.pl-breadcrumb__sep { color: var(--pl-muted); font-size: 10px; }
+.pl-breadcrumb span:last-child { color: var(--pl-blue-lt); }
+
+.pl-header__title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 800;
+  line-height: .95;
+  letter-spacing: -.03em;
+  color: var(--pl-white);
+  opacity: 0;
+  animation: pl-rise .8s .15s forwards;
+}
+
+.pl-header__title .accent {
+  color: var(--pl-blue);
+  display: block;
+}
+
+.pl-header__right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 4px;
+  opacity: 0;
+  animation: pl-rise .8s .3s forwards;
+}
+
+.pl-header__count {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--pl-muted);
+  letter-spacing: .05em;
+}
+
+.pl-header__count strong {
+  font-size: 1.6rem;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  color: var(--pl-white);
+  letter-spacing: -.02em;
+  display: block;
+  line-height: 1;
+}
+
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+.pl-layout {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 48px 80px;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.pl-sidebar {
+  position: sticky;
+  top: 24px;
+  background: var(--pl-surface);
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius-lg);
+  overflow: hidden;
+  transition: opacity .3s;
+}
+
+.pl-sidebar.loading { opacity: .5; pointer-events: none; }
+
+/* Sidebar header */
+.pl-sidebar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--pl-border);
+  background: var(--pl-surface2);
+}
+
+.pl-sidebar__title {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--pl-white);
+}
+
+.pl-sidebar__clear {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--pl-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color .2s;
+}
+
+.pl-sidebar__clear:hover { color: var(--pl-blue-lt); }
+
+/* Filter group */
+.pl-filter-group {
+  border-bottom: 1px solid var(--pl-border);
+}
+
+.pl-filter-group:last-child { border-bottom: none; }
+
+.pl-filter-group__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  cursor: pointer;
+  user-select: none;
+  transition: background .2s;
+}
+
+.pl-filter-group__header:hover { background: rgba(255,255,255,.03); }
+
+.pl-filter-group__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--pl-off);
+}
+
+.pl-filter-group__chevron {
+  color: var(--pl-muted);
+  transition: transform .3s var(--pl-ease);
+}
+
+.pl-filter-group.open .pl-filter-group__chevron {
+  transform: rotate(180deg);
+}
+
+.pl-filter-group__body {
+  padding: 0 22px 18px;
+  display: none;
+}
+
+.pl-filter-group.open .pl-filter-group__body { display: block; }
+
+/* Search */
+.pl-search-wrap {
+  position: relative;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--pl-border);
+}
+
+.pl-search-input {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  background: var(--pl-bg);
+  border: 1.5px solid var(--pl-border);
+  border-radius: var(--pl-radius);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  color: var(--pl-white);
+  outline: none;
+  transition: border-color .25s;
+}
+
+.pl-search-input::placeholder { color: var(--pl-muted); }
+.pl-search-input:focus { border-color: var(--pl-blue); }
+
+.pl-search-icon {
+  position: absolute;
+  left: 34px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--pl-muted);
+  pointer-events: none;
+}
+
+/* Gender selector (segmented) */
+.pl-gender-seg {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.pl-gender-btn {
+  padding: 8px 6px;
+  border-radius: 8px;
+  border: 1.5px solid var(--pl-border);
+  background: transparent;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--pl-muted);
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: all .25s;
+  display: block;
+}
+
+.pl-gender-btn:hover {
+  border-color: var(--pl-border-lt);
+  color: var(--pl-off);
+}
+
+.pl-gender-btn.active {
+  background: var(--pl-blue);
+  border-color: var(--pl-blue);
+  color: var(--pl-white);
+  box-shadow: 0 4px 16px var(--pl-blue-glow);
+}
+
+/* Checkboxes (brand / category) */
+.pl-check-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--pl-border) transparent;
+}
+
+.pl-check-list::-webkit-scrollbar { width: 4px; }
+.pl-check-list::-webkit-scrollbar-thumb { background: var(--pl-border-lt); border-radius: 2px; }
+
+.pl-check-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .2s;
+  user-select: none;
+}
+
+.pl-check-label:hover { background: rgba(255,255,255,.04); }
+
+.pl-check-label input[type="radio"],
+.pl-check-label input[type="checkbox"] {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--pl-border-lt);
+  border-radius: 4px;
+  background: transparent;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all .2s;
+  position: relative;
+}
+
+.pl-check-label input[type="radio"] { border-radius: 50%; }
+
+.pl-check-label input:checked {
+  background: var(--pl-blue);
+  border-color: var(--pl-blue);
+  box-shadow: 0 0 10px var(--pl-blue-glow);
+}
+
+.pl-check-label input:checked::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 5px;
+  width: 4px; height: 7px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+.pl-check-label input[type="radio"]:checked::after {
+  top: 4px; left: 4px;
+  width: 6px; height: 6px;
+  border: none;
+  background: #fff;
+  border-radius: 50%;
+  transform: none;
+}
+
+.pl-check-text {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--pl-off);
+  flex: 1;
+  transition: color .2s;
+}
+
+.pl-check-label:hover .pl-check-text { color: var(--pl-white); }
+
+/* Price range */
+.pl-price-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.pl-price-input {
+  padding: 9px 12px;
+  background: var(--pl-bg);
+  border: 1.5px solid var(--pl-border);
+  border-radius: var(--pl-radius);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  color: var(--pl-white);
+  outline: none;
+  width: 100%;
+  transition: border-color .25s;
+}
+
+.pl-price-input:focus { border-color: var(--pl-blue); }
+.pl-price-input::placeholder { color: var(--pl-muted); }
+
+/* Apply button */
+.pl-apply-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  background: var(--pl-blue);
+  border: none;
+  border-radius: var(--pl-radius);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--pl-white);
+  cursor: pointer;
+  transition: background .3s, transform .25s, box-shadow .3s;
+}
+
+.pl-apply-btn:hover {
+  background: var(--pl-blue-lt);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px var(--pl-blue-glow);
+}
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+.pl-main { min-width: 0; }
+
+/* Toolbar */
+.pl-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding: 14px 20px;
+  background: var(--pl-surface);
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius-lg);
+  flex-wrap: wrap;
+}
+
+.pl-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Active filter chips */
+.pl-active-filters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pl-active-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(59,130,246,.12);
+  border: 1px solid rgba(59,130,246,.3);
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: var(--pl-blue-lt);
+  text-decoration: none;
+  transition: background .2s;
+}
+
+.pl-active-chip:hover { background: rgba(59,130,246,.2); }
+
+.pl-active-chip__x {
+  opacity: .6;
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* Sort + view */
+.pl-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pl-sort-select {
+  appearance: none;
+  padding: 8px 32px 8px 14px;
+  background: var(--pl-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,.4)' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 12px center;
+  border: 1.5px solid var(--pl-border);
+  border-radius: 100px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--pl-off);
+  cursor: pointer;
+  transition: border-color .25s;
+  outline: none;
+}
+
+.pl-sort-select:focus { border-color: var(--pl-blue); }
+
+.pl-view-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.pl-view-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid var(--pl-border);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--pl-muted);
+  transition: all .25s;
+}
+
+.pl-view-btn:hover { border-color: var(--pl-border-lt); color: var(--pl-off); }
+
+.pl-view-btn.active {
+  background: var(--pl-blue);
+  border-color: var(--pl-blue);
+  color: var(--pl-white);
+}
+
+/* Loading spinner overlay */
+.pl-loading-bar {
+  height: 2px;
+  background: var(--pl-blue);
+  width: 0%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  transition: width .3s;
+  box-shadow: 0 0 8px var(--pl-blue);
+}
+
+/* ============================================================
+   PRODUCT GRID
+   ============================================================ */
+.pl-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.pl-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.pl-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+
+.pl-grid.list-mode {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+/* ── Product Card ── */
+.pl-card {
+  background: var(--pl-surface);
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color var(--pl-trans), transform var(--pl-trans), box-shadow var(--pl-trans);
+  position: relative;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .5s var(--pl-ease),
+              transform .5s var(--pl-ease),
+              border-color .3s,
+              box-shadow .4s;
+}
+
+.pl-card.revealed { opacity: 1; transform: translateY(0); }
+
+.pl-card:hover {
+  border-color: rgba(59,130,246,.35);
+  transform: translateY(-8px) !important;
+  box-shadow: 0 24px 50px rgba(0,0,0,.5), 0 0 0 1px rgba(59,130,246,.15);
+}
+
+/* Media */
+.pl-card__media {
+  position: relative;
+  aspect-ratio: 1/1;
+  overflow: hidden;
+  background: var(--pl-surface2);
+}
+
+.pl-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 16px;
+  transition: transform .6s var(--pl-ease);
+}
+
+.pl-card:hover .pl-card__img { transform: scale(1.07); }
+
+/* Overlay */
+.pl-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(14,14,20,.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity .35s;
+}
+
+.pl-card:hover .pl-card__overlay { opacity: 1; }
+
+.pl-card__ov-btn {
+  padding: 9px 18px;
+  border-radius: 100px;
+  border: none;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: none;
+  transform: translateY(8px);
+  opacity: 0;
+  transition: transform .3s .06s, opacity .3s .06s, background .2s;
+}
+
+.pl-card:hover .pl-card__ov-btn { transform: translateY(0); opacity: 1; }
+
+.pl-card__ov-btn--view {
+  background: var(--pl-white);
+  color: var(--pl-bg);
+}
+.pl-card__ov-btn--view:hover { background: var(--pl-blue-lt); }
+
+.pl-card__ov-btn--cart {
+  background: var(--pl-blue);
+  color: var(--pl-white);
+  transition-delay: .1s !important;
+}
+.pl-card__ov-btn--cart:hover { background: var(--pl-blue-lt); }
+
+/* Badges */
+.pl-card__badges {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pl-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.pl-badge--new  { background: var(--pl-blue); color: #fff; }
+.pl-badge--sale { background: var(--pl-red); color: #fff; }
+.pl-badge--out  { background: rgba(255,255,255,.12); color: var(--pl-muted); }
+.pl-badge--hot  { background: var(--pl-amber); color: #000; }
+
+/* Wishlist */
+.pl-card__wish {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(30,30,36,.8);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--pl-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .3s, background .25s;
+}
+
+.pl-card:hover .pl-card__wish { opacity: 1; }
+.pl-card__wish:hover { background: var(--pl-red); border-color: var(--pl-red); }
+.pl-card__wish svg { stroke: var(--pl-off); transition: stroke .25s; }
+.pl-card__wish:hover svg { stroke: #fff; }
+.pl-card__wish.active { background: var(--pl-red); border-color: var(--pl-red); opacity: 1; }
+.pl-card__wish.active svg { stroke: #fff; fill: #fff; }
+
+/* Body */
+.pl-card__body {
+  padding: 16px 18px 18px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pl-card__brand {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--pl-blue-lt);
+}
+
+.pl-card__name {
+  font-family: 'Syne', sans-serif;
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--pl-white);
+  line-height: 1.3;
+  margin-bottom: 2px;
+}
+
+.pl-card__name a {
+  text-decoration: none;
+  color: inherit;
+  transition: color .25s;
+}
+
+.pl-card__name a:hover { color: var(--pl-blue-lt); }
+
+.pl-card__type-gender {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--pl-muted);
+  text-transform: capitalize;
+  margin-bottom: 10px;
+}
+
+/* Color dots */
+.pl-card__colors {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.pl-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid var(--pl-surface);
+  box-shadow: 0 0 0 1.5px rgba(255,255,255,.2);
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+}
+.pl-dot:hover { transform: scale(1.2); }
+.pl-dot.active { box-shadow: 0 0 0 2px var(--pl-blue); }
+
+/* Price */
+.pl-card__price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  gap: 8px;
+}
+
+.pl-card__price-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.pl-card__price {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--pl-white);
+}
+
+.pl-card__price-old {
+  font-size: .8rem;
+  color: var(--pl-muted);
+  text-decoration: line-through;
+}
+
+.pl-card__add {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--pl-surface2);
+  border: 1.5px solid var(--pl-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--pl-off);
+  flex-shrink: 0;
+  transition: background .3s, border-color .3s, color .3s, transform .25s;
+}
+
+.pl-card__add:hover {
+  background: var(--pl-blue);
+  border-color: var(--pl-blue);
+  color: #fff;
+  transform: scale(1.1);
+}
+
+/* ── LIST MODE ── */
+.pl-grid.list-mode .pl-card {
+  flex-direction: row;
+  border-radius: var(--pl-radius);
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: 1px solid var(--pl-border);
+  background: transparent;
+  padding: 16px 0;
+  gap: 20px;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.pl-grid.list-mode .pl-card:hover {
+  border-color: var(--pl-border-lt);
+  background: rgba(255,255,255,.02);
+}
+
+.pl-grid.list-mode .pl-card__media {
+  width: 100px;
+  min-width: 100px;
+  aspect-ratio: 1/1;
+  border-radius: var(--pl-radius);
+  flex-shrink: 0;
+}
+
+.pl-grid.list-mode .pl-card__overlay { display: none; }
+.pl-grid.list-mode .pl-card__wish { opacity: 1; }
+.pl-grid.list-mode .pl-card__body {
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  gap: 0;
+}
+
+.pl-grid.list-mode .pl-card__brand { width: 90px; flex-shrink: 0; margin: 0; }
+.pl-grid.list-mode .pl-card__name  { flex: 1; margin: 0; }
+.pl-grid.list-mode .pl-card__type-gender { width: 90px; flex-shrink: 0; margin: 0; }
+.pl-grid.list-mode .pl-card__colors { margin: 0; width: 80px; flex-shrink: 0; }
+.pl-grid.list-mode .pl-card__price-row { width: 160px; flex-shrink: 0; }
+
+/* ── Empty State ── */
+.pl-empty {
+  grid-column: 1/-1;
+  text-align: center;
+  padding: 80px 24px;
+}
+
+.pl-empty__glyph {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 20px;
+  opacity: .5;
+}
+
+.pl-empty__title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--pl-off);
+  margin-bottom: 10px;
+}
+
+.pl-empty__sub {
+  font-size: .9rem;
+  color: var(--pl-muted);
+  margin-bottom: 28px;
+}
+
+.pl-empty__btn {
+  display: inline-block;
+  padding: 12px 32px;
+  background: var(--pl-blue);
+  color: #fff;
+  border-radius: 100px;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  transition: background .3s;
+}
+
+.pl-empty__btn:hover { background: var(--pl-blue-lt); }
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+.pl-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 52px;
+}
+
+.pl-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--pl-muted);
+  border: 1.5px solid var(--pl-border);
+  background: var(--pl-surface);
+  transition: all .25s;
+  white-space: nowrap;
+}
+
+.pl-page-btn:hover {
+  border-color: var(--pl-border-lt);
+  color: var(--pl-white);
+  background: var(--pl-surface2);
+}
+
+.pl-page-btn.current {
+  background: var(--pl-blue);
+  border-color: var(--pl-blue);
+  color: #fff;
+  box-shadow: 0 4px 16px var(--pl-blue-glow);
+}
+
+.pl-page-btn.disabled {
+  opacity: .3;
+  pointer-events: none;
+}
+
+.pl-page-ellipsis {
+  color: var(--pl-muted);
+  font-size: 12px;
+  padding: 0 4px;
+}
+
+/* ============================================================
+   MOBILE SIDEBAR DRAWER
+   ============================================================ */
+.pl-mobile-filter-btn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--pl-surface);
+  border: 1.5px solid var(--pl-border);
+  border-radius: 100px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--pl-off);
+  cursor: pointer;
+  transition: border-color .25s;
+}
+
+.pl-mobile-filter-btn:hover { border-color: var(--pl-blue); }
+
+.pl-drawer-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.7);
+  z-index: 200;
+  backdrop-filter: blur(4px);
+}
+
+.pl-drawer-overlay.open { display: block; }
+
+.pl-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: min(var(--sidebar-w), 90vw);
+  height: 100%;
+  background: var(--pl-surface);
+  z-index: 201;
+  transform: translateX(-100%);
+  transition: transform .4s var(--pl-ease);
+  overflow-y: auto;
+}
+
+.pl-drawer.open { transform: translateX(0); }
+
+.pl-drawer-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--pl-surface2);
+  border: 1px solid var(--pl-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--pl-muted);
+  transition: all .25s;
+}
+
+.pl-drawer-close:hover { background: var(--pl-red); border-color: var(--pl-red); color: #fff; }
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes pl-rise {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1280px) {
+  .pl-layout { padding: 0 32px 80px; }
+  .pl-header { padding: 0 32px; }
+  .pl-grid { grid-template-columns: repeat(3, 1fr); }
+  .pl-grid.cols-4 { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 1024px) {
+  :root { --sidebar-w: 260px; }
+  .pl-grid { grid-template-columns: repeat(2, 1fr); }
+  .pl-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .pl-layout {
+    grid-template-columns: 1fr;
+    padding: 0 20px 60px;
+    gap: 20px;
+  }
+
+  .pl-header { padding: 0 20px; }
+  .pl-header__inner { padding: 40px 0 28px; }
+
+  .pl-sidebar {
+    display: none; /* shown via drawer on mobile */
+    position: relative;
+    top: auto;
+  }
+
+  .pl-mobile-filter-btn { display: flex; }
+
+  .pl-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .pl-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+  .pl-toolbar { padding: 10px 14px; }
+}
+
+@media (max-width: 480px) {
+  .pl-grid { grid-template-columns: 1fr; }
+  .pl-header__title { font-size: clamp(2rem, 10vw, 2.8rem); }
+}
+</style>
+
+<!-- Loading bar -->
+<div class="pl-loading-bar" id="pl-loading-bar"></div>
+
+<div class="pl-page">
+
+  <!-- ══════════════════════════════════════════════
+       PAGE HEADER
+  ══════════════════════════════════════════════ -->
+  <header class="pl-header">
+    <div class="pl-header__inner">
+      <div>
+        <nav class="pl-breadcrumb" aria-label="Breadcrumb">
+          <a href="/">{% trans "Home" %}</a>
+          <span class="pl-breadcrumb__sep">/</span>
+          <span>
+            {% if product_type %}
+              {{ product_type|title }}
+            {% else %}
+              {% trans "All Products" %}
+            {% endif %}
+          </span>
+        </nav>
+
+        <h1 class="pl-header__title">
+          {% if product_type %}
+            {{ product_type|title }}
+          {% else %}
+            <span class="accent">{% trans "All" %}</span>
+            {% trans "Products" %}
+          {% endif %}
+        </h1>
+      </div>
+
+      <div class="pl-header__right">
+        <div class="pl-header__count">
+          <strong>{{ page_obj.paginator.count|default:products|length }}</strong>
+          {% trans "items" %}
+        </div>
+      </div>
     </div>
+  </header>
 
-    <!-- ================= PRODUCTS GRID ================= -->
-    <div class="products">
-        {% for product in products %}
-            <div class="card">
-                <a href="{% url 'product_detail' product.slug %}">
-                    {% if product.images.first %}
-                        <img src="{{ product.images.first.image.url }}">
-                    {% else %}
-                        <img src="{% static 'no-image.png' %}">
-                    {% endif %}
+  <!-- ══════════════════════════════════════════════
+       MAIN LAYOUT
+  ══════════════════════════════════════════════ -->
+  <div class="pl-layout">
 
-                    <h4>{{ product.brand.name }}</h4>
-                    <p>{{ product.name }}</p>
-                    <strong>QAR {{ product.base_price }}</strong>
-                </a>
+    <!-- ══════════ SIDEBAR ══════════ -->
+    <aside class="pl-sidebar" id="pl-sidebar" aria-label="Filters">
+      <div class="pl-sidebar__header">
+        <span class="pl-sidebar__title">{% trans "Filters" %}</span>
+        <a href="{{ request.path }}" class="pl-sidebar__clear">{% trans "Clear All" %}</a>
+      </div>
+
+      <form method="GET" id="filter-form">
+
+        <!-- Search -->
+        <div class="pl-search-wrap">
+          <svg class="pl-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" name="search" class="pl-search-input"
+                 placeholder="{% trans 'Search products…' %}"
+                 value="{{ request.GET.search }}"
+                 id="pl-search-input">
+        </div>
+
+        <!-- Gender -->
+        <div class="pl-filter-group open">
+          <div class="pl-filter-group__header" data-group="gender">
+            <span class="pl-filter-group__label">{% trans "Gender" %}</span>
+            <svg class="pl-filter-group__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="pl-filter-group__body">
+            <div class="pl-gender-seg">
+              <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}gender=all"
+                 class="pl-gender-btn {% if selected_gender == 'all' or not selected_gender %}active{% endif %}">
+                {% trans "All" %}
+              </a>
+              <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}gender=men"
+                 class="pl-gender-btn {% if selected_gender == 'men' %}active{% endif %}">
+                {% trans "Men" %}
+              </a>
+              <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}gender=women"
+                 class="pl-gender-btn {% if selected_gender == 'women' %}active{% endif %}">
+                {% trans "Women" %}
+              </a>
+              <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}gender=kids"
+                 class="pl-gender-btn {% if selected_gender == 'kids' %}active{% endif %}">
+                {% trans "Kids" %}
+              </a>
             </div>
+          </div>
+        </div>
+
+        <!-- Brands -->
+        {% if brands %}
+        <div class="pl-filter-group open">
+          <div class="pl-filter-group__header" data-group="brands">
+            <span class="pl-filter-group__label">{% trans "Brand" %}</span>
+            <svg class="pl-filter-group__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="pl-filter-group__body">
+            <div class="pl-check-list">
+              <label class="pl-check-label">
+                <input type="radio" name="brand" value=""
+                       {% if not request.GET.brand %}checked{% endif %}>
+                <span class="pl-check-text">{% trans "All Brands" %}</span>
+              </label>
+              {% for brand in brands %}
+              <label class="pl-check-label">
+                <input type="radio" name="brand" value="{{ brand.slug }}"
+                       {% if request.GET.brand == brand.slug %}checked{% endif %}>
+                <span class="pl-check-text">{{ brand.name }}</span>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Categories -->
+        {% if categories %}
+        <div class="pl-filter-group open">
+          <div class="pl-filter-group__header" data-group="categories">
+            <span class="pl-filter-group__label">{% trans "Category" %}</span>
+            <svg class="pl-filter-group__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="pl-filter-group__body">
+            <div class="pl-check-list">
+              <label class="pl-check-label">
+                <input type="radio" name="category" value=""
+                       {% if not request.GET.category %}checked{% endif %}>
+                <span class="pl-check-text">{% trans "All Categories" %}</span>
+              </label>
+              {% for cat in categories %}
+              <label class="pl-check-label">
+                <input type="radio" name="category" value="{{ cat.slug }}"
+                       {% if request.GET.category == cat.slug %}checked{% endif %}>
+                <span class="pl-check-text">{{ cat.name }}</span>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Price -->
+        <div class="pl-filter-group open">
+          <div class="pl-filter-group__header" data-group="price">
+            <span class="pl-filter-group__label">{% trans "Price Range" %}</span>
+            <svg class="pl-filter-group__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="pl-filter-group__body">
+            <div class="pl-price-inputs">
+              <input type="number" name="min_price" class="pl-price-input"
+                     placeholder="{% trans 'Min ₹' %}"
+                     value="{{ request.GET.min_price }}"
+                     min="0">
+              <input type="number" name="max_price" class="pl-price-input"
+                     placeholder="{% trans 'Max ₹' %}"
+                     value="{{ request.GET.max_price }}"
+                     min="0">
+            </div>
+            {% if price_range %}
+            <div style="font-size:10px; color:var(--pl-muted); margin-top:8px; letter-spacing:.05em;">
+              {% trans "Range:" %} ₹{{ price_range.min_price|default:0 }} — ₹{{ price_range.max_price|default:0 }}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Sort (inside form) -->
+        <div class="pl-filter-group open">
+          <div class="pl-filter-group__header" data-group="sort">
+            <span class="pl-filter-group__label">{% trans "Sort By" %}</span>
+            <svg class="pl-filter-group__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="pl-filter-group__body">
+            <div class="pl-check-list">
+              {% with sort_options="-created_at,base_price,-base_price,name" %}
+              <label class="pl-check-label">
+                <input type="radio" name="sort" value="-created_at"
+                       {% if not request.GET.sort or request.GET.sort == '-created_at' %}checked{% endif %}>
+                <span class="pl-check-text">{% trans "Newest First" %}</span>
+              </label>
+              <label class="pl-check-label">
+                <input type="radio" name="sort" value="base_price"
+                       {% if request.GET.sort == 'base_price' %}checked{% endif %}>
+                <span class="pl-check-text">{% trans "Price: Low → High" %}</span>
+              </label>
+              <label class="pl-check-label">
+                <input type="radio" name="sort" value="-base_price"
+                       {% if request.GET.sort == '-base_price' %}checked{% endif %}>
+                <span class="pl-check-text">{% trans "Price: High → Low" %}</span>
+              </label>
+              <label class="pl-check-label">
+                <input type="radio" name="sort" value="name"
+                       {% if request.GET.sort == 'name' %}checked{% endif %}>
+                <span class="pl-check-text">{% trans "Name: A → Z" %}</span>
+              </label>
+              {% endwith %}
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:16px 22px;">
+          <button type="submit" class="pl-apply-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            {% trans "Apply Filters" %}
+          </button>
+        </div>
+
+      </form>
+    </aside>
+
+    <!-- ══════════ MAIN ══════════ -->
+    <main class="pl-main">
+
+      <!-- Toolbar -->
+      <div class="pl-toolbar">
+        <div class="pl-toolbar-left">
+
+          <!-- Mobile filter trigger -->
+          <button class="pl-mobile-filter-btn" id="pl-mob-filter-btn" aria-label="Open filters">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" y1="6" x2="20" y2="6"/>
+              <line x1="8" y1="12" x2="20" y2="12"/>
+              <line x1="12" y1="18" x2="20" y2="18"/>
+            </svg>
+            {% trans "Filters" %}
+          </button>
+
+          <!-- Active filter chips -->
+          <div class="pl-active-filters" id="pl-active-filters">
+            {% if selected_gender and selected_gender != 'all' %}
+            <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}gender=all"
+               class="pl-active-chip">
+              {{ selected_gender|title }}
+              <span class="pl-active-chip__x">×</span>
+            </a>
+            {% endif %}
+            {% if request.GET.brand %}
+            <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if selected_gender %}gender={{ selected_gender }}{% endif %}"
+               class="pl-active-chip">
+              {{ request.GET.brand|title }}
+              <span class="pl-active-chip__x">×</span>
+            </a>
+            {% endif %}
+            {% if request.GET.search %}
+            <a href="{{ request.path }}" class="pl-active-chip">
+              "{{ request.GET.search }}"
+              <span class="pl-active-chip__x">×</span>
+            </a>
+            {% endif %}
+            {% if request.GET.min_price or request.GET.max_price %}
+            <span class="pl-active-chip">
+              ₹{{ request.GET.min_price|default:"0" }} – ₹{{ request.GET.max_price|default:"∞" }}
+            </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="pl-toolbar-right">
+          <!-- Quick sort dropdown -->
+          <form method="GET" id="quick-sort-form">
+            {% if request.GET.search %}<input type="hidden" name="search" value="{{ request.GET.search }}">{% endif %}
+            {% if selected_gender %}<input type="hidden" name="gender" value="{{ selected_gender }}">{% endif %}
+            {% if request.GET.brand %}<input type="hidden" name="brand" value="{{ request.GET.brand }}">{% endif %}
+            {% if request.GET.min_price %}<input type="hidden" name="min_price" value="{{ request.GET.min_price }}">{% endif %}
+            {% if request.GET.max_price %}<input type="hidden" name="max_price" value="{{ request.GET.max_price }}">{% endif %}
+            <select name="sort" class="pl-sort-select" onchange="document.getElementById('quick-sort-form').submit()">
+              <option value="-created_at"  {% if not request.GET.sort or request.GET.sort == '-created_at' %}selected{% endif %}>{% trans "Newest" %}</option>
+              <option value="base_price"   {% if request.GET.sort == 'base_price' %}selected{% endif %}>{% trans "Price ↑" %}</option>
+              <option value="-base_price"  {% if request.GET.sort == '-base_price' %}selected{% endif %}>{% trans "Price ↓" %}</option>
+              <option value="name"         {% if request.GET.sort == 'name' %}selected{% endif %}>{% trans "A → Z" %}</option>
+            </select>
+          </form>
+
+          <!-- View toggles -->
+          <div class="pl-view-toggle" role="group">
+            <button class="pl-view-btn active" id="pl-grid3-btn" title="3-column grid">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="3" width="5" height="5" rx="1"/><rect x="10" y="3" width="5" height="5" rx="1"/><rect x="17" y="3" width="4" height="5" rx="1"/>
+                <rect x="3" y="11" width="5" height="5" rx="1"/><rect x="10" y="11" width="5" height="5" rx="1"/><rect x="17" y="11" width="4" height="5" rx="1"/>
+                <rect x="3" y="19" width="5" height="2" rx="1"/><rect x="10" y="19" width="5" height="2" rx="1"/>
+              </svg>
+            </button>
+            <button class="pl-view-btn" id="pl-grid4-btn" title="4-column grid">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="3" width="4" height="4" rx="1"/><rect x="10" y="3" width="4" height="4" rx="1"/><rect x="17" y="3" width="4" height="4" rx="1"/>
+                <rect x="3" y="10" width="4" height="4" rx="1"/><rect x="10" y="10" width="4" height="4" rx="1"/><rect x="17" y="10" width="4" height="4" rx="1"/>
+                <rect x="3" y="17" width="4" height="4" rx="1"/><rect x="10" y="17" width="4" height="4" rx="1"/><rect x="17" y="17" width="4" height="4" rx="1"/>
+              </svg>
+            </button>
+            <button class="pl-view-btn" id="pl-list-btn" title="List view">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Grid -->
+      <div class="pl-grid" id="pl-grid" role="list">
+        {% for product in products %}
+        <article class="pl-card" role="listitem">
+
+          <!-- Badges -->
+          <div class="pl-card__badges">
+            {% if product.stock_quantity == 0 %}
+              <span class="pl-badge pl-badge--out">{% trans "Sold Out" %}</span>
+            {% elif product.compare_at_price and product.compare_at_price > product.base_price %}
+              <span class="pl-badge pl-badge--sale">{% trans "Sale" %}</span>
+            {% elif product.is_featured %}
+              <span class="pl-badge pl-badge--hot">{% trans "Featured" %}</span>
+            {% else %}
+              <span class="pl-badge pl-badge--new">{% trans "New" %}</span>
+            {% endif %}
+          </div>
+
+          <!-- Wishlist -->
+          <button class="pl-card__wish wishlist-btn"
+                  data-product-id="{{ product.id }}"
+                  aria-label="{% trans 'Wishlist' %}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+            </svg>
+          </button>
+
+          <!-- Media -->
+          <div class="pl-card__media">
+            <a href="
+              {% if product.product_type == 'sunglasses' %}{% url 'catalog:sunglass_detail' product.slug %}
+              {% elif product.product_type == 'eyeglasses' %}{% url 'catalog:eyeglass_detail' product.slug %}
+              {% elif product.product_type == 'contact_lenses' %}{% url 'catalog:contact_lens_detail' product.slug %}
+              {% else %}{% url 'catalog:product_detail' product.slug %}
+              {% endif %}
+            " tabindex="-1" aria-hidden="true">
+              {% with img=product.images.first %}
+              {% if img %}
+              <img src="{{ img.image.url }}" alt="{{ product.name }}" class="pl-card__img" loading="lazy" width="500" height="500">
+              {% elif product.image %}
+              <img src="{{ product.image.url }}" alt="{{ product.name }}" class="pl-card__img" loading="lazy" width="500" height="500">
+              {% else %}
+              <img src="{% static 'img/no-image.jpg' %}" alt="{{ product.name }}" class="pl-card__img" loading="lazy" width="500" height="500">
+              {% endif %}
+              {% endwith %}
+            </a>
+
+            <div class="pl-card__overlay" aria-hidden="true">
+              <a href="
+                {% if product.product_type == 'sunglasses' %}{% url 'catalog:sunglass_detail' product.slug %}
+                {% elif product.product_type == 'eyeglasses' %}{% url 'catalog:eyeglass_detail' product.slug %}
+                {% elif product.product_type == 'contact_lenses' %}{% url 'catalog:contact_lens_detail' product.slug %}
+                {% else %}{% url 'catalog:product_detail' product.slug %}
+                {% endif %}
+              " class="pl-card__ov-btn pl-card__ov-btn--view">{% trans "View" %}</a>
+              <form method="POST" action=" " style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="pl-card__ov-btn pl-card__ov-btn--cart">{% trans "Add to Cart" %}</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div class="pl-card__body">
+            {% if product.brand %}
+            <span class="pl-card__brand">{{ product.brand.name }}</span>
+            {% endif %}
+
+            <h3 class="pl-card__name">
+              <a href="
+                {% if product.product_type == 'sunglasses' %}{% url 'catalog:sunglass_detail' product.slug %}
+                {% elif product.product_type == 'eyeglasses' %}{% url 'catalog:eyeglass_detail' product.slug %}
+                {% elif product.product_type == 'contact_lenses' %}{% url 'catalog:contact_lens_detail' product.slug %}
+                {% else %}{% url 'catalog:product_detail' product.slug %}
+                {% endif %}
+              ">{{ product.name }}</a>
+            </h3>
+
+            <p class="pl-card__type-gender">
+              {{ product.get_product_type_display }}
+              {% if product.gender %} · {{ product.get_gender_display }}{% endif %}
+            </p>
+
+            {% with variants=product.variants.all %}
+            {% if variants %}
+            <div class="pl-card__colors">
+              {% for v in variants|slice:":5" %}
+              {% if v.color_code %}
+              <div class="pl-dot {% if forloop.first %}active{% endif %}"
+                   style="background:{{ v.color_code }};"
+                   title="{{ v.color_name }}"></div>
+              {% endif %}
+              {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <div class="pl-card__price-row">
+              <div class="pl-card__price-wrap">
+                <span class="pl-card__price">₹{{ product.base_price }}</span>
+                {% if product.compare_at_price and product.compare_at_price > product.base_price %}
+                <span class="pl-card__price-old">₹{{ product.compare_at_price }}</span>
+                {% endif %}
+              </div>
+              <form method="POST" action=" " style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="pl-card__add" aria-label="{% trans 'Add to cart' %}">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </div>
+
+        </article>
         {% empty %}
-            <p>No products found.</p>
+        <div class="pl-empty">
+          <span class="pl-empty__glyph">🔍</span>
+          <h3 class="pl-empty__title">{% trans "No products found" %}</h3>
+          <p class="pl-empty__sub">{% trans "Try adjusting your search or filters." %}</p>
+          <a href="{{ request.path }}" class="pl-empty__btn">{% trans "Reset Filters" %}</a>
+        </div>
         {% endfor %}
-    </div>
+      </div>
+
+      <!-- Pagination -->
+      {% if page_obj.has_other_pages %}
+      <nav class="pl-pagination" aria-label="Pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if selected_gender %}&gender={{ selected_gender }}{% endif %}{% if request.GET.brand %}&brand={{ request.GET.brand }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+           class="pl-page-btn" aria-label="Previous">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </a>
+        {% else %}
+        <span class="pl-page-btn disabled" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </span>
+        {% endif %}
+
+        {% for pg in page_obj.paginator.page_range %}
+          {% if pg == page_obj.number %}
+          <span class="pl-page-btn current" aria-current="page">{{ pg }}</span>
+          {% elif pg == 1 or pg == page_obj.paginator.num_pages or pg >= page_obj.number|add:"-2" and pg <= page_obj.number|add:"2" %}
+          <a href="?page={{ pg }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if selected_gender %}&gender={{ selected_gender }}{% endif %}{% if request.GET.brand %}&brand={{ request.GET.brand }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+             class="pl-page-btn">{{ pg }}</a>
+          {% elif pg == page_obj.number|add:"-3" or pg == page_obj.number|add:"3" %}
+          <span class="pl-page-ellipsis">…</span>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if selected_gender %}&gender={{ selected_gender }}{% endif %}{% if request.GET.brand %}&brand={{ request.GET.brand }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+           class="pl-page-btn" aria-label="Next">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </a>
+        {% else %}
+        <span class="pl-page-btn disabled" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+        {% endif %}
+      </nav>
+      {% endif %}
+
+    </main>
+  </div><!-- /.pl-layout -->
+
+</div><!-- /.pl-page -->
+
+<!-- Mobile Drawer -->
+<div class="pl-drawer-overlay" id="pl-drawer-overlay"></div>
+<div class="pl-drawer" id="pl-drawer" aria-label="Mobile filters">
+  <button class="pl-drawer-close" id="pl-drawer-close" aria-label="Close filters">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 6L6 18M6 6l12 12"/>
+    </svg>
+  </button>
 </div>
 
-<!-- ================= PAGINATION ================= -->
-<div class="pagination">
-    {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
-    {% endif %}
 
-    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+<script>
+(function () {
+  'use strict';
 
-    {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}">Next</a>
-    {% endif %}
-</div>
+  /* ── Progress bar ── */
+  const bar = document.getElementById('pl-loading-bar');
+  function showBar() { if(bar){bar.style.width='70%';} }
+  function hideBar() { if(bar){bar.style.width='100%'; setTimeout(()=>{bar.style.width='0';},300);} }
+  hideBar();
 
-</body>
-</html>
+  /* ── Card reveal ── */
+  const cards = document.querySelectorAll('.pl-card');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const all = [...cards];
+          const idx = all.indexOf(e.target);
+          const cols = window.innerWidth > 1280 ? 3 : window.innerWidth > 768 ? 2 : 1;
+          setTimeout(() => e.target.classList.add('revealed'), (idx % cols) * 80);
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.04 });
+    cards.forEach(c => io.observe(c));
+  } else {
+    cards.forEach(c => c.classList.add('revealed'));
+  }
+
+  /* ── Filter accordion ── */
+  document.querySelectorAll('.pl-filter-group__header').forEach(header => {
+    header.addEventListener('click', () => {
+      header.closest('.pl-filter-group').classList.toggle('open');
+    });
+  });
+
+  /* ── View toggles ── */
+  const grid      = document.getElementById('pl-grid');
+  const btn3      = document.getElementById('pl-grid3-btn');
+  const btn4      = document.getElementById('pl-grid4-btn');
+  const btnList   = document.getElementById('pl-list-btn');
+  const viewBtns  = [btn3, btn4, btnList];
+
+  function setView(mode) {
+    grid.className = 'pl-grid'; // reset
+    if (mode === '4') { grid.classList.add('cols-4'); }
+    else if (mode === 'list') { grid.classList.add('list-mode'); }
+    viewBtns.forEach(b => b && b.classList.remove('active'));
+    if (mode === '3') btn3?.classList.add('active');
+    else if (mode === '4') btn4?.classList.add('active');
+    else btnList?.classList.add('active');
+    try { localStorage.setItem('pl-view', mode); } catch(e){}
+  }
+
+  // Restore saved view
+  try {
+    const saved = localStorage.getItem('pl-view');
+    if (saved) setView(saved);
+  } catch(e){}
+
+  btn3?.addEventListener('click', () => setView('3'));
+  btn4?.addEventListener('click', () => setView('4'));
+  btnList?.addEventListener('click', () => setView('list'));
+
+  /* ── Wishlist ── */
+  document.querySelectorAll('.wishlist-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.classList.toggle('active');
+      const id = this.dataset.productId;
+      if (!id) return;
+      fetch('/wishlist/toggle/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+        body: JSON.stringify({ product_id: id }),
+      }).catch(() => this.classList.toggle('active'));
+    });
+  });
+
+  /* ── Add to cart ── */
+  document.querySelectorAll('.pl-card form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      showBar();
+      const btn = this.querySelector('button');
+      if (btn) btn.disabled = true;
+      fetch(this.action, {
+        method: 'POST',
+        body: new FormData(this),
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
+        .then(r => r.json())
+        .then(d => { hideBar(); toast(d.message || '{% trans "Added to cart!" %}'); })
+        .catch(() => { hideBar(); toast('{% trans "Added to cart!" %}'); })
+        .finally(() => { if(btn) btn.disabled = false; });
+    });
+  });
+
+  /* ── Color dots ── */
+  document.querySelectorAll('.pl-card__colors').forEach(group => {
+    group.querySelectorAll('.pl-dot').forEach(dot => {
+      dot.addEventListener('click', function(e) {
+        e.stopPropagation();
+        group.querySelectorAll('.pl-dot').forEach(d => d.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  });
+
+  /* ── Mobile drawer ── */
+  const sidebar       = document.getElementById('pl-sidebar');
+  const drawer        = document.getElementById('pl-drawer');
+  const drawerOverlay = document.getElementById('pl-drawer-overlay');
+  const mobBtn        = document.getElementById('pl-mob-filter-btn');
+  const drawerClose   = document.getElementById('pl-drawer-close');
+
+  if (drawer && sidebar) {
+    // Clone sidebar into drawer for mobile
+    const clone = sidebar.cloneNode(true);
+    clone.style.display = 'block';
+    clone.style.position = 'relative';
+    clone.style.top = 'auto';
+    clone.style.borderRadius = '0';
+    clone.style.border = 'none';
+    clone.style.paddingTop = '56px';
+    drawer.appendChild(clone);
+  }
+
+  function openDrawer() {
+    drawer?.classList.add('open');
+    drawerOverlay?.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDrawer() {
+    drawer?.classList.remove('open');
+    drawerOverlay?.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  mobBtn?.addEventListener('click', openDrawer);
+  drawerClose?.addEventListener('click', closeDrawer);
+  drawerOverlay?.addEventListener('click', closeDrawer);
+
+  /* ── Search debounce on sidebar ── */
+  let searchTimer;
+  const searchInput = document.getElementById('pl-search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        // Only auto-submit if query >= 3 chars or cleared
+        if (searchInput.value.length >= 3 || searchInput.value.length === 0) {
+          document.getElementById('filter-form')?.submit();
+        }
+      }, 600);
+    });
+  }
+
+  /* ── Toast ── */
+  function toast(msg) {
+    const old = document.querySelector('.pl-toast');
+    if (old) old.remove();
+    const t = document.createElement('div');
+    t.className = 'pl-toast';
+    t.style.cssText = `
+      position:fixed;bottom:28px;right:28px;z-index:9999;
+      background:var(--pl-surface2);color:var(--pl-white);
+      border:1px solid var(--pl-blue);border-radius:12px;
+      padding:14px 24px;font-family:'IBM Plex Sans',sans-serif;
+      font-size:13px;font-weight:500;
+      box-shadow:0 8px 28px rgba(0,0,0,.5),0 0 0 1px rgba(59,130,246,.2);
+      display:flex;align-items:center;gap:10px;
+      animation:plToastIn .4s var(--pl-ease) forwards;
+    `;
+    t.innerHTML = `<span style="color:var(--pl-blue);font-size:16px;">✓</span>${msg}`;
+    document.body.appendChild(t);
+    setTimeout(() => {
+      t.style.animation = 'plToastOut .35s forwards';
+      setTimeout(() => t.remove(), 350);
+    }, 2500);
+  }
+
+  /* ── CSRF ── */
+  function getCsrf() {
+    const m = document.cookie.match(/csrftoken=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+
+  /* ── Inject keyframes ── */
+  const s = document.createElement('style');
+  s.textContent = `
+    @keyframes plToastIn  { from{transform:translateY(20px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+    @keyframes plToastOut { from{opacity:1;} to{opacity:0;transform:translateY(10px);} }
+  `;
+  document.head.appendChild(s);
+
+  console.log('⚡ Product List — Al Ameen Optics');
+})();
+</script>
+
+{% endblock %}
