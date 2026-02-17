@@ -175,6 +175,16 @@
 .priority-medium { color: #ffc107; font-weight: 600; }
 .priority-low    { color: #28a745; }
 
+/* ── Send status indicator ── */
+.send-status {
+    font-size: .75rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: none;
+}
+.send-status.sending { display: inline; background: #e8f4fd; color: #1a6fa8; }
+.send-status.error   { display: inline; background: #fdecea; color: #c0392b; }
+
 @media (max-width: 992px) {
     .chat-layout { grid-template-columns: 1fr; }
     .chat-panel  { height: 500px; }
@@ -190,7 +200,6 @@
         <h3><i class="mdi mdi-chat-processing"></i> Conversation: {{ conversation.conversation_id }}</h3>
         <p>{{ conversation.get_display_name }} &mdash; {{ conversation.subject }}</p>
       </div>
-      {# ✅ BUG 3 FIX: was {% url 'chat:agent_dashboard' %} — wrong app namespace #}
       <a href="{% url 'adminpanel:chat_list' %}" class="btn btn-light btn-sm">
         <i class="mdi mdi-arrow-left"></i> Back to List
       </a>
@@ -200,7 +209,6 @@
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb bg-transparent p-0 mb-4">
         <li class="breadcrumb-item"><a href="{% url 'adminpanel:dashboard' %}">Dashboard</a></li>
-        {# ✅ BUG 3 FIX: was {% url 'chat:agent_dashboard' %} — wrong app namespace #}
         <li class="breadcrumb-item"><a href="{% url 'adminpanel:chat_list' %}">Live Chat</a></li>
         <li class="breadcrumb-item active">{{ conversation.conversation_id }}</li>
       </ol>
@@ -289,7 +297,10 @@
 
           <textarea id="msgInput" rows="3" placeholder="Type your reply… (Ctrl+Enter to send)"></textarea>
           <div class="input-actions">
-            <small class="text-muted">Ctrl + Enter to send</small>
+            <div class="d-flex align-items-center gap-2">
+              <small class="text-muted">Ctrl + Enter to send</small>
+              <span class="send-status" id="sendStatus"></span>
+            </div>
             <div class="d-flex gap-2">
               <button class="btn btn-light btn-sm" id="resolveBtn">
                 <i class="mdi mdi-check-circle-outline"></i> Resolve
@@ -412,8 +423,9 @@ const URL_STATUS   = `/chat/agent/conversation/${CONV_ID}/status/`;
 const URL_PRIORITY = `/chat/agent/conversation/${CONV_ID}/priority/`;
 const URL_QR       = (id) => `/chat/agent/quick-reply/${id}/`;
 
-const msgInput   = document.getElementById('msgInput');
-const messagesEl = document.getElementById('chatMessages');
+const msgInput    = document.getElementById('msgInput');
+const messagesEl  = document.getElementById('chatMessages');
+const sendStatus  = document.getElementById('sendStatus');
 let lastId = {{ messages.last.id|default:0 }};
 
 function scrollBottom() {
@@ -436,15 +448,58 @@ function showToast(msg, ok) {
     setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
 }
 
-function postData(url, data) {
+/* ─────────────────────────────────────────────────────────────
+   ✅ FIXED postData()
+
+   OLD VERSION had two problems:
+     1. No X-CSRFToken header — some Django configs reject AJAX
+        POST without the header even if the body field is present.
+     2. No r.ok check before r.json() — any non-JSON response
+        (HTML 500, HTML 403, redirect) would throw a SyntaxError
+        in r.json(), which was swallowed by .catch() and shown
+        as "Network error" with no actionable detail.
+
+   NEW VERSION:
+     1. Sends X-CSRFToken in BOTH the header AND the body field.
+     2. Checks r.ok before parsing JSON.
+     3. If the body is not JSON (e.g. a redirect/HTML error),
+        throws a descriptive error with the HTTP status code
+        so the toast and console show something useful.
+   ─────────────────────────────────────────────────────────────
+*/
+async function postData(url, data) {
     const fd = new FormData();
-    fd.append('csrfmiddlewaretoken', CSRF);
+    fd.append('csrfmiddlewaretoken', CSRF);           // body field (Django form check)
     Object.entries(data).forEach(([k, v]) => fd.append(k, v));
-    return fetch(url, {
-        method: 'POST',
-        headers: {'X-Requested-With': 'XMLHttpRequest'},
-        body: fd
-    }).then(r => r.json());
+
+    const response = await fetch(url, {
+        method:  'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken':      CSRF,                 // ✅ FIX: header (required by some Django configs)
+        },
+        body: fd,
+    });
+
+    // ✅ FIX: check r.ok BEFORE calling r.json()
+    // A non-2xx response (403, 404, 500) returns HTML, not JSON.
+    // Calling .json() on HTML throws SyntaxError → was caught as "Network error".
+    if (!response.ok) {
+        // Try to get a JSON error message from the server if available
+        let serverMsg = '';
+        try {
+            const errData = await response.json();
+            serverMsg = errData.error || '';
+        } catch (_) {
+            // Server returned HTML (500 page, login redirect, etc.)
+            serverMsg = '';
+        }
+        throw new Error(
+            serverMsg || `Server returned ${response.status} ${response.statusText}`
+        );
+    }
+
+    return response.json();
 }
 
 function escHtml(s) {
@@ -480,79 +535,128 @@ function appendBubble(msg) {
     scrollBottom();
 }
 
-function sendReply() {
+function setSendStatus(state, text) {
+    sendStatus.className = `send-status ${state}`;
+    sendStatus.textContent = text;
+}
+
+async function sendReply() {
     const text = msgInput.value.trim();
     if (!text) return;
 
     const sendBtn = document.getElementById('sendBtn');
     sendBtn.disabled = true;
+    setSendStatus('sending', 'Sending…');
 
-    postData(URL_SEND, {message: text})
-        .then(data => {
-            if (data.success) {
-                msgInput.value = '';
-                appendBubble(data.message);
-                lastId = Math.max(lastId, data.message.id);
-            } else {
-                showToast('Failed to send: ' + (data.error || 'unknown error'), false);
-            }
-        })
-        .catch(e => { console.error(e); showToast('Network error', false); })
-        .finally(() => { sendBtn.disabled = false; });
+    try {
+        const data = await postData(URL_SEND, { message: text });
+
+        if (data.success) {
+            msgInput.value = '';
+            appendBubble(data.message);
+            lastId = Math.max(lastId, data.message.id);
+            setSendStatus('', '');                          // clear indicator
+        } else {
+            // Server returned {success: false, error: '...'}
+            const msg = data.error || 'Message failed to send.';
+            setSendStatus('error', msg);
+            showToast(msg, false);
+        }
+
+    } catch (err) {
+        // ✅ FIX: err.message now contains the actual HTTP status or server error
+        // instead of the useless "SyntaxError: Unexpected token < in JSON"
+        console.error('[sendReply]', err);
+        const msg = err.message || 'Network error — please try again.';
+        setSendStatus('error', msg);
+        showToast(msg, false);
+
+    } finally {
+        sendBtn.disabled = false;
+    }
 }
 
-/* Poll for new customer messages only */
-setInterval(() => {
-    fetch(URL_MESSAGES(lastId), {
-        headers: {'X-Requested-With': 'XMLHttpRequest'}
-    })
-    .then(r => r.json())
-    .then(data => {
+/* Poll for new customer messages */
+setInterval(async () => {
+    try {
+        const response = await fetch(URL_MESSAGES(lastId), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        if (!response.ok) return;           // ✅ FIX: skip silently on error
+
+        const data = await response.json();
         if (!data.success || !data.messages.length) return;
+
         data.messages.forEach(msg => {
             if (msg.id > lastId) {
                 lastId = msg.id;
                 if (msg.is_from_customer) appendBubble(msg);
             }
         });
-    })
-    .catch(() => {});
+    } catch (_) {
+        /* polling errors are silent — they retry in 3 s */
+    }
 }, 3000);
 
+/* Assign to me */
 const assignBtn = document.getElementById('assignBtn');
 if (assignBtn) {
-    assignBtn.addEventListener('click', () => {
-        postData(URL_ASSIGN, {})
-            .then(data => {
-                if (data.success) { showToast('Assigned to you!'); assignBtn.remove(); }
-                else showToast('Assignment failed', false);
-            });
+    assignBtn.addEventListener('click', async () => {
+        try {
+            const data = await postData(URL_ASSIGN, {});
+            if (data.success) { showToast('Assigned to you!'); assignBtn.remove(); }
+            else showToast('Assignment failed', false);
+        } catch (err) {
+            showToast(err.message || 'Assignment failed', false);
+        }
     });
 }
 
-document.getElementById('resolveBtn').addEventListener('click', () => {
+/* Resolve button */
+document.getElementById('resolveBtn').addEventListener('click', async () => {
     document.getElementById('statusSelect').value = 'resolved';
-    postData(URL_STATUS, {status: 'resolved'}).then(() => showToast('Marked as resolved ✓'));
+    try {
+        await postData(URL_STATUS, { status: 'resolved' });
+        showToast('Marked as resolved ✓');
+    } catch (err) {
+        showToast(err.message || 'Could not resolve', false);
+    }
 });
 
-document.getElementById('statusSelect').addEventListener('change', function() {
-    postData(URL_STATUS, {status: this.value}).then(() => showToast('Status updated'));
+/* Status select */
+document.getElementById('statusSelect').addEventListener('change', async function () {
+    try {
+        await postData(URL_STATUS, { status: this.value });
+        showToast('Status updated');
+    } catch (err) {
+        showToast(err.message || 'Status update failed', false);
+    }
 });
 
-document.getElementById('prioritySelect').addEventListener('change', function() {
-    postData(URL_PRIORITY, {priority: this.value}).then(() => showToast('Priority updated'));
+/* Priority select */
+document.getElementById('prioritySelect').addEventListener('change', async function () {
+    try {
+        await postData(URL_PRIORITY, { priority: this.value });
+        showToast('Priority updated');
+    } catch (err) {
+        showToast(err.message || 'Priority update failed', false);
+    }
 });
 
+/* Send button + Ctrl+Enter */
 document.getElementById('sendBtn').addEventListener('click', sendReply);
 msgInput.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); sendReply(); }
 });
 
+/* Quick reply chips */
 document.querySelectorAll('.qr-chip').forEach(chip => {
     chip.addEventListener('click', () => {
         msgInput.value = chip.dataset.message;
         msgInput.focus();
-        fetch(URL_QR(chip.dataset.id), {headers: {'X-Requested-With': 'XMLHttpRequest'}}).catch(() => {});
+        fetch(URL_QR(chip.dataset.id), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        }).catch(() => {});
     });
 });
 
