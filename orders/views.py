@@ -405,7 +405,7 @@ def razorpay_payment(request, order_number):
                 'amount': result['amount'],
                 'currency': result['currency'],
             }
-            return render(request, 'orders/razorpay_payment.html', context)
+            return render(request, 'razorpay_payment.html', context)
         else:
             messages.error(request, f"Payment error: {result.get('error')}")
             return redirect('orders:checkout')
@@ -741,3 +741,307 @@ def get_order_status(request, order_number):
         'tracking_number': order.tracking_number,
         'carrier': order.carrier,
     })
+
+
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from django.db import transaction
+from django.urls import reverse
+import json
+import logging
+
+logger = logging.getLogger(__name__)
+
+# ============================================================
+
+@login_required
+def sadad_payment(request, order_number):
+    """
+    Initiates Sadad payment:
+      1. Creates a Sadad invoice via API
+      2. Stores the invoice ID on the order
+      3. Redirects customer to Sadad's hosted checkout page
+    """
+    order = get_object_or_404(
+        Order, order_number=order_number, customer=request.user
+    )
+
+    if order.payment_status == 'completed':
+        messages.info(request, 'This order has already been paid.')
+        return redirect('orders:order_confirmation', order_number=order.order_number)
+
+    try:
+        from .payment_services import SadadPaymentService, SadadPaymentError
+
+        result = SadadPaymentService.create_invoice(order)
+
+        if result['success']:
+            # ── Store Sadad invoice details on the order ──────
+            order.payment_gateway        = 'sadad'
+            order.payment_transaction_id = result['invoice_id']
+            # Store invoice key in gateway response so verify view can use it
+            order.payment_gateway_response = {
+                'invoice_id':   result['invoice_id'],
+                'invoice_key':  result['invoice_key'],
+                'payment_url':  result['payment_url'],
+            }
+            order.save()
+
+            # ── Redirect customer to Sadad hosted checkout ────
+            return redirect(result['payment_url'])
+
+        else:
+            messages.error(
+                request,
+                f"Could not initiate Sadad payment: {result.get('error')}"
+            )
+            return redirect('orders:checkout')
+
+    except Exception as exc:
+        logger.error(f"sadad_payment view error: {exc}")
+        messages.error(request, f'Error initializing Sadad payment: {str(exc)}')
+        return redirect('orders:checkout')
+
+
+# ============================================================
+# Sadad Return URL  
+# ============================================================
+
+@login_required
+def sadad_payment_return(request):
+    """
+    Customer is redirected here by Sadad after completing (or cancelling) payment.
+    Sadad passes ?invoiceId=xxx&status=Paid (or similar) as query params.
+
+    This view:
+      1. Reads the invoice ID from query params
+      2. Calls Sadad API to double-check the payment status (never trust redirects alone)
+      3. Updates the order accordingly
+    """
+    invoice_id = (
+        request.GET.get('invoiceId')
+        or request.GET.get('invoice_id')
+        or request.GET.get('id')
+    )
+    status_param = request.GET.get('status', '').lower()
+
+    if not invoice_id:
+        messages.error(request, 'Invalid payment return. No invoice reference found.')
+        return redirect('orders:order_list')
+
+    try:
+        # ── Find the order by Sadad invoice ID ────────────────
+        order = Order.objects.filter(
+            payment_transaction_id=invoice_id,
+            customer=request.user
+        ).first()
+
+        if not order:
+            messages.error(request, 'Order not found for this payment reference.')
+            return redirect('orders:order_list')
+
+        if order.payment_status == 'completed':
+            # Already processed (e.g. via webhook)
+            return redirect('orders:order_confirmation', order_number=order.order_number)
+
+        from .payment_services import SadadPaymentService
+
+        # ── Verify with Sadad API (server-side, authoritative) ─
+        verify_result = SadadPaymentService.verify_payment(invoice_id)
+
+        if verify_result.get('paid'):
+            _mark_order_paid(request, order, verify_result)
+            messages.success(request, '✅ Payment successful! Your order is confirmed.')
+            return redirect('orders:order_confirmation', order_number=order.order_number)
+
+        else:
+            order.payment_status = 'failed'
+            order.save()
+            messages.error(
+                request,
+                f"Payment was not completed. Status: {verify_result.get('status', 'unknown')}."
+                " Please try again or contact support."
+            )
+            return redirect('orders:checkout')
+
+    except Exception as exc:
+        logger.error(f"sadad_payment_return error: {exc}")
+        messages.error(request, f'Error verifying payment: {str(exc)}')
+        return redirect('orders:order_list')
+
+
+# ============================================================
+# Sadad Webhook  
+# ============================================================
+
+@csrf_exempt
+@require_POST
+def sadad_webhook(request):
+    """
+    Sadad calls this URL when a payment event occurs (paid, refunded, etc.).
+    This is the most reliable payment confirmation — handle it here.
+
+    Configure this URL in panel.sadad.qa → Webhook Settings.
+    Full URL example: https://yoursite.com/orders/payment/sadad/webhook/
+
+    IMPORTANT: Exclude this URL from Django's CSRF middleware in settings:
+        CSRF_TRUSTED_ORIGINS or use @csrf_exempt (already applied above)
+    """
+    try:
+        # ── Parse payload ──────────────────────────────────────
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            # Some gateways POST form-encoded data
+            data = request.POST.dict()
+
+        logger.info(f"Sadad webhook received: {data}")
+
+        # ── Extract fields ─────────────────────────────────────
+        invoice_id     = (
+            data.get('invoiceId')
+            or data.get('invoice_id')
+            or data.get('id', '')
+        )
+        event_status   = (
+            data.get('status', '')
+            or data.get('event', '')
+        ).lower()
+        transaction_id = (
+            data.get('transactionId')
+            or data.get('transaction_id', '')
+        )
+        amount         = data.get('amount', '')
+
+        if not invoice_id:
+            logger.warning("Sadad webhook: no invoiceId in payload")
+            return HttpResponse("Missing invoiceId", status=400)
+
+        # ── Find order ─────────────────────────────────────────
+        try:
+            order = Order.objects.get(payment_transaction_id=invoice_id)
+        except Order.DoesNotExist:
+            logger.warning(f"Sadad webhook: order not found for invoiceId={invoice_id}")
+            return HttpResponse("Order not found", status=404)
+
+        # ── Handle event ───────────────────────────────────────
+        if event_status in ('paid', 'completed', 'success') and order.payment_status != 'completed':
+            verify_result = {
+                'paid':           True,
+                'status':         event_status,
+                'invoice_id':     invoice_id,
+                'transaction_id': transaction_id,
+                'amount':         str(amount),
+                'raw':            data,
+            }
+            _mark_order_paid_webhook(order, verify_result)
+            logger.info(f"Sadad webhook: order {order.order_number} marked PAID")
+
+        elif event_status in ('failed', 'expired', 'cancelled'):
+            if order.payment_status not in ('completed', 'failed'):
+                order.payment_status = 'failed'
+                order.payment_gateway_response = data
+                order.save()
+                logger.info(
+                    f"Sadad webhook: order {order.order_number} marked FAILED ({event_status})"
+                )
+
+        # Sadad expects a 200 OK to acknowledge receipt
+        return HttpResponse("OK", status=200)
+
+    except Exception as exc:
+        logger.error(f"Sadad webhook error: {exc}")
+        return HttpResponse("Internal error", status=500)
+
+
+# ============================================================
+# HELPE 
+# ============================================================
+
+@transaction.atomic
+def _mark_order_paid(request, order, verify_result: dict):
+    """Update order + create PaymentTransaction after successful Sadad payment."""
+    order.payment_status          = 'completed'
+    order.payment_gateway_response = verify_result.get('raw', verify_result)
+    order.paid_at                 = timezone.now()
+    order.status                  = 'confirmed'
+    order.confirmed_at            = timezone.now()
+    order.save()
+
+    PaymentTransaction.objects.create(
+        order                 = order,
+        transaction_id        = generate_transaction_id(),
+        gateway_transaction_id = verify_result.get('transaction_id', ''),
+        transaction_type      = 'payment',
+        status                = 'completed',
+        amount                = order.total_amount,
+        currency              = order.currency,
+        payment_gateway       = 'sadad',
+        payment_method        = 'sadad',
+        gateway_response      = verify_result.get('raw', verify_result),
+        completed_at          = timezone.now(),
+    )
+
+    # Clear the customer's cart
+    try:
+        cart = get_or_create_cart(request)
+        cart.items.all().delete()
+    except Exception:
+        pass
+
+    OrderStatusHistory.objects.create(
+        order       = order,
+        from_status = 'pending',
+        to_status   = 'confirmed',
+        notes       = 'Payment confirmed via Sadad',
+        changed_by  = request.user,
+    )
+
+
+@transaction.atomic
+def _mark_order_paid_webhook(order, verify_result: dict):
+    """
+    Same as _mark_order_paid but called from webhook (no request object).
+    """
+    order.payment_status           = 'completed'
+    order.payment_gateway_response = verify_result.get('raw', verify_result)
+    order.paid_at                  = timezone.now()
+    order.status                   = 'confirmed'
+    order.confirmed_at             = timezone.now()
+    order.save()
+
+    PaymentTransaction.objects.create(
+        order                  = order,
+        transaction_id         = generate_transaction_id(),
+        gateway_transaction_id = verify_result.get('transaction_id', ''),
+        transaction_type       = 'payment',
+        status                 = 'completed',
+        amount                 = order.total_amount,
+        currency               = order.currency,
+        payment_gateway        = 'sadad',
+        payment_method         = 'sadad',
+        gateway_response       = verify_result.get('raw', verify_result),
+        completed_at           = timezone.now(),
+    )
+
+    # Clear cart server-side
+    from cart.models import Cart
+    cart = Cart.objects.filter(customer=order.customer).first()
+    if cart:
+        cart.items.all().delete()
+
+    OrderStatusHistory.objects.create(
+        order       = order,
+        from_status = 'pending',
+        to_status   = 'confirmed',
+        notes       = 'Payment confirmed via Sadad (webhook)',
+        changed_by  = order.customer,
+    )
