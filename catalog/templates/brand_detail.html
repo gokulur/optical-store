@@ -1,0 +1,1885 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ brand.name }} — Al Ameen Optics{% endblock %}
+
+{% block content %}
+
+<style>
+/* ============================================================
+   BRAND DETAIL PAGE — EDITORIAL LUXURY AESTHETIC
+   Fonts: Playfair Display (display) + DM Sans (body)
+   Palette: Near-black #0e0e0e / Warm ivory #f5f0eb / Gold #c9a96e
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
+
+:root {
+  --bd-black:   #0e0e0e;
+  --bd-offblack: #1a1a1a;
+  --bd-ivory:   #f5f0eb;
+  --bd-warm:    #ede8e1;
+  --bd-gold:    #c9a96e;
+  --bd-gold-lt: #e0c99a;
+  --bd-muted:   #7a7068;
+  --bd-border:  rgba(201,169,110,.25);
+  --bd-overlay: rgba(14,14,14,.55);
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --transition: .45s cubic-bezier(.22,1,.36,1);
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Page Wrapper ── */
+.bd-page {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bd-ivory);
+  color: var(--bd-black);
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   HERO SECTION
+   ============================================================ */
+.bd-hero {
+  position: relative;
+  min-height: 90vh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--bd-black);
+}
+
+.bd-hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.bd-hero__bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .35;
+  transform: scale(1.08);
+  transition: transform 8s ease;
+  filter: grayscale(30%) contrast(1.1);
+}
+
+.bd-hero.in-view .bd-hero__bg img {
+  transform: scale(1);
+}
+
+/* Diagonal gradient stripe */
+.bd-hero__bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(201,169,110,.12) 0%, transparent 60%),
+    linear-gradient(0deg, rgba(14,14,14,.85) 0%, rgba(14,14,14,.2) 60%, transparent 100%);
+}
+
+/* Grain texture */
+.bd-hero__bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: .04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 180px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.bd-hero__content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 120px 24px 80px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Animated breadcrumb */
+.bd-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 40px;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: bd-fadeUp .7s .1s forwards;
+}
+
+.bd-breadcrumb a,
+.bd-breadcrumb span {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .15em;
+  color: rgba(255,255,255,.55);
+  text-decoration: none;
+  transition: color .3s;
+}
+.bd-breadcrumb a:hover { color: var(--bd-gold-lt); }
+.bd-breadcrumb__sep {
+  width: 24px;
+  height: 1px;
+  background: rgba(255,255,255,.25);
+}
+.bd-breadcrumb span:last-child { color: var(--bd-gold-lt); }
+
+/* Brand logo badge */
+.bd-hero__logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(201,169,110,.4);
+  backdrop-filter: blur(12px);
+  margin-bottom: 32px;
+  opacity: 0;
+  transform: scale(.85);
+  animation: bd-popIn .7s .25s forwards;
+  overflow: hidden;
+}
+
+.bd-hero__logo-wrap img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  filter: brightness(10);
+}
+
+.bd-hero__logo-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 4rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+/* Headline */
+.bd-hero__title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3.2rem, 9vw, 7rem);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.0;
+  letter-spacing: -.02em;
+  margin: 0 0 20px;
+  opacity: 0;
+  transform: translateY(24px);
+  animation: bd-fadeUp .8s .35s forwards;
+}
+
+.bd-hero__title em {
+  font-style: italic;
+  color: var(--bd-gold-lt);
+}
+
+.bd-hero__subtitle {
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: rgba(255,255,255,.7);
+  letter-spacing: .04em;
+  margin: 0 0 48px;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: bd-fadeUp .8s .5s forwards;
+}
+
+.bd-hero__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 32px;
+  opacity: 0;
+  animation: bd-fadeUp .8s .65s forwards;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.bd-hero__meta-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bd-hero__meta-count {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--bd-gold-lt);
+  line-height: 1;
+}
+
+.bd-hero__meta-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .15em;
+  color: rgba(255,255,255,.45);
+}
+
+.bd-hero__meta-divider {
+  width: 1px;
+  height: 48px;
+  background: rgba(255,255,255,.15);
+}
+
+/* Scroll cue */
+.bd-hero__scroll {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  animation: bd-fadeUp .8s 1s forwards;
+}
+
+.bd-hero__scroll span {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+}
+
+.bd-hero__scroll-line {
+  width: 1px;
+  height: 48px;
+  background: linear-gradient(to bottom, rgba(201,169,110,.6), transparent);
+  animation: bd-scrollPulse 2s ease-in-out infinite;
+}
+
+/* ============================================================
+   CONTENT WRAPPER
+   ============================================================ */
+.bd-wrap {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+/* ============================================================
+   PRODUCT TYPE SWITCHER
+   ============================================================ */
+.bd-type-switcher {
+  background: #fff;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 4px 24px rgba(0,0,0,.06);
+}
+
+.bd-type-switcher__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.bd-type-switcher__tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.bd-type-switcher__tabs::-webkit-scrollbar { display: none; }
+
+.bd-type-tab {
+  position: relative;
+  padding: 20px 24px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--bd-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color .3s;
+  white-space: nowrap;
+  text-decoration: none;
+  display: block;
+}
+
+.bd-type-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--bd-black);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .35s var(--transition);
+}
+
+.bd-type-tab:hover { color: var(--bd-black); }
+.bd-type-tab:hover::after { transform: scaleX(1); }
+
+.bd-type-tab.active {
+  color: var(--bd-black);
+}
+.bd-type-tab.active::after { transform: scaleX(1); }
+
+.bd-type-switcher__count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bd-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bd-type-switcher__count strong {
+  color: var(--bd-black);
+  font-weight: 600;
+}
+
+/* ============================================================
+   BRAND STORY STRIP
+   ============================================================ */
+.bd-story {
+  background: var(--bd-black);
+  padding: 80px 40px;
+  overflow: hidden;
+}
+
+.bd-story__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.bd-story__label {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--bd-gold);
+  margin-bottom: 20px;
+}
+
+.bd-story__heading {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  margin: 0 0 24px;
+}
+
+.bd-story__heading em {
+  font-style: italic;
+  color: var(--bd-gold-lt);
+}
+
+.bd-story__body {
+  font-size: 1.05rem;
+  font-weight: 300;
+  line-height: 1.8;
+  color: rgba(255,255,255,.65);
+}
+
+.bd-story__divider {
+  width: 48px;
+  height: 2px;
+  background: linear-gradient(to right, var(--bd-gold), transparent);
+  margin: 28px 0;
+}
+
+.bd-story__features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 36px;
+}
+
+.bd-story__feature {
+  padding: 20px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: var(--radius-lg);
+  background: rgba(255,255,255,.03);
+  transition: background .3s, border-color .3s;
+}
+
+.bd-story__feature:hover {
+  background: rgba(201,169,110,.05);
+  border-color: var(--bd-border);
+}
+
+.bd-story__feature-icon {
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+}
+
+.bd-story__feature-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.8);
+  margin: 0 0 4px;
+}
+
+.bd-story__feature-desc {
+  font-size: 12px;
+  color: rgba(255,255,255,.4);
+  line-height: 1.6;
+}
+
+.bd-story__visual {
+  position: relative;
+}
+
+.bd-story__img-frame {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  aspect-ratio: 4/5;
+}
+
+.bd-story__img-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(20%) contrast(1.05);
+  transition: transform .8s var(--transition);
+}
+
+.bd-story__img-frame:hover img {
+  transform: scale(1.04);
+}
+
+.bd-story__img-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(201,169,110,.15) 0%, transparent 50%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Floating badge */
+.bd-story__badge {
+  position: absolute;
+  bottom: -20px;
+  left: -20px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--bd-gold);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 16px 40px rgba(0,0,0,.4);
+}
+
+.bd-story__badge-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--bd-black);
+  line-height: 1;
+}
+
+.bd-story__badge-text {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(14,14,14,.7);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   MAIN PRODUCTS SECTION
+   ============================================================ */
+.bd-products-section {
+  padding: 80px 0 100px;
+  background: var(--bd-ivory);
+}
+
+.bd-section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 56px;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.bd-section-eyebrow {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--bd-gold);
+  margin-bottom: 10px;
+}
+
+.bd-section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  color: var(--bd-black);
+  margin: 0;
+  line-height: 1.15;
+}
+
+.bd-section-title em { font-style: italic; }
+
+.bd-view-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--bd-black);
+  text-decoration: none;
+  padding: 12px 24px;
+  border: 1.5px solid var(--bd-black);
+  border-radius: 100px;
+  transition: all .3s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bd-view-all-link:hover {
+  background: var(--bd-black);
+  color: #fff;
+}
+
+.bd-view-all-link svg {
+  transition: transform .3s;
+}
+.bd-view-all-link:hover svg { transform: translateX(4px); }
+
+/* ── Filter Toolbar ── */
+.bd-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  flex-wrap: wrap;
+}
+
+.bd-filter-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bd-filter-pill {
+  padding: 8px 18px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .05em;
+  border: 1.5px solid rgba(0,0,0,.12);
+  background: transparent;
+  color: var(--bd-muted);
+  cursor: pointer;
+  transition: all .25s;
+}
+
+.bd-filter-pill:hover {
+  border-color: var(--bd-black);
+  color: var(--bd-black);
+}
+
+.bd-filter-pill.active {
+  background: var(--bd-black);
+  border-color: var(--bd-black);
+  color: #fff;
+}
+
+.bd-sort-select {
+  appearance: none;
+  padding: 9px 36px 9px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bd-black);
+  border: 1.5px solid rgba(0,0,0,.12);
+  border-radius: 100px;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230e0e0e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 14px center;
+  cursor: pointer;
+  transition: border-color .25s;
+}
+
+.bd-sort-select:focus {
+  outline: none;
+  border-color: var(--bd-black);
+}
+
+/* ── Product Grid ── */
+.bd-products-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 28px;
+}
+
+/* ── Product Card ── */
+.bd-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: transform var(--transition), box-shadow var(--transition);
+  cursor: pointer;
+  position: relative;
+  border: 1px solid rgba(0,0,0,.05);
+}
+
+.bd-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 28px 60px rgba(0,0,0,.12);
+}
+
+.bd-card__media {
+  position: relative;
+  aspect-ratio: 1/1;
+  overflow: hidden;
+  background: #f7f5f2;
+}
+
+.bd-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 20px;
+  transition: transform .65s var(--transition);
+}
+
+.bd-card:hover .bd-card__img {
+  transform: scale(1.07);
+}
+
+/* Hover overlay */
+.bd-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(14,14,14,.0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background .4s;
+}
+
+.bd-card:hover .bd-card__overlay {
+  background: rgba(14,14,14,.15);
+}
+
+.bd-card__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: rgba(255,255,255,.95);
+  backdrop-filter: blur(8px);
+  border: none;
+  border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--bd-black);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity .35s .05s, transform .35s .05s, background .25s;
+  text-decoration: none;
+}
+
+.bd-card__action-btn:hover {
+  background: var(--bd-black);
+  color: #fff;
+}
+
+.bd-card:hover .bd-card__action-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Badge */
+.bd-card__badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bd-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.bd-badge--new     { background: var(--bd-black); color: #fff; }
+.bd-badge--sale    { background: #d63031; color: #fff; }
+.bd-badge--hot     { background: var(--bd-gold); color: var(--bd-black); }
+.bd-badge--sold    { background: rgba(0,0,0,.5); color: #fff; }
+
+/* Wishlist btn */
+.bd-card__wish {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 3;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.85);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(0,0,0,.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .25s;
+  opacity: 0;
+}
+
+.bd-card:hover .bd-card__wish { opacity: 1; }
+
+.bd-card__wish:hover {
+  background: #ff3b30;
+  border-color: #ff3b30;
+}
+
+.bd-card__wish svg { stroke: #333; transition: stroke .25s; }
+.bd-card__wish:hover svg { stroke: #fff; }
+.bd-card__wish.active { background: #ff3b30; border-color: #ff3b30; opacity: 1; }
+.bd-card__wish.active svg { stroke: #fff; fill: #fff; }
+
+/* Card Body */
+.bd-card__body {
+  padding: 18px 20px 20px;
+}
+
+.bd-card__brand-tag {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--bd-gold);
+  margin-bottom: 4px;
+}
+
+.bd-card__name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--bd-black);
+  margin: 0 0 6px;
+  line-height: 1.3;
+}
+
+.bd-card__name a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.bd-card__name a:hover { color: var(--bd-gold); }
+
+.bd-card__meta {
+  font-size: 12px;
+  color: var(--bd-muted);
+  margin-bottom: 14px;
+  text-transform: capitalize;
+}
+
+/* Color swatches */
+.bd-card__colors {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.bd-color-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.18);
+  cursor: pointer;
+  transition: transform .2s;
+}
+.bd-color-swatch:hover { transform: scale(1.2); }
+.bd-color-swatch.active { box-shadow: 0 0 0 2px var(--bd-black); }
+
+/* Price row */
+.bd-card__price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bd-card__price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.bd-card__price-current {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--bd-black);
+}
+
+.bd-card__price-original {
+  font-size: 0.85rem;
+  color: var(--bd-muted);
+  text-decoration: line-through;
+}
+
+.bd-card__price-save {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: #d63031;
+  background: rgba(214,48,49,.08);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.bd-card__add {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bd-black);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .25s, transform .25s;
+  flex-shrink: 0;
+}
+
+.bd-card__add:hover {
+  background: var(--bd-gold);
+  transform: scale(1.1);
+}
+
+.bd-card__add svg { stroke: #fff; }
+
+/* ── Empty State ── */
+.bd-empty {
+  text-align: center;
+  padding: 80px 24px;
+  grid-column: 1/-1;
+}
+
+.bd-empty__icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.bd-empty__title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--bd-black);
+  margin: 0 0 12px;
+}
+
+.bd-empty__sub {
+  font-size: 1rem;
+  color: var(--bd-muted);
+  margin: 0 0 32px;
+}
+
+.bd-empty__cta {
+  display: inline-block;
+  padding: 14px 36px;
+  background: var(--bd-black);
+  color: #fff;
+  border-radius: 100px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  transition: background .3s;
+}
+.bd-empty__cta:hover { background: var(--bd-gold); }
+
+/* ============================================================
+   MARQUEE STRIP
+   ============================================================ */
+.bd-marquee {
+  background: var(--bd-gold);
+  padding: 16px 0;
+  overflow: hidden;
+  user-select: none;
+}
+
+.bd-marquee__track {
+  display: flex;
+  gap: 0;
+  width: max-content;
+  animation: bd-marqueeScroll 28s linear infinite;
+}
+
+.bd-marquee__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 32px;
+  white-space: nowrap;
+}
+
+.bd-marquee__text {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--bd-black);
+}
+
+.bd-marquee__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(14,14,14,.35);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   FEATURED SPOTLIGHT — Full-width editorial block
+   ============================================================ */
+.bd-spotlight {
+  padding: 100px 40px;
+  background: var(--bd-warm);
+}
+
+.bd-spotlight__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.bd-spotlight__gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 16px;
+}
+
+.bd-spotlight__img {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.bd-spotlight__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .6s var(--transition);
+  display: block;
+}
+
+.bd-spotlight__img:hover img { transform: scale(1.05); }
+
+.bd-spotlight__img--tall {
+  grid-row: 1 / 3;
+  aspect-ratio: 3/4;
+}
+
+.bd-spotlight__img--sq {
+  aspect-ratio: 1/1;
+}
+
+.bd-spotlight__copy { }
+
+.bd-spotlight__label {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--bd-gold);
+  background: rgba(201,169,110,.1);
+  border: 1px solid var(--bd-border);
+  padding: 5px 14px;
+  border-radius: 100px;
+  margin-bottom: 24px;
+}
+
+.bd-spotlight__heading {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 700;
+  color: var(--bd-black);
+  line-height: 1.2;
+  margin: 0 0 20px;
+}
+
+.bd-spotlight__heading em { font-style: italic; }
+
+.bd-spotlight__body {
+  font-size: 1rem;
+  line-height: 1.85;
+  color: var(--bd-muted);
+  margin: 0 0 36px;
+}
+
+.bd-spotlight__stats {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 40px;
+  padding: 24px 0;
+  border-top: 1px solid rgba(0,0,0,.08);
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+
+.bd-spotlight__stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--bd-black);
+  line-height: 1;
+}
+
+.bd-spotlight__stat-label {
+  font-size: 11px;
+  color: var(--bd-muted);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+.bd-spotlight__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 36px;
+  background: var(--bd-black);
+  color: #fff;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background .3s, gap .3s;
+}
+
+.bd-spotlight__cta:hover {
+  background: var(--bd-gold);
+  color: var(--bd-black);
+  gap: 18px;
+}
+
+/* ============================================================
+   RELATED BRANDS STRIP
+   ============================================================ */
+.bd-related-brands {
+  padding: 80px 40px;
+  background: #fff;
+}
+
+.bd-related-brands__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.bd-brands-row {
+  display: flex;
+  gap: 20px;
+  margin-top: 40px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.bd-brands-row::-webkit-scrollbar { display: none; }
+
+.bd-brand-chip {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+  border: 1.5px solid rgba(0,0,0,.1);
+  border-radius: 100px;
+  text-decoration: none;
+  background: #fff;
+  transition: all .3s;
+}
+
+.bd-brand-chip:hover {
+  border-color: var(--bd-black);
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
+  transform: translateY(-2px);
+}
+
+.bd-brand-chip img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: grayscale(100%);
+  transition: filter .3s;
+}
+
+.bd-brand-chip:hover img { filter: grayscale(0%); }
+
+.bd-brand-chip span {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--bd-muted);
+  transition: color .3s;
+}
+
+.bd-brand-chip:hover span { color: var(--bd-black); }
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes bd-fadeUp {
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes bd-popIn {
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bd-scrollPulse {
+  0%, 100% { opacity: .6; }
+  50% { opacity: 1; }
+}
+
+@keyframes bd-marqueeScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* scroll-triggered reveal */
+.bd-reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity .75s var(--transition), transform .75s var(--transition);
+}
+
+.bd-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.bd-reveal:nth-child(2) { transition-delay: .08s; }
+.bd-reveal:nth-child(3) { transition-delay: .16s; }
+.bd-reveal:nth-child(4) { transition-delay: .24s; }
+.bd-reveal:nth-child(5) { transition-delay: .32s; }
+.bd-reveal:nth-child(6) { transition-delay: .40s; }
+.bd-reveal:nth-child(7) { transition-delay: .48s; }
+.bd-reveal:nth-child(8) { transition-delay: .56s; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1200px) {
+  .bd-products-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 1024px) {
+  .bd-story__inner,
+  .bd-spotlight__inner { grid-template-columns: 1fr; gap: 48px; }
+
+  .bd-story__visual { display: none; }
+}
+
+@media (max-width: 768px) {
+  .bd-wrap { padding: 0 20px; }
+  .bd-hero__content { padding: 100px 24px 60px; }
+  .bd-products-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .bd-type-switcher__inner { padding: 0 20px; }
+  .bd-section-header { flex-direction: column; align-items: flex-start; }
+  .bd-story { padding: 60px 24px; }
+  .bd-spotlight { padding: 60px 24px; }
+  .bd-spotlight__gallery { grid-template-columns: 1fr; grid-template-rows: auto; }
+  .bd-spotlight__img--tall { grid-row: auto; aspect-ratio: 16/9; }
+  .bd-related-brands { padding: 60px 24px; }
+  .bd-story__features { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .bd-products-grid { grid-template-columns: 1fr; }
+  .bd-hero__meta { gap: 20px; }
+  .bd-hero__meta-count { font-size: 1.8rem; }
+  .bd-spotlight__stats { flex-direction: column; gap: 20px; }
+}
+</style>
+
+
+<!-- ── PAGE WRAPPER ── -->
+<div class="bd-page">
+
+  <!-- ── HERO ── -->
+  <section class="bd-hero" id="bd-hero">
+    <div class="bd-hero__bg">
+      {% if brand.logo %}
+      <img src="{{ brand.logo.url }}" alt="{{ brand.name }}">
+      {% else %}
+      <img src="https://images.unsplash.com/photo-1556306535-38febf6782e7?w=1600&fit=crop&q=80"
+           alt="{{ brand.name }} eyewear">
+      {% endif %}
+    </div>
+
+    <div class="bd-hero__content">
+      <!-- Breadcrumb -->
+      <nav class="bd-breadcrumb" aria-label="breadcrumb">
+        <a href="{% url 'catalog:product_list' 'eyeglasses' %}">{% trans "Home" %}</a>
+        <div class="bd-breadcrumb__sep"></div>
+        <a href="{% url 'catalog:brand_list' %}">{% trans "Brands" %}</a>
+        <div class="bd-breadcrumb__sep"></div>
+        <span>{{ brand.name }}</span>
+      </nav>
+
+      <!-- Logo -->
+      <div class="bd-hero__logo-wrap">
+        {% if brand.logo %}
+        <img src="{{ brand.logo.url }}" alt="{{ brand.name }}">
+        {% else %}
+        <span class="bd-hero__logo-text">{{ brand.name|slice:":2"|upper }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Headline -->
+      <h1 class="bd-hero__title">
+        <em>{{ brand.name }}</em>
+      </h1>
+      <p class="bd-hero__subtitle">
+        {% if brand.description %}
+          {{ brand.description|truncatewords:14 }}
+        {% else %}
+          {% trans "Iconic eyewear. Timeless design. Uncompromising quality." %}
+        {% endif %}
+      </p>
+
+      <!-- Meta counts -->
+      <div class="bd-hero__meta">
+        <div class="bd-hero__meta-item">
+          <span class="bd-hero__meta-count">{{ products.count }}</span>
+          <span class="bd-hero__meta-label">{% trans "Products" %}</span>
+        </div>
+        {% if brand.available_for_sunglasses %}
+        <div class="bd-hero__meta-divider"></div>
+        <div class="bd-hero__meta-item">
+          <span class="bd-hero__meta-count">
+            {{ products|length }}
+          </span>
+          <span class="bd-hero__meta-label">{% trans "In Stock" %}</span>
+        </div>
+        {% endif %}
+        <div class="bd-hero__meta-divider"></div>
+        <div class="bd-hero__meta-item">
+          <span class="bd-hero__meta-count">100%</span>
+          <span class="bd-hero__meta-label">{% trans "Authentic" %}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll cue -->
+    <div class="bd-hero__scroll" aria-hidden="true">
+      <span>{% trans "Scroll" %}</span>
+      <div class="bd-hero__scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ── TYPE SWITCHER ── -->
+  <nav class="bd-type-switcher" aria-label="Product types">
+    <div class="bd-type-switcher__inner">
+      <div class="bd-type-switcher__tabs" role="tablist">
+        <a href="?type=" class="bd-type-tab {% if not request.GET.type %}active{% endif %}" role="tab">
+          {% trans "All" %}
+        </a>
+        {% if brand.available_for_sunglasses %}
+        <a href="?type=sunglasses" class="bd-type-tab {% if request.GET.type == 'sunglasses' %}active{% endif %}" role="tab">
+          {% trans "Sunglasses" %}
+        </a>
+        {% endif %}
+        {% if brand.available_for_eyeglasses %}
+        <a href="?type=eyeglasses" class="bd-type-tab {% if request.GET.type == 'eyeglasses' %}active{% endif %}" role="tab">
+          {% trans "Eyeglasses" %}
+        </a>
+        {% endif %}
+        {% if brand.available_for_contact_lenses %}
+        <a href="?type=contact_lenses" class="bd-type-tab {% if request.GET.type == 'contact_lenses' %}active{% endif %}" role="tab">
+          {% trans "Contact Lenses" %}
+        </a>
+        {% endif %}
+        {% if brand.available_for_kids %}
+        <a href="?type=kids" class="bd-type-tab {% if request.GET.type == 'kids' %}active{% endif %}" role="tab">
+          {% trans "Kids" %}
+        </a>
+        {% endif %}
+      </div>
+      <span class="bd-type-switcher__count">
+        <strong>{{ products.count }}</strong> {% trans "item(s) found" %}
+      </span>
+    </div>
+  </nav>
+
+  <!-- ── BRAND STORY ── -->
+  <section class="bd-story">
+    <div class="bd-story__inner">
+      <div>
+        <span class="bd-story__label">{% trans "Brand Heritage" %}</span>
+        <h2 class="bd-story__heading">
+          {% trans "The " %}<em>{{ brand.name }}</em>{% trans " Story" %}
+        </h2>
+        <div class="bd-story__divider"></div>
+        <p class="bd-story__body">
+          {% if brand.description %}
+            {{ brand.description }}
+          {% else %}
+            {% blocktrans with name=brand.name %}
+              {{ name }} stands for a legacy of exceptional craftsmanship,
+              pushing the boundaries of optical design. Every frame is a
+              statement — born from a vision to blend precision engineering
+              with the finest materials, delivering eyewear that's as
+              beautiful as it is functional.
+            {% endblocktrans %}
+          {% endif %}
+        </p>
+
+        <div class="bd-story__features">
+          <div class="bd-story__feature">
+            <div class="bd-story__feature-icon">✦</div>
+            <div class="bd-story__feature-title">{% trans "Premium Quality" %}</div>
+            <div class="bd-story__feature-desc">{% trans "Handcrafted with finest materials" %}</div>
+          </div>
+          <div class="bd-story__feature">
+            <div class="bd-story__feature-icon">◈</div>
+            <div class="bd-story__feature-title">{% trans "100% Authentic" %}</div>
+            <div class="bd-story__feature-desc">{% trans "Guaranteed genuine products" %}</div>
+          </div>
+          <div class="bd-story__feature">
+            <div class="bd-story__feature-icon">⊕</div>
+            <div class="bd-story__feature-title">{% trans "Expert Fitting" %}</div>
+            <div class="bd-story__feature-desc">{% trans "Professional in-store service" %}</div>
+          </div>
+          <div class="bd-story__feature">
+            <div class="bd-story__feature-icon">◯</div>
+            <div class="bd-story__feature-title">{% trans "Warranty Included" %}</div>
+            <div class="bd-story__feature-desc">{% trans "Extended brand warranty" %}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bd-story__visual">
+        <div class="bd-story__img-frame">
+          {% if brand.logo %}
+          <img src="{{ brand.logo.url }}" alt="{{ brand.name }}">
+          {% else %}
+          <img src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&h=750&fit=crop&q=85"
+               alt="{{ brand.name }} eyewear lifestyle">
+          {% endif %}
+        </div>
+        <div class="bd-story__badge">
+          <span class="bd-story__badge-num">{{ products.count }}+</span>
+          <span class="bd-story__badge-text">{% trans "STYLES" %}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── MARQUEE ── -->
+  <div class="bd-marquee" aria-hidden="true">
+    <div class="bd-marquee__track">
+      {% with items="Free Eye Test,Genuine Brand,Expert Fitting,Premium Lenses,In-Store Pickup,Free Cleaning Kit,Warranty Included,Expert Advice,Free Eye Test,Genuine Brand,Expert Fitting,Premium Lenses,In-Store Pickup,Free Cleaning Kit,Warranty Included,Expert Advice" %}
+      {% for item in items|split:"," %}
+      <div class="bd-marquee__item">
+        <span class="bd-marquee__text">{{ item }}</span>
+        <div class="bd-marquee__dot"></div>
+      </div>
+      {% endfor %}
+      {% endwith %}
+      <!-- duplicate for seamless loop -->
+      {% with items="Free Eye Test,Genuine Brand,Expert Fitting,Premium Lenses,In-Store Pickup,Free Cleaning Kit,Warranty Included,Expert Advice,Free Eye Test,Genuine Brand,Expert Fitting,Premium Lenses,In-Store Pickup,Free Cleaning Kit,Warranty Included,Expert Advice" %}
+      {% for item in items|split:"," %}
+      <div class="bd-marquee__item">
+        <span class="bd-marquee__text">{{ item }}</span>
+        <div class="bd-marquee__dot"></div>
+      </div>
+      {% endfor %}
+      {% endwith %}
+    </div>
+  </div>
+
+  <!-- ── PRODUCTS SECTION ── -->
+  <section class="bd-products-section">
+    <div class="bd-wrap">
+
+      <!-- Section Header -->
+      <div class="bd-section-header bd-reveal">
+        <div>
+          <span class="bd-section-eyebrow">{{ brand.name|upper }}</span>
+          <h2 class="bd-section-title">
+            {% trans "Explore the " %}<em>{% trans "Collection" %}</em>
+          </h2>
+        </div>
+        <a href="{% url 'catalog:brand_list' %}" class="bd-view-all-link">
+          {% trans "View All Brands" %}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Filter + Sort Bar -->
+      <div class="bd-filter-bar bd-reveal">
+        <div class="bd-filter-pills">
+          <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}{% endif %}"
+             class="bd-filter-pill {% if not request.GET.type %}active{% endif %}">
+            {% trans "All" %}
+          </a>
+          {% if brand.available_for_sunglasses %}
+          <a href="?type=sunglasses{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+             class="bd-filter-pill {% if request.GET.type == 'sunglasses' %}active{% endif %}">
+            {% trans "Sunglasses" %}
+          </a>
+          {% endif %}
+          {% if brand.available_for_eyeglasses %}
+          <a href="?type=eyeglasses{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+             class="bd-filter-pill {% if request.GET.type == 'eyeglasses' %}active{% endif %}">
+            {% trans "Eyeglasses" %}
+          </a>
+          {% endif %}
+          {% if brand.available_for_contact_lenses %}
+          <a href="?type=contact_lenses{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+             class="bd-filter-pill {% if request.GET.type == 'contact_lenses' %}active{% endif %}">
+            {% trans "Contact Lenses" %}
+          </a>
+          {% endif %}
+        </div>
+
+        <form id="sort-form" method="GET" action="">
+          {% if request.GET.type %}
+          <input type="hidden" name="type" value="{{ request.GET.type }}">
+          {% endif %}
+          <select name="sort" class="bd-sort-select" onchange="this.form.submit()">
+            <option value="-created_at"   {% if not request.GET.sort or request.GET.sort == '-created_at'   %}selected{% endif %}>{% trans "Newest First" %}</option>
+            <option value="base_price"    {% if request.GET.sort == 'base_price'    %}selected{% endif %}>{% trans "Price: Low to High" %}</option>
+            <option value="-base_price"   {% if request.GET.sort == '-base_price'   %}selected{% endif %}>{% trans "Price: High to Low" %}</option>
+            <option value="name"          {% if request.GET.sort == 'name'          %}selected{% endif %}>{% trans "Name: A–Z" %}</option>
+            <option value="-name"         {% if request.GET.sort == '-name'         %}selected{% endif %}>{% trans "Name: Z–A" %}</option>
+          </select>
+        </form>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="bd-products-grid">
+        {% for product in products %}
+        <article class="bd-card bd-reveal" data-type="{{ product.product_type }}">
+
+          <!-- Badges -->
+          <div class="bd-card__badge">
+            {% if product.stock_quantity == 0 %}
+              <span class="bd-badge bd-badge--sold">{% trans "Sold Out" %}</span>
+            {% elif product.compare_at_price and product.compare_at_price > product.base_price %}
+              <span class="bd-badge bd-badge--sale">{% trans "Sale" %}</span>
+            {% elif product.is_featured %}
+              <span class="bd-badge bd-badge--hot">{% trans "Hot" %}</span>
+            {% else %}
+              <span class="bd-badge bd-badge--new">{% trans "New" %}</span>
+            {% endif %}
+          </div>
+
+          <!-- Wishlist -->
+          <button class="bd-card__wish wishlist-btn" data-product-id="{{ product.id }}" aria-label="{% trans 'Add to wishlist' %}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+            </svg>
+          </button>
+
+          <!-- Media -->
+          <div class="bd-card__media">
+            <a href="
+              {% if product.product_type == 'sunglasses' %}{% url 'catalog:sunglass_detail' product.slug %}
+              {% elif product.product_type == 'eyeglasses' %}{% url 'catalog:eyeglass_detail' product.slug %}
+              {% elif product.product_type == 'contact_lenses' %}{% url 'catalog:contact_lens_detail' product.slug %}
+              {% else %}{% url 'catalog:product_detail' product.slug %}
+              {% endif %}
+            " tabindex="-1" aria-hidden="true">
+              {% with first_image=product.images.first %}
+              {% if first_image %}
+              <img src="{{ first_image.image.url }}" alt="{{ product.name }}" class="bd-card__img" loading="lazy" width="600" height="600">
+              {% elif product.image %}
+              <img src="{{ product.image.url }}"      alt="{{ product.name }}" class="bd-card__img" loading="lazy" width="600" height="600">
+              {% else %}
+              <img src="{% static 'img/no-image.jpg' %}"  alt="{{ product.name }}" class="bd-card__img" loading="lazy" width="600" height="600">
+              {% endif %}
+              {% endwith %}
+            </a>
+
+            <!-- Quick action overlay -->
+            <div class="bd-card__overlay" aria-hidden="true">
+              <a href="
+                {% if product.product_type == 'sunglasses' %}{% url 'catalog:sunglass_detail' product.slug %}
+                {% elif product.product_type == 'eyeglasses' %}{% url 'catalog:eyeglass_detail' product.slug %}
+                {% elif product.product_type == 'contact_lenses' %}{% url 'catalog:contact_lens_detail' product.slug %}
+                {% else %}{% url 'catalog:product_detail' product.slug %}
+                {% endif %}
+              " class="bd-card__action-btn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                {% trans "Quick View" %}
+              </a>
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div class="bd-card__body">
+            <div class="bd-card__brand-tag">{{ brand.name }}</div>
+            <h3 class="bd-card__name">
+              <a href="
+                {% if product.product_type == 'sunglasses' %}{% url 'catalog:sunglass_detail' product.slug %}
+                {% elif product.product_type == 'eyeglasses' %}{% url 'catalog:eyeglass_detail' product.slug %}
+                {% elif product.product_type == 'contact_lenses' %}{% url 'catalog:contact_lens_detail' product.slug %}
+                {% else %}{% url 'catalog:product_detail' product.slug %}
+                {% endif %}
+              ">{{ product.name }}</a>
+            </h3>
+            <div class="bd-card__meta">
+              {{ product.get_gender_display }}
+              &nbsp;·&nbsp;
+              {{ product.get_product_type_display }}
+            </div>
+
+            <!-- Color swatches from variants -->
+            {% with variants=product.variants.all %}
+            {% if variants %}
+            <div class="bd-card__colors">
+              {% for v in variants|slice:":5" %}
+              {% if v.color_code %}
+              <div class="bd-color-swatch {% if forloop.first %}active{% endif %}"
+                   style="background: {{ v.color_code }};"
+                   title="{{ v.color_name }}"
+                   aria-label="{{ v.color_name }}"></div>
+              {% endif %}
+              {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <!-- Price -->
+            <div class="bd-card__price-row">
+              <div class="bd-card__price">
+                <span class="bd-card__price-current">₹{{ product.base_price }}</span>
+                {% if product.compare_at_price and product.compare_at_price > product.base_price %}
+                <span class="bd-card__price-original">₹{{ product.compare_at_price }}</span>
+                {% endif %}
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                {% if product.compare_at_price and product.compare_at_price > product.base_price %}
+                <span class="bd-card__price-save">
+                  {% widthratio product.compare_at_price|floatformat:0 product.compare_at_price|floatformat:0 100 as pct %}
+                  SALE
+                </span>
+                {% endif %}
+                <form method="POST" action=" " style="margin:0;">
+                  {% csrf_token %}
+                  <input type="hidden" name="product_id" value="{{ product.id }}">
+                  <input type="hidden" name="quantity"   value="1">
+                  <button type="submit" class="bd-card__add" aria-label="{% trans 'Add to cart' %}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+        </article>
+        {% empty %}
+        <div class="bd-empty">
+          <span class="bd-empty__icon">👓</span>
+          <h3 class="bd-empty__title">{% trans "No products yet" %}</h3>
+          <p class="bd-empty__sub">{% blocktrans with name=brand.name %}We're adding {{ name }} products soon. Check back shortly!{% endblocktrans %}</p>
+          <a href="{% url 'catalog:brand_list' %}" class="bd-empty__cta">{% trans "Explore Other Brands" %}</a>
+        </div>
+        {% endfor %}
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── EDITORIAL SPOTLIGHT ── -->
+  {% if products %}
+  <section class="bd-spotlight">
+    <div class="bd-spotlight__inner">
+
+      <!-- Gallery grid -->
+      <div class="bd-spotlight__gallery bd-reveal">
+        <div class="bd-spotlight__img bd-spotlight__img--tall">
+          <img src="https://images.unsplash.com/photo-1556306535-38febf6782e7?w=500&h=700&fit=crop&q=80"
+               alt="{% trans 'Brand lifestyle' %}">
+        </div>
+        <div class="bd-spotlight__img bd-spotlight__img--sq">
+          <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400&h=400&fit=crop&q=80"
+               alt="{% trans 'Eyeglasses close-up' %}">
+        </div>
+        <div class="bd-spotlight__img bd-spotlight__img--sq">
+          <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&h=400&fit=crop&q=80"
+               alt="{% trans 'Sunglasses lifestyle' %}">
+        </div>
+      </div>
+
+      <!-- Copy -->
+      <div class="bd-reveal" style="transition-delay:.15s">
+        <span class="bd-spotlight__label">{% trans "Exclusive Collection" %}</span>
+        <h2 class="bd-spotlight__heading">
+          {% trans "Crafted for" %}<br>
+          <em>{% trans "Those Who See Differently" %}</em>
+        </h2>
+        <p class="bd-spotlight__body">
+          {% blocktrans with name=brand.name %}
+            {{ name }} brings together the art of precision manufacturing
+            with forward-thinking design. Whether you're looking for
+            everyday wear or a statement piece, the collection offers
+            a frame for every face and every moment.
+          {% endblocktrans %}
+        </p>
+
+        <div class="bd-spotlight__stats">
+          <div>
+            <div class="bd-spotlight__stat-num">{{ products.count }}+</div>
+            <div class="bd-spotlight__stat-label">{% trans "Styles" %}</div>
+          </div>
+          <div>
+            <div class="bd-spotlight__stat-num">100%</div>
+            <div class="bd-spotlight__stat-label">{% trans "Authentic" %}</div>
+          </div>
+          <div>
+            <div class="bd-spotlight__stat-num">Free</div>
+            <div class="bd-spotlight__stat-label">{% trans "Eye Test" %}</div>
+          </div>
+        </div>
+
+        <a href="{% url 'content:eye_test_booking' %}" class="bd-spotlight__cta">
+          {% trans "Book a Free Eye Test" %}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ── RELATED BRANDS ── -->
+  <section class="bd-related-brands">
+    <div class="bd-related-brands__inner">
+      <div class="bd-reveal">
+        <span class="bd-section-eyebrow">{% trans "More Brands" %}</span>
+        <h2 class="bd-section-title">{% trans "Also Available at " %}<em>{% trans "Al Ameen" %}</em></h2>
+      </div>
+
+      <div class="bd-brands-row">
+        {% for b in other_brands %}
+        <a href="{% url 'catalog:brand_detail' b.slug %}" class="bd-brand-chip">
+          {% if b.logo %}
+          <img src="{{ b.logo.url }}" alt="{{ b.name }}">
+          {% endif %}
+          <span>{{ b.name }}</span>
+        </a>
+        {% empty %}
+        <a href="{% url 'catalog:brand_list' %}" class="bd-brand-chip">
+          <span>{% trans "View All Brands" %} →</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+</div><!-- /.bd-page -->
+
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── Hero parallax ── */
+  const hero = document.getElementById('bd-hero');
+  const heroBgImg = hero?.querySelector('.bd-hero__bg img');
+  if (heroBgImg) {
+    hero.classList.add('in-view');
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY;
+      heroBgImg.style.transform = `scale(1.05) translateY(${scrolled * 0.18}px)`;
+    }, { passive: true });
+  }
+
+  /* ── Scroll reveal ── */
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.bd-reveal').forEach(el => io.observe(el));
+  } else {
+    document.querySelectorAll('.bd-reveal').forEach(el => el.classList.add('is-visible'));
+  }
+
+  /* ── Wishlist toggle ── */
+  document.querySelectorAll('.wishlist-btn').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.classList.toggle('active');
+      const productId = this.dataset.productId;
+      if (!productId) return;
+      fetch('/wishlist/toggle/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({ product_id: productId }),
+      }).catch(() => this.classList.toggle('active'));
+    });
+  });
+
+  /* ── Color swatch selector ── */
+  document.querySelectorAll('.bd-card__colors').forEach(group => {
+    group.querySelectorAll('.bd-color-swatch').forEach(swatch => {
+      swatch.addEventListener('click', function (e) {
+        e.stopPropagation();
+        group.querySelectorAll('.bd-color-swatch').forEach(s => s.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  });
+
+  /* ── Add to cart forms ── */
+  document.querySelectorAll('.bd-card form').forEach(form => {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const btn = this.querySelector('button');
+      if (btn) btn.disabled = true;
+
+      fetch(this.action, {
+        method: 'POST',
+        body: new FormData(this),
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
+        .then(r => r.json())
+        .then(data => showToast(data.message || '{% trans "Added to cart!" %}', 'success'))
+        .catch(() => showToast('{% trans "Added to cart!" %}', 'success'))
+        .finally(() => { if (btn) btn.disabled = false; });
+    });
+  });
+
+  /* ── Toast notification ── */
+  function showToast(msg, type) {
+    const existing = document.querySelector('.bd-toast');
+    if (existing) existing.remove();
+
+    const t = document.createElement('div');
+    t.className = 'bd-toast';
+    t.style.cssText = `
+      position:fixed; bottom:28px; right:28px; z-index:99999;
+      background:${type === 'success' ? '#0e0e0e' : '#d63031'};
+      color:#fff; padding:14px 24px; border-radius:100px;
+      font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500;
+      box-shadow:0 12px 32px rgba(0,0,0,.25);
+      display:flex; align-items:center; gap:10px;
+      animation:toastIn .4s cubic-bezier(.22,1,.36,1) forwards;
+    `;
+    t.innerHTML = `<span style="color:#c9a96e;">✓</span> ${msg}`;
+    document.body.appendChild(t);
+
+    setTimeout(() => {
+      t.style.animation = 'toastOut .35s forwards';
+      setTimeout(() => t.remove(), 350);
+    }, 2800);
+  }
+
+  /* ── CSRF helper ── */
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return match ? decodeURIComponent(match[1]) : null;
+  }
+
+  /* ── Sticky nav active-tab indicator ── */
+  const tabs = document.querySelectorAll('.bd-type-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  /* ── Inject animation keyframes ── */
+  const s = document.createElement('style');
+  s.textContent = `
+    @keyframes toastIn  { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+    @keyframes toastOut { from { transform:translateY(0);    opacity:1; } to { transform:translateY(20px); opacity:0; } }
+  `;
+  document.head.appendChild(s);
+
+  console.log('🎉 Brand Detail — {{ brand.name }} loaded.');
+})();
+</script>
+
+{% endblock %}

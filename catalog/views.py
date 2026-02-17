@@ -374,18 +374,22 @@ def brand_list(request):
 
 
 def brand_detail(request, slug):
-    """Brand detail page with products"""
     brand = get_object_or_404(Brand, slug=slug, is_active=True)
     products = Product.objects.filter(brand=brand, is_active=True)
-    
-    # Filter by product type
+
     product_type = request.GET.get('type')
     if product_type:
         products = products.filter(product_type=product_type)
-    
+
+    sort = request.GET.get('sort', '-created_at')
+    valid_sorts = ['-created_at', 'base_price', '-base_price', 'name', '-name']
+    if sort in valid_sorts:
+        products = products.order_by(sort)
+
     context = {
         'brand': brand,
-        'products': products,
+        'products': products.select_related('brand', 'category').prefetch_related('images', 'variants'),
+        'other_brands': Brand.objects.filter(is_active=True).exclude(id=brand.id).order_by('display_order')[:10],
     }
     return render(request, 'brand_detail.html', context)
 
