@@ -1,0 +1,868 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}My Wishlist{% if item_count %} ({{ item_count }}){% endif %} — Al Ameen Optics{% endblock %}
+
+{% block extra_styles %}
+/* ═══════════════════════════════════════════════════════════
+   WISHLIST PAGE — Al Ameen Optics Theme
+   Palette: --aa-bg #eef3f8 | --aa-accent #1a6fa8 | --aa-dark #1a2a3a
+   ═══════════════════════════════════════════════════════════ */
+
+.wl-hero {
+    background: linear-gradient(135deg, #1a2a3a 0%, #1a6fa8 100%);
+    padding: 48px 24px 40px;
+    color: #fff;
+    text-align: center;
+}
+.wl-hero__eyebrow {
+    font-size: 1.1rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    opacity: .7;
+    margin-bottom: 10px;
+}
+.wl-hero__title {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.6rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+.wl-hero__title .wl-count-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.35);
+    border-radius: 50px;
+    padding: 3px 14px;
+    font-size: 2rem;
+    font-family: 'Jost', sans-serif;
+    font-weight: 700;
+    vertical-align: middle;
+    margin-left: 10px;
+    backdrop-filter: blur(6px);
+}
+.wl-hero__sub {
+    font-size: 1.4rem;
+    opacity: .75;
+    margin-top: 6px;
+}
+
+/* ── Toolbar ───────────────────────────────────────────────── */
+.wl-toolbar {
+    max-width: 1400px;
+    margin: 28px auto 0;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.wl-toolbar__left {
+    font-size: 1.4rem;
+    color: #3a5068;
+    font-weight: 500;
+}
+.wl-toolbar__right {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.wl-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 20px;
+    border-radius: 50px;
+    font-size: 1.35rem;
+    font-weight: 600;
+    font-family: 'Jost', sans-serif;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all .22s ease;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.wl-btn--primary {
+    background: #1a6fa8;
+    color: #fff;
+    border-color: #1a6fa8;
+}
+.wl-btn--primary:hover { background: #155f90; border-color: #155f90; color: #fff; transform: translateY(-1px); }
+.wl-btn--outline {
+    background: transparent;
+    color: #1a2a3a;
+    border-color: #c5d8e8;
+}
+.wl-btn--outline:hover { border-color: #1a6fa8; color: #1a6fa8; }
+.wl-btn--danger {
+    background: transparent;
+    color: #e03030;
+    border-color: #f5c0c0;
+}
+.wl-btn--danger:hover { background: #fdf0f0; border-color: #e03030; }
+.wl-btn i { font-size: 1.6rem; }
+
+/* ── Product grid ─────────────────────────────────────────── */
+.wl-grid {
+    max-width: 1400px;
+    margin: 28px auto 60px;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+/* ── Product card ─────────────────────────────────────────── */
+.wl-card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #ddeaf4;
+    box-shadow: 0 2px 10px rgba(26,42,58,.07);
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+.wl-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(26,111,168,.14);
+}
+.wl-card.removing {
+    animation: wlFadeOut .35s ease forwards;
+}
+@keyframes wlFadeOut {
+    to { opacity: 0; transform: scale(.94); }
+}
+.wl-card.adding {
+    animation: wlFadeIn .4s ease;
+}
+@keyframes wlFadeIn {
+    from { opacity: 0; transform: scale(.94) translateY(12px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Image area */
+.wl-card__image-wrap {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    background: #f0f6fa;
+    overflow: hidden;
+}
+.wl-card__image-wrap a { display: block; width: 100%; height: 100%; }
+.wl-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 18px;
+    transition: transform .4s ease;
+}
+.wl-card:hover .wl-card__img { transform: scale(1.06); }
+
+/* Badges */
+.wl-card__badges {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    z-index: 2;
+}
+.wl-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+.wl-badge--sale   { background: #e03030; color: #fff; }
+.wl-badge--new    { background: #1a6fa8; color: #fff; }
+.wl-badge--sold   { background: #666;    color: #fff; }
+
+/* Remove heart button */
+.wl-card__remove {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1.5px solid #ddeaf4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .22s;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.wl-card__remove:hover {
+    background: #fdf0f0;
+    border-color: #e03030;
+    transform: scale(1.1);
+}
+.wl-card__remove i {
+    font-size: 1.7rem;
+    color: #e03030;
+    line-height: 1;
+}
+
+/* Body */
+.wl-card__body {
+    padding: 16px 18px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+.wl-card__brand {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a6fa8;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 4px;
+}
+.wl-card__name {
+    font-size: 1.45rem;
+    font-weight: 600;
+    color: #1a2a3a;
+    margin-bottom: 10px;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.wl-card__name a { color: inherit; }
+.wl-card__name a:hover { color: #1a6fa8; }
+
+/* Colour dots */
+.wl-card__colors {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 12px;
+}
+.wl-card__color-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1.5px #c5d8e8;
+}
+
+/* Price row */
+.wl-card__price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 14px;
+    margin-top: auto;
+}
+.wl-card__price {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a2a3a;
+}
+.wl-card__compare {
+    font-size: 1.3rem;
+    color: #999;
+    text-decoration: line-through;
+}
+.wl-card__discount {
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: #fff0f0;
+    color: #e03030;
+    padding: 2px 7px;
+    border-radius: 4px;
+}
+
+/* Date added */
+.wl-card__added {
+    font-size: 1.1rem;
+    color: #9ab5c8;
+    margin-bottom: 14px;
+}
+
+/* Action buttons */
+.wl-card__actions {
+    display: flex;
+    gap: 8px;
+}
+.wl-card__add-btn {
+    flex: 1;
+    padding: 10px 14px;
+    background: #1a6fa8;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    font-family: 'Jost', sans-serif;
+    cursor: pointer;
+    transition: background .2s, transform .2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.wl-card__add-btn:hover { background: #155f90; transform: translateY(-1px); }
+.wl-card__add-btn:disabled { background: #9ab5c8; cursor: not-allowed; transform: none; }
+.wl-card__view-btn {
+    padding: 10px 14px;
+    background: transparent;
+    color: #1a2a3a;
+    border: 1.5px solid #c5d8e8;
+    border-radius: 8px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    font-family: 'Jost', sans-serif;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-decoration: none;
+}
+.wl-card__view-btn:hover { border-color: #1a6fa8; color: #1a6fa8; }
+
+/* ── Empty state ──────────────────────────────────────────── */
+.wl-empty {
+    max-width: 520px;
+    margin: 60px auto 80px;
+    padding: 0 24px;
+    text-align: center;
+}
+.wl-empty__icon {
+    font-size: 7rem;
+    color: #c5d8e8;
+    margin-bottom: 20px;
+    display: block;
+    animation: heartbeat 2.4s ease-in-out infinite;
+}
+@keyframes heartbeat {
+    0%,100% { transform: scale(1); }
+    14%      { transform: scale(1.1); }
+    28%      { transform: scale(1); }
+    42%      { transform: scale(1.06); }
+    56%      { transform: scale(1); }
+}
+.wl-empty h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    color: #1a2a3a;
+    margin-bottom: 12px;
+}
+.wl-empty p {
+    font-size: 1.5rem;
+    color: #3a5068;
+    line-height: 1.7;
+    margin-bottom: 28px;
+}
+.wl-empty__actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* ── Suggested section ────────────────────────────────────── */
+.wl-suggested {
+    max-width: 1400px;
+    margin: 0 auto 60px;
+    padding: 0 24px;
+}
+.wl-suggested__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #ddeaf4;
+    padding-bottom: 12px;
+}
+.wl-suggested__title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    color: #1a2a3a;
+}
+.wl-suggested__link {
+    font-size: 1.3rem;
+    color: #1a6fa8;
+    font-weight: 600;
+    text-decoration: none;
+}
+.wl-suggested__link:hover { text-decoration: underline; }
+.wl-suggested-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+/* ── Notification toast (page-level) ─────────────────────── */
+.wl-notif {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+.wl-notif__item {
+    pointer-events: all;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    padding: 14px 20px;
+    border-radius: 10px;
+    box-shadow: 0 8px 28px rgba(26,42,58,.15);
+    min-width: 270px;
+    max-width: 350px;
+    transform: translateX(120%);
+    transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+    border-left: 4px solid #1a6fa8;
+    font-size: 1.35rem;
+    font-weight: 500;
+    font-family: 'Jost', sans-serif;
+}
+.wl-notif__item.show { transform: translateX(0); }
+.wl-notif__item.success { border-color: #2eb85c; }
+.wl-notif__item.error   { border-color: #e03030; }
+.wl-notif__item i { font-size: 2rem; }
+.wl-notif__item.success i { color: #2eb85c; }
+.wl-notif__item.error   i { color: #e03030; }
+.wl-notif__item.info    i { color: #1a6fa8; }
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .wl-hero__title { font-size: 2.6rem; }
+    .wl-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .wl-toolbar { flex-direction: column; align-items: flex-start; }
+    .wl-card__actions { flex-direction: column; }
+    .wl-card__add-btn, .wl-card__view-btn { width: 100%; }
+}
+@media (max-width: 480px) {
+    .wl-grid { grid-template-columns: 1fr; }
+    .wl-hero__title { font-size: 2.2rem; }
+}
+{% endblock %}
+
+
+{% block content %}
+
+<!-- ── Page-level notification container ─────────────────────── -->
+<div class="wl-notif" id="wl-notif"></div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HERO BANNER
+     ══════════════════════════════════════════════════════════════ -->
+<section class="wl-hero">
+  <p class="wl-hero__eyebrow">{% trans "My Account" %}</p>
+  <h1 class="wl-hero__title">
+    {% trans "My Wishlist" %}
+    {% if item_count %}
+    <span class="wl-count-pill">{{ item_count }}</span>
+    {% endif %}
+  </h1>
+  <p class="wl-hero__sub">{% trans "Items you love, saved for later" %}</p>
+</section>
+
+
+{% if items %}
+
+<!-- ══════════════════════════════════════════════════════════════
+     TOOLBAR
+     ══════════════════════════════════════════════════════════════ -->
+<div class="wl-toolbar">
+  <span class="wl-toolbar__left">
+    <i class="bi bi-heart-fill" style="color:#e03030;margin-right:6px;"></i>
+    {{ item_count }} {% if item_count == 1 %}{% trans "item" %}{% else %}{% trans "items" %}{% endif %}
+    {% trans "saved" %}
+  </span>
+  <div class="wl-toolbar__right">
+    <form method="post" action="{% url 'wishlist:move_all_to_cart' %}" id="wl-move-all-form">
+      {% csrf_token %}
+      <button type="button" class="wl-btn wl-btn--primary" id="wl-move-all-btn">
+        <i class="bi bi-bag-plus"></i>
+        {% trans "Move All to Cart" %}
+      </button>
+    </form>
+    <form method="post" action="{% url 'wishlist:clear' %}" id="wl-clear-form">
+      {% csrf_token %}
+      <button type="button" class="wl-btn wl-btn--danger" id="wl-clear-btn">
+        <i class="bi bi-trash3"></i>
+        {% trans "Clear Wishlist" %}
+      </button>
+    </form>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PRODUCT GRID
+     ══════════════════════════════════════════════════════════════ -->
+<div class="wl-grid" id="wl-grid">
+
+  {% for item in items %}
+  <div class="wl-card adding" id="wl-card-{{ item.product.id }}" data-product-id="{{ item.product.id }}">
+
+    <!-- Image -->
+    <div class="wl-card__image-wrap">
+      <a href="{{ item.product.get_absolute_url }}">
+        {% with img=item.product.images.first %}
+          {% if img %}
+            <img src="{{ img.image.url }}" alt="{{ item.product.name }}" class="wl-card__img" loading="lazy">
+          {% elif item.product.image %}
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="wl-card__img" loading="lazy">
+          {% else %}
+            <img src="{% static 'img/no-image.jpg' %}" alt="{{ item.product.name }}" class="wl-card__img" loading="lazy">
+          {% endif %}
+        {% endwith %}
+      </a>
+
+      <!-- Badges -->
+      <div class="wl-card__badges">
+        {% if not item.product.is_active or item.product.stock_quantity == 0 %}
+          <span class="wl-badge wl-badge--sold">{% trans "Sold Out" %}</span>
+        {% elif item.product.compare_at_price and item.product.compare_at_price > item.product.base_price %}
+          {% widthratio item.product.base_price item.product.compare_at_price 100 as pct %}
+          <span class="wl-badge wl-badge--sale">-{{ 100|add:"-"|add:pct }}%</span>
+        {% else %}
+          <span class="wl-badge wl-badge--new">{% trans "In Stock" %}</span>
+        {% endif %}
+      </div>
+
+      <!-- Remove heart -->
+      <button class="wl-card__remove wl-remove-btn"
+              data-product-id="{{ item.product.id }}"
+              aria-label="{% trans 'Remove from wishlist' %}">
+        <i class="bi bi-heart-fill"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="wl-card__body">
+      {% if item.product.brand %}
+      <div class="wl-card__brand">{{ item.product.brand.name }}</div>
+      {% endif %}
+
+      <h2 class="wl-card__name">
+        <a href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a>
+      </h2>
+
+      <!-- Colour dots -->
+      {% with variants=item.product.variants.all %}
+      {% if variants %}
+      <div class="wl-card__colors">
+        {% for v in variants|slice:":5" %}
+          {% if v.color_code %}
+          <div class="wl-card__color-dot" style="background:{{ v.color_code }};" title="{{ v.color_name }}"></div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      <!-- Price -->
+      <div class="wl-card__price-row">
+        <span class="wl-card__price">₹{{ item.product.base_price }}</span>
+        {% if item.product.compare_at_price and item.product.compare_at_price > item.product.base_price %}
+          <span class="wl-card__compare">₹{{ item.product.compare_at_price }}</span>
+          {% widthratio item.product.base_price item.product.compare_at_price 100 as pct %}
+          <span class="wl-card__discount">{{ 100|add:"-"|add:pct }}% off</span>
+        {% endif %}
+      </div>
+
+      <div class="wl-card__added">
+        <i class="bi bi-clock"></i>
+        {% trans "Added" %} {{ item.added_at|timesince }} {% trans "ago" %}
+      </div>
+
+      <!-- Actions -->
+      <div class="wl-card__actions">
+        {% if item.product.is_active and item.product.stock_quantity > 0 %}
+        <button class="wl-card__add-btn wl-move-btn"
+                data-product-id="{{ item.product.id }}">
+          <i class="bi bi-bag-plus"></i>
+          {% trans "Move to Cart" %}
+        </button>
+        {% else %}
+        <button class="wl-card__add-btn" disabled>
+          <i class="bi bi-bag-x"></i>
+          {% trans "Out of Stock" %}
+        </button>
+        {% endif %}
+        <a href="{{ item.product.get_absolute_url }}" class="wl-card__view-btn">
+          <i class="bi bi-eye"></i>
+          {% trans "View" %}
+        </a>
+      </div>
+    </div>
+
+  </div>
+  {% endfor %}
+
+</div>
+<!-- /.wl-grid -->
+
+
+{% else %}
+<!-- ══════════════════════════════════════════════════════════════
+     EMPTY STATE
+     ══════════════════════════════════════════════════════════════ -->
+<div class="wl-empty">
+  <i class="bi bi-heart wl-empty__icon"></i>
+  <h2>{% trans "Your wishlist is empty" %}</h2>
+  <p>
+    {% trans "Save the frames you love so you can find them easily later. Tap the" %}
+    <i class="bi bi-heart" style="color:#e03030;"></i>
+    {% trans "on any product to add it here." %}
+  </p>
+  <div class="wl-empty__actions">
+    <a href="{% url 'catalog:sunglasses_list' %}" class="wl-btn wl-btn--primary">
+      <i class="bi bi-sunglasses"></i>
+      {% trans "Shop Sunglasses" %}
+    </a>
+    <a href="{% url 'catalog:eyeglasses_list' %}" class="wl-btn wl-btn--outline">
+      <i class="bi bi-eyeglasses"></i>
+      {% trans "Shop Eyeglasses" %}
+    </a>
+  </div>
+</div>
+{% endif %}
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     YOU MAY ALSO LIKE  (suggested products)
+     ══════════════════════════════════════════════════════════════ -->
+{% if suggested_products %}
+<section class="wl-suggested">
+  <div class="wl-suggested__header">
+    <h2 class="wl-suggested__title">{% trans "You May Also Like" %}</h2>
+    <a href="{% url 'catalog:sunglasses_list' %}" class="wl-suggested__link">
+      {% trans "Browse all" %} →
+    </a>
+  </div>
+  <div class="wl-suggested-grid">
+    {% for product in suggested_products %}
+    <div class="wl-card">
+      <div class="wl-card__image-wrap">
+        <a href="{{ product.get_absolute_url }}">
+          {% with img=product.images.first %}
+            {% if img %}
+              <img src="{{ img.image.url }}" alt="{{ product.name }}" class="wl-card__img" loading="lazy">
+            {% else %}
+              <img src="{% static 'img/no-image.jpg' %}" alt="{{ product.name }}" class="wl-card__img" loading="lazy">
+            {% endif %}
+          {% endwith %}
+        </a>
+        <button class="wl-card__remove wl-toggle-btn"
+                data-product-id="{{ product.id }}"
+                aria-label="{% trans 'Add to wishlist' %}"
+                style="background:{% if request.user.is_authenticated %}{% if product in wishlist_product_ids %}#fdf0f0{% else %}#fff{% endif %}{% else %}#fff{% endif %}">
+          <i class="bi bi-heart{% if request.user.is_authenticated and product.id in wishlist_ids %}-fill{% endif %}"
+             style="color:{% if request.user.is_authenticated and product.id in wishlist_ids %}#e03030{% else %}#9ab5c8{% endif %};"></i>
+        </button>
+      </div>
+      <div class="wl-card__body">
+        {% if product.brand %}<div class="wl-card__brand">{{ product.brand.name }}</div>{% endif %}
+        <h3 class="wl-card__name"><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h3>
+        <div class="wl-card__price-row">
+          <span class="wl-card__price">₹{{ product.base_price }}</span>
+          {% if product.compare_at_price and product.compare_at_price > product.base_price %}
+            <span class="wl-card__compare">₹{{ product.compare_at_price }}</span>
+          {% endif %}
+        </div>
+        <div class="wl-card__actions">
+          <a href="{{ product.get_absolute_url }}" class="wl-card__add-btn" style="text-decoration:none;">
+            <i class="bi bi-eye"></i> {% trans "View" %}
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     JAVASCRIPT
+     ══════════════════════════════════════════════════════════════ -->
+<script>
+const CSRF = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+
+// ── Notify helper ────────────────────────────────────────────────
+function wlNotify(msg, type = 'info') {
+  const icons = { success:'bi-check-circle-fill', error:'bi-x-circle-fill', info:'bi-info-circle-fill' };
+  const box = document.getElementById('wl-notif');
+  const el  = document.createElement('div');
+  el.className = `wl-notif__item ${type}`;
+  el.innerHTML = `<i class="bi ${icons[type]||icons.info}"></i><span>${msg}</span>`;
+  box.appendChild(el);
+  setTimeout(() => el.classList.add('show'), 10);
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 350); }, 3500);
+}
+
+// ── Update header wishlist badge ─────────────────────────────────
+function setWishlistBadge(n) {
+  const b = document.getElementById('aa-wishlist-count');
+  if (b) { b.textContent = n; b.style.display = n > 0 ? 'flex' : 'none'; }
+}
+
+// ── Update cart badge ────────────────────────────────────────────
+function setCartBadge(n) {
+  const b = document.getElementById('aa-cart-count');
+  if (b) { b.textContent = n; }
+}
+
+// ── Remove card from grid with animation ─────────────────────────
+function removeCard(productId) {
+  const card = document.getElementById(`wl-card-${productId}`);
+  if (!card) return;
+  card.classList.add('removing');
+  setTimeout(() => {
+    card.remove();
+    const remaining = document.querySelectorAll('.wl-card[id^="wl-card-"]').length;
+    // Update count pill
+    const pill = document.querySelector('.wl-count-pill');
+    if (pill) {
+      if (remaining > 0) { pill.textContent = remaining; }
+      else { pill.remove(); }
+    }
+    // Update toolbar count
+    const tbl = document.querySelector('.wl-toolbar__left');
+    if (tbl) tbl.innerHTML = `<i class="bi bi-heart-fill" style="color:#e03030;margin-right:6px;"></i> ${remaining} item${remaining!==1?'s':''} saved`;
+    // Show empty state if none left
+    if (remaining === 0) location.reload();
+  }, 360);
+}
+
+// ── REMOVE single item ────────────────────────────────────────────
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.wl-remove-btn');
+  if (!btn) return;
+  const pid = btn.dataset.productId;
+  btn.style.opacity = '.5';
+  fetch(`/wishlist/remove/${pid}/`, {
+    method: 'GET',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      removeCard(pid);
+      setWishlistBadge(data.wishlist_count);
+      wlNotify('Item removed from wishlist.', 'info');
+    }
+  })
+  .catch(() => wlNotify('Could not remove item.', 'error'));
+});
+
+// ── MOVE single item to cart ──────────────────────────────────────
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.wl-move-btn');
+  if (!btn) return;
+  const pid = btn.dataset.productId;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Adding…';
+
+  fetch(`/wishlist/move-to-cart/${pid}/`, {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': CSRF }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      removeCard(pid);
+      setCartBadge(data.cart_count);
+      setWishlistBadge(data.wishlist_count);
+      wlNotify(data.message || 'Moved to cart!', 'success');
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-bag-plus"></i> Move to Cart';
+      wlNotify('Could not move to cart.', 'error');
+    }
+  })
+  .catch(() => {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-bag-plus"></i> Move to Cart';
+    wlNotify('Something went wrong.', 'error');
+  });
+});
+
+// ── TOGGLE heart on suggested products ───────────────────────────
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.wl-toggle-btn');
+  if (!btn) return;
+  const pid = btn.dataset.productId;
+  fetch(`/wishlist/toggle/${pid}/`, {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': CSRF }
+  })
+  .then(r => r.json())
+  .then(data => {
+    const icon = btn.querySelector('i');
+    if (data.added) {
+      icon.className = 'bi bi-heart-fill';
+      icon.style.color = '#e03030';
+      btn.style.background = '#fdf0f0';
+      wlNotify(data.message, 'success');
+    } else {
+      icon.className = 'bi bi-heart';
+      icon.style.color = '#9ab5c8';
+      btn.style.background = '#fff';
+      wlNotify(data.message, 'info');
+    }
+    setWishlistBadge(data.wishlist_count);
+  });
+});
+
+// ── MOVE ALL to cart ──────────────────────────────────────────────
+document.getElementById('wl-move-all-btn')?.addEventListener('click', () => {
+  if (!confirm('Move all wishlist items to your cart?')) return;
+  const btn = document.getElementById('wl-move-all-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Moving…';
+  fetch('/wishlist/move-all-to-cart/', {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': CSRF }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      setCartBadge(data.cart_count);
+      setWishlistBadge(0);
+      wlNotify(`${data.moved} item${data.moved!==1?'s':''} moved to cart!`, 'success');
+      setTimeout(() => location.reload(), 800);
+    }
+  })
+  .catch(() => { btn.disabled = false; btn.innerHTML = '<i class="bi bi-bag-plus"></i> Move All to Cart'; });
+});
+
+// ── CLEAR wishlist ────────────────────────────────────────────────
+document.getElementById('wl-clear-btn')?.addEventListener('click', () => {
+  if (!confirm('Remove all items from your wishlist?')) return;
+  fetch('/wishlist/clear/', {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': CSRF }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      setWishlistBadge(0);
+      wlNotify('Wishlist cleared.', 'info');
+      setTimeout(() => location.reload(), 600);
+    }
+  });
+});
+</script>
+
+{% endblock %}
