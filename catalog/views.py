@@ -396,21 +396,27 @@ def brand_detail(request, slug):
 
 # Category Pages
 def category_detail(request, slug):
-    """Category page with products"""
     category = get_object_or_404(Category, slug=slug, is_active=True)
-    products = Product.objects.filter(category=category, is_active=True)
+    products = Product.objects.filter(category=category, is_active=True).select_related('brand').prefetch_related('images', 'variants')
     
-    # Filter by gender
     gender = request.GET.get('gender', 'all')
     if gender != 'all':
         products = products.filter(gender=gender)
     
-    context = {
+    sort = request.GET.get('sort', '-created_at')
+    valid = ['-created_at','base_price','-base_price','name','-name']
+    products = products.order_by(sort if sort in valid else '-created_at')
+    
+    paginator = Paginator(products, 24)
+    page_obj  = paginator.get_page(request.GET.get('page'))
+    
+    return render(request, 'category_detail.html', {
         'category': category,
-        'products': products,
+        'products': page_obj,
+        'page_obj': page_obj,
+        'is_paginated': page_obj.has_other_pages(),
         'selected_gender': gender,
-    }
-    return render(request, 'category_detail.html', context)
+    })
 
 
 # Search
