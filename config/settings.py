@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'promotions',
     'search',
     'chat_support',
-
+    'wishlist', 
     
 ]
 

@@ -27,6 +27,7 @@ urlpatterns += i18n_patterns(
     path('search/', include('search.urls')),
     path('core/', include('core.urls')),
     path('chat_support/', include('chat_support.urls')),
+    path('wishlist/', include('wishlist.urls')),
    prefix_default_language=True,  
 )
 
