@@ -30,4 +30,11 @@ urlpatterns = [
     
     # AJAX
     path('api/<str:order_number>/status/', views.get_order_status, name='get_order_status'),
+
+
+    path('payment/sadad/<str:order_number>/',views.sadad_payment,name='sadad_payment'),
+
+    path('payment/sadad/return/',views.sadad_payment_return,name='sadad_payment_return'),
+
+    path('payment/sadad/webhook/',views.sadad_webhook,name='sadad_webhook'),
 ]
