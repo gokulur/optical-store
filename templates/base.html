@@ -1033,10 +1033,22 @@
         </a>
 
         <!-- Cart -->
-        <button class="aa-header__icon-btn" id="aa-cart-toggle" aria-label="Shopping Cart">
+        <!-- <button class="aa-header__icon-btn" id="aa-cart-toggle" aria-label="Shopping Cart">
           <i class="bi bi-bag"></i>
           <span class="aa-header__badge" id="aa-cart-count">{{ cart_count|default:0 }}</span>
+        </button> -->
+
+        <button class="aa-header__icon-btn" onclick="window.location.href='{% url 'cart:cart_view' %}'"
+          aria-label="Shopping Cart">
+        
+          <i class="bi bi-bag"></i>
+        
+          <span class="aa-header__badge" id="aa-cart-count">
+            {{ cart_count|default:0 }}
+          </span>
+        
         </button>
+
 
         <!-- Hamburger (mobile) -->
         <button class="aa-header__icon-btn" id="aa-menu-toggle" aria-label="Menu" style="display:none">
@@ -1288,9 +1300,7 @@
     </div>
   </nav>
 
-  <!-- ============================================================
-       FLASH MESSAGES
-       ============================================================ -->
+ 
   {% if messages %}
   <div class="aa-messages">
     {% for message in messages %}
@@ -1305,19 +1315,13 @@
     {% endfor %}
   </div>
   {% endif %}
-
-  <!-- ============================================================
-       MAIN CONTENT
-       ============================================================ -->
+ 
   <main id="aa-content">
     {% block content %}{% endblock %}
   </main>
-
-  <!-- ============================================================
-       MINI CART DRAWER
-       ============================================================ -->
+ 
   <div class="aa-cart-overlay" id="aa-cart-overlay"></div>
-  <aside class="aa-cart-drawer" id="aa-cart-drawer" aria-label="Shopping cart">
+  <!-- <aside class="aa-cart-drawer" id="aa-cart-drawer" aria-label="Shopping cart">
     <div class="aa-cart-drawer__header">
       <h3><i class="bi bi-bag" style="margin-right:8px;"></i> Shopping Cart</h3>
       <button class="aa-cart-drawer__close" id="aa-cart-close">×</button>
@@ -1369,7 +1373,7 @@
         <a href="{% url 'cart:cart_view' %}" class="aa-btn aa-btn--outline">View Cart</a>
       </div>
     </div>
-  </aside>
+  </aside> -->
 
   <!-- ============================================================
        FOOTER
