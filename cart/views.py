@@ -3,10 +3,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_http_methods
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
-from decimal import Decimal
 from django.db.models import Sum
+from decimal import Decimal
 
 from .models import Cart, CartItem, CartItemLensAddOn
 from catalog.models import Product, ProductVariant, ContactLensColor
@@ -27,14 +26,12 @@ def get_or_create_cart(request):
     else:
         if not request.session.session_key:
             request.session.create()
-
         session_key = request.session.session_key
         cart, created = Cart.objects.get_or_create(
             session_key=session_key,
             customer=None,
             defaults={'currency': request.session.get('currency', 'QAR')}
         )
-
     return cart
 
 
@@ -42,11 +39,9 @@ def calculate_item_total(cart_item):
     """Calculate total price for a cart item including lens options and add-ons"""
     total = cart_item.unit_price * cart_item.quantity
 
-    # Add lens price
     if cart_item.lens_price:
         total += cart_item.lens_price * cart_item.quantity
 
-    # Add lens add-ons
     for addon in cart_item.lens_addons.all():
         total += addon.price * cart_item.quantity
 
@@ -54,7 +49,7 @@ def calculate_item_total(cart_item):
 
 
 def get_cart_totals(cart):
-    """Calculate all cart totals"""
+    """Calculate all cart totals — returns total QUANTITY not distinct rows"""
     cart_items = cart.items.select_related(
         'product', 'variant', 'lens_option', 'sunglass_lens_option'
     ).prefetch_related('lens_addons')
@@ -73,26 +68,24 @@ def get_cart_totals(cart):
 
     total = subtotal + tax + shipping
 
+    # ✅ Sum all quantities — so 1 product with qty=3 counts as 3
+    total_qty = cart_items.aggregate(total=Sum('quantity'))['total'] or 0
+
     return {
         'subtotal': subtotal,
         'tax': tax,
         'shipping': shipping,
         'total': total,
-        'item_count': cart_items.count(),
+        'item_count': total_qty,
     }
 
 
 def get_product_stock(product):
-    """
-    Return the effective stock limit for a product.
-    Uses stock_quantity if track_inventory is True and stock_quantity > 0,
-    otherwise returns a high default so the + button stays usable.
-    """
+    """Return effective stock limit for a product."""
     if getattr(product, 'track_inventory', False):
         stock = getattr(product, 'stock_quantity', 0)
         if stock and stock > 0:
             return stock
-    # Fallback: no meaningful stock tracking — allow up to 99
     return 99
 
 
@@ -175,15 +168,11 @@ def cart_view(request):
 
 
 # ============================================
-# UPDATE QUANTITY (AJAX — GET is intentional
-#   because some themes call it with GET)
+# UPDATE QUANTITY (AJAX)
 # ============================================
 
 def update_cart_quantity(request, item_id, action):
-    """
-    Update cart item quantity via AJAX.
-    Accepts GET (used by the JS fetch) and POST.
-    """
+    """Update cart item quantity via AJAX. Accepts GET and POST."""
     try:
         cart = get_or_create_cart(request)
         cart_item = get_object_or_404(CartItem, id=item_id, cart=cart)
@@ -199,7 +188,7 @@ def update_cart_quantity(request, item_id, action):
                     'quantity': cart_item.quantity,
                     'message': f'Only {stock_limit} unit(s) available in stock.',
                     'item_total': str(calculate_item_total(cart_item)),
-                    'cart_count': cart.items.count(),
+                    'cart_count': get_cart_totals(cart)['item_count'],
                 })
 
             cart_item.quantity += 1
@@ -213,7 +202,7 @@ def update_cart_quantity(request, item_id, action):
                     'quantity': cart_item.quantity,
                     'message': 'Minimum quantity is 1. Use the Remove button to delete.',
                     'item_total': str(calculate_item_total(cart_item)),
-                    'cart_count': cart.items.count(),
+                    'cart_count': get_cart_totals(cart)['item_count'],
                 })
 
             cart_item.quantity -= 1
@@ -233,8 +222,7 @@ def update_cart_quantity(request, item_id, action):
             'shipping': str(totals['shipping']),
             'tax': str(totals['tax']),
             'cart_total': str(totals['total']),
-            'cart_count': totals['item_count'],
-            # Extra: tell frontend the current stock limit so it can update buttons
+            'cart_count': totals['item_count'],  # ✅ total quantity
             'stock_limit': stock_limit,
         })
 
@@ -249,12 +237,9 @@ def update_cart_quantity(request, item_id, action):
 # REMOVE FROM CART (AJAX)
 # ============================================
 
-@require_http_methods(["GET", "POST"])   # ← Accept both; JS sends POST, /ar/ redirect hits GET
+@require_http_methods(["GET", "POST"])
 def remove_from_cart(request, item_id):
-    """
-    Remove item from cart via AJAX.
-    Accepts POST (correct) and GET (fallback for language-prefixed redirects).
-    """
+    """Remove item from cart via AJAX."""
     try:
         cart = get_or_create_cart(request)
         cart_item = get_object_or_404(CartItem, id=item_id, cart=cart)
@@ -267,7 +252,7 @@ def remove_from_cart(request, item_id):
         return JsonResponse({
             'success': True,
             'message': f'{product_name} removed from cart.',
-            'cart_count': totals['item_count'],
+            'cart_count': totals['item_count'],  # ✅ total quantity
             'subtotal': str(totals['subtotal']),
             'shipping': str(totals['shipping']),
             'tax': str(totals['tax']),
@@ -296,7 +281,6 @@ def add_to_cart(request):
         if variant_id:
             variant = get_object_or_404(ProductVariant, id=variant_id, product=product)
 
-        # Check stock
         stock = get_product_stock(product)
         if quantity > stock:
             quantity = stock
@@ -357,11 +341,11 @@ def add_to_cart(request):
 def add_eyeglass_to_cart(request):
     """Add eyeglass with mandatory lens selection to cart"""
     try:
-        product_id    = request.POST.get('product_id')
-        variant_id    = request.POST.get('variant_id')
-        quantity      = max(1, int(request.POST.get('quantity', 1)))
+        product_id     = request.POST.get('product_id')
+        variant_id     = request.POST.get('variant_id')
+        quantity       = max(1, int(request.POST.get('quantity', 1)))
         lens_option_id = request.POST.get('lens_option_id')
-        addon_ids     = request.POST.getlist('addon_ids[]')
+        addon_ids      = request.POST.getlist('addon_ids[]')
 
         requires_prescription = request.POST.get('requires_prescription') == 'true'
 
@@ -396,7 +380,6 @@ def add_eyeglass_to_cart(request):
             lens_option = get_object_or_404(LensOption, id=lens_option_id)
             lens_price  = lens_option.base_price
 
-        # Also handle static lens price from eyeglass_detail form
         static_lens_price = request.POST.get('total_lens_price')
         if static_lens_price and not lens_option_id:
             try:
@@ -456,10 +439,10 @@ def add_eyeglass_to_cart(request):
 def add_sunglass_to_cart(request):
     """Add sunglass with optional lens to cart"""
     try:
-        product_id           = request.POST.get('product_id')
-        variant_id           = request.POST.get('variant_id')
-        quantity             = max(1, int(request.POST.get('quantity', 1)))
-        sunglass_lens_id     = request.POST.get('sunglass_lens_option_id')
+        product_id            = request.POST.get('product_id')
+        variant_id            = request.POST.get('variant_id')
+        quantity              = max(1, int(request.POST.get('quantity', 1)))
+        sunglass_lens_id      = request.POST.get('sunglass_lens_option_id')
         requires_prescription = request.POST.get('requires_prescription') == 'true'
 
         prescription_data = None
@@ -484,7 +467,7 @@ def add_sunglass_to_cart(request):
         if variant and variant.price_adjustment:
             unit_price += variant.price_adjustment
 
-        lens_price          = Decimal('0.00')
+        lens_price           = Decimal('0.00')
         sunglass_lens_option = None
         if sunglass_lens_id:
             sunglass_lens_option = get_object_or_404(SunglassLensOption, id=sunglass_lens_id)
@@ -584,7 +567,7 @@ def add_contact_lens_to_cart(request):
 
 
 # ============================================
-# UPDATE CART ITEM (quantity via form POST)
+# UPDATE CART ITEM (form POST)
 # ============================================
 
 @require_POST
@@ -646,9 +629,10 @@ def clear_cart(request):
 # ============================================
 
 def get_cart_count(request):
-    """Return current cart item count"""
-    cart  = get_or_create_cart(request)
-    count = cart.items.count()
+    """Return current cart total quantity"""
+    cart   = get_or_create_cart(request)
+    result = cart.items.aggregate(total=Sum('quantity'))
+    count  = result['total'] or 0
     return JsonResponse({'count': count})
 
 
@@ -676,8 +660,10 @@ def get_cart_summary(request):
             'product_url':  f'/products/{item.product.slug}/',
         })
 
+    total_qty = cart_items.aggregate(total=Sum('quantity'))['total'] or 0
+
     return JsonResponse({
         'items':    items_data,
         'subtotal': str(subtotal),
-        'count':    cart_items.count(),
+        'count':    total_qty,
     })

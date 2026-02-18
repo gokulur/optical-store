@@ -38,16 +38,16 @@
        ============================================================ */
     :root {
       --aa-white:        #ffffff;
-      --aa-bg:           #eef3f8;          /* light blue-grey site background */
-      --aa-bg-header:    #d8e6f0;          /* header bar background */
-      --aa-bg-topbar:    #c9dcea;          /* announcement bar */
-      --aa-bg-nav:       #eef3f8;          /* nav strip background */
-      --aa-bg-footer:    #d8e6f0;          /* footer background */
-      --aa-dark:         #1a2a3a;          /* primary dark text */
-      --aa-mid:          #3a5068;          /* secondary text */
-      --aa-accent:       #1a6fa8;          /* primary blue accent */
+      --aa-bg:           #eef3f8;
+      --aa-bg-header:    #d8e6f0;
+      --aa-bg-topbar:    #c9dcea;
+      --aa-bg-nav:       #eef3f8;
+      --aa-bg-footer:    #d8e6f0;
+      --aa-dark:         #1a2a3a;
+      --aa-mid:          #3a5068;
+      --aa-accent:       #1a6fa8;
       --aa-accent-hover: #155f90;
-      --aa-red:          #e03030;          /* sale/alert red */
+      --aa-red:          #e03030;
       --aa-border:       #c5d8e8;
       --aa-radius:       8px;
       --aa-shadow:       0 2px 12px rgba(26,42,58,.10);
@@ -55,7 +55,6 @@
       --font-display:    'Playfair Display', serif;
     }
 
-    /* ── Reset & Base ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { font-size: 62.5%; scroll-behavior: smooth; }
     body {
@@ -100,7 +99,7 @@
     .aa-topbar__close:hover { opacity: 1; }
 
     /* ============================================================
-       HEADER  (matches screenshot: light-blue, logo centre, icons)
+       HEADER
        ============================================================ */
     .aa-header-wrap {
       background: var(--aa-bg-header);
@@ -121,7 +120,6 @@
       padding: 10px 24px;
     }
 
-    /* LEFT — eyetest button */
     .aa-header__left { display: flex; align-items: center; gap: 12px; }
 
     .aa-eyetest-btn {
@@ -159,7 +157,6 @@
     .aa-eyetest-btn__text { display: flex; flex-direction: column; line-height: 1.2; }
     .aa-eyetest-btn__sub { font-size: .9rem; font-weight: 400; opacity: .7; }
 
-    /* CENTRE — Logo */
     .aa-header__logo {
       display: flex;
       justify-content: center;
@@ -172,7 +169,6 @@
     }
     .aa-logo-img { height: 56px; width: auto; }
 
-    /* Logo text fallback (if no image) */
     .aa-logo-text {
       display: flex;
       flex-direction: column;
@@ -200,7 +196,6 @@
       margin-top: 1px;
     }
 
-    /* RIGHT — search, wishlist, cart, account, hamburger */
     .aa-header__right {
       display: flex;
       align-items: center;
@@ -243,9 +238,9 @@
       justify-content: center;
       padding: 0 4px;
       line-height: 1;
+      transition: transform .2s;
     }
 
-    /* Search bar inside header */
     .aa-header__search {
       display: flex;
       align-items: center;
@@ -288,7 +283,6 @@
     }
     .aa-header__search button:hover { background: var(--aa-accent-hover); }
 
-    /* Account text links (desktop) */
     .aa-header__account-links {
       display: flex;
       align-items: center;
@@ -360,7 +354,6 @@
       transform: rotate(180deg);
     }
 
-    /* SALE badge on nav */
     .aa-nav__sale-tag {
       background: var(--aa-red);
       color: #fff;
@@ -372,7 +365,6 @@
       letter-spacing: .03em;
     }
 
-    /* MEGA/DROPDOWN */
     .aa-nav__dropdown {
       display: none;
       position: absolute;
@@ -413,7 +405,6 @@
       border-top: 1px solid var(--aa-border);
     }
 
-    /* Mega dropdown */
     .aa-nav__mega {
       left: 0;
       min-width: 700px;
@@ -443,7 +434,7 @@
     .aa-mega__col a:hover { color: var(--aa-accent); padding-left: 6px; }
 
     /* ============================================================
-       MOBILE HEADER (hamburger side)
+       MOBILE MENU
        ============================================================ */
     .aa-mobile-menu-overlay {
       display: none;
@@ -549,7 +540,7 @@
     .aa-mobile-menu__footer i { font-size: 1.8rem; }
 
     /* ============================================================
-       PAGE CONTENT WRAPPER
+       PAGE CONTENT
        ============================================================ */
     #aa-content { min-height: 60vh; }
 
@@ -630,115 +621,6 @@
     .aa-toast.info    i { color: var(--aa-accent); }
 
     /* ============================================================
-       MINI CART DRAWER
-       ============================================================ */
-    .aa-cart-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.4);
-      z-index: 19000;
-    }
-    .aa-cart-overlay.open { display: block; }
-    .aa-cart-drawer {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: 420px;
-      background: var(--aa-white);
-      z-index: 19001;
-      transform: translateX(100%);
-      transition: transform .3s ease;
-      display: flex;
-      flex-direction: column;
-      box-shadow: -4px 0 24px rgba(0,0,0,.12);
-    }
-    .aa-cart-drawer.open { transform: translateX(0); }
-    .aa-cart-drawer__header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 24px;
-      border-bottom: 1px solid var(--aa-border);
-      background: var(--aa-bg-header);
-    }
-    .aa-cart-drawer__header h3 { font-size: 1.8rem; font-weight: 700; }
-    .aa-cart-drawer__close { background: none; border: none; font-size: 2.2rem; color: var(--aa-dark); }
-    .aa-cart-drawer__body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px 24px;
-    }
-    .aa-cart-empty {
-      text-align: center;
-      padding: 48px 20px;
-      color: var(--aa-mid);
-    }
-    .aa-cart-empty i { font-size: 5rem; margin-bottom: 16px; opacity: .4; }
-    .aa-cart-empty p { font-size: 1.5rem; }
-    .aa-cart-item {
-      display: grid;
-      grid-template-columns: 72px 1fr auto;
-      gap: 12px;
-      align-items: start;
-      padding: 14px 0;
-      border-bottom: 1px solid var(--aa-border);
-    }
-    .aa-cart-item img { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; }
-    .aa-cart-item__name { font-size: 1.35rem; font-weight: 600; margin-bottom: 4px; }
-    .aa-cart-item__price { font-size: 1.3rem; color: var(--aa-mid); }
-    .aa-cart-item__qty {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .aa-cart-item__qty button {
-      width: 26px; height: 26px;
-      border: 1px solid var(--aa-border);
-      background: var(--aa-bg);
-      border-radius: 4px;
-      font-size: 1.6rem;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .aa-cart-item__qty span { font-size: 1.35rem; font-weight: 600; min-width: 24px; text-align: center; }
-    .aa-cart-item__remove { background: none; border: none; font-size: 1.8rem; color: #bbb; }
-    .aa-cart-item__remove:hover { color: var(--aa-red); }
-    .aa-cart-drawer__footer {
-      padding: 18px 24px;
-      border-top: 1px solid var(--aa-border);
-      background: var(--aa-bg);
-    }
-    .aa-cart-total {
-      display: flex;
-      justify-content: space-between;
-      font-size: 1.7rem;
-      font-weight: 700;
-      margin-bottom: 14px;
-    }
-    .aa-cart-drawer__actions { display: flex; gap: 10px; }
-    .aa-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 12px 22px;
-      border-radius: 50px;
-      font-size: 1.4rem;
-      font-weight: 600;
-      border: 2px solid transparent;
-      transition: all .25s;
-      letter-spacing: .03em;
-    }
-    .aa-btn--primary { background: var(--aa-accent); color: #fff; border-color: var(--aa-accent); flex: 1; }
-    .aa-btn--primary:hover { background: var(--aa-accent-hover); border-color: var(--aa-accent-hover); }
-    .aa-btn--outline { background: transparent; color: var(--aa-dark); border-color: var(--aa-border); }
-    .aa-btn--outline:hover { border-color: var(--aa-accent); color: var(--aa-accent); }
-    .aa-btn--dark { background: var(--aa-dark); color: #fff; border-color: var(--aa-dark); flex: 1; }
-    .aa-btn--dark:hover { background: #2a3d52; }
-
-    /* ============================================================
        FOOTER
        ============================================================ */
     .aa-footer {
@@ -747,7 +629,6 @@
       margin-top: 60px;
     }
 
-    /* Top footer: logo + tagline */
     .aa-footer__top {
       background: var(--aa-dark);
       color: #fff;
@@ -761,7 +642,6 @@
       align-items: center;
       gap: 30px;
     }
-    .aa-footer__brand-logo { height: 56px; width: auto; filter: brightness(0) invert(1); }
     .aa-footer__tagline {
       text-align: center;
       font-family: var(--font-display);
@@ -771,9 +651,7 @@
       opacity: .9;
       letter-spacing: .03em;
     }
-    .aa-footer__top-cta {
-      text-align: right;
-    }
+    .aa-footer__top-cta { text-align: right; }
     .aa-footer__top-cta a {
       display: inline-flex;
       align-items: center;
@@ -788,7 +666,6 @@
     }
     .aa-footer__top-cta a:hover { background: var(--aa-accent-hover); }
 
-    /* Middle footer: main link columns */
     .aa-footer__main {
       max-width: 1400px;
       margin: 0 auto;
@@ -816,7 +693,6 @@
     }
     .aa-footer__col ul li a:hover { color: var(--aa-accent); padding-left: 4px; }
 
-    /* Newsletter col */
     .aa-footer__newsletter p {
       font-size: 1.35rem;
       color: var(--aa-mid);
@@ -853,7 +729,6 @@
     }
     .aa-footer__newsletter-form button:hover { background: var(--aa-accent-hover); }
 
-    /* Social icons */
     .aa-footer__social {
       display: flex;
       gap: 10px;
@@ -876,7 +751,6 @@
       transform: translateY(-3px);
     }
 
-    /* Bottom footer bar */
     .aa-footer__bottom {
       background: var(--aa-dark);
       color: rgba(255,255,255,.65);
@@ -892,10 +766,7 @@
       gap: 12px;
     }
     .aa-footer__bottom p { font-size: 1.25rem; }
-    .aa-footer__bottom-links {
-      display: flex;
-      gap: 20px;
-    }
+    .aa-footer__bottom-links { display: flex; gap: 20px; }
     .aa-footer__bottom-links a {
       font-size: 1.25rem;
       color: rgba(255,255,255,.55);
@@ -909,6 +780,29 @@
       font-size: 1.25rem;
     }
     .aa-footer__payments i { font-size: 2rem; opacity: .7; }
+
+    /* ============================================================
+       BUTTONS
+       ============================================================ */
+    .aa-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 50px;
+      font-size: 1.4rem;
+      font-weight: 600;
+      border: 2px solid transparent;
+      transition: all .25s;
+      letter-spacing: .03em;
+    }
+    .aa-btn--primary { background: var(--aa-accent); color: #fff; border-color: var(--aa-accent); flex: 1; }
+    .aa-btn--primary:hover { background: var(--aa-accent-hover); border-color: var(--aa-accent-hover); }
+    .aa-btn--outline { background: transparent; color: var(--aa-dark); border-color: var(--aa-border); }
+    .aa-btn--outline:hover { border-color: var(--aa-accent); color: var(--aa-accent); }
+    .aa-btn--dark { background: var(--aa-dark); color: #fff; border-color: var(--aa-dark); flex: 1; }
+    .aa-btn--dark:hover { background: #2a3d52; }
 
     /* ============================================================
        RESPONSIVE
@@ -936,7 +830,7 @@
     }
 
     /* ============================================================
-       UTILITY CLASSES
+       UTILITY
        ============================================================ */
     .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
     .aa-container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
@@ -951,29 +845,23 @@
 <body>
 <div id="xo-root">
 
-  <!-- ============================================================
-       TOAST NOTIFICATION CONTAINER
-       ============================================================ -->
+  <!-- TOAST CONTAINER -->
   <div id="aa-toast-container" aria-live="polite"></div>
 
-  <!-- ============================================================
-       ANNOUNCEMENT BAR
-       ============================================================ -->
+  <!-- ANNOUNCEMENT BAR -->
   <div class="aa-topbar" id="aa-topbar">
-    🎉 Free Eye Test in Store — 
+    🎉 Free Eye Test in Store —
     <a href="{% url 'content:eye_test_booking' %}">Book Now</a>
-    &nbsp;·&nbsp; 
-    Free Shipping on orders above ₹500
+    &nbsp;·&nbsp;
+    Free Shipping on orders above QAR 200
     <button class="aa-topbar__close" onclick="document.getElementById('aa-topbar').style.display='none'" aria-label="Close">×</button>
   </div>
 
-  <!-- ============================================================
-       HEADER
-       ============================================================ -->
+  <!-- HEADER -->
   <div class="aa-header-wrap">
     <header class="aa-header">
 
-      <!-- LEFT: Book Free Eyetest -->
+      <!-- LEFT: Book Eye Test -->
       <div class="aa-header__left">
         <a href="{% url 'content:eye_test_booking' %}" class="aa-eyetest-btn">
           <div class="aa-eyetest-btn__avatar">
@@ -1018,37 +906,19 @@
           {% endif %}
         </div>
 
-        <!-- Search icon (mobile) / inline search (desktop handled in nav) -->
-        <button class="aa-header__icon-btn" id="aa-search-toggle" aria-label="Search">
-          <i class="bi bi-search"></i>
-        </button>
-
         <!-- Wishlist -->
         <a href="{% url 'wishlist:wishlist' %}" class="aa-header__icon-btn" aria-label="Wishlist">
           <i class="bi bi-heart"></i>
-          <span class="aa-header__badge" id="aa-wishlist-count"
-                style=" ">
+          <span class="aa-header__badge" id="aa-wishlist-count">
             {{ wishlist_count|default:0 }}
           </span>
         </a>
 
-        <!-- Cart -->
-        <!-- <button class="aa-header__icon-btn" id="aa-cart-toggle" aria-label="Shopping Cart">
+        <!-- Cart — goes directly to cart page, no mini drawer -->
+        <a href="{% url 'cart:cart_view' %}" class="aa-header__icon-btn" aria-label="Shopping Cart" id="aa-cart-icon-link">
           <i class="bi bi-bag"></i>
           <span class="aa-header__badge" id="aa-cart-count">{{ cart_count|default:0 }}</span>
-        </button> -->
-
-        <button class="aa-header__icon-btn" onclick="window.location.href='{% url 'cart:cart_view' %}'"
-          aria-label="Shopping Cart">
-        
-          <i class="bi bi-bag"></i>
-        
-          <span class="aa-header__badge" id="aa-cart-count">
-            {{ cart_count|default:0 }}
-          </span>
-        
-        </button>
-
+        </a>
 
         <!-- Hamburger (mobile) -->
         <button class="aa-header__icon-btn" id="aa-menu-toggle" aria-label="Menu" style="display:none">
@@ -1058,7 +928,7 @@
 
     </header>
 
-    <!-- Inline search bar (shows below header on mobile when toggled) -->
+    <!-- Mobile search bar -->
     <div id="aa-search-bar" style="display:none; background:var(--aa-bg-header); padding:10px 24px; border-top:1px solid var(--aa-border);">
       <form method="get" action="{% url 'catalog:search' %}">
         <div class="aa-header__search" style="max-width:100%;">
@@ -1069,13 +939,10 @@
       </form>
     </div>
 
-    <!-- ============================================================
-         NAVIGATION
-         ============================================================ -->
+    <!-- NAVIGATION -->
     <nav class="aa-nav-wrap" aria-label="Main navigation">
       <div class="aa-nav">
 
-        <!-- SEARCH in nav bar (desktop) -->
         <form method="get" action="{% url 'catalog:search' %}" style="margin-right:24px;">
           <div class="aa-header__search">
             <input type="text" name="q" placeholder="Search…" value="{{ request.GET.q }}">
@@ -1085,21 +952,14 @@
 
         <ul class="aa-nav__list" role="list">
 
-          <!-- New Arrivals -->
           <li class="aa-nav__item">
-            <a href="{% url 'catalog:sunglasses_list' %}?sort=-created_at" class="aa-nav__link">
-              New Arrivals
-            </a>
+            <a href="{% url 'catalog:sunglasses_list' %}?sort=-created_at" class="aa-nav__link">New Arrivals</a>
           </li>
 
-          <!-- Gift Shop -->
           <li class="aa-nav__item">
-            <a href="{% url 'catalog:product_list' 'accessories' %}" class="aa-nav__link">
-              Gift Shop
-            </a>
+            <a href="{% url 'catalog:product_list' 'accessories' %}" class="aa-nav__link">Gift Shop</a>
           </li>
 
-          <!-- Sunglasses (mega menu) -->
           <li class="aa-nav__item">
             <a href="{% url 'catalog:sunglasses_list' %}" class="aa-nav__link">
               Sunglasses <i class="bi bi-chevron-down"></i>
@@ -1134,14 +994,13 @@
               <div class="aa-mega__col">
                 <h4>Quick Links</h4>
                 <a href="{% url 'catalog:sunglasses_list' %}">All Sunglasses</a>
-                <a href="{% url 'catalog:sunglasses_list' %}?sort=base_price">Under ₹999</a>
+                <a href="{% url 'catalog:sunglasses_list' %}?sort=base_price">Under QAR 999</a>
                 <a href="{% url 'content:eye_test_booking' %}">Book Eye Test</a>
                 <a href="{% url 'content:store_locations' %}">Find a Store</a>
               </div>
             </div>
           </li>
 
-          <!-- Eyeglasses -->
           <li class="aa-nav__item">
             <a href="{% url 'catalog:eyeglasses_list' %}" class="aa-nav__link">
               Eyeglasses <i class="bi bi-chevron-down"></i>
@@ -1159,7 +1018,6 @@
             </div>
           </li>
 
-          <!-- Contact Lenses -->
           <li class="aa-nav__item">
             <a href="{% url 'catalog:contact_lenses_list' %}" class="aa-nav__link">
               Contact Lenses <i class="bi bi-chevron-down"></i>
@@ -1174,7 +1032,6 @@
             </div>
           </li>
 
-          <!-- Brands -->
           <li class="aa-nav__item">
             <a href="{% url 'catalog:brand_list' %}" class="aa-nav__link">
               Brands <i class="bi bi-chevron-down"></i>
@@ -1190,7 +1047,6 @@
             </div>
           </li>
 
-          <!-- Eye Care / Services -->
           <li class="aa-nav__item">
             <a href="{% url 'content:eye_test_booking' %}" class="aa-nav__link">
               Eye Care <i class="bi bi-chevron-down"></i>
@@ -1205,7 +1061,6 @@
             </div>
           </li>
 
-          <!-- SALE -->
           <li class="aa-nav__item">
             <a href="{% url 'catalog:sunglasses_list' %}" class="aa-nav__link" style="color:var(--aa-red)">
               Sale <span class="aa-nav__sale-tag">50% OFF</span>
@@ -1218,9 +1073,7 @@
   </div>
   <!-- END HEADER -->
 
-  <!-- ============================================================
-       MOBILE SIDE MENU
-       ============================================================ -->
+  <!-- MOBILE SIDE MENU -->
   <div class="aa-mobile-menu-overlay" id="aa-mobile-overlay"></div>
   <nav class="aa-mobile-menu" id="aa-mobile-menu" aria-label="Mobile navigation">
     <div class="aa-mobile-menu__header">
@@ -1282,7 +1135,7 @@
         </div>
       </li>
       <li class="aa-mobile-nav__item">
-        <div class="aa-mobile-nav__link" style="color:var(--aa-red)">
+        <div class="aa-mobile-nav__link">
           <a href="{% url 'catalog:sunglasses_list' %}" style="color:var(--aa-red)">Sale — Up to 50% Off</a>
         </div>
       </li>
@@ -1300,7 +1153,7 @@
     </div>
   </nav>
 
- 
+  <!-- FLASH MESSAGES -->
   {% if messages %}
   <div class="aa-messages">
     {% for message in messages %}
@@ -1315,72 +1168,14 @@
     {% endfor %}
   </div>
   {% endif %}
- 
+
   <main id="aa-content">
     {% block content %}{% endblock %}
   </main>
- 
-  <div class="aa-cart-overlay" id="aa-cart-overlay"></div>
-  <!-- <aside class="aa-cart-drawer" id="aa-cart-drawer" aria-label="Shopping cart">
-    <div class="aa-cart-drawer__header">
-      <h3><i class="bi bi-bag" style="margin-right:8px;"></i> Shopping Cart</h3>
-      <button class="aa-cart-drawer__close" id="aa-cart-close">×</button>
-    </div>
-    <div class="aa-cart-drawer__body" id="aa-cart-body">
-      {% if cart and cart.items.exists %}
-        {% for item in cart.items.all %}
-        <div class="aa-cart-item" data-item-id="{{ item.id }}">
-          <a href="{{ item.product.get_absolute_url }}">
-            {% with img=item.product.images.first %}
-              {% if img %}<img src="{{ img.image.url }}" alt="{{ item.product.name }}">
-              {% elif item.product.image %}<img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
-              {% else %}<img src="{% static 'img/no-image.jpg' %}" alt="No image">{% endif %}
-            {% endwith %}
-          </a>
-          <div>
-            <div class="aa-cart-item__name">{{ item.product.name }}</div>
-            <div class="aa-cart-item__price">₹{{ item.unit_price }}</div>
-            <div class="aa-cart-item__qty">
-              <button class="decrease-qty" data-item-id="{{ item.id }}">–</button>
-              <span class="item-qty-{{ item.id }}">{{ item.quantity }}</span>
-              <button class="increase-qty" data-item-id="{{ item.id }}">+</button>
-            </div>
-          </div>
-          <button class="aa-cart-item__remove remove-item" data-item-id="{{ item.id }}">
-            <i class="bi bi-x-lg"></i>
-          </button>
-        </div>
-        {% endfor %}
-      {% else %}
-        <div class="aa-cart-empty">
-          <i class="bi bi-bag-x"></i>
-          <p>Your cart is empty</p>
-          <a href="{% url 'catalog:sunglasses_list' %}" class="aa-btn aa-btn--primary" style="margin-top:20px; display:inline-flex;">
-            Shop Now
-          </a>
-        </div>
-      {% endif %}
-    </div>
-    <div class="aa-cart-drawer__footer">
-      <div class="aa-cart-total">
-        <span>Total</span>
-        <span id="aa-cart-total">₹{{ cart.get_total|default:"0.00" }}</span>
-      </div>
-      <div class="aa-cart-drawer__actions">
-        <a href="{% url 'orders:checkout' %}" class="aa-btn aa-btn--dark">
-          Checkout <i class="bi bi-arrow-right"></i>
-        </a>
-        <a href="{% url 'cart:cart_view' %}" class="aa-btn aa-btn--outline">View Cart</a>
-      </div>
-    </div>
-  </aside> -->
 
-  <!-- ============================================================
-       FOOTER
-       ============================================================ -->
+  <!-- FOOTER -->
   <footer class="aa-footer">
 
-    <!-- Top bar: brand identity -->
     <div class="aa-footer__top">
       <div class="aa-footer__top-inner">
         <div>
@@ -1391,9 +1186,7 @@
             Al Ameen Optics
           </div>
         </div>
-        <div class="aa-footer__tagline">
-          "Your Vision Matters More"
-        </div>
+        <div class="aa-footer__tagline">"Your Vision Matters More"</div>
         <div class="aa-footer__top-cta">
           <a href="{% url 'content:eye_test_booking' %}">
             <i class="bi bi-calendar-check"></i>
@@ -1403,10 +1196,8 @@
       </div>
     </div>
 
-    <!-- Main link columns -->
     <div class="aa-footer__main">
 
-      <!-- Col 1: About / Company -->
       <div class="aa-footer__col">
         <h4>About Us</h4>
         <ul>
@@ -1419,7 +1210,6 @@
         </ul>
       </div>
 
-      <!-- Col 2: Customer Service -->
       <div class="aa-footer__col">
         <h4>Customer Service</h4>
         <ul>
@@ -1432,7 +1222,6 @@
         </ul>
       </div>
 
-      <!-- Col 3: Shop -->
       <div class="aa-footer__col">
         <h4>Shop</h4>
         <ul>
@@ -1445,7 +1234,6 @@
         </ul>
       </div>
 
-      <!-- Col 4: Eye Care -->
       <div class="aa-footer__col">
         <h4>Eye Care</h4>
         <ul>
@@ -1458,7 +1246,6 @@
         </ul>
       </div>
 
-      <!-- Col 5: Newsletter + Social -->
       <div class="aa-footer__col aa-footer__newsletter">
         <h4>Newsletter</h4>
         <p>Subscribe for exclusive deals, eye care tips and new arrivals.</p>
@@ -1468,24 +1255,13 @@
         </div>
 
         <div class="aa-footer__social">
-          <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook">
-            <i class="bi bi-facebook"></i>
-          </a>
-          <a href="https://x.com" target="_blank" rel="noopener" aria-label="X / Twitter">
-            <i class="bi bi-twitter-x"></i>
-          </a>
-          <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram">
-            <i class="bi bi-instagram"></i>
-          </a>
-          <a href="https://youtube.com" target="_blank" rel="noopener" aria-label="YouTube">
-            <i class="bi bi-youtube"></i>
-          </a>
-          <a href="https://wa.me/XXXXXXXXXX" target="_blank" rel="noopener" aria-label="WhatsApp">
-            <i class="bi bi-whatsapp"></i>
-          </a>
+          <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+          <a href="https://x.com" target="_blank" rel="noopener" aria-label="X / Twitter"><i class="bi bi-twitter-x"></i></a>
+          <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+          <a href="https://youtube.com" target="_blank" rel="noopener" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+          <a href="https://wa.me/XXXXXXXXXX" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
         </div>
 
-        <!-- Store badges -->
         <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
           <a href="#" style="display:flex;align-items:center;gap:6px;background:var(--aa-dark);color:#fff;padding:8px 14px;border-radius:8px;font-size:1.2rem;">
             <i class="bi bi-apple" style="font-size:1.8rem;"></i>
@@ -1500,7 +1276,6 @@
 
     </div>
 
-    <!-- Bottom bar -->
     <div class="aa-footer__bottom">
       <div class="aa-footer__bottom-inner">
         <p>© {% now "Y" %} Al Ameen Optics. All rights reserved. Trusted since 1927.</p>
@@ -1521,13 +1296,14 @@
     </div>
 
   </footer>
-  <!-- END FOOTER -->
-
 
   <!-- ============================================================
        SCRIPTS
        ============================================================ -->
   <script>
+  (function () {
+    "use strict";
+
     // ── Mobile menu ──────────────────────────────────────────────
     const mobileMenu    = document.getElementById('aa-mobile-menu');
     const mobileOverlay = document.getElementById('aa-mobile-overlay');
@@ -1549,14 +1325,15 @@
     if (mobileOverlay) mobileOverlay.addEventListener('click', closeMobileMenu);
 
     function toggleMobileSub(trigger) {
-      const sub = trigger.nextElementSibling;
+      const sub  = trigger.nextElementSibling;
       const icon = trigger.querySelector('i');
       if (!sub) return;
       sub.classList.toggle('open');
       if (icon) icon.style.transform = sub.classList.contains('open') ? 'rotate(180deg)' : '';
     }
+    // expose globally for inline onclick
+    window.toggleMobileSub = toggleMobileSub;
 
-    // Show hamburger on small screens
     function checkMobileHeader() {
       if (window.innerWidth <= 900) {
         if (menuToggle) menuToggle.style.display = 'flex';
@@ -1568,146 +1345,114 @@
     checkMobileHeader();
     window.addEventListener('resize', checkMobileHeader);
 
-    // ── Mobile search toggle ─────────────────────────────────────
-    const searchToggle = document.getElementById('aa-search-toggle');
-    const searchBar    = document.getElementById('aa-search-bar');
-    if (searchToggle && searchBar) {
-      searchToggle.addEventListener('click', () => {
-        const isVisible = searchBar.style.display !== 'none';
-        searchBar.style.display = isVisible ? 'none' : 'block';
-        if (!isVisible) searchBar.querySelector('input').focus();
-      });
-    }
-
-    // ── Mini cart drawer ─────────────────────────────────────────
-    const cartToggle  = document.getElementById('aa-cart-toggle');
-    const cartClose   = document.getElementById('aa-cart-close');
-    const cartOverlay = document.getElementById('aa-cart-overlay');
-    const cartDrawer  = document.getElementById('aa-cart-drawer');
-
-    function openCart() {
-      cartDrawer.classList.add('open');
-      cartOverlay.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-    function closeCart() {
-      cartDrawer.classList.remove('open');
-      cartOverlay.classList.remove('open');
-      document.body.style.overflow = '';
-    }
-    if (cartToggle)  cartToggle.addEventListener('click', openCart);
-    if (cartClose)   cartClose.addEventListener('click', closeCart);
-    if (cartOverlay) cartOverlay.addEventListener('click', closeCart);
-
-    // ── Toast notifications ──────────────────────────────────────
-    function showToast(message, type = 'info') {
+    // ── Toast ────────────────────────────────────────────────────
+    function showToast(message, type) {
+      type = type || 'info';
       const container = document.getElementById('aa-toast-container');
-      const icons = { success: 'bi-check-circle-fill', error: 'bi-x-circle-fill', warning: 'bi-exclamation-triangle-fill', info: 'bi-info-circle-fill' };
+      if (!container) return;
+      const icons = {
+        success: 'bi-check-circle-fill',
+        error:   'bi-x-circle-fill',
+        warning: 'bi-exclamation-triangle-fill',
+        info:    'bi-info-circle-fill'
+      };
       const toast = document.createElement('div');
-      toast.className = `aa-toast ${type}`;
-      toast.innerHTML = `<i class="bi ${icons[type] || icons.info}"></i><span>${message}</span>`;
+      toast.className = 'aa-toast ' + type;
+      toast.innerHTML = '<i class="bi ' + (icons[type] || icons.info) + '"></i><span>' + message + '</span>';
       container.appendChild(toast);
-      setTimeout(() => toast.classList.add('show'), 10);
-      setTimeout(() => {
+      setTimeout(function () { toast.classList.add('show'); }, 10);
+      setTimeout(function () {
         toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 350);
+        setTimeout(function () { toast.remove(); }, 350);
       }, 4000);
     }
+    window.showToast = showToast;
 
     // Show Django messages as toasts
     {% if messages %}
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', function () {
       {% for message in messages %}
-      setTimeout(() => showToast("{{ message|escapejs }}", "{{ message.tags }}"), {{ forloop.counter0 }} * 200);
+      setTimeout(function () {
+        showToast("{{ message|escapejs }}", "{{ message.tags }}");
+      }, {{ forloop.counter0 }} * 200);
       {% endfor %}
     });
     {% endif %}
 
-    // ── CSRF helper ──────────────────────────────────────────────
+    // ── CSRF ─────────────────────────────────────────────────────
     function getCookie(name) {
-      let val = null;
+      var val = null;
       if (document.cookie) {
-        document.cookie.split(';').forEach(c => {
+        document.cookie.split(';').forEach(function (c) {
           c = c.trim();
           if (c.startsWith(name + '=')) val = decodeURIComponent(c.slice(name.length + 1));
         });
       }
       return val;
     }
-    const csrftoken = getCookie('csrftoken');
+    window.csrftoken = getCookie('csrftoken');
 
-    // ── Cart count update ─────────────────────────────────────────
-    function updateCartCount(count) {
-      const badge = document.getElementById('aa-cart-count');
-      if (badge) {
-        badge.textContent = count;
-        badge.style.transform = 'scale(1.4)';
-        setTimeout(() => badge.style.transform = 'scale(1)', 300);
-      }
+    // ── Cart badge update ─────────────────────────────────────────
+    // Called by cart.html JS (and any add-to-cart AJAX) to keep badge in sync
+    function updateCartBadge(count) {
+      var badge = document.getElementById('aa-cart-count');
+      if (!badge) return;
+      badge.textContent = count;
+      badge.style.transform = 'scale(1.4)';
+      setTimeout(function () { badge.style.transform = 'scale(1)'; }, 300);
     }
+    window.updateCartBadge = updateCartBadge;
 
-    // ── Wishlist count update ─────────────────────────────────────
+    // ── Wishlist badge update ─────────────────────────────────────
     function updateWishlistCount(count) {
-      const badge = document.getElementById('aa-wishlist-count');
-      if (badge) {
-        badge.textContent = count;
-        badge.style.display = count > 0 ? 'flex' : 'none';
-      }
+      var badge = document.getElementById('aa-wishlist-count');
+      if (!badge) return;
+      badge.textContent = count;
     }
+    window.updateWishlistCount = updateWishlistCount;
 
-    // ── AJAX Add to cart ──────────────────────────────────────────
+    // ── AJAX Add to cart (called from product pages) ──────────────
     function ajaxAddToCart(url, formData, btn) {
       if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
       fetch(url, {
         method: 'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrftoken },
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': window.csrftoken
+        },
         body: formData
       })
-      .then(r => r.json())
-      .then(data => {
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
         if (data.success || data.cart_count !== undefined) {
-          updateCartCount(data.cart_count || 0);
+          updateCartBadge(data.cart_count || 0);
           showToast(data.message || 'Added to cart!', 'success');
-          if (data.cart_count > 0) openCart();
-          refreshCartDrawer();
         } else if (data.limit) {
           showToast(data.message, 'warning');
         } else {
           showToast('Could not add to cart.', 'error');
         }
       })
-      .catch(() => showToast('Something went wrong!', 'error'))
-      .finally(() => { if (btn) { btn.disabled = false; btn.style.opacity = '1'; } });
+      .catch(function () { showToast('Something went wrong!', 'error'); })
+      .finally(function () {
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+      });
     }
-
-    // ── Refresh cart drawer content ───────────────────────────────
-    function refreshCartDrawer() {
-      fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-        .then(r => r.text())
-        .then(html => {
-          const doc = new DOMParser().parseFromString(html, 'text/html');
-          const newBody = doc.querySelector('#aa-cart-body');
-          const curBody = document.querySelector('#aa-cart-body');
-          if (newBody && curBody) curBody.innerHTML = newBody.innerHTML;
-          const newTotal = doc.querySelector('#aa-cart-total');
-          const curTotal = document.querySelector('#aa-cart-total');
-          if (newTotal && curTotal) curTotal.textContent = newTotal.textContent;
-        });
-    }
+    window.ajaxAddToCart = ajaxAddToCart;
 
     // ── Wishlist toggle ───────────────────────────────────────────
-    document.querySelectorAll('.wishlist-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const pid = this.dataset.productId;
-        fetch(`/wishlist/toggle/${pid}/`, {
+    document.querySelectorAll('.wishlist-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var pid = this.dataset.productId;
+        fetch('/wishlist/toggle/' + pid + '/', {
           method: 'POST',
-          headers: { 'X-CSRFToken': csrftoken }
+          headers: { 'X-CSRFToken': window.csrftoken }
         })
-        .then(r => r.json())
-        .then(data => {
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
           updateWishlistCount(data.wishlist_count);
           showToast(data.added ? 'Added to wishlist!' : 'Removed from wishlist.', data.added ? 'success' : 'info');
-          const svg = this.querySelector('svg');
+          var svg = btn.querySelector('svg');
           if (svg) {
             svg.setAttribute('fill', data.added ? 'red' : 'none');
             svg.setAttribute('stroke', data.added ? 'red' : 'black');
@@ -1716,60 +1461,41 @@
       });
     });
 
-    // ── Click handler delegation ──────────────────────────────────
-    document.addEventListener('click', e => {
-      // Add to cart forms
-      const addBtn = e.target.closest('.add-to-cart-grid-btn, .add-to-cart-btn, .add-to-cart-wishlist-btn');
+    // ── Add-to-cart form intercept ────────────────────────────────
+    // Only handles forms with class add-to-cart-form or buttons with data-url
+    // Does NOT handle #cart-rows buttons (those belong to cart.html)
+    document.addEventListener('click', function (e) {
+      var addBtn = e.target.closest('.add-to-cart-grid-btn, .add-to-cart-btn, .add-to-cart-wishlist-btn');
       if (addBtn) {
+        // Don't intercept if we're inside the cart rows (cart.html owns those)
+        if (addBtn.closest('#cart-rows')) return;
         e.preventDefault();
-        ajaxAddToCart(addBtn.dataset.url || addBtn.closest('form').action, new FormData(addBtn.closest('form')), addBtn);
-        return;
-      }
-      // Cart quantity increase
-      if (e.target.classList.contains('increase-qty') || e.target.closest('.increase-qty')) {
-        e.preventDefault();
-        const btn = e.target.closest('.increase-qty') || e.target;
-        fetch(`/cart/update/${btn.dataset.itemId}/increase/`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-          .then(r => r.json()).then(data => { updateCartCount(data.cart_count); refreshCartDrawer(); });
-        return;
-      }
-      // Cart quantity decrease
-      if (e.target.classList.contains('decrease-qty') || e.target.closest('.decrease-qty')) {
-        e.preventDefault();
-        const btn = e.target.closest('.decrease-qty') || e.target;
-        fetch(`/cart/update/${btn.dataset.itemId}/decrease/`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-          .then(r => r.json()).then(data => { updateCartCount(data.cart_count); refreshCartDrawer(); });
-        return;
-      }
-      // Remove item
-      const removeBtn = e.target.closest('.remove-item');
-      if (removeBtn) {
-        e.preventDefault();
-        const itemId = removeBtn.dataset.itemId;
-        fetch(`/cart/remove/${itemId}/`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-          .then(r => r.json()).then(data => {
-            updateCartCount(data.cart_count);
-            const itemEl = document.querySelector(`.aa-cart-item[data-item-id="${itemId}"]`);
-            if (itemEl) { itemEl.style.opacity = '0'; setTimeout(() => { itemEl.remove(); refreshCartDrawer(); }, 280); }
-            showToast(data.message || 'Item removed.', 'info');
-          });
-        return;
+        ajaxAddToCart(
+          addBtn.dataset.url || addBtn.closest('form').action,
+          new FormData(addBtn.closest('form')),
+          addBtn
+        );
       }
     });
 
-    // ── Form submit intercept ─────────────────────────────────────
-    document.addEventListener('submit', e => {
+    document.addEventListener('submit', function (e) {
       if (e.target.classList.contains('add-to-cart-form')) {
         e.preventDefault();
-        const btn = e.target.querySelector('button[type="submit"]');
+        var btn = e.target.querySelector('button[type="submit"]');
         ajaxAddToCart(e.target.action, new FormData(e.target), btn);
       }
     }, true);
 
     // ── Auto-dismiss flash messages ───────────────────────────────
-    document.querySelectorAll('.aa-message').forEach(msg => {
-      setTimeout(() => { msg.style.opacity = '0'; msg.style.transform = 'translateY(-8px)'; setTimeout(() => msg.remove(), 300); }, 5000);
+    document.querySelectorAll('.aa-message').forEach(function (msg) {
+      setTimeout(function () {
+        msg.style.opacity = '0';
+        msg.style.transform = 'translateY(-8px)';
+        setTimeout(function () { msg.remove(); }, 300);
+      }, 5000);
     });
+
+  }());
   </script>
 
   {% block extra_scripts %}{% endblock %}
