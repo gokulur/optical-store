@@ -313,6 +313,7 @@ def eyeglass_detail(request, slug):
     lens_brands = LensBrand.objects.filter(is_active=True)
     lens_types = LensType.objects.filter(is_active=True)
     
+    
     context = {
         'product': product,
         'variants': product.variants.filter(is_active=True),

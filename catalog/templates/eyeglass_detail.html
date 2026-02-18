@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}{{ product.name }} - Eyeglasses{% endblock %}
+{% load custom_filters %}
 
 {% block content %}
 
@@ -1102,7 +1103,7 @@
       </div>
 
       <!-- Prescription inside this panel -->
-      {% include 'partials/_rx_table.html' ignore missing %}
+     
       <div class="rx-section" style="margin-bottom:20px;">
         <p class="rx-section-label">Enter Prescription (Optional)</p>
         <div style="overflow-x:auto;">
