@@ -222,38 +222,38 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 
-# Add to your settings.py
+# # Add to your settings.py
 
-# ============================================
-# PAYMENT GATEWAY SETTINGS
-# ============================================
+# # ============================================
+# # PAYMENT GATEWAY SETTINGS
+# # ============================================
 
-# Stripe Configuration
-STRIPE_PUBLISHABLE_KEY = 'pk_test_your_publishable_key_here'
-STRIPE_SECRET_KEY = 'sk_test_your_secret_key_here'
+# # Stripe Configuration
+# STRIPE_PUBLISHABLE_KEY = 'pk_test_your_publishable_key_here'
+# STRIPE_SECRET_KEY = 'sk_test_your_secret_key_here'
 
-# Razorpay Configuration (Popular in India/Middle East)
-RAZORPAY_KEY_ID = 'rzp_test_your_key_id_here'
-RAZORPAY_KEY_SECRET = 'your_secret_key_here'
+# # Razorpay Configuration (Popular in India/Middle East)
+# RAZORPAY_KEY_ID = 'rzp_test_your_key_id_here'
+# RAZORPAY_KEY_SECRET = 'your_secret_key_here'
 
-# PayPal Configuration
-PAYPAL_MODE = 'sandbox'  # Change to 'live' for production
-PAYPAL_CLIENT_ID = 'your_client_id_here'
-PAYPAL_CLIENT_SECRET = 'your_client_secret_here'
+# # PayPal Configuration
+# PAYPAL_MODE = 'sandbox'  # Change to 'live' for production
+# PAYPAL_CLIENT_ID = 'your_client_id_here'
+# PAYPAL_CLIENT_SECRET = 'your_client_secret_here'
 
-# ============================================
-# REQUIRED PACKAGES
-# ============================================
-# Add these to your requirements.txt:
-#
-# stripe>=5.0.0
-# razorpay>=1.3.0
-# paypalrestsdk>=1.13.1
+# # ============================================
+# # REQUIRED PACKAGES
+# # ============================================
+# # Add these to your requirements.txt:
+# #
+# # stripe>=5.0.0
+# # razorpay>=1.3.0
+# # paypalrestsdk>=1.13.1
 
-# ============================================
-# INSTALLATION COMMANDS
-# ============================================
-# pip install stripe razorpay paypalrestsdk
+# # ============================================
+# # INSTALLATION COMMANDS
+# # ============================================
+# # pip install stripe razorpay paypalrestsdk
 
 
 
@@ -272,3 +272,36 @@ LOCALE_PATHS = [
 # Language switcher URLs
 LANGUAGE_COOKIE_NAME = 'django_language'
 LANGUAGE_COOKIE_AGE = 31536000  # 1 year
+
+
+
+# ══════════════════════════════════════════════════════════════
+# ADD TO settings.py  — Sadad (Qatar) Payment Gateway
+# ══════════════════════════════════════════════════════════════
+
+# ── Sadad ─────────────────────────────────────────────────────
+# Get these from: https://panel.sadad.qa → Integration Settings
+SADAD_MERCHANT_ID = "YOUR_MERCHANT_ID"         
+SADAD_API_KEY     = "YOUR_API_KEY"              
+SADAD_SECRET_KEY  = "YOUR_SECRET_KEY"            
+
+# Switch to production URL when ready:
+SADAD_BASE_URL    = "https://api-gateway-sandbox.sadad.qa"   
+# SADAD_BASE_URL  = "https://api-gateway.sadad.qa"         
+
+SADAD_RETURN_URL  = "https://yoursite.com/orders/payment/sadad/return/"
+
+# ── Stripe ────────────────────────────────────────────────────
+STRIPE_SECRET_KEY      = "sk_test_..."
+STRIPE_PUBLISHABLE_KEY = "pk_test_..."
+
+# ── Razorpay ──────────────────────────────────────────────────
+RAZORPAY_KEY_ID     = "rzp_test_..."
+RAZORPAY_KEY_SECRET = "..."
+
+# ── PayPal ────────────────────────────────────────────────────
+PAYPAL_MODE          = "sandbox"    
+PAYPAL_CLIENT_ID     = "..."
+PAYPAL_CLIENT_SECRET = "..."
+
+ 

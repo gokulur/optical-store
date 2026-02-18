@@ -37,4 +37,7 @@ urlpatterns = [
     path('payment/sadad/return/',views.sadad_payment_return,name='sadad_payment_return'),
 
     path('payment/sadad/webhook/',views.sadad_webhook,name='sadad_webhook'),
+
+
+    
 ]
