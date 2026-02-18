@@ -1,1408 +1,985 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Checkout{% endblock %}
+{% block title %}Checkout — Secure Order{% endblock %}
 
 {% block content %}
-<!-- BOOTSTRAP 4.5.2 CSS -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-<!-- Leaflet CSS for Map -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
-    /* Wrapper to isolate all styles */
-    .checkout-wrapper {
-        background: #f8f8f8;
-        min-height: 100vh;
-        padding: 40px 20px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    }
-
-    .checkout-wrapper * {
-        box-sizing: border-box;
-    }
-
-    .checkout-container-custom {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: 1fr 420px;
-        gap: 30px;
-    }
-
-    /* Page Title */
-    .checkout-page-title {
-        text-align: center;
-        margin-bottom: 40px;
-    }
-
-    .checkout-page-title h1 {
-        font-size: 32px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 10px;
-        letter-spacing: -0.5px;
-    }
-
-    .checkout-page-title p {
-        font-size: 15px;
-        color: #6a6a6a;
-    }
-
-    /* LEFT SECTION - Form */
-    .checkout-form-section {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 40px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        border: 1px solid #e8e8e8;
-    }
-
-    .checkout-section-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 8px;
-    }
-
-    .checkout-section-subtitle {
-        font-size: 14px;
-        color: #6a6a6a;
-        margin-bottom: 30px;
-    }
-
-    .checkout-form-group {
-        margin-bottom: 24px;
-    }
-
-    .checkout-label {
-        display: block;
-        font-size: 13px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 8px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .checkout-input {
-        width: 100%;
-        padding: 14px 16px;
-        border: 2px solid #e8e8e8;
-        border-radius: 8px;
-        font-size: 15px;
-        color: #1a1a1a;
-        transition: all 0.2s ease;
-        background: #ffffff;
-    }
-
-    .checkout-input:focus {
-        outline: none;
-        border-color: #1a1a1a;
-        box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
-    }
-
-    .checkout-input::placeholder {
-        color: #b0b0b0;
-    }
-
-    .checkout-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
-
-    .checkout-divider {
-        height: 1px;
-        background: #e8e8e8;
-        margin: 30px 0;
-    }
-
-    /* Location Picker Button */
-    .location-picker-btn {
-        width: 100%;
-        padding: 14px 16px;
-        background: #ffffff;
-        border: 2px solid #1a1a1a;
-        border-radius: 8px;
-        font-size: 15px;
-        font-weight: 600;
-        color: #1a1a1a;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        transition: all 0.2s ease;
-        margin-bottom: 24px;
-    }
-
-    .location-picker-btn:hover {
-        background: #1a1a1a;
-        color: #ffffff;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .location-picker-btn svg {
-        width: 20px;
-        height: 20px;
-    }
-
-    /* Selected Location Display */
-    .selected-location-display {
-        background: #e8f5e9;
-        border: 2px solid #4caf50;
-        border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 24px;
-        display: none;
-    }
-
-    .selected-location-display.active {
-        display: block;
-    }
-
-    .location-display-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: #2e7d32;
-        margin-bottom: 8px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .location-display-address {
-        font-size: 15px;
-        color: #1a1a1a;
-        line-height: 1.5;
-        margin-bottom: 8px;
-    }
-
-    .location-display-coords {
-        font-size: 13px;
-        color: #6a6a6a;
-        font-family: monospace;
-    }
-
-    /* Address Selection Cards */
-    .address-select {
-        margin-bottom: 20px;
-    }
-
-    .address-option {
-        display: block;
-        margin-bottom: 15px;
-        cursor: pointer;
-    }
-
-    .address-option input[type="radio"] {
-        display: none;
-    }
-
-    .address-card {
-        padding: 16px 20px;
-        border: 2px solid #e8e8e8;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-        background: #ffffff;
-    }
-
-    .address-option input[type="radio"]:checked + .address-card,
-    .address-option.selected .address-card {
-        border-color: #1a1a1a;
-        background: #f9f9f9;
-    }
-
-    .address-card:hover {
-        border-color: #999;
-    }
-
-    .address-card strong {
-        display: block;
-        font-size: 15px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 8px;
-    }
-
-    .address-card p {
-        font-size: 14px;
-        color: #6a6a6a;
-        margin: 4px 0;
-    }
-
-    /* Payment Methods */
-    .payment-methods {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .payment-option {
-        display: flex;
-        align-items: center;
-        padding: 16px 20px;
-        border: 2px solid #e8e8e8;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        background: #ffffff;
-    }
-
-    .payment-option:hover {
-        border-color: #999;
-    }
-
-    .payment-option input[type="radio"] {
-        margin-right: 12px;
-        width: 20px;
-        height: 20px;
-    }
-
-    .payment-option input[type="radio"]:checked {
-        accent-color: #1a1a1a;
-    }
-
-    .payment-option span {
-        font-size: 15px;
-        font-weight: 500;
-        color: #1a1a1a;
-    }
-
-    /* Checkbox */
-    .checkbox {
-        display: flex;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .checkbox input[type="checkbox"] {
-        margin-right: 10px;
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-    }
-
-    .checkbox label {
-        font-size: 14px;
-        color: #1a1a1a;
-        cursor: pointer;
-    }
-
-    /* Textarea */
-    textarea {
-        width: 100%;
-        padding: 14px 16px;
-        border: 2px solid #e8e8e8;
-        border-radius: 8px;
-        font-size: 15px;
-        color: #1a1a1a;
-        font-family: inherit;
-        resize: vertical;
-        transition: all 0.2s ease;
-    }
-
-    textarea:focus {
-        outline: none;
-        border-color: #1a1a1a;
-        box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
-    }
-
-    /* RIGHT SECTION - Order Summary */
-    .checkout-summary-section {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 30px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        border: 1px solid #e8e8e8;
-        height: fit-content;
-        position: sticky;
-        top: 20px;
-    }
-
-    .checkout-summary-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 24px;
-        padding-bottom: 16px;
-        border-bottom: 2px solid #e8e8e8;
-    }
-
-    .checkout-order-item {
-        display: flex;
-        gap: 16px;
-        margin-bottom: 20px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #f0f0f0;
-    }
-
-    .checkout-order-item:last-of-type {
-        margin-bottom: 24px;
-    }
-
-    .checkout-item-image {
-        width: 80px;
-        height: 80px;
-        object-fit: cover;
-        border-radius: 8px;
-        border: 1px solid #e8e8e8;
-        flex-shrink: 0;
-    }
-
-    .checkout-item-details {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .checkout-item-name {
-        font-size: 15px;
-        font-weight: 600;
-        color: #1a1a1a;
-        line-height: 1.4;
-        margin-bottom: 6px;
-    }
-
-    .checkout-item-price {
-        font-size: 14px;
-        color: #6a6a6a;
-        font-weight: 500;
-    }
-
-    .checkout-item-qty {
-        font-size: 13px;
-        color: #999;
-        margin-top: 4px;
-    }
-
-    .checkout-summary-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 12px 0;
-        font-size: 15px;
-    }
-
-    .checkout-summary-row span:first-child {
-        color: #6a6a6a;
-    }
-
-    .checkout-summary-row span:last-child {
-        font-weight: 600;
-        color: #1a1a1a;
-    }
-
-    .checkout-summary-total {
-        border-top: 2px solid #1a1a1a;
-        margin-top: 16px;
-        padding-top: 16px;
-    }
-
-    .checkout-summary-total span {
-        font-size: 18px;
-        font-weight: 700;
-        color: #1a1a1a;
-    }
-
-    .checkout-submit-btn {
-        width: 100%;
-        padding: 16px;
-        background: #1a1a1a;
-        color: #ffffff;
-        border: 2px solid #1a1a1a;
-        border-radius: 8px;
-        font-size: 15px;
-        font-weight: 600;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 24px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .checkout-submit-btn:hover {
-        background: #000000;
-        border-color: #000000;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .checkout-secure-badge {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        margin-top: 16px;
-        font-size: 13px;
-        color: #6a6a6a;
-    }
-
-    .checkout-secure-icon {
-        font-size: 16px;
-    }
-
-    /* Progress Steps */
-    .checkout-progress {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 40px;
-        padding: 20px;
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        border: 1px solid #e8e8e8;
-    }
-
-    .checkout-progress-step {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .checkout-progress-circle {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: #e8e8e8;
-        color: #999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 14px;
-    }
-
-    .checkout-progress-step.active .checkout-progress-circle {
-        background: #1a1a1a;
-        color: #ffffff;
-    }
-
-    .checkout-progress-step.completed .checkout-progress-circle {
-        background: #1a1a1a;
-        color: #ffffff;
-    }
-
-    .checkout-progress-text {
-        font-size: 14px;
-        color: #999;
-        font-weight: 500;
-    }
-
-    .checkout-progress-step.active .checkout-progress-text {
-        color: #1a1a1a;
-        font-weight: 600;
-    }
-
-    .checkout-progress-arrow {
-        color: #d0d0d0;
-        font-size: 18px;
-    }
-
-    /* Map Modal Overlay */
-    .map-modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        z-index: 100000;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        animation: mapFadeIn 0.3s ease;
-    }
-
-    .map-modal-overlay.active {
-        display: flex;
-    }
-
-    @keyframes mapFadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    /* Map Modal Container */
-    .map-modal-container {
-        width: 95%;
-        max-width: 1000px;
-        height: 90vh;
-        max-height: 700px;
-        background: #ffffff;
-        border-radius: 16px;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        animation: mapSlideUp 0.3s ease;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    }
-
-    @keyframes mapSlideUp {
-        from {
-            opacity: 0;
-            transform: translateY(50px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* Map Modal Header */
-    .map-modal-header {
-        background: #1a1a1a;
-        color: #ffffff;
-        padding: 20px 24px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .map-modal-title {
-        font-size: 20px;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .map-modal-close {
-        background: none;
-        border: none;
-        color: #ffffff;
-        cursor: pointer;
-        padding: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-    }
-
-    .map-modal-close:hover {
-        background: rgba(255, 255, 255, 0.1);
-    }
-
-    /* Search Box */
-    .map-search-container {
-        padding: 16px 24px;
-        background: #f8f8f8;
-        border-bottom: 1px solid #e8e8e8;
-    }
-
-    .map-search-box {
-        position: relative;
-        display: flex;
-        gap: 10px;
-    }
-
-    .map-search-input {
-        flex: 1;
-        padding: 12px 16px 12px 44px;
-        border: 2px solid #e8e8e8;
-        border-radius: 8px;
-        font-size: 15px;
-        transition: all 0.2s ease;
-    }
-
-    .map-search-input:focus {
-        outline: none;
-        border-color: #1a1a1a;
-        box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
-    }
-
-    .map-search-icon {
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #6a6a6a;
-    }
-
-    .map-current-location-btn {
-        padding: 12px 20px;
-        background: #1a1a1a;
-        color: #ffffff;
-        border: none;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
-
-    .map-current-location-btn:hover {
-        background: #000000;
-        transform: translateY(-2px);
-    }
-
-    /* Map Container */
-    .map-container {
-        flex: 1;
-        position: relative;
-    }
-
-    #deliveryMap {
-        width: 100%;
-        height: 100%;
-    }
-
-    /* Selected Location Info */
-    .map-selected-info {
-        background: #ffffff;
-        padding: 20px 24px;
-        border-top: 1px solid #e8e8e8;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-    }
-
-    .map-selected-details {
-        flex: 1;
-    }
-
-    .map-selected-label {
-        font-size: 13px;
-        font-weight: 600;
-        color: #6a6a6a;
-        margin-bottom: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .map-selected-address {
-        font-size: 15px;
-        color: #1a1a1a;
-        line-height: 1.5;
-        margin-bottom: 4px;
-    }
-
-    .map-selected-coords {
-        font-size: 13px;
-        color: #6a6a6a;
-        font-family: monospace;
-    }
-
-    .map-confirm-btn {
-        padding: 14px 32px;
-        background: #1a1a1a;
-        color: #ffffff;
-        border: none;
-        border-radius: 8px;
-        font-size: 15px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
-
-    .map-confirm-btn:hover {
-        background: #000000;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .map-confirm-btn:disabled {
-        background: #e8e8e8;
-        color: #b0b0b0;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    /* Loading Spinner */
-    .map-loading {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(255, 255, 255, 0.95);
-        padding: 20px 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        display: none;
-        align-items: center;
-        gap: 12px;
-        z-index: 1000;
-    }
-
-    .map-loading.active {
-        display: flex;
-    }
-
-    .map-spinner {
-        width: 24px;
-        height: 24px;
-        border: 3px solid #e8e8e8;
-        border-top-color: #1a1a1a;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    /* Responsive */
-    @media (max-width: 992px) {
-        .checkout-container-custom {
-            grid-template-columns: 1fr;
-        }
-
-        .checkout-summary-section {
-            position: relative;
-            top: 0;
-        }
-
-        .checkout-row {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .checkout-wrapper {
-            padding: 20px 10px;
-        }
-
-        .checkout-page-title h1 {
-            font-size: 24px;
-        }
-
-        .checkout-form-section,
-        .checkout-summary-section {
-            padding: 24px;
-        }
-
-        .checkout-progress {
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .checkout-progress-arrow {
-            transform: rotate(90deg);
-        }
-
-        .checkout-item-image {
-            width: 70px;
-            height: 70px;
-        }
-
-        .map-modal-container {
-            width: 100%;
-            height: 100vh;
-            max-height: 100vh;
-            border-radius: 0;
-        }
-
-        .map-search-box {
-            flex-direction: column;
-        }
-
-        .map-current-location-btn {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .map-selected-info {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .map-confirm-btn {
-            width: 100%;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .checkout-form-section,
-        .checkout-summary-section {
-            padding: 20px;
-        }
-
-        .checkout-section-title {
-            font-size: 18px;
-        }
-
-        .checkout-input {
-            padding: 12px 14px;
-            font-size: 14px;
-        }
-
-        .checkout-item-name {
-            font-size: 14px;
-        }
-
-        .checkout-item-image {
-            width: 60px;
-            height: 60px;
-        }
-    }
+:root {
+  --ink:      #0f0f0f;
+  --ink2:     #3a3a3a;
+  --muted:    #7a7a7a;
+  --ghost:    #b8b8b8;
+  --line:     #e6e6e6;
+  --surface:  #f5f4f0;
+  --white:    #ffffff;
+  --accent:   #1a1a1a;
+  --green:    #1a7a4a;
+  --green-bg: #edf6f1;
+  --green-bd: #b5ddc8;
+  --error:    #c0392b;
+  --r:        10px;
+  --r-sm:     6px;
+  --shadow:   0 2px 12px rgba(0,0,0,.07);
+  --shadow-lg:0 8px 40px rgba(0,0,0,.12);
+  --font:     'DM Sans', sans-serif;
+  --serif:    'DM Serif Display', serif;
+  --transition: all .2s cubic-bezier(.4,0,.2,1);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+body.checkout-active{background:var(--surface);font-family:var(--font);color:var(--ink)}
+
+/* ── LAYOUT ─────────────────────────────────── */
+.ck-wrap{min-height:100vh;padding:40px 20px 80px}
+.ck-inner{max-width:1180px;margin:0 auto}
+
+/* Hero bar */
+.ck-hero{text-align:center;margin-bottom:44px}
+.ck-hero-eyebrow{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.ck-hero h1{font-family:var(--serif);font-size:clamp(28px,4vw,42px);font-weight:400;color:var(--ink);line-height:1.1}
+
+/* Progress */
+.ck-progress{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:48px}
+.ck-step{display:flex;align-items:center;gap:10px;padding:12px 24px;border-radius:40px;font-size:13px;font-weight:600;color:var(--ghost);letter-spacing:.3px}
+.ck-step.done{color:var(--green)}
+.ck-step.active{background:var(--ink);color:var(--white)}
+.ck-step-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:currentColor;color:transparent;position:relative;flex-shrink:0}
+.ck-step-num::after{content:attr(data-n);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:inherit;font-size:12px}
+.ck-step.done .ck-step-num{background:var(--green-bg);color:var(--green)}
+.ck-step.done .ck-step-num::after{content:'✓';color:var(--green)}
+.ck-step.active .ck-step-num{background:var(--white);color:var(--ink)}
+.ck-step.active .ck-step-num::after{color:var(--ink)}
+.ck-step-num[data-n]{background:transparent;border:2px solid currentColor}
+.ck-divider-line{width:60px;height:1px;background:var(--line)}
+
+/* Grid */
+.ck-grid{display:grid;grid-template-columns:1fr 400px;gap:28px;align-items:start}
+
+/* Cards */
+.ck-card{background:var(--white);border-radius:var(--r);border:1px solid var(--line);padding:36px;box-shadow:var(--shadow)}
+.ck-card + .ck-card{margin-top:20px}
+
+/* Section headers */
+.ck-section-head{display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.ck-section-badge{width:32px;height:32px;border-radius:50%;background:var(--ink);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.ck-section-info h2{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.ck-section-info p{font-size:13px;color:var(--muted)}
+
+/* Form elements */
+.ck-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ck-field{margin-bottom:20px}
+.ck-label{display:block;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink2);margin-bottom:8px}
+.ck-input{width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:14px;font-family:var(--font);color:var(--ink);background:var(--white);transition:var(--transition);outline:none}
+.ck-input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(15,15,15,.08)}
+.ck-input::placeholder{color:var(--ghost)}
+.ck-input.error{border-color:var(--error)}
+.ck-error-msg{font-size:12px;color:var(--error);margin-top:5px;display:none}
+.ck-field.invalid .ck-error-msg{display:block}
+.ck-field.invalid .ck-input{border-color:var(--error)}
+
+select.ck-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a7a7a' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+
+textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
+
+/* Address cards */
+.addr-cards{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.addr-card-wrap{position:relative}
+.addr-card-wrap input[type=radio]{position:absolute;opacity:0;width:0;height:0}
+.addr-card-label{display:block;padding:16px 20px 16px 48px;border:1.5px solid var(--line);border-radius:var(--r-sm);cursor:pointer;transition:var(--transition);position:relative}
+.addr-card-label::before{content:'';position:absolute;left:18px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;border:2px solid var(--line);transition:var(--transition)}
+.addr-card-wrap input:checked + .addr-card-label{border-color:var(--ink);background:#fafafa}
+.addr-card-wrap input:checked + .addr-card-label::before{border-color:var(--ink);background:var(--ink);box-shadow:inset 0 0 0 4px var(--white)}
+.addr-card-label:hover{border-color:var(--ghost)}
+.addr-name{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.addr-line{font-size:13px;color:var(--muted);line-height:1.5}
+.addr-badge{display:inline-block;margin-top:6px;padding:2px 8px;background:var(--green-bg);color:var(--green);border-radius:20px;font-size:11px;font-weight:600}
+
+/* Add address link */
+.add-addr-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border:1.5px dashed var(--line);border-radius:var(--r-sm);font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;transition:var(--transition);margin-top:4px}
+.add-addr-btn:hover{border-color:var(--ink);color:var(--ink)}
+
+/* Map picker button */
+.map-pick-btn{width:100%;padding:15px;border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--surface);display:flex;align-items:center;justify-content:center;gap:12px;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;transition:var(--transition);margin-bottom:20px}
+.map-pick-btn:hover{border-color:var(--ink);background:var(--white)}
+.map-pick-btn svg{flex-shrink:0}
+
+/* Location confirmed */
+.loc-confirmed{display:none;padding:14px 16px;background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:var(--r-sm);margin-bottom:20px}
+.loc-confirmed.show{display:flex;align-items:flex-start;gap:12px}
+.loc-confirmed-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.loc-confirmed-addr{font-size:13px;color:var(--ink);line-height:1.5;font-weight:500}
+.loc-confirmed-coords{font-size:11px;color:var(--muted);margin-top:3px;font-family:monospace}
+.loc-change-btn{background:none;border:none;font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0;margin-top:6px;font-family:var(--font)}
+.loc-change-btn:hover{color:var(--ink)}
+
+/* Same billing toggle */
+.ck-toggle-row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surface);border-radius:var(--r-sm);margin-bottom:20px;cursor:pointer}
+.ck-toggle-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--ink);cursor:pointer;flex-shrink:0}
+.ck-toggle-label{font-size:14px;font-weight:500;color:var(--ink);cursor:pointer;user-select:none}
+
+/* Payment options */
+.pay-opts{display:flex;flex-direction:column;gap:10px}
+.pay-opt-wrap{position:relative}
+.pay-opt-wrap input[type=radio]{position:absolute;opacity:0;width:0;height:0}
+.pay-opt-label{display:flex;align-items:center;gap:16px;padding:16px 20px;border:1.5px solid var(--line);border-radius:var(--r-sm);cursor:pointer;transition:var(--transition)}
+.pay-opt-label:hover{border-color:var(--ghost)}
+.pay-opt-wrap input:checked + .pay-opt-label{border-color:var(--ink);background:#fafafa}
+.pay-radio-circle{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;transition:var(--transition);position:relative}
+.pay-opt-wrap input:checked + .pay-opt-label .pay-radio-circle{border-color:var(--ink);background:var(--ink)}
+.pay-opt-wrap input:checked + .pay-opt-label .pay-radio-circle::after{content:'';position:absolute;width:6px;height:6px;background:var(--white);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
+.pay-opt-icon{font-size:22px}
+.pay-opt-info strong{display:block;font-size:14px;font-weight:700;color:var(--ink)}
+.pay-opt-info span{font-size:12px;color:var(--muted)}
+.pay-opt-tag{margin-left:auto;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:var(--green-bg);color:var(--green)}
+
+/* Sadad sub-panel */
+.sadad-info{margin-top:12px;padding:14px 16px;background:#f0faf5;border-radius:var(--r-sm);border:1px solid var(--green-bd);font-size:13px;color:var(--green);display:none}
+.sadad-info.show{display:block}
+.sadad-methods{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.sadad-method-pill{padding:4px 12px;border:1px solid var(--green-bd);border-radius:20px;font-size:11px;font-weight:600;color:var(--green);background:var(--white)}
+
+/* Card fields */
+.card-fields{display:none;margin-top:16px;padding:16px;background:var(--surface);border-radius:var(--r-sm)}
+.card-fields.show{display:block}
+
+/* ── ORDER SUMMARY ───────────────────────────── */
+.ck-summary{background:var(--white);border-radius:var(--r);border:1px solid var(--line);padding:28px;position:sticky;top:24px;box-shadow:var(--shadow)}
+.ck-summary-title{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ink);margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.ck-item{display:flex;gap:14px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.ck-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.ck-item-img{width:68px;height:68px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--line);flex-shrink:0;background:var(--surface)}
+.ck-item-img-placeholder{width:68px;height:68px;background:var(--surface);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.ck-item-body{flex:1;min-width:0}
+.ck-item-name{font-size:13px;font-weight:700;color:var(--ink);line-height:1.4;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ck-item-sub{font-size:12px;color:var(--muted)}
+.ck-item-price{font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;margin-left:auto;padding-left:8px}
+.ck-totals{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.ck-tot-row{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);padding:5px 0}
+.ck-tot-row span:last-child{font-weight:600;color:var(--ink)}
+.ck-tot-final{display:flex;justify-content:space-between;margin-top:12px;padding-top:14px;border-top:2px solid var(--ink)}
+.ck-tot-final span{font-size:18px;font-weight:700;color:var(--ink)}
+
+/* Coupon */
+.ck-coupon{display:flex;gap:8px;margin:16px 0}
+.ck-coupon input{flex:1;padding:10px 14px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:13px;font-family:var(--font);outline:none;transition:var(--transition)}
+.ck-coupon input:focus{border-color:var(--ink)}
+.ck-coupon-btn{padding:10px 16px;background:var(--ink);color:var(--white);border:none;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap;transition:var(--transition)}
+.ck-coupon-btn:hover{opacity:.85}
+
+/* Place order button */
+.ck-place-btn{width:100%;margin-top:20px;padding:17px;background:var(--ink);color:var(--white);border:none;border-radius:var(--r-sm);font-size:15px;font-weight:700;letter-spacing:.5px;cursor:pointer;font-family:var(--font);transition:var(--transition);position:relative;overflow:hidden}
+.ck-place-btn:hover{background:#000;transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.ck-place-btn:active{transform:translateY(0)}
+.ck-place-btn.loading{pointer-events:none}
+.ck-place-btn .btn-text{transition:opacity .2s}
+.ck-place-btn.loading .btn-text{opacity:0}
+.ck-place-btn .btn-spinner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-top-color:var(--white);border-radius:50%;animation:spin .8s linear infinite;display:none}
+.ck-place-btn.loading .btn-spinner{display:block}
+
+.ck-secure{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;font-size:12px;color:var(--muted)}
+
+/* ── MAP MODAL ───────────────────────────────── */
+.map-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.map-overlay.open{display:flex}
+.map-modal{width:min(96vw,980px);height:min(90vh,700px);background:var(--white);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);animation:modalIn .3s cubic-bezier(.4,0,.2,1)}
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
+.map-head{padding:18px 24px;background:var(--ink);color:var(--white);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.map-head h3{font-size:17px;font-weight:700}
+.map-close{background:none;border:none;color:var(--white);cursor:pointer;padding:6px;border-radius:6px;transition:var(--transition)}
+.map-close:hover{background:rgba(255,255,255,.15)}
+.map-search-bar{padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;gap:10px;flex-shrink:0}
+.map-search-wrap{flex:1;position:relative}
+.map-search-input{width:100%;padding:11px 14px 11px 38px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:14px;font-family:var(--font);outline:none;transition:var(--transition)}
+.map-search-input:focus{border-color:var(--ink)}
+.map-search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.map-loc-btn{padding:11px 16px;background:var(--ink);color:var(--white);border:none;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:var(--font);transition:var(--transition);white-space:nowrap}
+.map-loc-btn:hover{background:#000}
+.map-body{flex:1;position:relative}
+#deliveryMap{width:100%;height:100%}
+.map-footer{padding:16px 20px;background:var(--white);border-top:1px solid var(--line);display:flex;align-items:center;gap:16px;flex-shrink:0}
+.map-foot-info{flex:1}
+.map-foot-label{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.map-foot-addr{font-size:14px;color:var(--ink);font-weight:500;line-height:1.4}
+.map-foot-coords{font-size:11px;color:var(--muted);font-family:monospace;margin-top:2px}
+.map-confirm-btn{padding:13px 28px;background:var(--green);color:var(--white);border:none;border-radius:var(--r-sm);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);transition:var(--transition);white-space:nowrap}
+.map-confirm-btn:hover:not(:disabled){background:#155c39;transform:translateY(-1px)}
+.map-confirm-btn:disabled{background:var(--line);color:var(--ghost);cursor:not-allowed}
+.map-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.95);padding:16px 24px;border-radius:var(--r-sm);display:none;align-items:center;gap:10px;font-size:14px;box-shadow:var(--shadow)}
+.map-loading.on{display:flex}
+.map-spinner-sm{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Validation helpers */
+.ck-field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* Responsive */
+@media(max-width:900px){.ck-grid{grid-template-columns:1fr}.ck-summary{position:static}}
+@media(max-width:600px){
+  .ck-wrap{padding:20px 12px 60px}
+  .ck-card{padding:22px}
+  .ck-hero h1{font-size:26px}
+  .ck-field-row,.ck-row{grid-template-columns:1fr}
+  .map-search-bar{flex-direction:column}
+  .map-footer{flex-direction:column;align-items:stretch}
+  .map-confirm-btn{width:100%}
+  .ck-progress{gap:4px}
+  .ck-step{padding:10px 14px;font-size:12px}
+  .ck-divider-line{width:24px}
+}
 </style>
 
-<div class="checkout-wrapper">
-    <div class="checkout-container-custom" style="max-width: 1200px; margin: 0 auto;">
+<body class="checkout-active">
+<div class="ck-wrap">
+<div class="ck-inner">
 
-        <!-- Page Title -->
-        <div class="checkout-page-title" style="grid-column: 1 / -1;">
-            <h1>Secure Checkout</h1>
-            <p>Complete your order safely and securely</p>
-        </div>
+  <!-- Hero -->
+  <div class="ck-hero">
+    <div class="ck-hero-eyebrow">Order Summary & Payment</div>
+    <h1>Secure Checkout</h1>
+  </div>
 
-        <!-- Progress Steps -->
-        <div class="checkout-progress" style="grid-column: 1 / -1;">
-            <div class="checkout-progress-step completed">
-                <div class="checkout-progress-circle">✓</div>
-                <span class="checkout-progress-text">Cart</span>
-            </div>
-            <div class="checkout-progress-arrow">→</div>
-            <div class="checkout-progress-step active">
-                <div class="checkout-progress-circle">2</div>
-                <span class="checkout-progress-text">Checkout</span>
-            </div>
-            <div class="checkout-progress-arrow">→</div>
-            <div class="checkout-progress-step">
-                <div class="checkout-progress-circle">3</div>
-                <span class="checkout-progress-text">Confirmation</span>
-            </div>
-        </div>
-
-        <!-- LEFT SECTION - Checkout Form -->
-        <div class="checkout-form-section">
-            <form method="POST" action="{% url 'orders:place_order' %}" id="checkoutForm">
-                {% csrf_token %}
-
-                <!-- Section 1: Shipping Address -->
-                <div class="checkout-section-title">1. Shipping Address</div>
-                <div class="checkout-section-subtitle">Select or add your delivery address</div>
-
-                {% if shipping_addresses %}
-                <div class="address-select">
-                    {% for address in shipping_addresses %}
-                    <label class="address-option {% if address == default_shipping %}selected{% endif %}">
-                        <input type="radio" name="shipping_address_id" value="{{ address.id }}" 
-                               {% if address == default_shipping %}checked{% endif %} required>
-                        <div class="address-card">
-                            <strong>{{ address.full_name }}</strong>
-                            <p>{{ address.address_line1 }}</p>
-                            {% if address.address_line2 %}
-                            <p>{{ address.address_line2 }}</p>
-                            {% endif %}
-                            <p>{{ address.city }}, {{ address.state }} {{ address.postal_code }}</p>
-                            <p>Phone: {{ address.phone }}</p>
-                        </div>
-                    </label>
-                    {% endfor %}
-                </div>
-                <a href="{% url 'address_create' %}?next={{ request.path }}" 
-                   style="display: inline-block; padding: 10px 20px; background: #f0f0f0; border-radius: 6px; text-decoration: none; color: #1a1a1a; font-weight: 600; font-size: 14px;">
-                    + Add New Address
-                </a>
-                {% else %}
-                <!-- Location Picker Button -->
-                <button type="button" class="location-picker-btn" onclick="openMapModal()">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                    <span>Select Delivery Location on Map</span>
-                </button>
-
-                <!-- Selected Location Display -->
-                <div id="selectedLocationDisplay" class="selected-location-display">
-                    <div class="location-display-title">📍 Selected Delivery Location</div>
-                    <div class="location-display-address" id="displayAddress">No location selected</div>
-                    <div class="location-display-coords" id="displayCoords"></div>
-                </div>
-
-                <!-- Hidden Inputs for Lat/Lng -->
-                <input type="hidden" id="delivery_latitude" name="delivery_latitude" value="">
-                <input type="hidden" id="delivery_longitude" name="delivery_longitude" value="">
-
-                <div class="checkout-row">
-                    <div class="checkout-form-group">
-                        <label class="checkout-label">Full Name</label>
-                        <input class="checkout-input" type="text" name="full_name"
-                            value="{% if user.is_authenticated %}{{ user.get_full_name }}{% endif %}" 
-                            placeholder="John Doe" required>
-                    </div>
-
-                    <div class="checkout-form-group">
-                        <label class="checkout-label">Phone Number</label>
-                        <input class="checkout-input" type="tel" name="phone" 
-                            placeholder="+91 98765 43210" required>
-                    </div>
-                </div>
-
-                <div class="checkout-form-group">
-                    <label class="checkout-label">Email Address</label>
-                    <input class="checkout-input" type="email" name="email" 
-                        value="{% if user.is_authenticated %}{{ user.email }}{% endif %}"
-                        placeholder="john@example.com" required>
-                </div>
-
-                <div class="checkout-divider"></div>
-
-                <div class="checkout-form-group">
-                    <label class="checkout-label">Street Address</label>
-                    <input class="checkout-input" type="text" name="address_line1" id="address_line"
-                        placeholder="123 Main Street, Apartment 4B" required>
-                </div>
-
-                <div class="checkout-row">
-                    <div class="checkout-form-group">
-                        <label class="checkout-label">City</label>
-                        <input class="checkout-input" type="text" name="city" id="city" 
-                            placeholder="Kochi" required>
-                    </div>
-
-                    <div class="checkout-form-group">
-                        <label class="checkout-label">Postal Code</label>
-                        <input class="checkout-input" type="text" name="postal_code" id="postal_code"
-                            placeholder="682001" required>
-                    </div>
-                </div>
-
-                <div class="checkout-row">
-                    <div class="checkout-form-group">
-                        <label class="checkout-label">State/Province</label>
-                        <input class="checkout-input" type="text" name="state" 
-                            placeholder="Kerala" required>
-                    </div>
-
-                    <div class="checkout-form-group">
-                        <label class="checkout-label">Country</label>
-                        <input class="checkout-input" type="text" name="country" value="India" required>
-                    </div>
-                </div>
-                {% endif %}
-
-                <div class="checkout-divider"></div>
-
-                <!-- Section 2: Billing Address -->
-                <div class="checkout-section-title">2. Billing Address</div>
-                <div class="checkout-section-subtitle">Payment and billing information</div>
-
-                <div class="checkbox">
-                    <input type="checkbox" id="sameAsShipping" name="same_as_shipping" checked onchange="toggleBilling()">
-                    <label for="sameAsShipping">Same as shipping address</label>
-                </div>
-
-                <div id="billingSection" style="display:none;">
-                    {% if shipping_addresses %}
-                    <div class="address-select">
-                        {% for address in shipping_addresses %}
-                        <label class="address-option">
-                            <input type="radio" name="billing_address_id" value="{{ address.id }}">
-                            <div class="address-card">
-                                <strong>{{ address.full_name }}</strong>
-                                <p>{{ address.address_line1 }}, {{ address.city }}</p>
-                            </div>
-                        </label>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
-
-                <div class="checkout-divider"></div>
-
-                <!-- Section 3: Payment Method -->
-                <div class="checkout-section-title">3. Payment Method</div>
-                <div class="checkout-section-subtitle">Choose your payment option</div>
-
-                <div class="payment-methods">
-                    <label class="payment-option">
-                        <input type="radio" name="payment_method" value="cash_on_delivery" checked required>
-                        <span>💵 Cash on Delivery</span>
-                    </label>
-                    <label class="payment-option">
-                        <input type="radio" name="payment_method" value="credit_card">
-                        <span>💳 Credit/Debit Card</span>
-                    </label>
-                    <label class="payment-option">
-                        <input type="radio" name="payment_method" value="bank_transfer">
-                        <span>🏦 Bank Transfer</span>
-                    </label>
-                </div>
-
-                <div class="checkout-divider"></div>
-
-                <!-- Section 4: Order Notes -->
-                <div class="checkout-section-title">4. Order Notes (Optional)</div>
-                <div class="checkout-section-subtitle">Any special instructions for your order</div>
-
-                <textarea name="customer_notes" placeholder="E.g., Please ring the doorbell twice..." rows="3"></textarea>
-
-                <button type="submit" class="checkout-submit-btn">
-                    Place Order
-                </button>
-
-                <div class="checkout-secure-badge">
-                    <span class="checkout-secure-icon">🔒</span>
-                    <span>Secure Checkout - Your information is protected</span>
-                </div>
-            </form>
-        </div>
-
-        <!-- RIGHT SECTION - Order Summary -->
-        <div class="checkout-summary-section">
-            <h3 class="checkout-summary-title">Order Summary</h3>
-
-            {% for item in cart_items %}
-            <div class="checkout-order-item">
-                {% if item.product.image %}
-                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}"
-                    class="checkout-item-image">
-                {% endif %}
-
-                <div class="checkout-item-details">
-                    <div>
-                        <div class="checkout-item-name">{{ item.product.name }}</div>
-                        <div class="checkout-item-price">QAR {{ item.unit_price }}</div>
-                        <div class="checkout-item-qty">Qty: {{ item.quantity }}</div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-
-            <div class="checkout-summary-row">
-                <span>Subtotal</span>
-                <span>QAR {{ subtotal }}</span>
-            </div>
-
-            <div class="checkout-summary-row">
-                <span>Shipping</span>
-                <span>{% if shipping == 0 %}FREE{% else %}QAR {{ shipping }}{% endif %}</span>
-            </div>
-
-            <div class="checkout-summary-row">
-                <span>Tax</span>
-                <span>QAR {{ tax }}</span>
-            </div>
-
-            <div class="checkout-summary-row checkout-summary-total">
-                <span>Total</span>
-                <span>QAR {{ total }}</span>
-            </div>
-        </div>
-
+  <!-- Progress steps -->
+  <div class="ck-progress">
+    <div class="ck-step done">
+      <div class="ck-step-num" data-n="1"></div>
+      <span>Cart</span>
     </div>
+    <div class="ck-divider-line"></div>
+    <div class="ck-step active">
+      <div class="ck-step-num" data-n="2"></div>
+      <span>Checkout</span>
+    </div>
+    <div class="ck-divider-line"></div>
+    <div class="ck-step">
+      <div class="ck-step-num" data-n="3"></div>
+      <span>Confirmation</span>
+    </div>
+  </div>
+
+  <div class="ck-grid">
+
+    <!-- ══ LEFT COLUMN ══════════════════════════════════════ -->
+    <div>
+      <form id="checkoutForm" method="POST" action="{% url 'orders:place_order' %}" novalidate>
+        {% csrf_token %}
+
+        <!-- ── 1. SHIPPING ADDRESS ──────────────────────── -->
+        <div class="ck-card">
+          <div class="ck-section-head">
+            <div class="ck-section-badge">1</div>
+            <div class="ck-section-info">
+              <h2>Shipping Address</h2>
+              <p>Where should we deliver your order?</p>
+            </div>
+          </div>
+
+          {% if shipping_addresses %}
+            <div class="addr-cards" id="savedAddrs">
+              {% for address in shipping_addresses %}
+              <div class="addr-card-wrap">
+                <input type="radio" name="shipping_address_id"
+                       id="addr_{{ address.id }}"
+                       value="{{ address.id }}"
+                       {% if address == default_shipping %}checked{% endif %}
+                       required>
+                <label class="addr-card-label" for="addr_{{ address.id }}">
+                  <div class="addr-name">{{ address.full_name }}</div>
+                  <div class="addr-line">
+                    {{ address.address_line1 }}{% if address.address_line2 %}, {{ address.address_line2 }}{% endif %}<br>
+                    {{ address.city }}{% if address.state %}, {{ address.state }}{% endif %} {{ address.postal_code }}<br>
+                    {{ address.country }} &middot; {{ address.phone }}
+                  </div>
+                  {% if address == default_shipping %}<span class="addr-badge">Default</span>{% endif %}
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+            <a href="{% url 'address_create' %}?next={{ request.path }}" class="add-addr-btn">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Add new address
+            </a>
+
+          {% else %}
+            <!-- MAP PICKER -->
+            <button type="button" class="map-pick-btn" onclick="openMap()">
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0L6.343 16.657a8 8 0 1111.314 0z"/>
+                <circle cx="12" cy="11" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              </svg>
+              Pin your delivery location on map
+            </button>
+
+            <div id="locConfirmed" class="loc-confirmed">
+              <span class="loc-confirmed-icon">📍</span>
+              <div>
+                <div class="loc-confirmed-addr" id="locAddr">—</div>
+                <div class="loc-confirmed-coords" id="locCoords"></div>
+                <button type="button" class="loc-change-btn" onclick="openMap()">Change location</button>
+              </div>
+            </div>
+
+            <input type="hidden" id="delivery_latitude" name="delivery_latitude">
+            <input type="hidden" id="delivery_longitude" name="delivery_longitude">
+
+            <!-- Personal info -->
+            <div class="ck-field-row">
+              <div class="ck-field" id="field_full_name">
+                <label class="ck-label" for="full_name">Full Name</label>
+                <input class="ck-input" type="text" id="full_name" name="full_name"
+                       value="{% if user.is_authenticated %}{{ user.get_full_name }}{% endif %}"
+                       placeholder="John Doe" required>
+                <div class="ck-error-msg">Please enter your full name</div>
+              </div>
+              <div class="ck-field" id="field_phone">
+                <label class="ck-label" for="phone">Phone Number</label>
+                <input class="ck-input" type="tel" id="phone" name="phone"
+                       placeholder="+974 5555 1234" required>
+                <div class="ck-error-msg">Please enter a valid phone number</div>
+              </div>
+            </div>
+
+            <div class="ck-field" id="field_email">
+              <label class="ck-label" for="email">Email Address</label>
+              <input class="ck-input" type="email" id="email" name="email"
+                     value="{% if user.is_authenticated %}{{ user.email }}{% endif %}"
+                     placeholder="john@example.com" required>
+              <div class="ck-error-msg">Please enter a valid email address</div>
+            </div>
+
+            <div class="ck-field" id="field_address_line1">
+              <label class="ck-label" for="address_line1">Street Address</label>
+              <input class="ck-input" type="text" id="address_line1" name="address_line1"
+                     placeholder="Building, Street, Area" required>
+              <div class="ck-error-msg">Street address is required</div>
+            </div>
+
+            <div class="ck-field-row">
+              <div class="ck-field" id="field_city">
+                <label class="ck-label" for="city">City</label>
+                <input class="ck-input" type="text" id="city" name="city"
+                       placeholder="Doha" required>
+                <div class="ck-error-msg">City is required</div>
+              </div>
+              <div class="ck-field" id="field_postal_code">
+                <label class="ck-label" for="postal_code">Postal Code</label>
+                <input class="ck-input" type="text" id="postal_code" name="postal_code"
+                       placeholder="00974">
+              </div>
+            </div>
+
+            <div class="ck-field-row">
+              <div class="ck-field">
+                <label class="ck-label" for="state">State / Zone</label>
+                <input class="ck-input" type="text" id="state" name="state"
+                       placeholder="e.g. Al Wakra">
+              </div>
+              <div class="ck-field" id="field_country">
+                <label class="ck-label" for="country">Country</label>
+                <input class="ck-input" type="text" id="country" name="country"
+                       value="Qatar" required>
+                <div class="ck-error-msg">Country is required</div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- ── 2. BILLING ADDRESS ───────────────────────── -->
+        <div class="ck-card">
+          <div class="ck-section-head">
+            <div class="ck-section-badge">2</div>
+            <div class="ck-section-info">
+              <h2>Billing Address</h2>
+              <p>For payment verification</p>
+            </div>
+          </div>
+
+          <label class="ck-toggle-row" for="sameAsBilling">
+            <input type="checkbox" id="sameAsBilling" name="same_as_shipping" checked onchange="toggleBilling()">
+            <span class="ck-toggle-label">Same as shipping address</span>
+          </label>
+
+          <div id="billingSection" style="display:none">
+            {% if shipping_addresses %}
+              <div class="addr-cards">
+                {% for address in shipping_addresses %}
+                <div class="addr-card-wrap">
+                  <input type="radio" name="billing_address_id"
+                         id="baddr_{{ address.id }}" value="{{ address.id }}"
+                         {% if address == default_billing %}checked{% endif %}>
+                  <label class="addr-card-label" for="baddr_{{ address.id }}">
+                    <div class="addr-name">{{ address.full_name }}</div>
+                    <div class="addr-line">{{ address.address_line1 }}, {{ address.city }}</div>
+                  </label>
+                </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="ck-field-row">
+                <div class="ck-field">
+                  <label class="ck-label">First Name</label>
+                  <input class="ck-input" type="text" name="billing_first_name" placeholder="John">
+                </div>
+                <div class="ck-field">
+                  <label class="ck-label">Last Name</label>
+                  <input class="ck-input" type="text" name="billing_last_name" placeholder="Doe">
+                </div>
+              </div>
+              <div class="ck-field">
+                <label class="ck-label">Street Address</label>
+                <input class="ck-input" type="text" name="billing_address_line1" placeholder="123 Main Street">
+              </div>
+              <div class="ck-field-row">
+                <div class="ck-field">
+                  <label class="ck-label">City</label>
+                  <input class="ck-input" type="text" name="billing_city" placeholder="Doha">
+                </div>
+                <div class="ck-field">
+                  <label class="ck-label">Country</label>
+                  <input class="ck-input" type="text" name="billing_country" value="Qatar">
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- ── 3. PAYMENT METHOD ────────────────────────── -->
+        <div class="ck-card">
+          <div class="ck-section-head">
+            <div class="ck-section-badge">3</div>
+            <div class="ck-section-info">
+              <h2>Payment Method</h2>
+              <p>All transactions are encrypted and secure</p>
+            </div>
+          </div>
+
+          <div class="pay-opts">
+
+            <!-- Cash on delivery -->
+            <div class="pay-opt-wrap">
+              <input type="radio" name="payment_method" id="pm_cod"
+                     value="cash_on_delivery" checked required onchange="onPaymentChange()">
+              <label class="pay-opt-label" for="pm_cod">
+                <div class="pay-radio-circle"></div>
+                <div class="pay-opt-icon">💵</div>
+                <div class="pay-opt-info">
+                  <strong>Cash on Delivery</strong>
+                  <span>Pay when your order arrives</span>
+                </div>
+                <span class="pay-opt-tag">Popular</span>
+              </label>
+            </div>
+
+            <!-- Sadad -->
+            <div class="pay-opt-wrap">
+              <input type="radio" name="payment_method" id="pm_sadad"
+                     value="sadad" onchange="onPaymentChange()">
+              <label class="pay-opt-label" for="pm_sadad">
+                <div class="pay-radio-circle"></div>
+                <div class="pay-opt-icon">💚</div>
+                <div class="pay-opt-info">
+                  <strong>Sadad</strong>
+                  <span>Credit/Debit, QPay, Sadad Balance</span>
+                </div>
+              </label>
+            </div>
+            <div class="sadad-info" id="sadadInfo">
+              You'll be redirected to <strong>Sadad's secure hosted checkout</strong> to complete your payment.
+              <div class="sadad-methods">
+                <span class="sadad-method-pill">💳 Visa/MC</span>
+                <span class="sadad-method-pill">📱 QPay</span>
+                <span class="sadad-method-pill">💚 Sadad Balance</span>
+                <span class="sadad-method-pill">🏦 NAPS</span>
+              </div>
+            </div>
+
+            <!-- Stripe card -->
+            <div class="pay-opt-wrap">
+              <input type="radio" name="payment_method" id="pm_stripe"
+                     value="stripe" onchange="onPaymentChange()">
+              <label class="pay-opt-label" for="pm_stripe">
+                <div class="pay-radio-circle"></div>
+                <div class="pay-opt-icon">💳</div>
+                <div class="pay-opt-info">
+                  <strong>Credit / Debit Card</strong>
+                  <span>Visa, Mastercard, Amex — powered by Stripe</span>
+                </div>
+              </label>
+            </div>
+            <div class="card-fields" id="stripeFields">
+              <div class="ck-field">
+                <label class="ck-label">Card Number</label>
+                <input class="ck-input" type="text" id="cardNumber"
+                       placeholder="1234 5678 9012 3456" maxlength="19" inputmode="numeric">
+              </div>
+              <div class="ck-field-row">
+                <div class="ck-field">
+                  <label class="ck-label">Expiry</label>
+                  <input class="ck-input" type="text" id="cardExpiry"
+                         placeholder="MM / YY" maxlength="7" inputmode="numeric">
+                </div>
+                <div class="ck-field">
+                  <label class="ck-label">CVC</label>
+                  <input class="ck-input" type="text" id="cardCvc"
+                         placeholder="123" maxlength="4" inputmode="numeric">
+                </div>
+              </div>
+              <div class="ck-field">
+                <label class="ck-label">Name on Card</label>
+                <input class="ck-input" type="text" id="cardName" placeholder="John Doe">
+              </div>
+            </div>
+
+            <!-- Razorpay -->
+            <div class="pay-opt-wrap">
+              <input type="radio" name="payment_method" id="pm_razorpay"
+                     value="razorpay" onchange="onPaymentChange()">
+              <label class="pay-opt-label" for="pm_razorpay">
+                <div class="pay-radio-circle"></div>
+                <div class="pay-opt-icon">🏦</div>
+                <div class="pay-opt-info">
+                  <strong>Razorpay</strong>
+                  <span>UPI, NetBanking, Cards, Wallets</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- PayPal -->
+            <div class="pay-opt-wrap">
+              <input type="radio" name="payment_method" id="pm_paypal"
+                     value="paypal" onchange="onPaymentChange()">
+              <label class="pay-opt-label" for="pm_paypal">
+                <div class="pay-radio-circle"></div>
+                <div class="pay-opt-icon">🌐</div>
+                <div class="pay-opt-info">
+                  <strong>PayPal</strong>
+                  <span>Pay with your PayPal balance or linked card</span>
+                </div>
+              </label>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── 4. ORDER NOTES ────────────────────────────── -->
+        <div class="ck-card">
+          <div class="ck-section-head">
+            <div class="ck-section-badge">4</div>
+            <div class="ck-section-info">
+              <h2>Order Notes</h2>
+              <p>Special instructions (optional)</p>
+            </div>
+          </div>
+          <textarea class="ck-input" name="customer_notes" rows="3"
+                    placeholder="E.g. Please leave at the door, ring twice…"></textarea>
+        </div>
+
+      </form><!-- /form — button is OUTSIDE to avoid nested-form issues, uses form="checkoutForm" -->
+    </div>
+
+    <!-- ══ RIGHT COLUMN — SUMMARY ════════════════════════════ -->
+    <div>
+      <div class="ck-summary">
+        <div class="ck-summary-title">Your Order</div>
+
+        {% for item in cart_items %}
+        <div class="ck-item">
+          {% if item.product.image %}
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="ck-item-img">
+          {% else %}
+            <div class="ck-item-img-placeholder">👓</div>
+          {% endif %}
+          <div class="ck-item-body">
+            <div class="ck-item-name">{{ item.product.name }}</div>
+            <div class="ck-item-sub">Qty {{ item.quantity }} &middot; {{ order.currency|default:"QAR" }} {{ item.unit_price }}</div>
+          </div>
+          <div class="ck-item-price">{{ order.currency|default:"QAR" }} {% widthratio item.unit_price 1 item.quantity %}</div>
+        </div>
+        {% endfor %}
+
+        <!-- Coupon -->
+        <div class="ck-coupon">
+          <input type="text" id="couponInput" placeholder="Coupon code" autocomplete="off">
+          <button type="button" class="ck-coupon-btn" onclick="applyCoupon()">Apply</button>
+        </div>
+        <div id="couponMsg" style="font-size:12px;margin-top:-8px;margin-bottom:10px;display:none"></div>
+
+        <!-- Totals -->
+        <div class="ck-totals">
+          <div class="ck-tot-row">
+            <span>Subtotal</span>
+            <span>QAR {{ subtotal }}</span>
+          </div>
+          <div class="ck-tot-row">
+            <span>Shipping</span>
+            <span>{% if shipping == 0 %}<span style="color:var(--green);font-weight:700">FREE</span>{% else %}QAR {{ shipping }}{% endif %}</span>
+          </div>
+          <div class="ck-tot-row">
+            <span>Tax</span>
+            <span>QAR {{ tax }}</span>
+          </div>
+          <div class="ck-tot-row" id="discountRow" style="display:none;color:var(--green)">
+            <span>Discount</span>
+            <span id="discountAmt">—</span>
+          </div>
+        </div>
+
+        <div class="ck-tot-final">
+          <span>Total</span>
+          <span id="totalDisplay">QAR {{ total }}</span>
+        </div>
+
+        <!-- Place order -->
+        <button type="submit" form="checkoutForm" class="ck-place-btn" id="placeOrderBtn" onclick="handleSubmit(event)">
+          <span class="btn-text">Place Order →</span>
+          <div class="btn-spinner"></div>
+        </button>
+
+        <div class="ck-secure">
+          <svg width="12" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C8 2 5 5 5 9v3H3v10h18V12h-2V9c0-4-3-7-7-7zm0 13a2 2 0 100-4 2 2 0 000 4z"/></svg>
+          256-bit SSL encrypted &bull; PCI DSS compliant
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /ck-grid -->
+</div><!-- /ck-inner -->
+</div><!-- /ck-wrap -->
+
+<!-- ══ MAP MODAL ══════════════════════════════════════════════ -->
+<div id="mapOverlay" class="map-overlay" onclick="overlayClick(event)">
+  <div class="map-modal">
+    <div class="map-head">
+      <h3>Pin Delivery Location</h3>
+      <button class="map-close" onclick="closeMap()" type="button">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="map-search-bar">
+      <div class="map-search-wrap">
+        <span class="map-search-ico">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </span>
+        <input type="text" id="mapSearch" class="map-search-input"
+               placeholder="Search city, area, or landmark…"
+               onkeydown="if(event.key==='Enter'){e.preventDefault();searchLocation()}">
+      </div>
+      <button type="button" class="map-loc-btn" onclick="useMyLocation()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a7 7 0 00-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 00-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/>
+        </svg>
+        My Location
+      </button>
+    </div>
+    <div class="map-body">
+      <div id="deliveryMap"></div>
+      <div id="mapLoadingOverlay" class="map-loading">
+        <div class="map-spinner-sm"></div>
+        <span>Locating…</span>
+      </div>
+    </div>
+    <div class="map-footer">
+      <div class="map-foot-info">
+        <div class="map-foot-label">Selected Location</div>
+        <div class="map-foot-addr" id="mapFootAddr">Click anywhere on the map to drop a pin</div>
+        <div class="map-foot-coords" id="mapFootCoords"></div>
+      </div>
+      <button type="button" class="map-confirm-btn" id="mapConfirmBtn"
+              onclick="confirmLocation()" disabled>
+        Confirm Location
+      </button>
+    </div>
+  </div>
 </div>
 
-<!-- Map Modal -->
-<div id="mapModal" class="map-modal-overlay">
-    <div class="map-modal-container">
-        <!-- Header -->
-        <div class="map-modal-header">
-            <h3 class="map-modal-title">Select Delivery Location</h3>
-            <button type="button" class="map-modal-close" onclick="closeMapModal()">
-                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        </div>
-
-        <!-- Search Box -->
-        <div class="map-search-container">
-            <div class="map-search-box">
-                <span class="map-search-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                </span>
-                <input type="text" id="mapSearchInput" class="map-search-input" placeholder="Search for a location...">
-                <button type="button" class="map-current-location-btn" onclick="getCurrentLocation()">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                    </svg>
-                    Current Location
-                </button>
-            </div>
-        </div>
-
-        <!-- Map Container -->
-        <div class="map-container">
-            <div id="deliveryMap"></div>
-            <div id="mapLoading" class="map-loading">
-                <div class="map-spinner"></div>
-                <span>Loading map...</span>
-            </div>
-        </div>
-
-        <!-- Selected Location Info -->
-        <div class="map-selected-info">
-            <div class="map-selected-details">
-                <div class="map-selected-label">Selected Location</div>
-                <div class="map-selected-address" id="selectedAddress">Click on the map to select a location</div>
-                <div class="map-selected-coords" id="selectedCoords"></div>
-            </div>
-            <button type="button" class="map-confirm-btn" id="confirmLocationBtn" onclick="confirmLocation()" disabled>
-                Confirm Location
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
-// Map functionality
-let map;
-let marker;
-let accuracyCircle;
-let selectedLat = null;
-let selectedLng = null;
-let selectedAddressText = '';
+/* ═════════════════════════════════════════════
+   GLOBAL STATE
+═════════════════════════════════════════════ */
+let map = null, marker = null, accuracyRing = null;
+let selLat = null, selLng = null, selAddr = '';
 
-// Custom Marker Icon
-const customIcon = L.divIcon({
-    className: 'custom-marker',
-    html: '<div style="width: 40px; height: 40px; background: #1a1a1a; border: 3px solid #ffffff; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); display: flex; align-items: center; justify-content: center;"><div style="width: 12px; height: 12px; background: #ffffff; border-radius: 50%; transform: rotate(45deg);"></div></div>',
-    iconSize: [40, 40],
-    iconAnchor: [20, 40]
+/* ═════════════════════════════════════════════
+   MAP MODAL
+═════════════════════════════════════════════ */
+const pin = L.divIcon({
+  className: '',
+  html: `<div style="
+    width:36px;height:36px;background:#0f0f0f;
+    border:3px solid #fff;border-radius:50% 50% 50% 0;
+    transform:rotate(-45deg);
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+    display:flex;align-items:center;justify-content:center;
+  "><div style="width:10px;height:10px;background:#fff;border-radius:50%;transform:rotate(45deg)"></div></div>`,
+  iconSize:[36,36], iconAnchor:[18,36]
 });
 
-function openMapModal() {
-    document.getElementById('mapModal').classList.add('active');
-    document.body.style.overflow = 'hidden';
-    
-    setTimeout(() => {
-        initializeMap();
-    }, 300);
+function openMap(){
+  document.getElementById('mapOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(initMap, 280);
+}
+function closeMap(){
+  document.getElementById('mapOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function overlayClick(e){
+  if(e.target === document.getElementById('mapOverlay')) closeMap();
 }
 
-function closeMapModal() {
-    document.getElementById('mapModal').classList.remove('active');
-    document.body.style.overflow = '';
+function initMap(){
+  if(map){ map.remove(); map=null; }
+  const defaultCenter = [25.2854, 51.5310]; // Doha, Qatar
+  map = L.map('deliveryMap',{center:defaultCenter,zoom:12,zoomControl:true,maxZoom:19});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap contributors',maxZoom:19
+  }).addTo(map);
+  map.on('click', e => placeMarker(e.latlng.lat, e.latlng.lng));
 }
 
-function initializeMap() {
-    if (map) {
-        map.remove();
+function placeMarker(lat, lng){
+  if(marker) map.removeLayer(marker);
+  if(accuracyRing) map.removeLayer(accuracyRing);
+  marker = L.marker([lat,lng],{icon:pin}).addTo(map);
+  selLat=lat; selLng=lng;
+  document.getElementById('mapConfirmBtn').disabled=false;
+  reverseGeocode(lat, lng);
+}
+
+async function reverseGeocode(lat, lng){
+  document.getElementById('mapFootAddr').textContent = 'Looking up address…';
+  document.getElementById('mapFootCoords').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  try{
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+    const d = await r.json();
+    const a = d.address||{};
+    const parts=[];
+    if(a.house_number) parts.push(a.house_number);
+    if(a.road) parts.push(a.road);
+    if(a.neighbourhood||a.suburb) parts.push(a.neighbourhood||a.suburb);
+    if(a.city||a.town||a.village) parts.push(a.city||a.town||a.village);
+    if(a.state) parts.push(a.state);
+    if(a.country) parts.push(a.country);
+    selAddr = parts.length ? parts.join(', ') : d.display_name||`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    document.getElementById('mapFootAddr').textContent = selAddr;
+    // Auto-fill form fields
+    const city = a.city||a.town||a.village||'';
+    const street = [a.house_number,a.road,a.neighbourhood].filter(Boolean).join(', ');
+    if(document.getElementById('address_line1')) document.getElementById('address_line1').value = street;
+    if(document.getElementById('city') && city) document.getElementById('city').value = city;
+    if(document.getElementById('postal_code') && a.postcode) document.getElementById('postal_code').value = a.postcode;
+  } catch(e){
+    selAddr = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    document.getElementById('mapFootAddr').textContent = selAddr;
+  }
+}
+
+async function searchLocation(){
+  const q = document.getElementById('mapSearch').value.trim();
+  if(!q) return;
+  showMapLoader(true);
+  try{
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`);
+    const d = await r.json();
+    if(d.length){
+      const lat=parseFloat(d[0].lat), lng=parseFloat(d[0].lon);
+      map.setView([lat,lng],17);
+      placeMarker(lat,lng);
+    } else {
+      alert('Location not found. Try a different search term.');
     }
-    
-    document.getElementById('mapLoading').classList.add('active');
-    
-    let defaultLat = 9.9312;
-    let defaultLng = 76.2673;
-    
-    map = L.map('deliveryMap', {
-        center: [defaultLat, defaultLng],
-        zoom: 13,
-        zoomControl: true,
-        maxZoom: 19,
-        minZoom: 3
-    });
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
+  }catch(e){ alert('Search failed. Check your connection.'); }
+  showMapLoader(false);
+}
+
+function useMyLocation(){
+  if(!navigator.geolocation){ alert('Geolocation is not supported by your browser.'); return; }
+  showMapLoader(true);
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const {latitude:lat, longitude:lng, accuracy} = pos.coords;
+    map.setView([lat,lng],17);
+    placeMarker(lat,lng);
+    if(accuracyRing) map.removeLayer(accuracyRing);
+    accuracyRing = L.circle([lat,lng],{
+      radius:accuracy,color:'#1a7a4a',
+      fillColor:'#1a7a4a',fillOpacity:.12,weight:1.5
     }).addTo(map);
-    
-    map.on('click', function(e) {
-        selectedLat = e.latlng.lat;
-        selectedLng = e.latlng.lng;
-        
-        if (marker) map.removeLayer(marker);
-        if (accuracyCircle) map.removeLayer(accuracyCircle);
-        
-        marker = L.marker([selectedLat, selectedLng], { icon: customIcon }).addTo(map);
-        
-        reverseGeocode(selectedLat, selectedLng);
-        
-        document.getElementById('confirmLocationBtn').disabled = false;
-    });
-    
-    document.getElementById('mapLoading').classList.remove('active');
+    showMapLoader(false);
+  },
+  err=>{ alert('Could not get your location. Try searching instead.'); showMapLoader(false); },
+  {enableHighAccuracy:true,timeout:12000,maximumAge:0});
 }
 
-function getCurrentLocation() {
-    if (!navigator.geolocation) {
-        alert('❌ Geolocation is not supported by your browser');
-        return;
-    }
-    
-    document.getElementById('mapLoading').classList.add('active');
-    
-    const highAccuracyOptions = {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
-    };
-    
-    navigator.geolocation.getCurrentPosition(
-        function(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            const accuracy = position.coords.accuracy;
-            
-            if (marker) map.removeLayer(marker);
-            if (accuracyCircle) map.removeLayer(accuracyCircle);
-            
-            map.setView([lat, lng], 18);
-            
-            selectedLat = lat;
-            selectedLng = lng;
-            
-            marker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
-            
-            accuracyCircle = L.circle([lat, lng], {
-                radius: accuracy,
-                color: '#4285F4',
-                fillColor: '#4285F4',
-                fillOpacity: 0.2,
-                weight: 2
-            }).addTo(map);
-            
-            reverseGeocode(lat, lng);
-            
-            document.getElementById('confirmLocationBtn').disabled = false;
-            document.getElementById('mapLoading').classList.remove('active');
-        },
-        function(error) {
-            alert('Unable to get location');
-            document.getElementById('mapLoading').classList.remove('active');
-        },
-        highAccuracyOptions
-    );
+function showMapLoader(on){
+  document.getElementById('mapLoadingOverlay').classList.toggle('on',on);
 }
 
-function reverseGeocode(lat, lng) {
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
-        .then(response => response.json())
-        .then(data => {
-            let addressParts = [];
-            
-            if (data.address) {
-                if (data.address.house_number) addressParts.push(data.address.house_number);
-                if (data.address.road) addressParts.push(data.address.road);
-                if (data.address.neighbourhood) addressParts.push(data.address.neighbourhood);
-                
-                const city = data.address.city || data.address.town || data.address.village || '';
-                if (city) addressParts.push(city);
-                
-                if (data.address.state) addressParts.push(data.address.state);
-                if (data.address.postcode) addressParts.push(data.address.postcode);
-            }
-            
-            selectedAddressText = addressParts.length > 0 
-                ? addressParts.join(', ') 
-                : data.display_name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-            
-            document.getElementById('selectedAddress').textContent = selectedAddressText;
-            document.getElementById('selectedCoords').textContent = `📍 Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
-            
-            // Auto-fill form fields
-            if (data.address) {
-                let streetParts = [];
-                if (data.address.house_number) streetParts.push(data.address.house_number);
-                if (data.address.road) streetParts.push(data.address.road);
-                if (data.address.neighbourhood) streetParts.push(data.address.neighbourhood);
-                
-                if (streetParts.length > 0) {
-                    document.getElementById('address_line').value = streetParts.join(', ');
-                }
-                
-                const city = data.address.city || data.address.town || data.address.village || '';
-                if (city) {
-                    document.getElementById('city').value = city;
-                }
-                
-                if (data.address.postcode) {
-                    document.getElementById('postal_code').value = data.address.postcode;
-                }
-            }
-        })
-        .catch(error => {
-            selectedAddressText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-            document.getElementById('selectedAddress').textContent = selectedAddressText;
-        });
+function confirmLocation(){
+  if(!selLat||!selLng){ alert('Please select a location on the map first.'); return; }
+  document.getElementById('delivery_latitude').value = selLat;
+  document.getElementById('delivery_longitude').value = selLng;
+  // Show confirmed box
+  document.getElementById('locAddr').textContent = selAddr;
+  document.getElementById('locCoords').textContent = `Lat ${selLat.toFixed(6)} · Lng ${selLng.toFixed(6)}`;
+  document.getElementById('locConfirmed').classList.add('show');
+  closeMap();
 }
 
-function confirmLocation() {
-    if (!selectedLat || !selectedLng) {
-        alert('❌ Please select a location on the map first');
-        return;
-    }
-    
-    document.getElementById('delivery_latitude').value = selectedLat;
-    document.getElementById('delivery_longitude').value = selectedLng;
-    
-    document.getElementById('displayAddress').textContent = selectedAddressText;
-    document.getElementById('displayCoords').textContent = `📍 Lat: ${selectedLat.toFixed(6)}, Lng: ${selectedLng.toFixed(6)}`;
-    document.getElementById('selectedLocationDisplay').classList.add('active');
-    
-    closeMapModal();
-}
-
-// Search functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('mapSearchInput');
-    
-    if (searchInput) {
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const query = this.value.trim();
-                if (!query) return;
-                
-                document.getElementById('mapLoading').classList.add('active');
-                
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data && data.length > 0) {
-                            const result = data[0];
-                            const lat = parseFloat(result.lat);
-                            const lng = parseFloat(result.lon);
-                            
-                            if (marker) map.removeLayer(marker);
-                            if (accuracyCircle) map.removeLayer(accuracyCircle);
-                            
-                            map.setView([lat, lng], 18);
-                            
-                            selectedLat = lat;
-                            selectedLng = lng;
-                            
-                            marker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
-                            
-                            reverseGeocode(lat, lng);
-                            
-                            document.getElementById('confirmLocationBtn').disabled = false;
-                        } else {
-                            alert('❌ Location not found');
-                        }
-                        document.getElementById('mapLoading').classList.remove('active');
-                    })
-                    .catch(error => {
-                        alert('❌ Search failed');
-                        document.getElementById('mapLoading').classList.remove('active');
-                    });
-            }
-        });
-    }
+// Search on Enter
+document.addEventListener('DOMContentLoaded',()=>{
+  const s = document.getElementById('mapSearch');
+  if(s) s.addEventListener('keypress', e=>{ if(e.key==='Enter'){e.preventDefault();searchLocation();} });
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && document.getElementById('mapOverlay').classList.contains('open')) closeMap();
 });
 
-// Toggle billing address
-function toggleBilling() {
-    const billingSection = document.getElementById('billingSection');
-    const sameAsShipping = document.getElementById('sameAsShipping');
-    billingSection.style.display = sameAsShipping.checked ? 'none' : 'block';
+/* ═════════════════════════════════════════════
+   PAYMENT METHOD TOGGLE
+═════════════════════════════════════════════ */
+function onPaymentChange(){
+  const pm = document.querySelector('input[name=payment_method]:checked')?.value;
+  document.getElementById('sadadInfo').classList.toggle('show', pm==='sadad');
+  document.getElementById('stripeFields').classList.toggle('show', pm==='stripe');
 }
 
-// Escape key to close modal
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        if (document.getElementById('mapModal').classList.contains('active')) {
-            closeMapModal();
-        }
+/* ═════════════════════════════════════════════
+   BILLING TOGGLE
+═════════════════════════════════════════════ */
+function toggleBilling(){
+  const checked = document.getElementById('sameAsBilling').checked;
+  document.getElementById('billingSection').style.display = checked ? 'none' : 'block';
+}
+
+/* ═════════════════════════════════════════════
+   CARD FORMATTING
+═════════════════════════════════════════════ */
+function formatCard(e){
+  let v = e.target.value.replace(/\D/g,'').substring(0,16);
+  e.target.value = v.replace(/(.{4})/g,'$1 ').trim();
+}
+function formatExpiry(e){
+  let v = e.target.value.replace(/\D/g,'').substring(0,4);
+  if(v.length>=2) v = v.substring(0,2)+' / '+v.substring(2);
+  e.target.value = v;
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const cn=document.getElementById('cardNumber');
+  const cx=document.getElementById('cardExpiry');
+  if(cn) cn.addEventListener('input',formatCard);
+  if(cx) cx.addEventListener('input',formatExpiry);
+});
+
+/* ═════════════════════════════════════════════
+   COUPON
+═════════════════════════════════════════════ */
+function applyCoupon(){
+  const code = document.getElementById('couponInput').value.trim().toUpperCase();
+  const msg = document.getElementById('couponMsg');
+  if(!code){ showCouponMsg('Enter a coupon code first.','error'); return; }
+  // Example local validation – in production: call your API
+  const coupons = { 'SAVE10': 10, 'WELCOME': 15 };
+  if(coupons[code]){
+    const pct = coupons[code];
+    showCouponMsg(`✓ "${code}" applied — ${pct}% off!`, 'success');
+    document.getElementById('discountRow').style.display='flex';
+    document.getElementById('discountAmt').textContent = `-QAR (${pct}% off)`;
+  } else {
+    showCouponMsg('Invalid or expired coupon code.','error');
+  }
+}
+function showCouponMsg(text, type){
+  const el = document.getElementById('couponMsg');
+  el.textContent=text;
+  el.style.display='block';
+  el.style.color = type==='success' ? 'var(--green)' : 'var(--error)';
+}
+
+/* ═════════════════════════════════════════════
+   FORM VALIDATION & SUBMIT
+═════════════════════════════════════════════ */
+const REQUIRED_FIELDS = [
+  { id:'full_name',     msg:'Please enter your full name' },
+  { id:'phone',         msg:'Please enter a phone number' },
+  { id:'email',         msg:'Please enter a valid email', type:'email' },
+  { id:'address_line1', msg:'Street address is required' },
+  { id:'city',          msg:'City is required' },
+  { id:'country',       msg:'Country is required' },
+];
+
+function validateForm(){
+  // Only validate manual address fields (not when saved addresses exist)
+  const hasSavedAddr = !!document.getElementById('savedAddrs');
+  if(hasSavedAddr) return true;
+
+  let ok = true;
+  REQUIRED_FIELDS.forEach(f=>{
+    const el = document.getElementById(f.id);
+    if(!el) return;
+    const wrap = document.getElementById('field_'+f.id);
+    const val = el.value.trim();
+    let valid = val.length > 0;
+    if(f.type==='email') valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    if(!valid){
+      if(wrap) wrap.classList.add('invalid');
+      el.focus();
+      ok = false;
+    } else {
+      if(wrap) wrap.classList.remove('invalid');
     }
+  });
+
+  // Check location selected
+  const lat = document.getElementById('delivery_latitude');
+  if(lat && !lat.value){
+    alert('Please select your delivery location on the map before continuing.');
+    ok = false;
+  }
+
+  // Payment method check
+  const pm = document.querySelector('input[name=payment_method]:checked');
+  if(!pm){ alert('Please select a payment method.'); ok=false; }
+
+  return ok;
+}
+
+// Clear error on input
+document.addEventListener('DOMContentLoaded',()=>{
+  REQUIRED_FIELDS.forEach(f=>{
+    const el = document.getElementById(f.id);
+    if(el) el.addEventListener('input',()=>{
+      document.getElementById('field_'+f.id)?.classList.remove('invalid');
+    });
+  });
+});
+
+function handleSubmit(e){
+  if(!validateForm()){ e.preventDefault(); return false; }
+  const btn = document.getElementById('placeOrderBtn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+  // Form submits naturally
+}
+
+/* ═════════════════════════════════════════════
+   ADDRESS CARD SELECTION HIGHLIGHT (radio)
+═════════════════════════════════════════════ */
+document.addEventListener('change', e=>{
+  if(e.target.name==='shipping_address_id' || e.target.name==='billing_address_id'){
+    // visual handled by CSS :checked
+  }
 });
 </script>
-
+</body>
 {% endblock %}
