@@ -1,918 +1,1187 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Shopping Cart{% endblock %}
+{% block title %}Shopping Cart — Optical Store{% endblock %}
 
 {% block content %}
 <style>
-    .disabled {
-        opacity: 0.5;
-        pointer-events: none;
-    }
-    
-    /* Lens Info Styling */
-    .lens-info {
-        background: #f9f9f9;
-        padding: 10px;
-        border-radius: 5px;
-        margin-top: 10px;
-        font-size: 13px;
-    }
-    
-    .lens-info p {
-        margin: 5px 0;
-        color: #666;
-    }
-    
-    .lens-info strong {
-        color: #000;
-    }
-    
-    .lens-info ul {
-        margin: 5px 0 0 20px;
-        padding: 0;
-    }
-    
-    .lens-info li {
-        margin: 3px 0;
-    }
-    
-    /* Prescription Info */
-    .prescription-info {
-        background: #fff3cd;
-        border: 1px solid #ffc107;
-        padding: 10px;
-        border-radius: 5px;
-        margin-top: 10px;
-        font-size: 13px;
-    }
-    
-    .prescription-details {
-        margin-top: 5px;
-    }
-    
-    .eye-prescription {
-        margin: 5px 0;
-        color: #666;
-    }
-    
-    /* Contact Lens Power */
-    .contact-lens-power {
-        background: #e3f2fd;
-        border: 1px solid #2196f3;
-        padding: 10px;
-        border-radius: 5px;
-        margin-top: 10px;
-        font-size: 13px;
-    }
-    
-    .contact-lens-power p {
-        margin: 3px 0;
-        color: #666;
-    }
-    
-    /* Special Instructions */
-    .special-instructions {
-        background: #f3e5f5;
-        padding: 10px;
-        border-radius: 5px;
-        margin-top: 10px;
-        font-size: 13px;
-        font-style: italic;
-        color: #666;
-    }
-    
-    /* Empty Cart */
-    .empty-cart-message {
-        text-align: center;
-        padding: 60px 20px;
-    }
-    
-    .empty-cart-icon {
-        font-size: 80px;
-        margin-bottom: 20px;
-    }
-    
-    .empty-cart-message h2 {
-        font-size: 24px;
-        margin-bottom: 10px;
-    }
-    
-    .empty-cart-message p {
-        color: #666;
-        margin-bottom: 30px;
-    }
+/* ═══════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════ */
+:root {
+  --black: #0a0a0a;
+  --white: #fafafa;
+  --gold: #b8976a;
+  --gold-light: #d4b896;
+  --sand: #f5f0e8;
+  --muted: #888;
+  --border: #e5e0d8;
+  --success: #2e7d32;
+  --success-bg: #f0f7ee;
+  --warning: #f57f17;
+  --warning-bg: #fff8e1;
+  --info: #1565c0;
+  --info-bg: #e3f2fd;
+  --danger: #c62828;
+  --danger-bg: #ffebee;
+  --radius: 10px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  --transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+}
 
-    /* Enhanced quantity button styles */
-    .xo-quantity-style2__button {
-        transition: all 0.2s ease;
-        user-select: none;
-    }
+/* ═══════════════════════════════════════
+   PAGE LAYOUT
+═══════════════════════════════════════ */
+.cart-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
 
-    .xo-quantity-style2__button:hover:not(.disabled) {
-        background-color: #f0f0f0;
-        transform: scale(1.05);
-    }
+.cart-heading {
+  padding: 40px 0 30px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 40px;
+}
 
-    .xo-quantity-style2__button:active:not(.disabled) {
-        transform: scale(0.95);
-    }
+.cart-heading h1 {
+  font-size: clamp(24px, 3vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0 0 6px;
+  color: var(--black);
+}
 
-    .xo-quantity-style2__button.disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-        pointer-events: none;
-    }
+.cart-heading p {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0;
+}
 
-    /* Item total animation */
-    .xo-cart-table__price {
-        transition: all 0.3s ease;
-    }
+.cart-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 40px;
+  align-items: start;
+}
 
-    .xo-cart-table__price.updating {
-        color: #4caf50;
-        transform: scale(1.05);
-    }
+@media (max-width: 960px) {
+  .cart-grid { grid-template-columns: 1fr; gap: 32px; }
+}
 
-    /* Remove button hover effect */
-    .remove-item-btn:hover {
-        color: #dc3545;
-    }
+/* ═══════════════════════════════════════
+   MESSAGES / ALERTS
+═══════════════════════════════════════ */
+.cart-alert {
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cart-alert--success { background: var(--success-bg); color: var(--success); border: 1px solid #a5d6a7; }
+.cart-alert--error   { background: var(--danger-bg);  color: var(--danger);  border: 1px solid #ef9a9a; }
+.cart-alert--info    { background: var(--info-bg);    color: var(--info);    border: 1px solid #90caf9; }
 
-    /* Row removal animation */
-    .xo-table__body-row {
-        transition: opacity 0.3s ease, transform 0.3s ease;
-    }
+/* ═══════════════════════════════════════
+   CART TABLE / ITEMS
+═══════════════════════════════════════ */
+.cart-table-header {
+  display: grid;
+  grid-template-columns: 1fr 160px 130px 110px;
+  gap: 16px;
+  padding: 0 0 14px;
+  border-bottom: 2px solid var(--black);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
 
-    .xo-table__body-row.removing {
-        opacity: 0;
-        transform: translateX(50px);
-    }
+@media (max-width: 680px) {
+  .cart-table-header { display: none; }
+}
 
-    /* Cart count badge animation */
-    .header-v24__cart-count {
-        transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.35);
-    }
+.cart-item-row {
+  display: grid;
+  grid-template-columns: 1fr 160px 130px 110px;
+  gap: 16px;
+  align-items: center;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--border);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
 
-    /* Loading state for quantity buttons */
-    .xo-quantity-style2.loading {
-        opacity: 0.6;
-        pointer-events: none;
-    }
+.cart-item-row.removing {
+  opacity: 0;
+  transform: translateX(40px);
+  pointer-events: none;
+}
+
+@media (max-width: 680px) {
+  .cart-item-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* ── Item Product Cell ── */
+.cart-item-product {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.cart-item-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--sand);
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+
+.cart-item-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.cart-item-meta { flex: 1; min-width: 0; }
+
+.cart-item-type {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.cart-item-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--black);
+  text-decoration: none;
+  line-height: 1.3;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.cart-item-name:hover { color: var(--gold); }
+
+.cart-item-brand {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.cart-item-unit-price {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+/* ── Option Badges ── */
+.cart-item-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.option-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--sand);
+  color: #555;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.option-badge--lens     { background: #f0f7ee; color: #2e7d32; border-color: #a5d6a7; }
+.option-badge--addon    { background: #fff3e0; color: #e65100; border-color: #ffcc80; }
+.option-badge--rx       { background: #fff8e1; color: #f57f17; border-color: #ffe082; }
+.option-badge--contact  { background: #e3f2fd; color: #1565c0; border-color: #90caf9; }
+.option-badge--color    { background: #fce4ec; color: #880e4f; border-color: #f48fb1; }
+.option-badge--sunglass { background: #f3e5f5; color: #6a1b9a; border-color: #ce93d8; }
+
+/* ── Prescription Block ── */
+.rx-block {
+  background: var(--warning-bg);
+  border: 1px solid #ffe082;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.rx-block-title {
+  font-weight: 700;
+  color: var(--warning);
+  margin-bottom: 6px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rx-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  color: #555;
+  font-size: 11px;
+  margin: 2px 0;
+}
+
+.rx-eye-label { font-weight: 700; color: var(--black); min-width: 60px; }
+
+/* ── Note Block ── */
+.note-block {
+  background: var(--sand);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #555;
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+/* ── Remove Button ── */
+.cart-remove-btn {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: underline;
+  transition: var(--transition);
+}
+
+.cart-remove-btn:hover { color: var(--danger); }
+
+/* ── Quantity Controls ── */
+.qty-control {
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+}
+
+.qty-btn {
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: var(--sand);
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.qty-btn:hover:not(:disabled) { background: var(--border); }
+.qty-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.qty-input {
+  width: 46px;
+  height: 38px;
+  border: none;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--black);
+  background: white;
+  pointer-events: none;
+}
+
+.qty-control.loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ── Item Total ── */
+.cart-item-total {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--black);
+  transition: color 0.3s;
+}
+
+.cart-item-total.updating { color: var(--success); }
+
+/* ═══════════════════════════════════════
+   MOBILE ITEM LAYOUT
+═══════════════════════════════════════ */
+@media (max-width: 680px) {
+  .cart-item-qty-cell,
+  .cart-item-total-cell {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cart-item-qty-cell::before  { content: 'Quantity:'; font-size: 12px; color: var(--muted); font-weight: 600; }
+  .cart-item-total-cell::before { content: 'Total:'; font-size: 12px; color: var(--muted); font-weight: 600; }
+}
+
+/* ═══════════════════════════════════════
+   CART SUMMARY (SIDEBAR)
+═══════════════════════════════════════ */
+.cart-summary {
+  position: sticky;
+  top: 90px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.cart-summary-header {
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cart-summary-header h2 {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+  color: var(--black);
+}
+
+.cart-summary-body { padding: 20px 24px; }
+
+/* Free Shipping Bar */
+.free-shipping-bar {
+  background: var(--sand);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.free-shipping-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--black);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.free-shipping-text.qualified { color: var(--success); }
+
+.free-shipping-progress-track {
+  height: 6px;
+  background: #ddd;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.free-shipping-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), #7cb342);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* Totals */
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #444;
+}
+
+.summary-row--total {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 2px solid var(--black);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--black);
+}
+
+.summary-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 12px 0 20px;
+  text-align: center;
+}
+
+/* Checkout Button */
+.btn-checkout {
+  width: 100%;
+  padding: 16px;
+  background: var(--black);
+  color: white;
+  border: 2px solid var(--black);
+  border-radius: var(--radius);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  display: block;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.btn-checkout:hover { background: #333; border-color: #333; color: white; }
+.btn-checkout:disabled,
+.btn-checkout.disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+
+.btn-continue {
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  color: var(--black);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  display: block;
+  text-align: center;
+}
+
+.btn-continue:hover { border-color: var(--black); color: var(--black); }
+
+/* Benefits */
+.cart-benefits {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.benefit-icon {
+  width: 28px;
+  height: 28px;
+  background: var(--sand);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════
+   EMPTY CART
+═══════════════════════════════════════ */
+.empty-cart {
+  text-align: center;
+  padding: 80px 40px;
+  grid-column: 1 / -1;
+}
+
+.empty-cart-icon {
+  font-size: 72px;
+  margin-bottom: 24px;
+  opacity: 0.5;
+}
+
+.empty-cart h2 {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--black);
+  margin-bottom: 12px;
+}
+
+.empty-cart p {
+  font-size: 15px;
+  color: var(--muted);
+  margin-bottom: 32px;
+}
+
+.btn-shop {
+  display: inline-block;
+  padding: 16px 40px;
+  background: var(--black);
+  color: white;
+  border-radius: var(--radius);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.btn-shop:hover { background: #333; color: white; }
+
+/* ═══════════════════════════════════════
+   TRUST BADGES (FOOTER STRIP)
+═══════════════════════════════════════ */
+.trust-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 40px;
+}
+
+@media (max-width: 680px) {
+  .trust-strip { grid-template-columns: repeat(2, 1fr); }
+}
+
+.trust-item {
+  background: white;
+  padding: 20px;
+  text-align: center;
+}
+
+.trust-item-icon { font-size: 24px; margin-bottom: 8px; }
+.trust-item-title { font-size: 13px; font-weight: 700; color: var(--black); margin-bottom: 2px; }
+.trust-item-desc  { font-size: 12px; color: var(--muted); }
+
+/* ═══════════════════════════════════════
+   TOAST NOTIFICATION
+═══════════════════════════════════════ */
+.cart-toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 99999;
+  background: var(--black);
+  color: white;
+  padding: 14px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.24);
+  transform: translateY(60px);
+  opacity: 0;
+  transition: all 0.32s cubic-bezier(0.4,0,0.2,1);
+  pointer-events: none;
+  max-width: 320px;
+}
+
+.cart-toast.show             { transform: translateY(0); opacity: 1; }
+.cart-toast.cart-toast--ok   { background: var(--success); }
+.cart-toast.cart-toast--err  { background: var(--danger);  }
 </style>
 
-<main id="xo-main-content" class="content-for-layout focus-none" role="main" tabindex="-1">
-    <!-- Page Heading -->
-    <div id="shopify-section-template--cart-heading" class="shopify-section">
-        <section class="xo-section color-background-1" style="--margin: 0;--pt: 50;--pb: 0;">
-            <xo-animate class="xo-section-bg" xo-disabled="" xo-duration="1000"
-                style="animation: auto ease 0s 1 normal none running none; opacity: 1;" xo-visible="">
-                <xo-parallax xo-lerp-ease="0.4" class="xo-section-bg-image__item">
-                    <xo-parallax-scroll
-                        xo-keyframes="{ '0%': { backgroundPositionY: '200px' }, '100%': { backgroundPositionY: '-200px' }, }"
-                        class="xo-section-bg-image__url xo-background-lazyload" xo-fit-content=""
-                        style="backface-visibility: hidden; background-size: cover; background-position: 50% -123.761px; background-attachment: fixed;"></xo-parallax-scroll>
-                </xo-parallax>
-            </xo-animate>
+<div class="cart-page">
 
-            <xo-container>
-                <xo-animate xo-cascade="" xo-type="fade-up"
-                    style="opacity: 1; --xo-order: 0; --xo-strength: 1; --xo-constant: 75; --xo-duration: 500; --xo-easing: cubic-bezier(0, 0, 0.3, 1); animation: auto ease 0s 1 normal none running none;"
-                    xo-visible="">
-                    <div class="xo-page-heading xo-page-heading--center">
-                        <h1 class="xo-page-heading__title">Your Shopping Cart</h1>
-                        <div class="xo-page-heading__description">
-                            {% if cart_items %}
-                            <p><span id="cart-items-count">{{ cart_items|length }}</span> item(s) in your cart</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                </xo-animate>
-            </xo-container>
-        </section>
-    </div>
-
-    <!-- Messages -->
-    {% if messages %}
-    <div class="xo-section color-background-1" style="--margin: 0;--pt: 20;--pb: 0;">
-        <xo-container>
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}" style="padding: 15px; margin-bottom: 15px; border-radius: 5px; background: {% if message.tags == 'success' %}#d4edda{% elif message.tags == 'error' %}#f8d7da{% else %}#d1ecf1{% endif %};">
-                {{ message }}
-            </div>
-            {% endfor %}
-        </xo-container>
-    </div>
-    {% endif %}
-
-    <!-- Cart Items Section -->
-    <div id="shopify-section-template--cart-items" class="shopify-section">
-        <div class="xo-section color-background-1" style="--margin: 0;--pt: 20;--pb: 50;">
-            <xo-cart id="template--cart-items" class="xo-main-cart color-background-1">
-                <xo-container class="xo-cart">
-                    <xo-animate xo-cascade="" xo-type="fade-up"
-                        style="opacity: 1; --xo-order: 1; --xo-strength: 1; --xo-constant: 75; --xo-duration: 500; --xo-easing: cubic-bezier(0, 0, 0.3, 1); animation: auto ease 0s 1 normal none running none;"
-                        xo-visible="">
-                        
-                        {% if cart_items %}
-                        <xo-cart-will-change xo-unique-id="cart-table-template">
-                            <xo-grid>
-                                <div style="--xs: 12; --sm: 12; --md: 12; --lg: 8;" class="xo-cart__left">
-                                    <div class="xo-cart-table">
-                                        <form action="" method="post" id="cart">
-                                            {% csrf_token %}
-                                            <table role="table" class="xo-table">
-                                                <thead role="rowgroup">
-                                                    <tr role="row" class="xo-table__head-row">
-                                                        <th role="columnheader">Product</th>
-                                                        <th role="columnheader">Quantity</th>
-                                                        <th role="columnheader">Total</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="cart-tbody">
-                                                    {% for item in cart_items %}
-                                                    <tr role="row" class="xo-table__body-row"
-                                                        data-item-id="{{ item.id }}" id="cart-row-{{ item.id }}">
-                                                        <td role="cell" data-th="Product">
-                                                            <xo-product xo-section-id="template--cart-items"
-                                                                xo-product-id="{{ item.product.id }}"
-                                                                xo-line="{{ forloop.counter }}">
-                                                                <div class="xo-cart-item">
-                                                                    <a href="" class="xo-cart-item__image">
-                                                                        {% if item.product.images.first %}
-                                                                        <div class="xo-image"
-                                                                            style="--xo-ratio-percent: 1/1; --x-pos: %; --y-pos: %;">
-                                                                            <img src="{{ item.product.images.first.image.url }}"
-                                                                                alt="{{ item.product.name }}"
-                                                                                width="860" height="860" loading="lazy"
-                                                                                is="xo-lazyload" sizes="100vw"
-                                                                                fetchpriority="auto"
-                                                                                xo-intrinsic-width="860"
-                                                                                xo-intrinsic-height="860" xo-loaded="">
-                                                                        </div>
-                                                                        {% else %}
-                                                                        <div class="xo-image">
-                                                                            <img src="/static/no-image.png"
-                                                                                alt="No Image">
-                                                                        </div>
-                                                                        {% endif %}
-                                                                    </a>
-
-                                                                    <div class="xo-cart-item__content">
-                                                                        <a href="{% url 'product_detail' item.product.slug %}" class="xo-cart-item__title">
-                                                                            {{ item.product.name }}
-                                                                        </a>
-                                                                        
-                                                                        <div class="xo-cart-item__price">
-                                                                            <div class="xo-cart-item__original-price">
-                                                                                QAR {{ item.unit_price }}
-                                                                            </div>
-                                                                        </div>
-
-                                                                        <!-- Mobile Quantity Controls -->
-                                                                        <xo-product xo-section-id="template--cart-items"
-                                                                            xo-product-id="{{ item.product.id }}">
-                                                                            <div class="xo-cart-item__quantity">
-                                                                                <div class="xo-cart-table__quantity">
-                                                                                    <xo-cart-quantity class="xo-quantity-style2"
-                                                                                        style="--width: 10rem; --height: 4rem"
-                                                                                        data-item-id="{{ item.id }}">
-                                                                                        <button type="button"
-                                                                                            class="xo-quantity-style2__button decrease-qty"
-                                                                                            data-item-id="{{ item.id }}">–</button>
-
-                                                                                        <input type="text" value="{{ item.quantity }}" readonly
-                                                                                            class="xo-quantity-style2__number item-quantity-{{ item.id }}">
-
-                                                                                        <button type="button"
-                                                                                            class="xo-quantity-style2__button increase-qty"
-                                                                                            data-item-id="{{ item.id }}">+</button>
-                                                                                    </xo-cart-quantity>
-                                                                                </div>
-                                                                            </div>
-                                                                        </xo-product>
-
-                                                                        <!-- Product Details -->
-                                                                        <div class="xo-cart-item__options">
-                                                                            {% if item.product.brand %}
-                                                                            <div class="xo-cart-item__option">
-                                                                                <span>Brand:</span>
-                                                                                <span>{{ item.product.brand.name }}</span>
-                                                                            </div>
-                                                                            {% endif %}
-                                                                            
-                                                                            {% if item.variant %}
-                                                                            <div class="xo-cart-item__option">
-                                                                                <span>Color:</span>
-                                                                                <span>{{ item.variant.color_name }}</span>
-                                                                            </div>
-                                                                            {% if item.variant.size %}
-                                                                            <div class="xo-cart-item__option">
-                                                                                <span>Size:</span>
-                                                                                <span>{{ item.variant.size }}</span>
-                                                                            </div>
-                                                                            {% endif %}
-                                                                            {% endif %}
-                                                                        </div>
-
-                                                                        <!-- Lens Information -->
-                                                                        {% if item.lens_option %}
-                                                                        <div class="lens-info">
-                                                                            <p><strong>Lens:</strong> {{ item.lens_option.lens_brand.name }} {{ item.lens_option.lens_type.name }}</p>
-                                                                            <p>Index: {{ item.lens_option.index }} | Price: QAR {{ item.lens_price }}</p>
-                                                                            
-                                                                            {% if item.lens_addons.all %}
-                                                                            <p><strong>Add-ons:</strong></p>
-                                                                            <ul>
-                                                                                {% for addon_item in item.lens_addons.all %}
-                                                                                <li>{{ addon_item.addon.name }} - QAR {{ addon_item.price }}</li>
-                                                                                {% endfor %}
-                                                                            </ul>
-                                                                            {% endif %}
-                                                                        </div>
-                                                                        {% endif %}
-
-                                                                        {% if item.sunglass_lens_option %}
-                                                                        <div class="lens-info">
-                                                                            <p><strong>Sunglass Lens:</strong> {{ item.sunglass_lens_option }}</p>
-                                                                            <p>Color: {{ item.lens_color|default:"Standard" }} | Price: QAR {{ item.lens_price }}</p>
-                                                                        </div>
-                                                                        {% endif %}
-
-                                                                        <!-- Prescription Info -->
-                                                                        {% if item.prescription_data %}
-                                                                        <div class="prescription-info">
-                                                                            <p><strong>Prescription:</strong></p>
-                                                                            <div class="prescription-details">
-                                                                                <div class="eye-prescription">
-                                                                                    <strong>Right Eye:</strong>
-                                                                                    SPH: {{ item.prescription_data.right_sph|default:"-" }},
-                                                                                    CYL: {{ item.prescription_data.right_cyl|default:"-" }},
-                                                                                    AXIS: {{ item.prescription_data.right_axis|default:"-" }}
-                                                                                    {% if item.prescription_data.right_add %}
-                                                                                    , ADD: {{ item.prescription_data.right_add }}
-                                                                                    {% endif %}
-                                                                                </div>
-                                                                                <div class="eye-prescription">
-                                                                                    <strong>Left Eye:</strong>
-                                                                                    SPH: {{ item.prescription_data.left_sph|default:"-" }},
-                                                                                    CYL: {{ item.prescription_data.left_cyl|default:"-" }},
-                                                                                    AXIS: {{ item.prescription_data.left_axis|default:"-" }}
-                                                                                    {% if item.prescription_data.left_add %}
-                                                                                    , ADD: {{ item.prescription_data.left_add }}
-                                                                                    {% endif %}
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                        {% endif %}
-
-                                                                        <!-- Contact Lens Power -->
-                                                                        {% if item.contact_lens_left_power or item.contact_lens_right_power %}
-                                                                        <div class="contact-lens-power">
-                                                                            <p><strong>Power:</strong></p>
-                                                                            <p>Left: {{ item.contact_lens_left_power|default:"Plano" }}</p>
-                                                                            <p>Right: {{ item.contact_lens_right_power|default:"Plano" }}</p>
-                                                                        </div>
-                                                                        {% endif %}
-
-                                                                        {% if item.special_instructions %}
-                                                                        <div class="special-instructions">
-                                                                            <p><strong>Note:</strong> {{ item.special_instructions }}</p>
-                                                                        </div>
-                                                                        {% endif %}
-
-                                                                        <!-- Remove Button -->
-                                                                        <xo-cart-remove>
-                                                                            <button type="button" class="xo-btn xo-btn--dark xo-btn--link xo-btn--slide-up remove-item-btn"
-                                                                                style="cursor: pointer;"
-                                                                                data-item-id="{{ item.id }}"
-                                                                                aria-label="Remove {{ item.product.name }}">
-                                                                                <span class="xo-btn__content">
-                                                                                    <span class="xo-btn__text" data-text="Delete">Remove</span>
-                                                                                </span>
-                                                                                <span class="xo-btn__loading">
-                                                                                    <div class="xo-loader-3"
-                                                                                        style="--size: 8; --color: currentColor; --duration: 1000;">
-                                                                                        <div></div>
-                                                                                    </div>
-                                                                                </span>
-                                                                            </button>
-                                                                        </xo-cart-remove>
-
-                                                                        <xo-cart-change-fallback>
-                                                                            <div class="xo-loader-2"
-                                                                                style="--size: 26; --color: currentColor; --duration: 1000; --stroke-width: 2;">
-                                                                                <div></div>
-                                                                            </div>
-                                                                        </xo-cart-change-fallback>
-                                                                    </div>
-                                                                </div>
-                                                            </xo-product>
-                                                        </td>
-
-                                                        <!-- Desktop Quantity -->
-                                                        <td role="cell" data-th="Quantity">
-                                                            <xo-product xo-section-id="template--cart-items"
-                                                                xo-product-id="{{ item.product.id }}"
-                                                                xo-line="{{ forloop.counter }}">
-                                                                <div class="xo-cart-table__quantity">
-                                                                    <xo-cart-quantity class="xo-quantity-style2"
-                                                                        style="--width: 10rem; --height: 4rem"
-                                                                        data-item-id="{{ item.id }}">
-                                                                        <button type="button"
-                                                                            class="xo-quantity-style2__button decrease-qty"
-                                                                            data-item-id="{{ item.id }}">–</button>
-
-                                                                        <input type="text" value="{{ item.quantity }}" readonly
-                                                                            class="xo-quantity-style2__number item-quantity-{{ item.id }}">
-
-                                                                        <button type="button"
-                                                                            class="xo-quantity-style2__button increase-qty"
-                                                                            data-item-id="{{ item.id }}">+</button>
-                                                                    </xo-cart-quantity>
-                                                                </div>
-                                                            </xo-product>
-                                                        </td>
-
-                                                        <!-- Total -->
-                                                        <td role="cell" data-th="Total">
-                                                            <div class="xo-cart-table__price item-total-{{ item.id }}">
-                                                                QAR {{ item.item_total }}
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </form>
-                                    </div>
-
-                                    <!-- Continue Shopping -->
-                                    <xo-cart-will-change xo-unique-id="continue-shopping">
-                                        <div class="xo-space xo-space--vertical" style="--space: 1rem"></div>
-                                        <a href="{% url 'home' %}">
-                                            <button class="xo-btn xo-btn--dark xo-btn--link xo-btn--slide-up" style="">
-                                                <span class="xo-btn__content">
-                                                    <span class="xo-btn__text" data-text="Continue shopping">
-                                                        Continue shopping
-                                                    </span>
-                                                </span>
-                                                <span class="xo-btn__loading">
-                                                    <div class="xo-loader-3"
-                                                        style="--size: 8; --color: currentColor; --duration: 1000;">
-                                                        <div></div>
-                                                    </div>
-                                                </span>
-                                            </button>
-                                        </a>
-                                    </xo-cart-will-change>
-                                </div>
-
-                                <!-- Cart Summary Sidebar -->
-                                <div style="--md: 12; --lg: 4" class="xo-cart__right">
-                                  
-                                    <xo-cart-free-shipping-custom
-                                        xo-free-shipping-notice="Congrats! You are eligible for FREE Shipping"
-                                        xo-free-shipping-progress="Buy {{ money }} more to enjoy FREE shipping">
-                                        <div class="xo-cart-free-shipping">
-                                            <div class="xo-cart-free-shipping__position" id="shipping-message">
-                                                {% if shipping == 0 %}
-                                                <div class="xo-cart-free-shipping__text" style="color: #4caf50; font-weight: bold;">
-                                                    ✓ You qualify for FREE shipping!
-                                                </div>
-                                                {% else %}
-                                                <div class="xo-cart-free-shipping__text">
-                                                    Add QAR <span id="free-shipping-remaining">{{ free_shipping_remaining }}</span> more for FREE shipping
-                                                </div>
-                                                <div class="xo-cart-free-shipping__progress" style="--progress: {{ shipping_progress }}%;">
-                                                </div>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                    </xo-cart-free-shipping-custom>
-
-                                    <div class="xo-space xo-space--vertical" style="--space: 2rem"></div>
-
-                        
-                                    <xo-cart-will-change class="xo-cart-totals">
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                            <span>Subtotal:</span>
-                                            <span id="subtotal-display">QAR {{ subtotal }}</span>
-                                        </div>
-                                    </xo-cart-will-change>
-                                    
-                                    <xo-cart-will-change class="xo-cart-totals" id="shipping-row" {% if shipping == 0 %}style="display: none;"{% endif %}>
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                            <span>Shipping:</span>
-                                            <span id="shipping-display">QAR {{ shipping }}</span>
-                                        </div>
-                                    </xo-cart-will-change>
-                                    
-                                    <div style="display: flex; justify-content: space-between; font-size: 20px; font-weight: bold;">
-                                        <div class="xo-cart-totals__subtotal">Total</div>
-                                        <div class="xo-cart-table__price" id="cart-total">
-                                            QAR {{ total }}
-                                        </div>
-                                    </div>  
-
-                                    <xo-cart-will-change xo-unique-id="xo-cart-tax-note" class="xo-cart-tax-note">
-                                        <div class="xo-space xo-space--vertical" style="--space: 1rem"></div>
-                                        Taxes and <a href="">shipping</a> calculated at checkout
-                                    </xo-cart-will-change>
-
-                                    <xo-cart-will-change xo-unique-id="xo-space-2">
-                                        <div class="xo-space xo-space--vertical" style="--space: 1rem"></div>
-                                    </xo-cart-will-change>
-
-                                   
-                                    <xo-cart-will-change xo-unique-id="xo-actions" class="xo-actions">
-                                        <a href="{% url 'orders:checkout' %}">
-                                            <button class="xo-btn xo-btn--dark xo-btn--secondary xo-btn--md xo-btn--slide-up xo-btn--block
-                                                {% if total == 0 %}disabled{% endif %}"
-                                                {% if total == 0 %}disabled{% endif %}>
-                                                <span class="xo-btn__content">
-                                                    <span class="xo-btn__text" data-text="Check Out">
-                                                        Check Out
-                                                    </span>
-                                                </span>
-                                                <span class="xo-btn__loading">
-                                                    <div class="xo-loader-3"
-                                                        style="--size: 8; --color: currentColor; --duration: 1000;">
-                                                        <div></div>
-                                                    </div>
-                                                </span>
-                                            </button>
-                                        </a>
-                                    </xo-cart-will-change>
-
-                                    <div class="xo-space xo-space--vertical" style="--space: 2rem"></div>
-
-                              
-                                    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
-                                        <h3 style="font-size: 16px; margin-bottom: 15px;">Shopping Benefits</h3>
-                                        <ul style="list-style: none; padding: 0; margin: 0;">
-                                            <li style="margin: 10px 0; font-size: 14px;">✓ Free shipping on orders over 200 QAR</li>
-                                            <li style="margin: 10px 0; font-size: 14px;">✓ 14-day return policy</li>
-                                            <li style="margin: 10px 0; font-size: 14px;">✓ Secure payment processing</li>
-                                            <li style="margin: 10px 0; font-size: 14px;">✓ Free eye test at stores</li>
-                                            <li style="margin: 10px 0; font-size: 14px;">✓ 1-year warranty on frames</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </xo-grid>
-                        </xo-cart-will-change>
-                        
-                        {% else %}
-                        <!-- Empty Cart -->
-                        <div class="empty-cart-message">
-                            <div class="empty-cart-icon">🛒</div>
-                            <h2>Your cart is empty</h2>
-                            <p>Looks like you haven't added anything to your cart yet.</p>
-                            <a href="{% url 'home' %}">
-                                <button class="xo-btn xo-btn--dark xo-btn--primary xo-btn--md">
-                                    <span class="xo-btn__content">
-                                        <span class="xo-btn__text">Start Shopping</span>
-                                    </span>
-                                </button>
-                            </a>
-                        </div>
-                        {% endif %}
-                    </xo-animate>
-                </xo-container>
-            </xo-cart>
-        </div>
-    </div>
-
-    <!-- Trust Badges -->
+  <!-- Page Heading -->
+  <div class="cart-heading">
+    <h1>Your Shopping Cart</h1>
     {% if cart_items %}
-    <section class="xo-section color-background-1" style="--margin: 0;--pt: 30;--pb: 30;">
-        <xo-container>
-            <xo-grid style="--gap: 20px;">
-                <xo-animate style="--xs: 6; --md: 3">
-                    <div style="text-align: center; padding: 20px;">
-                        <h3 style="font-size: 20px; margin-bottom: 10px;">🚚 Free Shipping</h3>
-                        <p style="color: #666;">On orders over 200 QAR</p>
-                    </div>
-                </xo-animate>
-                <xo-animate style="--xs: 6; --md: 3">
-                    <div style="text-align: center; padding: 20px;">
-                        <h3 style="font-size: 20px; margin-bottom: 10px;">🔄 Easy Returns</h3>
-                        <p style="color: #666;">14-day return policy</p>
-                    </div>
-                </xo-animate>
-                <xo-animate style="--xs: 6; --md: 3">
-                    <div style="text-align: center; padding: 20px;">
-                        <h3 style="font-size: 20px; margin-bottom: 10px;">🔒 Secure Payment</h3>
-                        <p style="color: #666;">Your data is protected</p>
-                    </div>
-                </xo-animate>
-                <xo-animate style="--xs: 6; --md: 3">
-                    <div style="text-align: center; padding: 20px;">
-                        <h3 style="font-size: 20px; margin-bottom: 10px;">💬 24/7 Support</h3>
-                        <p style="color: #666;">We're here to help</p>
-                    </div>
-                </xo-animate>
-            </xo-grid>
-        </xo-container>
-    </section>
+    <p id="cart-item-count-label">{{ cart_items|length }} item{{ cart_items|length|pluralize }} in your cart</p>
     {% endif %}
-</main>
+  </div>
+
+  <!-- Django Messages -->
+  {% if messages %}
+  <div id="django-messages">
+    {% for message in messages %}
+    <div class="cart-alert cart-alert--{{ message.tags }}">
+      {% if message.tags == 'success' %}✓{% elif message.tags == 'error' %}✕{% else %}ℹ{% endif %}
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if cart_items %}
+  <!-- ══════════════════════════════
+       CART GRID: Items + Sidebar
+  ══════════════════════════════ -->
+  <div class="cart-grid">
+
+    <!-- LEFT: Cart Items -->
+    <div>
+      <!-- Table Header (Desktop) -->
+      <div class="cart-table-header">
+        <div>Product</div>
+        <div>Quantity</div>
+        <div style="text-align:center;">Unit Price</div>
+        <div style="text-align:right;">Total</div>
+      </div>
+
+      <!-- Cart Rows -->
+      <div id="cart-items-container">
+        {% for item in cart_items %}
+        <div class="cart-item-row" id="cart-row-{{ item.id }}" data-item-id="{{ item.id }}">
+
+          <!-- ── Product Info ── -->
+          <div class="cart-item-product">
+            <a href="{% url 'product_detail' item.product.slug %}" class="cart-item-img">
+              {% if item.product.images.first %}
+                <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}" loading="lazy">
+              {% elif item.product.image %}
+                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" loading="lazy">
+              {% else %}
+                <img src="{% static 'img/no-image.jpg' %}" alt="No Image">
+              {% endif %}
+            </a>
+
+            <div class="cart-item-meta">
+              <!-- Product type label -->
+              <div class="cart-item-type">
+                {% if item.product.product_type == 'eyeglasses' %}Eyeglasses
+                {% elif item.product.product_type == 'sunglasses' %}Sunglasses
+                {% elif item.product.product_type == 'contact_lenses' %}Contact Lenses
+                {% else %}{{ item.product.product_type|title }}{% endif %}
+              </div>
+
+              <a href="{% url 'product_detail' item.product.slug %}" class="cart-item-name">
+                {{ item.product.name }}
+              </a>
+
+              {% if item.product.brand %}
+              <div class="cart-item-brand">{{ item.product.brand.name }}</div>
+              {% endif %}
+
+              <div class="cart-item-unit-price">QAR {{ item.unit_price }} / item</div>
+
+              <!-- Option Badges -->
+              <div class="cart-item-options">
+                {% if item.variant %}
+                  {% if item.variant.color_name %}
+                  <span class="option-badge">
+                    {% if item.variant.color_code %}
+                    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ item.variant.color_code }};border:1px solid #ccc;"></span>
+                    {% endif %}
+                    {{ item.variant.color_name }}
+                  </span>
+                  {% endif %}
+                  {% if item.variant.size %}
+                  <span class="option-badge">Size: {{ item.variant.size }}</span>
+                  {% endif %}
+                {% endif %}
+
+                {% if item.lens_option %}
+                <span class="option-badge option-badge--lens">
+                  🔍 {{ item.lens_option.lens_brand.name }} {{ item.lens_option.lens_type.name }}
+                  {% if item.lens_option.index %}({{ item.lens_option.index }}){% endif %}
+                </span>
+                {% endif %}
+
+                {% if item.sunglass_lens_option %}
+                <span class="option-badge option-badge--sunglass">
+                  🕶 {{ item.sunglass_lens_option }}
+                  {% if item.lens_color %} — {{ item.lens_color }}{% endif %}
+                </span>
+                {% endif %}
+
+                {% if item.lens_price and item.lens_price > 0 %}
+                <span class="option-badge option-badge--addon">+QAR {{ item.lens_price }} lens</span>
+                {% endif %}
+              </div>
+
+              <!-- Lens Add-ons -->
+              {% if item.lens_addons.all %}
+              <div class="cart-item-options">
+                {% for addon_item in item.lens_addons.all %}
+                <span class="option-badge option-badge--addon">
+                  ✦ {{ addon_item.addon.name }} +QAR {{ addon_item.price }}
+                </span>
+                {% endfor %}
+              </div>
+              {% endif %}
+
+              <!-- Prescription -->
+              {% if item.prescription_data %}
+              <div class="rx-block">
+                <div class="rx-block-title">Rx Prescription</div>
+                {% if item.prescription_data.right_sph or item.prescription_data.right_cyl %}
+                <div class="rx-row">
+                  <span class="rx-eye-label">Right (OD):</span>
+                  <span>SPH {{ item.prescription_data.right_sph|default:"—" }}</span>
+                  <span>CYL {{ item.prescription_data.right_cyl|default:"—" }}</span>
+                  <span>AXIS {{ item.prescription_data.right_axis|default:"—" }}</span>
+                  {% if item.prescription_data.right_add %}<span>ADD {{ item.prescription_data.right_add }}</span>{% endif %}
+                </div>
+                {% endif %}
+                {% if item.prescription_data.left_sph or item.prescription_data.left_cyl %}
+                <div class="rx-row">
+                  <span class="rx-eye-label">Left (OS):</span>
+                  <span>SPH {{ item.prescription_data.left_sph|default:"—" }}</span>
+                  <span>CYL {{ item.prescription_data.left_cyl|default:"—" }}</span>
+                  <span>AXIS {{ item.prescription_data.left_axis|default:"—" }}</span>
+                  {% if item.prescription_data.left_add %}<span>ADD {{ item.prescription_data.left_add }}</span>{% endif %}
+                </div>
+                {% endif %}
+                {% if item.prescription_data.color_name %}
+                <div class="rx-row">
+                  <span class="rx-eye-label">Color:</span>
+                  <span>{{ item.prescription_data.color_name }}</span>
+                </div>
+                {% endif %}
+              </div>
+              {% endif %}
+
+              <!-- Contact Lens Power -->
+              {% if item.contact_lens_left_power or item.contact_lens_right_power %}
+              <div class="cart-item-options">
+                <span class="option-badge option-badge--contact">
+                  Left: {{ item.contact_lens_left_power|default:"Plano" }}
+                </span>
+                <span class="option-badge option-badge--contact">
+                  Right: {{ item.contact_lens_right_power|default:"Plano" }}
+                </span>
+              </div>
+              {% endif %}
+
+              <!-- Special Instructions -->
+              {% if item.special_instructions %}
+              <div class="note-block">📝 {{ item.special_instructions }}</div>
+              {% endif %}
+
+              <!-- Remove -->
+              <button class="cart-remove-btn" data-item-id="{{ item.id }}" aria-label="Remove {{ item.product.name }}">
+                🗑 Remove
+              </button>
+            </div>
+          </div>
+
+          <!-- ── Quantity ── -->
+          <div class="cart-item-qty-cell">
+            <div class="qty-control" id="qty-ctrl-{{ item.id }}">
+              <button class="qty-btn decrease-qty" type="button" data-item-id="{{ item.id }}" aria-label="Decrease quantity">−</button>
+              <input class="qty-input item-qty-display-{{ item.id }}" type="text" value="{{ item.quantity }}" readonly aria-label="Quantity">
+              <button class="qty-btn increase-qty" type="button" data-item-id="{{ item.id }}" aria-label="Increase quantity">+</button>
+            </div>
+          </div>
+
+          <!-- ── Unit Price (Desktop) ── -->
+          <div style="text-align:center; color: var(--muted); font-size: 14px;" class="desktop-only-cell">
+            QAR {{ item.unit_price }}
+            {% if item.lens_price and item.lens_price > 0 %}
+            <div style="font-size:11px; margin-top:3px; color: #999;">+QAR {{ item.lens_price }} lens</div>
+            {% endif %}
+          </div>
+
+          <!-- ── Item Total ── -->
+          <div class="cart-item-total-cell">
+            <div class="cart-item-total item-total-display-{{ item.id }}">
+              QAR {{ item.item_total }}
+            </div>
+          </div>
+
+        </div>
+        {% endfor %}
+      </div>
+      <!-- /cart-items-container -->
+
+      <!-- Continue Shopping -->
+      <div style="margin-top: 24px;">
+        <a href="{% url 'home' %}" class="btn-continue" style="display:inline-block; width:auto; padding: 12px 28px;">
+          ← Continue Shopping
+        </a>
+      </div>
+
+      <!-- Trust Strip -->
+      <div class="trust-strip">
+        <div class="trust-item">
+          <div class="trust-item-icon">🚚</div>
+          <div class="trust-item-title">Free Shipping</div>
+          <div class="trust-item-desc">Orders over QAR 200</div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-item-icon">🔄</div>
+          <div class="trust-item-title">Easy Returns</div>
+          <div class="trust-item-desc">14-day policy</div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-item-icon">🔒</div>
+          <div class="trust-item-title">Secure Payment</div>
+          <div class="trust-item-desc">Encrypted checkout</div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-item-icon">👁</div>
+          <div class="trust-item-title">Free Eye Test</div>
+          <div class="trust-item-desc">At any store</div>
+        </div>
+      </div>
+    </div>
+    <!-- /LEFT -->
+
+    <!-- RIGHT: Summary Sidebar -->
+    <div class="cart-summary" id="cart-summary-sidebar">
+      <div class="cart-summary-header">
+        <h2>Order Summary</h2>
+      </div>
+      <div class="cart-summary-body">
+
+        <!-- Free Shipping Progress -->
+        <div class="free-shipping-bar" id="free-shipping-bar">
+          {% if shipping == 0 %}
+          <div class="free-shipping-text qualified" id="shipping-msg-text">
+            ✓ You qualify for FREE shipping!
+          </div>
+          {% else %}
+          <div class="free-shipping-text" id="shipping-msg-text">
+            🚚 Add QAR <span id="free-shipping-remaining">{{ free_shipping_remaining }}</span> more for FREE shipping
+          </div>
+          <div class="free-shipping-progress-track">
+            <div class="free-shipping-progress-fill" id="shipping-progress-fill" style="width: {{ shipping_progress|floatformat:0 }}%;"></div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Subtotal -->
+        <div class="summary-row">
+          <span>Subtotal (<span id="item-count-summary">{{ cart_items|length }}</span> items)</span>
+          <span id="subtotal-display"><strong>QAR {{ subtotal }}</strong></span>
+        </div>
+
+        <!-- Shipping -->
+        <div class="summary-row" id="shipping-row" {% if shipping == 0 %}style="display:none;"{% endif %}>
+          <span>Shipping</span>
+          <span id="shipping-display">QAR {{ shipping }}</span>
+        </div>
+
+        <!-- Free Shipping Badge -->
+        <div id="free-ship-badge" {% if shipping > 0 %}style="display:none;"{% endif %}
+             style="display:{% if shipping == 0 %}flex{% else %}none{% endif %}; align-items:center; gap:6px; font-size:13px; color: var(--success); margin-bottom: 12px;">
+          ✓ FREE Shipping applied
+        </div>
+
+        <!-- Tax note -->
+        <div class="summary-row" style="font-size:12px; color:var(--muted);">
+          <span>Tax</span>
+          <span>Calculated at checkout</span>
+        </div>
+
+        <!-- Grand Total -->
+        <div class="summary-row summary-row--total">
+          <span>Total</span>
+          <span id="cart-total-display">QAR {{ total }}</span>
+        </div>
+
+        <div class="summary-note">
+          Taxes & shipping calculated at checkout
+        </div>
+
+        <!-- Checkout Button -->
+        <a href="{% url 'orders:checkout' %}"
+           class="btn-checkout {% if total == 0 %}disabled{% endif %}"
+           id="checkout-btn"
+           {% if total == 0 %}aria-disabled="true"{% endif %}>
+          Proceed to Checkout →
+        </a>
+
+        <a href="{% url 'home' %}" class="btn-continue">Continue Shopping</a>
+
+        <!-- Benefits -->
+        <div class="cart-benefits">
+          <div class="benefit-item">
+            <div class="benefit-icon">🔒</div>
+            <span>Secure checkout — your data is safe</span>
+          </div>
+          <div class="benefit-item">
+            <div class="benefit-icon">🏷</div>
+            <span>1-year warranty on all frames</span>
+          </div>
+          <div class="benefit-item">
+            <div class="benefit-icon">👁</div>
+            <span>Free eye test at any of our stores</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /Sidebar -->
+
+  </div>
+  <!-- /cart-grid -->
+
+  {% else %}
+  <!-- ══════════════ EMPTY CART ══════════════ -->
+  <div class="cart-grid">
+    <div class="empty-cart">
+      <div class="empty-cart-icon">🛒</div>
+      <h2>Your cart is empty</h2>
+      <p>Looks like you haven't added anything yet. Start exploring!</p>
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <a href="{% url 'catalog:eyeglasses_list' %}" class="btn-shop">Eyeglasses</a>
+        <a href="{% url 'catalog:sunglasses_list' %}" class="btn-shop" style="background:var(--gold); border-color:var(--gold);">Sunglasses</a>
+        <a href="{% url 'catalog:contact_lenses_list' %}" class="btn-shop" style="background:#1565c0;">Contact Lenses</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+<!-- /cart-page -->
+
+<!-- Toast -->
+<div class="cart-toast" id="cartToast"></div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    console.log("🛒 Cart page loaded - Fixed version");
-    
-    const FREE_SHIPPING_THRESHOLD = 200;
-    const SHIPPING_COST = 20;
-    
-    // Get CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
+(function () {
+  "use strict";
+
+  /* ─── Constants ─── */
+  const FREE_SHIPPING_THRESHOLD = 200;
+
+  /* ─── CSRF Token ─── */
+  function getCsrf() {
+    const name = "csrftoken";
+    for (const c of document.cookie.split(";")) {
+      const trimmed = c.trim();
+      if (trimmed.startsWith(name + "=")) {
+        return decodeURIComponent(trimmed.slice(name.length + 1));
+      }
     }
-    const csrftoken = getCookie('csrftoken');
-    
-    // Update all totals and UI
-    function updateTotals(data) {
-        console.log("📊 Updating totals:", data);
-        
-        // Update subtotal
-        const subtotalEl = document.getElementById('subtotal-display');
-        if (subtotalEl) {
-            subtotalEl.textContent = 'QAR ' + parseFloat(data.subtotal).toFixed(2);
-        }
-        
-        // Update shipping
-        const shippingRow = document.getElementById('shipping-row');
-        const shippingEl = document.getElementById('shipping-display');
-        const shipping = parseFloat(data.shipping);
-        
-        if (shipping > 0) {
-            shippingRow.style.display = 'block';
-            if (shippingEl) {
-                shippingEl.textContent = 'QAR ' + shipping.toFixed(2);
-            }
-        } else {
-            shippingRow.style.display = 'none';
-        }
-        
-        // Update total
-        const totalEl = document.getElementById('cart-total');
-        if (totalEl) {
-            totalEl.textContent = 'QAR ' + parseFloat(data.cart_total).toFixed(2);
-        }
-        
-        // Update shipping message
-        updateShippingMessage(parseFloat(data.subtotal));
-        
-        // Update cart count in header
-        const countEls = document.querySelectorAll('.header-v24__cart-count, #cart-count, #cart-items-count');
-        countEls.forEach(el => {
-            el.textContent = data.cart_count;
-            // Add bounce animation
-            el.style.transform = 'scale(1.3)';
-            setTimeout(() => {
-                el.style.transform = 'scale(1)';
-            }, 300);
+    return "";
+  }
+
+  /* ─── Toast ─── */
+  let _toastTimer;
+  function toast(msg, type) {
+    const t = document.getElementById("cartToast");
+    if (!t) return;
+    t.textContent = msg;
+    t.className = "cart-toast show" + (type === "ok" ? " cart-toast--ok" : type === "err" ? " cart-toast--err" : "");
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => t.classList.remove("show"), 3500);
+  }
+
+  /* ─── Update Totals ─── */
+  function updateSummary(data) {
+    /* Subtotal */
+    const subtotalEl = document.getElementById("subtotal-display");
+    if (subtotalEl) subtotalEl.innerHTML = "<strong>QAR " + parseFloat(data.subtotal).toFixed(2) + "</strong>";
+
+    /* Shipping */
+    const shippingRow  = document.getElementById("shipping-row");
+    const shippingEl   = document.getElementById("shipping-display");
+    const freeBadge    = document.getElementById("free-ship-badge");
+    const shipping     = parseFloat(data.shipping);
+
+    if (shippingRow) shippingRow.style.display = shipping > 0 ? "flex" : "none";
+    if (freeBadge)   freeBadge.style.display   = shipping === 0 ? "flex" : "none";
+    if (shippingEl)  shippingEl.textContent     = "QAR " + shipping.toFixed(2);
+
+    /* Total */
+    const totalEl = document.getElementById("cart-total-display");
+    if (totalEl) totalEl.textContent = "QAR " + parseFloat(data.cart_total).toFixed(2);
+
+    /* Free shipping bar */
+    updateShippingBar(parseFloat(data.subtotal));
+
+    /* Header cart count badges */
+    const count = data.cart_count;
+    document.querySelectorAll(
+      ".header-v24__cart-count, #cart-count, #cart-items-count, .cart-badge"
+    ).forEach(el => {
+      el.textContent = count;
+      el.style.transform = "scale(1.3)";
+      setTimeout(() => (el.style.transform = "scale(1)"), 300);
+    });
+
+    /* Item count in summary */
+    const itemCountEl = document.getElementById("item-count-summary");
+    if (itemCountEl) itemCountEl.textContent = count;
+
+    /* Page heading label */
+    const headLabel = document.getElementById("cart-item-count-label");
+    if (headLabel) {
+      if (count === 0) headLabel.textContent = "";
+      else headLabel.textContent = count + " item" + (count !== 1 ? "s" : "") + " in your cart";
+    }
+
+    /* Checkout button */
+    const checkoutBtn = document.getElementById("checkout-btn");
+    if (checkoutBtn) {
+      if (parseFloat(data.cart_total) <= 0) checkoutBtn.classList.add("disabled");
+      else checkoutBtn.classList.remove("disabled");
+    }
+  }
+
+  function updateShippingBar(subtotal) {
+    const msgEl   = document.getElementById("shipping-msg-text");
+    const fillEl  = document.getElementById("shipping-progress-fill");
+    const remainEl = document.getElementById("free-shipping-remaining");
+
+    if (!msgEl) return;
+
+    if (subtotal >= FREE_SHIPPING_THRESHOLD) {
+      msgEl.className = "free-shipping-text qualified";
+      msgEl.innerHTML = "✓ You qualify for FREE shipping!";
+      if (fillEl) fillEl.style.width = "100%";
+    } else {
+      const remaining = (FREE_SHIPPING_THRESHOLD - subtotal).toFixed(2);
+      const progress  = Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100);
+      msgEl.className = "free-shipping-text";
+      msgEl.innerHTML = '🚚 Add QAR <span id="free-shipping-remaining">' + remaining + "</span> more for FREE shipping";
+      if (fillEl) fillEl.style.width = progress + "%";
+    }
+  }
+
+  /* ─── Remove Row (animated) ─── */
+  function removeRow(itemId, data) {
+    const row = document.getElementById("cart-row-" + itemId);
+    if (!row) return;
+
+    row.classList.add("removing");
+    setTimeout(() => {
+      row.remove();
+      updateSummary(data);
+
+      if (data.cart_count === 0) {
+        /* Reload to show empty state */
+        setTimeout(() => location.reload(), 400);
+      }
+    }, 320);
+  }
+
+  /* ─── Update item display ─── */
+  function updateItemDisplay(itemId, data) {
+    /* Quantity inputs */
+    document.querySelectorAll(".item-qty-display-" + itemId).forEach(el => {
+      el.value = data.quantity;
+    });
+
+    /* Item total */
+    const totalEl = document.querySelector(".item-total-display-" + itemId);
+    if (totalEl) {
+      totalEl.textContent = "QAR " + parseFloat(data.item_total).toFixed(2);
+      totalEl.classList.add("updating");
+      setTimeout(() => totalEl.classList.remove("updating"), 400);
+    }
+
+    updateSummary(data);
+  }
+
+  /* ════════════════════════════════════════
+     EVENT DELEGATION
+  ════════════════════════════════════════ */
+  document.addEventListener("click", function (e) {
+
+    /* ── INCREASE ── */
+    const incBtn = e.target.closest(".increase-qty");
+    if (incBtn) {
+      e.preventDefault();
+      const id  = incBtn.dataset.itemId;
+      const ctrl = document.getElementById("qty-ctrl-" + id);
+      if (ctrl) ctrl.classList.add("loading");
+
+      fetch("/cart/update/" + id + "/increase/", {
+        method: "GET",
+        headers: { "X-Requested-With": "XMLHttpRequest", "X-CSRFToken": getCsrf() }
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            if (data.deleted) removeRow(id, data);
+            else updateItemDisplay(id, data);
+          } else {
+            toast(data.message || "Could not increase quantity", "err");
+          }
+        })
+        .catch(() => toast("Network error. Please try again.", "err"))
+        .finally(() => { if (ctrl) ctrl.classList.remove("loading"); });
+      return;
+    }
+
+    /* ── DECREASE ── */
+    const decBtn = e.target.closest(".decrease-qty");
+    if (decBtn) {
+      e.preventDefault();
+      const id  = decBtn.dataset.itemId;
+      const ctrl = document.getElementById("qty-ctrl-" + id);
+      if (ctrl) ctrl.classList.add("loading");
+
+      fetch("/cart/update/" + id + "/decrease/", {
+        method: "GET",
+        headers: { "X-Requested-With": "XMLHttpRequest", "X-CSRFToken": getCsrf() }
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            if (data.deleted) removeRow(id, data);
+            else updateItemDisplay(id, data);
+          } else {
+            if (data.block) toast("Minimum quantity is 1. Use Remove to delete.", "");
+            else toast(data.message || "Could not decrease quantity", "err");
+          }
+        })
+        .catch(() => toast("Network error. Please try again.", "err"))
+        .finally(() => { if (ctrl) ctrl.classList.remove("loading"); });
+      return;
+    }
+
+    /* ── REMOVE ── */
+    const removeBtn = e.target.closest(".cart-remove-btn");
+    if (removeBtn) {
+      e.preventDefault();
+      if (!confirm("Remove this item from your cart?")) return;
+
+      const id = removeBtn.dataset.itemId;
+      removeBtn.textContent = "Removing…";
+      removeBtn.disabled = true;
+
+      fetch("/cart/remove/" + id + "/", {
+        method: "POST",
+        headers: { "X-Requested-With": "XMLHttpRequest", "X-CSRFToken": getCsrf() }
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            toast("Item removed from cart", "ok");
+            removeRow(id, data);
+          } else {
+            toast(data.message || "Could not remove item", "err");
+            removeBtn.textContent = "🗑 Remove";
+            removeBtn.disabled = false;
+          }
+        })
+        .catch(() => {
+          toast("Network error. Please try again.", "err");
+          removeBtn.textContent = "🗑 Remove";
+          removeBtn.disabled = false;
         });
+      return;
     }
-    
-    // Update shipping message
-    function updateShippingMessage(subtotal) {
-        const shippingMessageEl = document.getElementById('shipping-message');
-        if (!shippingMessageEl) return;
-        
-        if (subtotal >= FREE_SHIPPING_THRESHOLD) {
-            shippingMessageEl.innerHTML = `
-                <div class="xo-cart-free-shipping__text" style="color: #4caf50; font-weight: bold;">
-                    ✓ You qualify for FREE shipping!
-                </div>
-            `;
-        } else {
-            const remaining = (FREE_SHIPPING_THRESHOLD - subtotal).toFixed(2);
-            const progress = (subtotal / FREE_SHIPPING_THRESHOLD * 100).toFixed(0);
-            
-            shippingMessageEl.innerHTML = `
-                <div class="xo-cart-free-shipping__text">
-                    Add QAR <span id="free-shipping-remaining">${remaining}</span> more for FREE shipping
-                </div>
-                <div class="xo-cart-free-shipping__progress" style="--progress: ${progress}%;"></div>
-            `;
-        }
-    }
-    
-    // INCREASE QUANTITY
-    document.addEventListener("click", function(e) {
-        const increaseBtn = e.target.closest(".increase-qty");
-        if (increaseBtn) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const itemId = increaseBtn.dataset.itemId;
-            const url = `/cart/update/${itemId}/increase/`;
-            
-            console.log(`➕ Increasing quantity for item ${itemId}`);
-            
-            // Disable buttons
-            const qtyContainer = increaseBtn.closest('.xo-quantity-style2');
-            qtyContainer.classList.add('loading');
-            
-            fetch(url, {
-                method: "GET",
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest",
-                    "X-CSRFToken": csrftoken
-                }
-            })
-            .then(res => res.json())
-            .then(data => {
-                console.log("✅ Increase response:", data);
-                
-                if (data.success) {
-                    if (data.deleted) {
-                        // Item was removed
-                        removeItemRow(itemId, data);
-                    } else {
-                        // Update quantity
-                        document.querySelectorAll(`.item-quantity-${itemId}`).forEach(input => {
-                            input.value = data.quantity;
-                        });
-                        
-                        // Update item total with animation
-                        const itemTotalEl = document.querySelector(`.item-total-${itemId}`);
-                        if (itemTotalEl) {
-                            itemTotalEl.textContent = "QAR " + parseFloat(data.item_total).toFixed(2);
-                            itemTotalEl.classList.add('updating');
-                            setTimeout(() => itemTotalEl.classList.remove('updating'), 300);
-                        }
-                        
-                        // Update all totals
-                        updateTotals(data);
-                    }
-                } else {
-                    // Show error message
-                    if (data.limit_reached) {
-                        alert(data.message || 'Maximum stock reached!');
-                    } else {
-                        alert(data.message || 'Error updating quantity');
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('❌ Error:', error);
-                alert('An error occurred. Please try again.');
-            })
-            .finally(() => {
-                qtyContainer.classList.remove('loading');
-            });
-            
-            return;
-        }
-    });
-    
-    // DECREASE QUANTITY
-    document.addEventListener("click", function(e) {
-        const decreaseBtn = e.target.closest(".decrease-qty");
-        if (decreaseBtn) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const itemId = decreaseBtn.dataset.itemId;
-            const url = `/cart/update/${itemId}/decrease/`;
-            
-            console.log(`➖ Decreasing quantity for item ${itemId}`);
-            
-            // Disable buttons
-            const qtyContainer = decreaseBtn.closest('.xo-quantity-style2');
-            qtyContainer.classList.add('loading');
-            
-            fetch(url, {
-                method: "GET",
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest",
-                    "X-CSRFToken": csrftoken
-                }
-            })
-            .then(res => res.json())
-            .then(data => {
-                console.log("✅ Decrease response:", data);
-                
-                if (data.success) {
-                    if (data.deleted) {
-                        // Item was removed
-                        removeItemRow(itemId, data);
-                    } else {
-                        // Update quantity
-                        document.querySelectorAll(`.item-quantity-${itemId}`).forEach(input => {
-                            input.value = data.quantity;
-                        });
-                        
-                        // Update item total with animation
-                        const itemTotalEl = document.querySelector(`.item-total-${itemId}`);
-                        if (itemTotalEl) {
-                            itemTotalEl.textContent = "QAR " + parseFloat(data.item_total).toFixed(2);
-                            itemTotalEl.classList.add('updating');
-                            setTimeout(() => itemTotalEl.classList.remove('updating'), 300);
-                        }
-                        
-                        // Update all totals
-                        updateTotals(data);
-                    }
-                } else {
-                    // Show error message
-                    if (data.block) {
-                        alert(data.message || 'Minimum quantity is 1');
-                    } else {
-                        alert(data.message || 'Error updating quantity');
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('❌ Error:', error);
-                alert('An error occurred. Please try again.');
-            })
-            .finally(() => {
-                qtyContainer.classList.remove('loading');
-            });
-            
-            return;
-        }
-    });
-    
-    // REMOVE ITEM
-    document.addEventListener("click", function(e) {
-        const removeBtn = e.target.closest(".remove-item-btn");
-        if (removeBtn) {
-            e.preventDefault();
-            
-            if (!confirm("Remove this item from cart?")) return;
-            
-            const itemId = removeBtn.dataset.itemId;
-            const url = `/cart/remove/${itemId}/`;
-            
-            console.log("🗑️ Removing item:", itemId);
-            
-            // Disable button
-            removeBtn.disabled = true;
-            
-            fetch(url, {
-                method: "POST",
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest",
-                    "X-CSRFToken": csrftoken
-                }
-            })
-            .then(res => res.json())
-            .then(data => {
-                console.log("✅ Remove response:", data);
-                
-                if (data.success) {
-                    removeItemRow(itemId, data);
-                } else {
-                    alert(data.message || "Error removing item");
-                    removeBtn.disabled = false;
-                }
-            })
-            .catch(error => {
-                console.error('❌ Error:', error);
-                alert("Something went wrong");
-                removeBtn.disabled = false;
-            });
-            
-            return;
-        }
-    });
-    
-    // Remove item row with animation
-    function removeItemRow(itemId, data) {
-        const row = document.getElementById("cart-row-" + itemId);
-        if (row) {
-            row.classList.add('removing');
-            
-            setTimeout(() => {
-                row.remove();
-                
-                // Update totals
-                updateTotals(data);
-                
-                // Reload if cart is empty
-                if (data.cart_count === 0) {
-                    console.log("🔄 Cart empty, reloading...");
-                    setTimeout(() => location.reload(), 500);
-                }
-            }, 300);
-        }
-    }
-});
+
+  });
+
+})();
 </script>
 
 {% endblock %}
