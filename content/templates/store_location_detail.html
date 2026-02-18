@@ -1,0 +1,904 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ location.name }} · {% trans "Store Location" %} · Al Ameen Optics{% endblock %}
+{% load custom_filters %}
+{% block content %}
+
+<style>
+/* ============================================================
+   STORE LOCATION DETAIL — BRUTALIST CONCRETE UTILITY
+   Fonts: Roboto Mono (addresses/meta) + Work Sans (body)
+   Palette: Concrete gray #52525b / Orange utility #ff6b35 / Deep charcoal #18181b / Off-white #fafafa
+   Direction: Industrial architectural — exposed grid, sharp edges,
+              the map bleeds dramatically across the layout boundary
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Work+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+:root {
+  --sl-charcoal:   #18181b;
+  --sl-concrete:   #52525b;
+  --sl-concrete-lt:#71717a;
+  --sl-concrete-dk:#3f3f46;
+  --sl-off:        #fafafa;
+  --sl-white:      #ffffff;
+  --sl-rule:       #e4e4e7;
+  --sl-orange:     #ff6b35;
+  --sl-orange-dk:  #e85a26;
+  --sl-yellow:     #fbbf24;
+  --sl-green:      #10b981;
+  --sl-radius:     4px;
+  --sl-ease:       cubic-bezier(.22,1,.36,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.sl-page {
+  font-family: 'Work Sans', sans-serif;
+  background: var(--sl-off);
+  color: var(--sl-charcoal);
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   HERO — Store name + quick meta
+   ============================================================ */
+.sl-hero {
+  background: var(--sl-charcoal);
+  color: var(--sl-white);
+  padding: 0 0 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Concrete texture overlay */
+.sl-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: .03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Grid lines */
+.sl-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.sl-hero__inner {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 80px 48px 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Breadcrumb */
+.sl-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 32px;
+  opacity: 0;
+  animation: sl-drop .5s .05s forwards;
+}
+
+.sl-breadcrumb a,
+.sl-breadcrumb span {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.5);
+  text-decoration: none;
+  transition: color .2s;
+}
+
+.sl-breadcrumb a:hover { color: var(--sl-orange); }
+.sl-breadcrumb__sep { color: rgba(255,255,255,.3); }
+.sl-breadcrumb span:last-child { color: var(--sl-orange); }
+
+/* Store name */
+.sl-hero__name {
+  font-family: 'Work Sans', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 800;
+  line-height: .95;
+  letter-spacing: -.02em;
+  color: var(--sl-white);
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: sl-drop .7s .15s forwards;
+}
+
+.sl-hero__name .highlight {
+  color: var(--sl-orange);
+  display: inline-block;
+  position: relative;
+}
+
+/* Quick meta pills */
+.sl-quick-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: sl-drop .7s .25s forwards;
+}
+
+.sl-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: var(--sl-radius);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .06em;
+  color: rgba(255,255,255,.8);
+}
+
+.sl-meta-pill--orange { background: rgba(255,107,53,.15); border-color: var(--sl-orange); color: var(--sl-orange); }
+.sl-meta-pill svg { color: var(--sl-orange); flex-shrink: 0; }
+
+/* ============================================================
+   MAIN LAYOUT — Asymmetric split
+   ============================================================ */
+.sl-layout {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 48px 100px;
+  display: grid;
+  grid-template-columns: 1fr 440px;
+  gap: 40px;
+  align-items: start;
+  position: relative;
+  margin-top: -40px; /* Pull up into hero */
+}
+
+/* ============================================================
+   MAP SECTION — BLEEDS OUT
+   ============================================================ */
+.sl-map-section {
+  grid-column: 1;
+  position: relative;
+  z-index: 10;
+  opacity: 0;
+  animation: sl-rise .8s .35s forwards;
+}
+
+.sl-map-wrapper {
+  position: relative;
+  background: var(--sl-white);
+  border: 3px solid var(--sl-charcoal);
+  box-shadow: 12px 12px 0 var(--sl-orange);
+  overflow: hidden;
+  border-radius: var(--sl-radius);
+}
+
+/* Map bleeds to the right edge of viewport */
+.sl-map-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -100vw;
+  width: 100vw;
+  height: 100%;
+  background: var(--sl-concrete);
+  opacity: .05;
+  pointer-events: none;
+}
+
+.sl-map-embed {
+  width: 100%;
+  height: 500px;
+  border: none;
+  display: block;
+  filter: grayscale(40%) contrast(1.1);
+  transition: filter .4s;
+}
+
+.sl-map-embed:hover { filter: grayscale(0%) contrast(1); }
+
+/* Map fallback */
+.sl-map-placeholder {
+  width: 100%;
+  height: 500px;
+  background: var(--sl-concrete);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--sl-white);
+}
+
+.sl-map-placeholder svg { opacity: .5; }
+
+.sl-map-placeholder__text {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  opacity: .7;
+}
+
+/* Directions button */
+.sl-directions-btn {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  background: var(--sl-orange);
+  color: var(--sl-charcoal);
+  border: none;
+  border-radius: var(--sl-radius);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(255,107,53,.4);
+  transition: all .3s var(--sl-ease);
+}
+
+.sl-directions-btn:hover {
+  background: var(--sl-orange-dk);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255,107,53,.5);
+}
+
+/* ============================================================
+   INFO SIDEBAR
+   ============================================================ */
+.sl-sidebar {
+  position: sticky;
+  top: 24px;
+  opacity: 0;
+  animation: sl-rise .8s .45s forwards;
+}
+
+/* ── Info card ── */
+.sl-info-card {
+  background: var(--sl-white);
+  border: 3px solid var(--sl-charcoal);
+  border-radius: var(--sl-radius);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.sl-info-card__header {
+  background: var(--sl-charcoal);
+  color: var(--sl-white);
+  padding: 16px 20px;
+  border-bottom: 3px solid var(--sl-orange);
+}
+
+.sl-info-card__title {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--sl-orange);
+}
+
+.sl-info-card__body {
+  padding: 24px;
+}
+
+/* Contact rows */
+.sl-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.sl-contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.sl-contact-item__icon {
+  width: 36px;
+  height: 36px;
+  background: var(--sl-off);
+  border: 2px solid var(--sl-rule);
+  border-radius: var(--sl-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--sl-concrete);
+  transition: all .3s;
+}
+
+.sl-contact-item:hover .sl-contact-item__icon {
+  border-color: var(--sl-orange);
+  background: var(--sl-orange);
+  color: var(--sl-charcoal);
+  transform: rotate(5deg);
+}
+
+.sl-contact-item__body { flex: 1; min-width: 0; }
+
+.sl-contact-item__label {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--sl-concrete-lt);
+  margin-bottom: 4px;
+}
+
+.sl-contact-item__value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sl-charcoal);
+  word-break: break-word;
+}
+
+.sl-contact-item__value a {
+  color: inherit;
+  text-decoration: none;
+  transition: color .2s;
+}
+
+.sl-contact-item__value a:hover { color: var(--sl-orange); }
+
+/* Operating hours */
+.sl-hours-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sl-hours-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--sl-off);
+  border-left: 3px solid transparent;
+  transition: all .25s;
+}
+
+.sl-hours-row:hover {
+  border-left-color: var(--sl-orange);
+  background: rgba(255,107,53,.05);
+}
+
+.sl-hours-row.today {
+  border-left-color: var(--sl-orange);
+  background: rgba(255,107,53,.08);
+}
+
+.sl-hours-row__day {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--sl-concrete);
+}
+
+.sl-hours-row.today .sl-hours-row__day { color: var(--sl-orange); }
+
+.sl-hours-row__time {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--sl-charcoal);
+}
+
+.sl-hours-row__time--closed { color: var(--sl-concrete-lt); font-style: italic; }
+
+/* ── Services card ── */
+.sl-services-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.sl-service-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 18px 12px;
+  background: var(--sl-off);
+  border: 2px solid var(--sl-rule);
+  border-radius: var(--sl-radius);
+  text-align: center;
+  transition: all .3s;
+}
+
+.sl-service-tile:hover {
+  border-color: var(--sl-orange);
+  background: rgba(255,107,53,.05);
+  transform: translateY(-2px);
+}
+
+.sl-service-tile__icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sl-white);
+  border: 2px solid var(--sl-rule);
+  border-radius: 50%;
+  color: var(--sl-orange);
+  transition: all .3s;
+}
+
+.sl-service-tile:hover .sl-service-tile__icon {
+  border-color: var(--sl-orange);
+  transform: rotate(10deg);
+}
+
+.sl-service-tile__name {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: var(--sl-charcoal);
+}
+
+/* ── CTA Button ── */
+.sl-cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px 24px;
+  background: var(--sl-charcoal);
+  color: var(--sl-white);
+  border: 3px solid var(--sl-charcoal);
+  border-radius: var(--sl-radius);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all .3s var(--sl-ease);
+  box-shadow: 4px 4px 0 var(--sl-orange);
+}
+
+.sl-cta-btn:hover {
+  background: var(--sl-orange);
+  border-color: var(--sl-orange);
+  color: var(--sl-charcoal);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--sl-charcoal);
+}
+
+/* ============================================================
+   ADDITIONAL INFO (full width below)
+   ============================================================ */
+.sl-additional {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 40px;
+  opacity: 0;
+  animation: sl-rise .8s .55s forwards;
+}
+
+.sl-info-block {
+  background: var(--sl-white);
+  border: 3px solid var(--sl-charcoal);
+  border-radius: var(--sl-radius);
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sl-info-block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--sl-orange);
+}
+
+.sl-info-block__title {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--sl-orange);
+  margin-bottom: 12px;
+}
+
+.sl-info-block__content {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--sl-concrete-dk);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes sl-drop {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sl-rise {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1200px) {
+  .sl-layout {
+    grid-template-columns: 1fr 380px;
+    gap: 32px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .sl-layout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .sl-sidebar { position: relative; top: auto; }
+  
+  .sl-additional {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .sl-hero__inner { padding: 60px 24px 0; }
+  .sl-layout { padding: 0 24px 80px; }
+  
+  .sl-map-embed { height: 350px; }
+  
+  .sl-additional {
+    grid-template-columns: 1fr;
+  }
+
+  .sl-services-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .sl-hero__name { font-size: clamp(2rem, 10vw, 3rem); }
+  .sl-map-embed { height: 280px; }
+  .sl-info-card__body { padding: 18px; }
+}
+</style>
+
+
+<div class="sl-page">
+
+  <!-- ══════════════════════════════════════════════
+       HERO
+  ══════════════════════════════════════════════ -->
+  <header class="sl-hero">
+    <div class="sl-hero__inner">
+
+      <!-- Breadcrumb -->
+      <nav class="sl-breadcrumb" aria-label="Breadcrumb">
+        <a href="/">{% trans "Home" %}</a>
+        <span class="sl-breadcrumb__sep">/</span>
+        <a href="{% url 'content:store_locations' %}">{% trans "Locations" %}</a>
+        <span class="sl-breadcrumb__sep">/</span>
+        <span>{{ location.name }}</span>
+      </nav>
+
+      <!-- Store name -->
+      <h1 class="sl-hero__name">
+        <span class="highlight">{{ location.name }}</span>
+      </h1>
+
+      <!-- Quick meta -->
+      <div class="sl-quick-meta">
+        <span class="sl-meta-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+          {{ location.city }}
+        </span>
+
+        {% if location.offers_eye_test %}
+        <span class="sl-meta-pill sl-meta-pill--orange">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+          {% trans "Free Eye Test Available" %}
+        </span>
+        {% endif %}
+
+        <span class="sl-meta-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          {% trans "Open Today" %}
+        </span>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════
+       MAIN LAYOUT
+  ══════════════════════════════════════════════ -->
+  <div class="sl-layout">
+
+    <!-- ══════════ MAP SECTION ══════════ -->
+    <section class="sl-map-section">
+      <div class="sl-map-wrapper">
+        {% if location.google_maps_embed_url %}
+        <iframe src="{{ location.google_maps_embed_url }}"
+                class="sl-map-embed"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                title="{% trans 'Store location on map' %}">
+        </iframe>
+        {% elif location.latitude and location.longitude %}
+        <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d1000!2d{{ location.longitude }}!3d{{ location.latitude }}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2s!4v1234567890"
+                class="sl-map-embed"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                title="{% trans 'Store location on map' %}">
+        </iframe>
+        {% else %}
+        <div class="sl-map-placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span class="sl-map-placeholder__text">{% trans "Map Unavailable" %}</span>
+        </div>
+        {% endif %}
+
+        <!-- Directions button -->
+        {% if location.google_maps_url %}
+        <a href="{{ location.google_maps_url }}" target="_blank" rel="noopener noreferrer" class="sl-directions-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 10-16 0c0 3 2.7 6.9 8 11.7z"/>
+          </svg>
+          {% trans "Get Directions" %}
+        </a>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- ══════════ SIDEBAR ══════════ -->
+    <aside class="sl-sidebar">
+
+      <!-- ── Contact Info ── -->
+      <div class="sl-info-card">
+        <div class="sl-info-card__header">
+          <h2 class="sl-info-card__title">{% trans "Contact Information" %}</h2>
+        </div>
+        <div class="sl-info-card__body">
+          <div class="sl-contact-list">
+
+            <!-- Address -->
+            <div class="sl-contact-item">
+              <div class="sl-contact-item__icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+              </div>
+              <div class="sl-contact-item__body">
+                <p class="sl-contact-item__label">{% trans "Address" %}</p>
+                <p class="sl-contact-item__value">
+                  {{ location.address_line1 }}<br>
+                  {% if location.address_line2 %}{{ location.address_line2 }}<br>{% endif %}
+                  {{ location.city }}, {{ location.state }} {{ location.postal_code }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Phone -->
+            {% if location.phone %}
+            <div class="sl-contact-item">
+              <div class="sl-contact-item__icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+                </svg>
+              </div>
+              <div class="sl-contact-item__body">
+                <p class="sl-contact-item__label">{% trans "Phone" %}</p>
+                <p class="sl-contact-item__value">
+                  <a href="tel:{{ location.phone }}">{{ location.phone }}</a>
+                </p>
+              </div>
+            </div>
+            {% endif %}
+
+            <!-- Email -->
+            {% if location.email %}
+            <div class="sl-contact-item">
+              <div class="sl-contact-item__icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </div>
+              <div class="sl-contact-item__body">
+                <p class="sl-contact-item__label">{% trans "Email" %}</p>
+                <p class="sl-contact-item__value">
+                  <a href="mailto:{{ location.email }}">{{ location.email }}</a>
+                </p>
+              </div>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Operating Hours ── -->
+      <div class="sl-info-card">
+        <div class="sl-info-card__header">
+          <h2 class="sl-info-card__title">{% trans "Opening Hours" %}</h2>
+        </div>
+        <div class="sl-info-card__body">
+          <div class="sl-hours-list">
+            {% now "l" as current_day %}
+            {% with days="monday,tuesday,wednesday,thursday,friday,saturday,sunday" %}
+            {% for day in days|split:"," %}
+            <div class="sl-hours-row {% if current_day|lower == day %}today{% endif %}">
+              <span class="sl-hours-row__day">{{ day|title }}</span>
+              <span class="sl-hours-row__time {% if not location.operating_hours|get_item:day %}sl-hours-row__time--closed{% endif %}">
+                {% if location.operating_hours|get_item:day %}
+                  {{ location.operating_hours|get_item:day }}
+                {% else %}
+                  {% trans "Closed" %}
+                {% endif %}
+              </span>
+            </div>
+            {% endfor %}
+            {% endwith %}
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Services Available ── -->
+      <div class="sl-info-card">
+        <div class="sl-info-card__header">
+          <h2 class="sl-info-card__title">{% trans "Services Available" %}</h2>
+        </div>
+        <div class="sl-info-card__body">
+          <div class="sl-services-grid">
+
+            {% if location.offers_eye_test %}
+            <div class="sl-service-tile">
+              <div class="sl-service-tile__icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </div>
+              <span class="sl-service-tile__name">{% trans "Eye Test" %}</span>
+            </div>
+            {% endif %}
+
+            <div class="sl-service-tile">
+              <div class="sl-service-tile__icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+              <span class="sl-service-tile__name">{% trans "Expert Consultation" %}</span>
+            </div>
+
+            <div class="sl-service-tile">
+              <div class="sl-service-tile__icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/>
+                </svg>
+              </div>
+              <span class="sl-service-tile__name">{% trans "Frame Fitting" %}</span>
+            </div>
+
+            <div class="sl-service-tile">
+              <div class="sl-service-tile__icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>
+                </svg>
+              </div>
+              <span class="sl-service-tile__name">{% trans "Warranty Support" %}</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CTA Button ── -->
+      {% if location.offers_eye_test %}
+      <a href="{% url 'content:eye_test_booking' %}?location={{ location.id }}" class="sl-cta-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        {% trans "Book Free Eye Test" %}
+      </a>
+      {% endif %}
+
+    </aside>
+
+    <!-- ══════════ ADDITIONAL INFO ══════════ -->
+    <div class="sl-additional">
+
+      <!-- Parking -->
+      <div class="sl-info-block">
+        <h3 class="sl-info-block__title">{% trans "Parking" %}</h3>
+        <p class="sl-info-block__content">
+          {% trans "Ample free parking available on-site. Accessible parking spots reserved near the entrance." %}
+        </p>
+      </div>
+
+      <!-- Accessibility -->
+      <div class="sl-info-block">
+        <h3 class="sl-info-block__title">{% trans "Accessibility" %}</h3>
+        <p class="sl-info-block__content">
+          {% trans "Wheelchair accessible entrance and facilities. Staff available to assist customers with special needs." %}
+        </p>
+      </div>
+
+      <!-- Payment Methods -->
+      <div class="sl-info-block">
+        <h3 class="sl-info-block__title">{% trans "Payment Methods" %}</h3>
+        <p class="sl-info-block__content">
+          {% trans "We accept cash, credit cards (Visa, Mastercard), debit cards, and mobile payment methods." %}
+        </p>
+      </div>
+
+    </div>
+
+  </div><!-- /.sl-layout -->
+
+</div><!-- /.sl-page -->
+
+
+<script>
+(function () {
+  'use strict';
+
+  // Template filter for getting dict item in JS (if needed for dynamic rendering)
+  // This page is mostly static so minimal JS required
+
+  console.log('✦ Store Location — Al Ameen Optics');
+})();
+</script>
+
+{% endblock %}
