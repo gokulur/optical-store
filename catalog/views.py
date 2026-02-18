@@ -482,3 +482,134 @@ def get_contact_lens_powers(request):
             })
     except ContactLensColor.DoesNotExist:
         return JsonResponse({'error': 'Color not found'}, status=404)
+    
+
+
+# ── Medical Lens Views ─────────────────────────────────────────────────────────
+# Add these to your catalog/views.py
+
+from django.db.models import Min, Max, Q
+from django.core.paginator import Paginator
+
+def medical_lenses_list(request):
+    """
+    Medical lenses listing page.
+    Filters by: lens_brand, lens_type, index, coating, price.
+    Per PDF checklist: lens brands, coatings, and index options.
+    """
+    # Base queryset — LensOption is the medical lens product model
+    queryset = LensOption.objects.filter(is_active=True).select_related(
+        'lens_brand', 'lens_type'
+    ).prefetch_related('coatings')
+
+    # 1. Lens Brand filter
+    selected_lens_brands = request.GET.getlist('lens_brand')
+    if selected_lens_brands:
+        queryset = queryset.filter(lens_brand__slug__in=selected_lens_brands)
+
+    # 2. Lens Type filter (Single Vision, Progressive, Bifocal, etc.)
+    selected_lens_types = request.GET.getlist('lens_type')
+    if selected_lens_types:
+        queryset = queryset.filter(lens_type__slug__in=selected_lens_types)
+
+    # 3. Index filter (1.50, 1.56, 1.60, 1.67, 1.74 etc.)
+    selected_indexes = request.GET.getlist('index')
+    if selected_indexes:
+        queryset = queryset.filter(index__in=selected_indexes)
+
+    # 4. Coating filter
+    selected_coatings = request.GET.getlist('coating')
+    if selected_coatings:
+        queryset = queryset.filter(coatings__code__in=selected_coatings).distinct()
+
+    # 5. Price filter
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        queryset = queryset.filter(base_price__gte=min_price)
+    if max_price:
+        queryset = queryset.filter(base_price__lte=max_price)
+
+    # 6. Sorting
+    sort_option = request.GET.get('sort', '-created_at')
+    valid_sorts = ['-created_at', 'base_price', '-base_price', 'name', '-name']
+    queryset = queryset.order_by(sort_option if sort_option in valid_sorts else '-created_at')
+
+    # 7. Pagination
+    paginator = Paginator(queryset, 24)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Price range for slider
+    price_range = LensOption.objects.filter(is_active=True).aggregate(
+        min_price=Min('base_price'),
+        max_price=Max('base_price')
+    )
+
+    # Common index values to display in sidebar filter
+    index_options = (
+        LensOption.objects
+        .filter(is_active=True)
+        .values_list('index', flat=True)
+        .distinct()
+        .order_by('index')
+    )
+
+    context = {
+        'lens_options':          page_obj,
+        'page_obj':              page_obj,
+        'is_paginated':          page_obj.has_other_pages(),
+        'lens_brands':           LensBrand.objects.filter(is_active=True).order_by('name'),
+        'lens_types':            LensType.objects.filter(is_active=True).order_by('name'),
+        'index_options':         index_options,
+        'price_range':           price_range,
+        # Pass back selections to keep sidebar checked
+        'selected_lens_brands':  selected_lens_brands,
+        'selected_lens_types':   selected_lens_types,
+        'selected_indexes':      selected_indexes,
+        'selected_coatings':     selected_coatings,
+        'current_sort':          sort_option,
+    }
+    return render(request, 'medical_lenses_list.html', context)
+
+
+def medical_lens_detail(request, pk):
+    """
+    Medical lens (LensOption) detail page.
+    Shows index, brand, coating, power range, and prescription entry.
+    """
+    lens_option = get_object_or_404(
+        LensOption.objects.select_related('lens_brand', 'lens_type')
+                          .prefetch_related('coatings'),
+        pk=pk,
+        is_active=True
+    )
+
+    # Related lenses: same lens_type, exclude self, limit 4
+    related_lens_options = (
+        LensOption.objects
+        .filter(is_active=True)
+        .exclude(pk=pk)
+        .select_related('lens_brand', 'lens_type')
+    )
+    # Prefer same lens type first
+    if lens_option.lens_type:
+        related_same_type = related_lens_options.filter(
+            lens_type=lens_option.lens_type
+        )[:4]
+        if related_same_type.count() < 4:
+            # backfill from other types
+            excluded_ids = list(related_same_type.values_list('id', flat=True)) + [pk]
+            extra = related_lens_options.exclude(id__in=excluded_ids)[:4 - related_same_type.count()]
+            from itertools import chain
+            related_lens_options = list(chain(related_same_type, extra))
+        else:
+            related_lens_options = related_same_type
+    else:
+        related_lens_options = related_lens_options[:4]
+
+    context = {
+        'lens_option':         lens_option,
+        'related_lens_options': related_lens_options,
+    }
+    return render(request, 'medical_lens_detail.html', context)
