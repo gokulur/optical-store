@@ -919,11 +919,17 @@ const REQUIRED_FIELDS = [
 ];
 
 function validateForm(){
-  // Only validate manual address fields (not when saved addresses exist)
-  const hasSavedAddr = !!document.getElementById('savedAddrs');
-  if(hasSavedAddr) return true;
+  // If user has a saved address selected, skip manual field validation
+  const hasSavedAddr = !!document.querySelector('input[name="shipping_address_id"]:checked');
+  if(hasSavedAddr){
+    const pm = document.querySelector('input[name=payment_method]:checked');
+    if(!pm){ alert('Please select a payment method.'); return false; }
+    return true;
+  }
 
   let ok = true;
+  let firstBadEl = null;
+
   REQUIRED_FIELDS.forEach(f=>{
     const el = document.getElementById(f.id);
     if(!el) return;
@@ -933,23 +939,25 @@ function validateForm(){
     if(f.type==='email') valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
     if(!valid){
       if(wrap) wrap.classList.add('invalid');
-      el.focus();
+      if(!firstBadEl) firstBadEl = el;
       ok = false;
     } else {
       if(wrap) wrap.classList.remove('invalid');
     }
   });
 
-  // Check location selected
+  if(firstBadEl) firstBadEl.focus();
+
+  // Map location: soft warning, not a hard block
   const lat = document.getElementById('delivery_latitude');
-  if(lat && !lat.value){
-    alert('Please select your delivery location on the map before continuing.');
-    ok = false;
+  if(lat && !lat.value && ok){
+    const proceed = confirm('No map pin selected. Continue with your typed address only?');
+    if(!proceed){ ok = false; }
   }
 
-  // Payment method check
+  // Payment method
   const pm = document.querySelector('input[name=payment_method]:checked');
-  if(!pm){ alert('Please select a payment method.'); ok=false; }
+  if(!pm){ alert('Please select a payment method.'); ok = false; }
 
   return ok;
 }
@@ -969,8 +977,19 @@ function handleSubmit(e){
   const btn = document.getElementById('placeOrderBtn');
   btn.classList.add('loading');
   btn.disabled = true;
-  // Form submits naturally
+
+  // Safety: if page hasn't navigated after 12s (server error/slow), reset button
+  // so user isn't stuck on a spinning button with no feedback
+  window._submitTimer = setTimeout(()=>{
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    btn.querySelector('.btn-text').textContent = '⚠️ Try Again';
+    console.warn('Place order timed out — server may have returned an error.');
+  }, 12000);
 }
+
+// Clear the safety timer when the page actually navigates away
+window.addEventListener('beforeunload', ()=>{ clearTimeout(window._submitTimer); });
 
 /* ═════════════════════════════════════════════
    ADDRESS CARD SELECTION HIGHLIGHT (radio)
