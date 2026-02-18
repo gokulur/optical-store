@@ -53,7 +53,7 @@ def wishlist_view(request):
         'wishlist_ids':       wishlist_ids,
         'suggested_products': suggested_products,
     }
-    return render(request, 'wishlist/wishlist.html', context)
+    return render(request, 'wishlist.html', context)
 
 
 # ─────────────────────────────────────────────

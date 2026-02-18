@@ -415,8 +415,7 @@
 const CONV_ID = '{{ conversation.conversation_id }}';
 const CSRF    = '{{ csrf_token }}';
 
-/* ── URL paths — match chat_support/urls.py exactly ── */
-// NEW — Django resolves the correct paths
+ 
 const URL_SEND     = "{% url 'chat:send_message' conversation.conversation_id %}";
 const URL_MESSAGES = (lastId) => "{% url 'chat:get_messages' conversation.conversation_id %}" + `?last_message_id=${lastId}`;
 const URL_ASSIGN   = "{% url 'chat:assign_conversation' conversation.conversation_id %}";
