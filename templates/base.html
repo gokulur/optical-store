@@ -53,6 +53,16 @@
       --aa-shadow:       0 2px 12px rgba(26,42,58,.10);
       --font-body:       'Jost', sans-serif;
       --font-display:    'Playfair Display', serif;
+
+      /* Z-INDEX SYSTEM — Keep everything in order */
+      --z-base:          1;
+      --z-content:       10;
+      --z-sticky:        100;
+      --z-header:        10000;
+      --z-modal-overlay: 50000;
+      --z-modal:         50001;
+      --z-mobile-menu:   20000;
+      --z-toast:         99999;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -71,6 +81,28 @@
     button { cursor: pointer; font-family: inherit; }
 
     /* ============================================================
+       MODAL FIX — Modals always above header
+       All modals/dialogs on the site should use these classes
+       or manually set z-index above --z-modal-overlay (50000)
+       ============================================================ */
+    .modal,
+    .aa-modal,
+    [role="dialog"],
+    .modal-overlay,
+    .modal-backdrop,
+    .fancybox-container,
+    .swal2-container,
+    .aa-quick-view-overlay {
+      z-index: var(--z-modal-overlay) !important;
+    }
+    .modal-dialog,
+    .aa-modal__inner,
+    .modal-content,
+    .aa-quick-view {
+      z-index: var(--z-modal) !important;
+    }
+
+    /* ============================================================
        ANNOUNCEMENT / TOP BAR
        ============================================================ */
     .aa-topbar {
@@ -82,6 +114,7 @@
       font-weight: 500;
       letter-spacing: .04em;
       position: relative;
+      z-index: var(--z-sticky);
     }
     .aa-topbar a { color: #fff; text-decoration: underline; }
     .aa-topbar__close {
@@ -99,14 +132,14 @@
     .aa-topbar__close:hover { opacity: 1; }
 
     /* ============================================================
-       HEADER
+       HEADER — z-index via variable
        ============================================================ */
     .aa-header-wrap {
       background: var(--aa-bg-header);
       border-bottom: 1px solid var(--aa-border);
       position: sticky;
       top: 0;
-      z-index: 10000;
+      z-index: var(--z-header);
       box-shadow: var(--aa-shadow);
     }
 
@@ -241,6 +274,22 @@
       transition: transform .2s;
     }
 
+    /* Wishlist heart icon in header — pulse on add */
+    .aa-header__icon-btn .bi-heart,
+    .aa-header__icon-btn .bi-heart-fill {
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1), color .2s;
+    }
+    .aa-header__icon-btn:hover .bi-heart { color: #e03030; }
+    .aa-wishlist-pulse .bi-heart,
+    .aa-wishlist-pulse .bi-heart-fill {
+      animation: heartPulse .4s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes heartPulse {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.4); }
+      100% { transform: scale(1); }
+    }
+
     .aa-header__search {
       display: flex;
       align-items: center;
@@ -365,6 +414,9 @@
       letter-spacing: .03em;
     }
 
+    /* ============================================================
+       DROPDOWN — z-index below modals but above content
+       ============================================================ */
     .aa-nav__dropdown {
       display: none;
       position: absolute;
@@ -441,7 +493,7 @@
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,.45);
-      z-index: 20000;
+      z-index: var(--z-mobile-menu);
       animation: fadeIn .2s;
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -454,7 +506,7 @@
       bottom: 0;
       width: 300px;
       background: var(--aa-white);
-      z-index: 20001;
+      z-index: calc(var(--z-mobile-menu) + 1);
       transform: translateX(-100%);
       transition: transform .3s ease;
       display: flex;
@@ -587,7 +639,7 @@
       position: fixed;
       top: 24px;
       right: 24px;
-      z-index: 99999;
+      z-index: var(--z-toast);
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -907,7 +959,7 @@
         </div>
 
         <!-- Wishlist -->
-        <a href="{% url 'wishlist:wishlist' %}" class="aa-header__icon-btn" aria-label="Wishlist">
+        <a href="{% url 'wishlist:wishlist' %}" class="aa-header__icon-btn" aria-label="Wishlist" id="aa-wishlist-icon-link">
           <i class="bi bi-heart"></i>
           <span class="aa-header__badge" id="aa-wishlist-count">
             {{ wishlist_count|default:0 }}
@@ -1331,7 +1383,6 @@
       sub.classList.toggle('open');
       if (icon) icon.style.transform = sub.classList.contains('open') ? 'rotate(180deg)' : '';
     }
-    // expose globally for inline onclick
     window.toggleMobileSub = toggleMobileSub;
 
     function checkMobileHeader() {
@@ -1393,7 +1444,6 @@
     window.csrftoken = getCookie('csrftoken');
 
     // ── Cart badge update ─────────────────────────────────────────
-    // Called by cart.html JS (and any add-to-cart AJAX) to keep badge in sync
     function updateCartBadge(count) {
       var badge = document.getElementById('aa-cart-count');
       if (!badge) return;
@@ -1408,6 +1458,12 @@
       var badge = document.getElementById('aa-wishlist-count');
       if (!badge) return;
       badge.textContent = count;
+      // Pulse the icon
+      var link = document.getElementById('aa-wishlist-icon-link');
+      if (link) {
+        link.classList.add('aa-wishlist-pulse');
+        setTimeout(function() { link.classList.remove('aa-wishlist-pulse'); }, 500);
+      }
     }
     window.updateWishlistCount = updateWishlistCount;
 
@@ -1462,12 +1518,9 @@
     });
 
     // ── Add-to-cart form intercept ────────────────────────────────
-    // Only handles forms with class add-to-cart-form or buttons with data-url
-    // Does NOT handle #cart-rows buttons (those belong to cart.html)
     document.addEventListener('click', function (e) {
       var addBtn = e.target.closest('.add-to-cart-grid-btn, .add-to-cart-btn, .add-to-cart-wishlist-btn');
       if (addBtn) {
-        // Don't intercept if we're inside the cart rows (cart.html owns those)
         if (addBtn.closest('#cart-rows')) return;
         e.preventDefault();
         ajaxAddToCart(

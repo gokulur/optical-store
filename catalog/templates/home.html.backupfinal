@@ -1,0 +1,2376 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Al Ameen Optics - Your Vision Matters More{% endblock %}
+
+{% block content %}
+<style>
+/* ============================================
+   CONSOLIDATED STYLES - NO DUPLICATES
+   ============================================ */
+
+.categories-section {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 50px 20px;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    padding: 0 20px;
+}
+
+.category-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 4/5;
+    cursor: pointer;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: block;
+    text-decoration: none;
+}
+
+.category-card:hover {
+    transform: translateY(-8px);
+    z-index: 10;
+}
+
+.category-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%);
+    z-index: 2;
+    opacity: 0.6;
+    transition: opacity 0.4s ease;
+}
+
+.category-card:hover::before {
+    opacity: 0.8;
+}
+
+.category-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.category-card:hover .category-image {
+    transform: scale(1.1);
+}
+
+.category-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 25px 20px;
+    z-index: 3;
+    transform: translateY(0);
+    transition: transform 0.4s ease;
+}
+
+.category-card:hover .category-label {
+    transform: translateY(-5px);
+}
+
+.category-title {
+    font-size: 1.8rem;
+    letter-spacing: 0.08em;
+    color: #ffffff;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.category-subtitle {
+    font-size: 0.85rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 0.03em;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s ease;
+}
+
+.category-card:hover .category-subtitle {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.category-card.sale-card {
+    background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+}
+
+.sale-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #ffffff;
+    color: #ee0979;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+    z-index: 4;
+    animation: subtle-pulse 2s ease-in-out infinite;
+    box-shadow: 0 3px 10px rgba(238, 9, 121, 0.3);
+}
+
+@keyframes subtle-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Shop Prescription Glasses Section */
+.xo-section--prescription-shop {
+    position: relative;
+    overflow: hidden;
+}
+
+.prescription-shop-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.prescription-shop-header {
+    margin-bottom: 0;
+}
+
+.prescription-header-inner {
+    padding: 30px;
+    background: #e8f4f8;
+}
+
+.prescription-shop-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #1a1a1a;
+    margin: 0 0 15px 0;
+}
+
+.prescription-header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+}
+
+.btn-primary {
+    background: #1a1a1a;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #333;
+    transform: translateX(3px);
+}
+
+.btn-secondary {
+    background: #fff;
+    color: #1a1a1a;
+    border: 1.5px solid #d0d0d0;
+}
+
+.btn-secondary:hover {
+    border-color: #1a1a1a;
+}
+
+.prescription-products-container {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    gap: 0;
+}
+
+.prescription-promo-wrapper {
+    display: block;
+}
+
+.promo-card {
+    position: relative;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 500px;
+}
+
+.promo-badge {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.promo-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0.8;
+}
+
+.promo-content {
+    position: relative;
+    z-index: 2;
+    margin-top: auto;
+}
+
+.promo-watch-btn {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.promo-watch-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1px;
+    background: #e5e5e5;
+}
+
+.product-card {
+    background: #fff;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.product-badge-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 3;
+}
+
+.product-badge {
+    background: rgba(255,255,255,0.95);
+    color: #1a1a1a;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.product-wishlist {
+    background: #fff;
+    border: 1.5px solid #e0e0e0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.product-wishlist:hover {
+    border-color: #ff3b30;
+}
+
+.product-wishlist.active {
+    background: #ff3b30;
+    border-color: #ff3b30;
+}
+
+.product-wishlist svg {
+    width: 16px;
+    height: 16px;
+    stroke: #333;
+    fill: none;
+    stroke-width: 2;
+}
+
+.product-wishlist.active svg {
+    stroke: #fff;
+    fill: #fff;
+}
+
+.product-image-wrapper {
+    position: relative;
+    aspect-ratio: 1/1;
+    margin-bottom: 15px;
+    background: #f8f8f8;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 20px;
+}
+
+.product-colors {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.color-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #d0d0d0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.color-dot:hover,
+.color-dot.active {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 2px #1a1a1a;
+}
+
+.product-info {
+    margin-bottom: 12px;
+}
+
+.product-price-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.product-code {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.product-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.discount-badge {
+    background: #ff3b30;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.product-name {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.product-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+}
+
+.product-try-btn {
+    flex: 1;
+    background: transparent;
+    border: 1.5px solid #1a1a1a;
+    color: #1a1a1a;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-decoration: none;
+}
+
+.product-try-btn:hover {
+    background: #1a1a1a;
+    color: #fff;
+}
+
+.product-add-btn {
+    background: transparent;
+    border: 1.5px solid #e0e0e0;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.product-add-btn:hover {
+    background: #1a1a1a;
+    border-color: #1a1a1a;
+}
+
+.product-add-btn:hover svg {
+    stroke: #fff;
+}
+
+.icon {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+}
+
+/* Shop By Top Brands Section */
+.xo-section--top-brands {
+    background: #000000;
+    position: relative;
+    overflow: hidden;
+}
+
+.top-brands-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.top-brand-card {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #1a1a1a;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.top-brand-card:hover {
+    transform: translateY(-10px);
+}
+
+.brand-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.brand-card-image {
+    position: relative;
+    aspect-ratio: 4/5;
+    overflow: hidden;
+}
+
+.brand-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.top-brand-card:hover .brand-card-image img {
+    transform: scale(1.08);
+}
+
+.brand-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.6) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+}
+
+.top-brand-card:hover .brand-overlay {
+    background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%);
+}
+
+.brand-logo {
+    text-align: center;
+    padding: 20px;
+    color: #ffffff;
+}
+
+.brand-logo h3 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    margin: 0;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+}
+
+.brand-logo p {
+    font-size: 1.4rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    margin: 5px 0 0 0;
+    opacity: 0.9;
+}
+
+.brand-logo-dark h3 {
+    color: #000000;
+    text-shadow: 2px 2px 8px rgba(255,255,255,0.5);
+}
+
+.brand-view-all {
+    padding: 20px;
+    text-align: center;
+    background: #1a1a1a;
+}
+
+.brand-btn {
+    background: transparent;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+    padding: 12px 35px;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.brand-btn:hover {
+    background: #ffffff;
+    color: #000000;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255,255,255,0.3);
+}
+
+/* Blog Cards Section */
+.xo-section--blog-cards {
+    position: relative;
+    overflow: hidden;
+}
+
+.blog-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.blog-single-card {
+    display: block;
+}
+
+.blog-card-wrapper {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.blog-card-wrapper:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.blog-card-image-container {
+    position: relative;
+    aspect-ratio: 4/5;
+    overflow: hidden;
+    background: #f5f5f5;
+}
+
+.blog-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.blog-card-wrapper:hover .blog-card-img {
+    transform: scale(1.08);
+}
+
+.blog-card-content {
+    padding: 30px 25px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.blog-card-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.4;
+    margin: 0 0 15px 0;
+    min-height: 76px;
+}
+
+.blog-card-excerpt {
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.6;
+    margin: 0 0 20px 0;
+    flex-grow: 1;
+}
+
+.blog-read-more-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+    margin-top: auto;
+}
+
+.blog-read-more-link:hover {
+    color: #4A90E2;
+    gap: 12px;
+}
+
+.blog-arrow-icon {
+    transition: transform 0.3s ease;
+}
+
+.blog-read-more-link:hover .blog-arrow-icon {
+    transform: translateX(4px);
+}
+
+/* Our Stores Section */
+.xo-section--our-stores {
+    position: relative;
+    overflow: hidden;
+}
+
+.our-stores-image-container {
+    max-width: 600px;
+    margin: 0 auto 3rem;
+}
+
+.store-image-wrapper {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.store-image-wrapper:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.store-front-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    aspect-ratio: 3/2;
+    object-fit: cover;
+}
+
+.our-stores-cta {
+    margin-bottom: 5rem;
+}
+
+.find-store-button-container {
+    text-align: center;
+}
+
+.find-store-btn {
+    display: inline-block;
+    background: #1a1a1a;
+    color: #ffffff;
+    padding: 16px 48px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.find-store-btn:hover {
+    background: #333;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+}
+
+.benefits-title-container {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.benefits-main-title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.stores-benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.stores-benefit-item {
+    text-align: center;
+    padding: 20px;
+    transition: transform 0.3s ease;
+}
+
+.stores-benefit-item:hover {
+    transform: translateY(-5px);
+}
+
+.benefit-icon-wrapper {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.benefit-icon {
+    color: #1a1a1a;
+    transition: all 0.3s ease;
+}
+
+.stores-benefit-item:hover .benefit-icon {
+    color: #4A90E2;
+    transform: scale(1.1);
+}
+
+.benefit-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Our Brands Carousel Section */
+.xo-section--our-brands-carousel {
+    position: relative;
+    overflow: hidden;
+}
+
+.our-brands-carousel-wrapper {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.our-brands-carousel-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.our-brands-carousel-track {
+    display: flex;
+    gap: 60px;
+    transition: transform 0.5s ease;
+}
+
+.brand-carousel-item {
+    flex: 0 0 auto;
+    width: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brand-carousel-link {
+    display: block;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+}
+
+.brand-carousel-link:hover {
+    transform: scale(1.1);
+}
+
+.brand-carousel-logo-wrapper {
+    width: 100%;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.brand-carousel-logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: grayscale(100%);
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.brand-carousel-link:hover .brand-carousel-logo {
+    filter: grayscale(0%);
+    opacity: 1;
+}
+
+.brands-carousel-nav {
+    flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid #d0d0d0;
+    background: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.brands-carousel-nav:hover {
+    border-color: #2c2c2c;
+    background: #f8f9fa;
+    transform: scale(1.05);
+}
+
+.brands-carousel-nav svg {
+    color: #2c2c2c;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN - MOBILE FIRST
+   ============================================ */
+
+@media (max-width: 1200px) {
+    .categories-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; }
+    .blog-cards-grid { grid-template-columns: repeat(2, 1fr); gap: 25px; }
+}
+
+@media (max-width: 1024px) {
+    .prescription-products-container { grid-template-columns: 1fr; }
+    .promo-card { min-height: 300px; }
+    .product-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+    .top-brands-grid { grid-template-columns: repeat(2, 1fr); gap: 25px; }
+    .stores-benefits-grid { grid-template-columns: repeat(2, 1fr); gap: 35px; }
+}
+
+@media (max-width: 768px) {
+    .categories-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .category-title { font-size: 1.5rem; }
+    .category-label { padding: 20px 15px; }
+    .xo-section--prescription-shop { padding-top: 40px !important; padding-bottom: 40px !important; }
+    .prescription-header-inner { padding: 25px 20px; }
+    .prescription-shop-title { font-size: 1.3rem; }
+    .product-grid { grid-template-columns: repeat(2, 1fr); }
+    .prescription-header-actions { flex-direction: column; }
+    .btn { width: 100%; justify-content: center; }
+    .xo-section--top-brands { padding-top: 60px; padding-bottom: 60px; }
+    .top-brands-grid { grid-template-columns: 1fr; gap: 20px; }
+    .brand-logo h3 { font-size: 2.5rem; }
+    .blog-cards-grid { grid-template-columns: 1fr; gap: 25px; padding: 0 15px; }
+    .blog-card-title { font-size: 1.25rem; min-height: auto; }
+    .stores-benefits-grid { grid-template-columns: repeat(2, 1fr); gap: 30px; }
+}
+
+@media (max-width: 480px) {
+    .categories-grid { grid-template-columns: 1fr; gap: 20px; }
+    .category-title { font-size: 1.6rem; }
+    .prescription-shop-title { font-size: 1.2rem; }
+    .product-grid { grid-template-columns: 1fr; }
+    .promo-card { min-height: 250px; }
+    .brand-logo h3 { font-size: 2rem; }
+    .blog-card-title { font-size: 1.15rem; }
+    .stores-benefits-grid { grid-template-columns: 1fr; gap: 25px; }
+}
+
+* { box-sizing: border-box; }
+</style>
+
+
+<!-- Hero Banner Carousel -->
+<section class="shopify-section section">
+  <section class="xo-section--slideshow">
+    <xo-carousel
+      xo-render-bullet="<span></span>"
+      xo-type="nature"
+      xo-speed="400"
+      xo-loop=""
+      xo-hover-pause=""
+      style="--xo-per-view:1;--xo-gap:0px;--xo-speed:400ms;--xo-pagination-progress:0%;--xo-mask:url('https://raw.githubusercontent.com/long-hp/storage/main/nature-sprite.png');"
+      xo-mask-initialized=""
+      xo-initialized="">
+
+      <xo-carousel-inner style="overflow:hidden;height:700px;transition:height 400ms;">
+        <xo-carousel-list role="list" aria-label="Slider" style="touch-action:none;outline:none;">
+
+          {% for slide in hero_slides %}
+          <xo-carousel-slide
+            aria-roledescription="Slide"
+            aria-label="{{ forloop.counter }} / {{ hero_slides|length }}"
+            xo-carousel-slide=""
+            role="tabpanel"
+            {% if forloop.first %}xo-active="" xo-center="" xo-visible=""{% endif %}
+            {% if forloop.counter == 2 %}xo-next=""{% endif %}>
+
+            <div class="xo-slideshow color-inverse" style="--margin:0;">
+
+              <xo-animate class="slideshow-bg" xo-disabled="" xo-duration="1000"
+                style="--img-desktop:url('{% if slide.image_desktop %}{{ slide.image_desktop.url }}{% endif %}');
+                       --img-mobile:url('{% if slide.image_mobile %}{{ slide.image_mobile.url }}{% elif slide.image_desktop %}{{ slide.image_desktop.url }}{% endif %}');">
+                <div class="slideshow-bg-image__item">
+                  <div class="slideshow-bg-image__url xo-background-lazyload"
+                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                  </div>
+                </div>
+              </xo-animate>
+
+              <xo-container class="xo-container--box">
+                <xo-grid style="--height-desktop:700;--height-mobile:500;--pt:0;--pb:0;"
+                  class="slideshow-v56__content">
+
+                  <div style="--xs:12;--md:6;--start-md:7;--align-items:center;--text-align:center;"
+                    class="slideshow-v56__text">
+
+                    {% if slide.slide_heading %}
+                    <xo-animate xo-type="fade-up" xo-duration="700" xo-order="3">
+                      <h2 class="slideshow-v56__title" style="--fontsize:6;--fontweight:500">
+                        {{ slide.slide_heading }}
+                      </h2>
+                    </xo-animate>
+                    {% endif %}
+
+                    {% if slide.slide_description %}
+                    <xo-animate xo-type="fade-up" xo-duration="700" xo-order="5">
+                      <p class="slideshow-v56__description" style="--fontsize:1.6;--fontweight:400">
+                        {{ slide.slide_description }}
+                      </p>
+                    </xo-animate>
+                    {% endif %}
+
+                    {% if slide.link_url %}
+                    <xo-animate xo-type="fade-up" xo-duration="700" xo-order="7" xo-strength="3">
+                      <a class="xo-btn xo-btn--light xo-btn--tertiary xo-btn--sm xo-btn--slide-up"
+                        style="border-radius:0.8rem;padding-left:1.4rem;padding-right:1.4rem;"
+                        href="{{ slide.link_url }}">
+                        <span class="xo-btn__content">
+                          <span class="xo-btn__text" data-text="{{ slide.cta_text|default:'Shop Now' }}">
+                            {{ slide.cta_text|default:"Shop Now" }}
+                          </span>
+                        </span>
+                        <span class="xo-btn__loading">
+                          <div class="xo-loader-3" style="--size:8;--color:currentColor;--duration:1000;"><div></div></div>
+                        </span>
+                      </a>
+                    </xo-animate>
+                    {% endif %}
+
+                    {% if forloop.first %}
+                    <div class="carousel-pagination-style3 slideshow-v56__pagination">
+                      <div class="carousel-pagination-style3__pagination-wrap">
+                        <xo-carousel-pagination class="carousel-pagination-style3__pagination">
+                          {% for s in hero_slides %}
+                          <xo-carousel-bullet xo-index="{{ forloop.counter0 }}" xo-page="{{ forloop.counter }}"
+                            role="button" tabindex="0" aria-label="Bullet {{ forloop.counter }}"
+                            {% if forloop.first %}xo-active=""{% endif %}>
+                            <span></span>
+                          </xo-carousel-bullet>
+                          {% endfor %}
+                        </xo-carousel-pagination>
+                        <xo-carousel-pagination-bullet-active
+                          xo-carousel-bullet-selector=".carousel-pagination-style3__pagination xo-carousel-bullet"
+                          xo-duration="100"
+                          style="--xo-duration:100ms;opacity:1;height:8px;left:0px;width:8px;">
+                        </xo-carousel-pagination-bullet-active>
+                      </div>
+                    </div>
+                    {% endif %}
+
+                  </div>
+                </xo-grid>
+              </xo-container>
+
+              {% if forloop.first %}
+              <div class="slideshow-v56__arrows">
+                <xo-carousel-prev class="carousel-navigation-style3" aria-label="Slide left">
+                  <div class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--left">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </div>
+                  <div class="carousel-navigation-style3__icon-after carousel-navigation-style3__icon-after--left">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </div>
+                </xo-carousel-prev>
+                <xo-carousel-next class="carousel-navigation-style3" aria-label="Slide right">
+                  <div class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--right">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </div>
+                  <div class="carousel-navigation-style3__icon-after carousel-navigation-style3__icon-after--right">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </div>
+                </xo-carousel-next>
+              </div>
+              {% endif %}
+
+            </div>
+          </xo-carousel-slide>
+          {% empty %}
+          <xo-carousel-slide xo-carousel-slide="" role="tabpanel" xo-active="" xo-center="" xo-visible="">
+            <div class="xo-slideshow color-inverse" style="--margin:0;">
+              <xo-animate class="slideshow-bg" xo-disabled="" xo-duration="1000">
+                <div class="slideshow-bg-image__item">
+                  <div class="slideshow-bg-image__url xo-background-lazyload"
+                    style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
+                  </div>
+                </div>
+              </xo-animate>
+              <xo-container class="xo-container--box">
+                <xo-grid style="--height-desktop:700;--height-mobile:500;--pt:0;--pb:0;" class="slideshow-v56__content">
+                  <div style="--xs:12;--md:6;--start-md:7;--align-items:center;--text-align:center;" class="slideshow-v56__text">
+                    <h2 class="slideshow-v56__title" style="--fontsize:6;--fontweight:500">Your Vision Matters More</h2>
+                    <p class="slideshow-v56__description" style="--fontsize:1.6;--fontweight:400">
+                      Add hero slides from the admin panel → Hero Banners.
+                    </p>
+                  </div>
+                </xo-grid>
+              </xo-container>
+            </div>
+          </xo-carousel-slide>
+          {% endfor %}
+
+        </xo-carousel-list>
+      </xo-carousel-inner>
+    </xo-carousel>
+  </section>
+</section>
+
+
+<!-- Featured Products Section -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--featured-products color-background-1" style="--margin: 0; --pt: 50; --pb: 50; z-index: 98">
+        <xo-animate class="xo-section-bg" xo-disabled="" xo-duration="1000">
+            <xo-parallax class="xo-section-bg-image__item" xo-lerp-ease="0.4">
+                <xo-parallax-scroll class="xo-section-bg-image__url xo-background-lazyload"
+                    xo-keyframes="{'0%': { backgroundPositionY: '200px' },'100%': { backgroundPositionY: '-200px' }}">
+                </xo-parallax-scroll>
+            </xo-parallax>
+        </xo-animate>
+
+        <xo-container class="xo-container--wide">
+            <xo-animate class="product-v1__heading" xo-cascade="">
+                <div class="product-v1__title-wrap">
+                    <h2 class="product-v1__title" style="text-align: center; margin-bottom: 4rem; font-size: 4.2rem; font-weight: 500;">
+                        {% trans "Featured Products" %}
+                    </h2>
+                </div>
+            </xo-animate>
+
+            <xo-grid style="--xs: 1; --sm: 2; --xl: 4">
+                {% for product in featured_products %}
+                <xo-product xo-product-id="{{ product.id }}" xo-section-id="template--main-collection">
+                    <xo-animate class="xo-product-card xo-product-card--style9 color-background-1" xo-cascade="">
+                        <div class="xo-product-card__header xo-product-card__header--style9">
+                            <a href="{{ product.get_absolute_url }}">
+                                <xo-product-media style="--xo-auto-play: 1500ms" xo-binding="img"
+                                    xo-carousel-active-index="0" xo-carousel-autoplay="1500"
+                                    xo-carousel-bullet-content="<span class='xo-product-card__bullet'></span>"
+                                    xo-carousel-pagination-enabled="" xo-type="auto">
+                                    <div class="xo-product-image">
+                                        <div class="xo-image" style="--xo-ratio-percent: 1/1; --x-pos: %; --y-pos: %;">
+                                            {% with first_image=product.images.first %}
+                                            {% if first_image %}
+                                            <img alt="{{ product.name }}" src="{{ first_image.image.url }}" width="1000" height="1000" loading="lazy" />
+                                            {% elif product.image %}
+                                            <img alt="{{ product.name }}" src="{{ product.image.url }}" width="1000" height="1000" loading="lazy" />
+                                            {% else %}
+                                            <img alt="No Image" src="{% static 'img/no-image.jpg' %}" width="1000" height="1000" loading="lazy" />
+                                            {% endif %}
+                                            {% endwith %}
+                                        </div>
+                                    </div>
+                                </xo-product-media>
+                            </a>
+
+                            <div class="xo-product-card__badge">
+                                {% if product.stock_quantity == 0 or not product.is_active %}
+                                <div class="xo-badge-sold-out">
+                                    <span class="xo-badge-sold-out__title">{% trans "Sold out" %}</span>
+                                </div>
+                                {% else %}
+                                <div class="xo-badge-sale">{% trans "Sale" %}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="xo-product-card__actions xo-product-card__actions--style9">
+                                <xo-tooltip class="xo-product-card__icon" xo-title="{% trans 'Add to Cart' %}">
+                                    <form method="POST" action=" " class="add-to-cart-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit"
+                                            class="xo-btn xo-btn--light xo-btn--primary xo-btn--circle xo-btn--sm xo-btn--slide-up circle add-to-cart-grid-btn"
+                                            data-product-id="{{ product.id }}">
+                                            <span class="xo-btn__content">
+                                                <span class="xo-btn__icon">
+                                                    <svg height="20" viewBox="0 0 24 24" width="20">
+                                                        <path d="M12,0C9.1,0,6.7,2.4,6.7,5.3v1h10.5v-1C17.2,2.4,14.9,0,12,0z M12,1.8c1.6,0,3,1.1,3.4,2.7H8.6C9,2.9,10.4,1.8,12,1.8" fill="currentColor"></path>
+                                                        <g><path d="M17.6,6.2c0.9,0,1.6,0.7,1.6,1.6v12.9c0,0.9-0.7,1.6-1.6,1.6H6.4c-0.9,0-1.6-0.7-1.6-1.6V7.8c0-0.9,0.7-1.6,1.6-1.6H17.6 M17.6,4.5H6.4C4.5,4.5,3,6,3,7.8v12.9C3,22.5,4.5,24,6.4,24h11.3c1.8,0,3.3-1.5,3.3-3.3V7.8C21,6,19.5,4.5,17.6,4.5L17.6,4.5z" fill="currentColor"></path></g>
+                                                        <path d="M14.8,8.8H9.2c-0.4,0-0.7-0.3-0.7-0.7v0c0-0.4,0.3-0.7,0.7-0.7h5.7c0.4,0,0.7,0.3,0.7,0.7v0C15.5,8.5,15.2,8.8,14.8,8.8z" fill="currentColor"></path>
+                                                    </svg>
+                                                </span>
+                                            </span>
+                                            <span class="xo-btn__loading">
+                                                <div class="xo-loader-3" style="--size: 8; --color: currentColor; --duration: 1000;"><div></div></div>
+                                            </span>
+                                        </button>
+                                    </form>
+                                </xo-tooltip>
+
+                                <xo-tooltip class="xo-product-card__icon" xo-title="{% trans 'Add to wishlist' %}">
+                                    <button class="wishlist-btn circle-btn" data-product-id="{{ product.id }}">
+                                        {% if request.user.is_authenticated and product in request.user.wishlist.products.all %}
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="red">
+                                            <path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" />
+                                        </svg>
+                                        {% else %}
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
+                                            <path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" />
+                                        </svg>
+                                        {% endif %}
+                                    </button>
+                                </xo-tooltip>
+                            </div>
+                        </div>
+
+                        <div class="xo-product-card__information">
+                            <h2 class="xo-product-card__title">
+                                <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                            </h2>
+                            <div class="xo-product-card__price">
+                                <div class="xo-product-card__price-inner">
+                                    <div class="xo-price">
+                                        <div class="xo-price__container">
+                                            <div class="xo-price__sale xo-price__sale--column">
+                                                <span class="xo-price__item xo-price__item--accent">
+                                                    ₹{{ product.base_price }}
+                                                </span>
+                                                {% if product.compare_at_price and product.compare_at_price > product.base_price %}
+                                                <span class="xo-price__item xo-price__item--regular" style="text-decoration:line-through;color:#999;font-size:0.85rem;">₹{{ product.compare_at_price }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </xo-animate>
+                </xo-product>
+                {% endfor %}
+            </xo-grid>
+        </xo-container>
+    </div>
+</section>
+
+
+<!-- Categories Section -->
+<section class="shopify-section section">
+    <section class="xo-section xo-section--categories color-background-1" style="--margin: 0; --pt: 50; --pb: 50;">
+        <xo-container class="xo-container--wide">
+            <xo-animate class="product-v1__heading" xo-cascade="">
+                <div class="product-v1__title-wrap">
+                    <h2 class="product-v1__title" style="text-align: center; margin-bottom: 4rem; font-size: 4.2rem; font-weight: 500;">
+                        {% trans "Categories" %}
+                    </h2>
+                </div>
+            </xo-animate>
+
+            <div class="categories-grid">
+                <!-- Sunglasses -->
+                <a href="{% url 'catalog:sunglasses_list' %}" class="category-card">
+                    <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&h=750&fit=crop"
+                         alt="{% trans 'Sunglasses' %}" class="category-image" loading="lazy">
+                    <div class="category-label">
+                        <h3 class="category-title">{% trans "SUNGLASSES" %}</h3>
+                        <p class="category-subtitle">{% trans "Premium UV Protection" %}</p>
+                    </div>
+                </a>
+
+                <!-- Eyeglasses -->
+                <a href="{% url 'catalog:eyeglasses_list' %}" class="category-card">
+                    <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=600&h=750&fit=crop"
+                         alt="{% trans 'Eyeglasses' %}" class="category-image" loading="lazy">
+                    <div class="category-label">
+                        <h3 class="category-title">{% trans "EYEGLASSES" %}</h3>
+                        <p class="category-subtitle">{% trans "Designer Frames" %}</p>
+                    </div>
+                </a>
+
+                <!-- Contact Lenses -->
+                <a href="{% url 'catalog:contact_lenses_list' %}" class="category-card">
+                    <img src="https://images.unsplash.com/photo-1588951752390-24900b55a56a?w=600&h=750&fit=crop"
+                         alt="{% trans 'Contact Lenses' %}" class="category-image" loading="lazy">
+                    <div class="category-label">
+                        <h3 class="category-title">{% trans "CONTACT LENSES" %}</h3>
+                        <p class="category-subtitle">{% trans "Comfortable Vision" %}</p>
+                    </div>
+                </a>
+
+                <!-- Kids -->
+                <a href="{% url 'catalog:product_list' 'reading_glasses' %}" class="category-card">
+                    <img src="https://images.unsplash.com/photo-1514846326710-096e4a8035e0?w=600&h=750&fit=crop"
+                         alt="{% trans 'Kids' %}" class="category-image" loading="lazy">
+                    <div class="category-label">
+                        <h3 class="category-title">{% trans "KIDS" %}</h3>
+                        <p class="category-subtitle">{% trans "Fun & Durable" %}</p>
+                    </div>
+                </a>
+
+                <!-- Accessories -->
+                <a href="{% url 'catalog:product_list' 'accessories' %}" class="category-card">
+                    <img src="https://images.unsplash.com/photo-1577803645773-f96470509666?w=600&h=750&fit=crop"
+                         alt="{% trans 'Accessories' %}" class="category-image" loading="lazy">
+                    <div class="category-label">
+                        <h3 class="category-title">{% trans "ACCESSORIES" %}</h3>
+                        <p class="category-subtitle">{% trans "Cases & Care" %}</p>
+                    </div>
+                </a>
+
+                <!-- Sale -->
+                <a href="{% url 'catalog:sunglasses_list' %}" class="category-card sale-card">
+                    <img src="https://images.unsplash.com/photo-1607023558931-e3f573f2e993?w=600&h=750&fit=crop"
+                         alt="{% trans 'Sale' %}" class="category-image" loading="lazy">
+                    <div class="sale-badge">{% trans "UP TO 50% OFF" %}</div>
+                    <div class="category-label">
+                        <h3 class="category-title">{% trans "SALE" %}</h3>
+                        <p class="category-subtitle">{% trans "Limited Time Offers" %}</p>
+                    </div>
+                </a>
+            </div>
+        </xo-container>
+    </section>
+</section>
+
+
+<!-- Featured Products Section (second instance) -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--featured-products color-background-1" style="--margin: 0; --pt: 50; --pb: 50; z-index: 98">
+        <xo-animate class="xo-section-bg" xo-disabled="" xo-duration="1000">
+            <xo-parallax class="xo-section-bg-image__item" xo-lerp-ease="0.4">
+                <xo-parallax-scroll class="xo-section-bg-image__url xo-background-lazyload"
+                    xo-keyframes="{'0%': { backgroundPositionY: '200px' },'100%': { backgroundPositionY: '-200px' }}">
+                </xo-parallax-scroll>
+            </xo-parallax>
+        </xo-animate>
+
+        <xo-container class="xo-container--wide">
+            <xo-animate class="product-v1__heading" xo-cascade="">
+                <div class="product-v1__title-wrap">
+                    <h2 class="product-v1__title" style="text-align: center; margin-bottom: 4rem; font-size: 4.2rem; font-weight: 500;">
+                        {% trans "New Arrivals" %}
+                    </h2>
+                </div>
+            </xo-animate>
+
+            <xo-grid style="--xs: 1; --sm: 2; --xl: 4">
+                {% for product in new_arrivals %}
+                <xo-product xo-product-id="{{ product.id }}" xo-section-id="template--new-arrivals">
+                    <xo-animate class="xo-product-card xo-product-card--style9 color-background-1" xo-cascade="">
+                        <div class="xo-product-card__header xo-product-card__header--style9">
+                            <a href="{{ product.get_absolute_url }}">
+                                <xo-product-media style="--xo-auto-play: 1500ms" xo-binding="img"
+                                    xo-carousel-active-index="0" xo-carousel-autoplay="1500"
+                                    xo-carousel-bullet-content="<span class='xo-product-card__bullet'></span>"
+                                    xo-carousel-pagination-enabled="" xo-type="auto">
+                                    <div class="xo-product-image">
+                                        <div class="xo-image" style="--xo-ratio-percent: 1/1; --x-pos: %; --y-pos: %;">
+                                            {% with first_image=product.images.first %}
+                                            {% if first_image %}
+                                            <img alt="{{ product.name }}" src="{{ first_image.image.url }}" width="1000" height="1000" loading="lazy" />
+                                            {% elif product.image %}
+                                            <img alt="{{ product.name }}" src="{{ product.image.url }}" width="1000" height="1000" loading="lazy" />
+                                            {% else %}
+                                            <img alt="No Image" src="{% static 'img/no-image.jpg' %}" width="1000" height="1000" loading="lazy" />
+                                            {% endif %}
+                                            {% endwith %}
+                                        </div>
+                                    </div>
+                                </xo-product-media>
+                            </a>
+
+                            <div class="xo-product-card__badge">
+                                {% if product.stock_quantity == 0 or not product.is_active %}
+                                <div class="xo-badge-sold-out">
+                                    <span class="xo-badge-sold-out__title">{% trans "Sold out" %}</span>
+                                </div>
+                                {% else %}
+                                <div class="xo-badge-sale">{% trans "New" %}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="xo-product-card__actions xo-product-card__actions--style9">
+                                <xo-tooltip class="xo-product-card__icon" xo-title="{% trans 'Add to Cart' %}">
+                                    <form method="POST" action=" " class="add-to-cart-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit"
+                                            class="xo-btn xo-btn--light xo-btn--primary xo-btn--circle xo-btn--sm xo-btn--slide-up circle add-to-cart-grid-btn"
+                                            data-product-id="{{ product.id }}">
+                                            <span class="xo-btn__content">
+                                                <span class="xo-btn__icon">
+                                                    <svg height="20" viewBox="0 0 24 24" width="20">
+                                                        <path d="M12,0C9.1,0,6.7,2.4,6.7,5.3v1h10.5v-1C17.2,2.4,14.9,0,12,0z M12,1.8c1.6,0,3,1.1,3.4,2.7H8.6C9,2.9,10.4,1.8,12,1.8" fill="currentColor"></path>
+                                                        <g><path d="M17.6,6.2c0.9,0,1.6,0.7,1.6,1.6v12.9c0,0.9-0.7,1.6-1.6,1.6H6.4c-0.9,0-1.6-0.7-1.6-1.6V7.8c0-0.9,0.7-1.6,1.6-1.6H17.6 M17.6,4.5H6.4C4.5,4.5,3,6,3,7.8v12.9C3,22.5,4.5,24,6.4,24h11.3c1.8,0,3.3-1.5,3.3-3.3V7.8C21,6,19.5,4.5,17.6,4.5L17.6,4.5z" fill="currentColor"></path></g>
+                                                        <path d="M14.8,8.8H9.2c-0.4,0-0.7-0.3-0.7-0.7v0c0-0.4,0.3-0.7,0.7-0.7h5.7c0.4,0,0.7,0.3,0.7,0.7v0C15.5,8.5,15.2,8.8,14.8,8.8z" fill="currentColor"></path>
+                                                    </svg>
+                                                </span>
+                                            </span>
+                                            <span class="xo-btn__loading">
+                                                <div class="xo-loader-3" style="--size: 8; --color: currentColor; --duration: 1000;"><div></div></div>
+                                            </span>
+                                        </button>
+                                    </form>
+                                </xo-tooltip>
+
+                                <xo-tooltip class="xo-product-card__icon" xo-title="{% trans 'Add to wishlist' %}">
+                                    <button class="wishlist-btn circle-btn" data-product-id="{{ product.id }}">
+                                        {% if request.user.is_authenticated and product in request.user.wishlist.products.all %}
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="red">
+                                            <path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" />
+                                        </svg>
+                                        {% else %}
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
+                                            <path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" />
+                                        </svg>
+                                        {% endif %}
+                                    </button>
+                                </xo-tooltip>
+                            </div>
+                        </div>
+
+                        <div class="xo-product-card__information">
+                            <h2 class="xo-product-card__title">
+                                <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                            </h2>
+                            <div class="xo-product-card__price">
+                                <div class="xo-product-card__price-inner">
+                                    <div class="xo-price">
+                                        <div class="xo-price__container">
+                                            <div class="xo-price__sale xo-price__sale--column">
+                                                <span class="xo-price__item xo-price__item--accent">
+                                                    ₹{{ product.base_price }}
+                                                </span>
+                                                {% if product.compare_at_price and product.compare_at_price > product.base_price %}
+                                                <span class="xo-price__item xo-price__item--regular" style="text-decoration:line-through;color:#999;font-size:0.85rem;">₹{{ product.compare_at_price }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </xo-animate>
+                </xo-product>
+                {% endfor %}
+            </xo-grid>
+        </xo-container>
+    </div>
+</section>
+
+
+<!-- Shop Prescription Glasses Section -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--prescription-shop color-background-1" style="--margin: 0; --pt: 50; --pb: 50;">
+        <xo-container class="xo-container--wide">
+            <div class="prescription-shop-wrapper">
+                <!-- Header Section -->
+                <xo-animate class="prescription-shop-header" xo-cascade="">
+                    <div class="prescription-header-inner">
+                        <h2 class="prescription-shop-title">{% trans "Shop prescription glasses online or in-store" %}</h2>
+                        <div class="prescription-header-actions">
+                            <a href="{% url 'content:eye_test_booking' %}" class="btn btn-primary">
+                                {% trans "Book Free Eyetest" %}
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </a>
+                            <a href="{% url 'content:store_locations' %}" class="btn btn-secondary">
+                                {% trans "Visit A Store" %}
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                </xo-animate>
+
+                <!-- Products Container -->
+                <div class="prescription-products-container">
+                    <!-- Promotional Card -->
+                    <xo-animate class="prescription-promo-wrapper" xo-cascade="">
+                        <div class="promo-card">
+                            <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400&h=600&fit=crop"
+                                 alt="{% trans 'Book Free Eye Test' %}" class="promo-image" loading="lazy">
+                            <div class="promo-badge">{% trans "BOOK A FREE EYE TEST" %}</div>
+                            <div class="promo-content">
+                                <a href="{% url 'content:eye_test_booking' %}" class="promo-watch-btn">
+                                    <svg class="icon" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z" fill="currentColor"/></svg>
+                                    {% trans "Book Now" %}
+                                </a>
+                            </div>
+                        </div>
+                    </xo-animate>
+
+                    <!-- Product Grid — dynamic eyeglasses from DB -->
+                    <div class="product-grid">
+                        {% for product in eyeglasses_preview %}
+                        <xo-animate class="product-card" xo-cascade="">
+                            <div class="product-badge-container">
+                                <span class="product-badge">
+                                    {% if product.compare_at_price %}{% trans "On Sale" %}{% else %}{% trans "Online Exclusive" %}{% endif %}
+                                </span>
+                                <button class="product-wishlist" data-product-id="{{ product.id }}">
+                                    <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                                </button>
+                            </div>
+
+                            <div class="product-image-wrapper">
+                                {% with first_image=product.images.first %}
+                                {% if first_image %}
+                                <img src="{{ first_image.image.url }}" alt="{{ product.name }}" class="product-image" loading="lazy">
+                                {% else %}
+                                <img src="{% static 'img/no-image.jpg' %}" alt="{{ product.name }}" class="product-image" loading="lazy">
+                                {% endif %}
+                                {% endwith %}
+                            </div>
+
+                            {% with variants=product.variants.all %}
+                            {% if variants %}
+                            <div class="product-colors">
+                                {% for v in variants|slice:":4" %}
+                                {% if v.color_code %}
+                                <div class="color-dot {% if forloop.first %}active{% endif %}" style="background:{{ v.color_code }};" title="{{ v.color_name }}"></div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="product-colors">
+                                <div class="color-dot active" style="background: #4A90E2;"></div>
+                                <div class="color-dot" style="background: #E8B4B8;"></div>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+
+                            <div class="product-info">
+                                <div class="product-price-row">
+                                    {% if product.brand %}<span class="product-code">{{ product.brand.name }}</span>{% endif %}
+                                    <span class="product-price">₹{{ product.base_price }}</span>
+                                    {% if product.compare_at_price and product.compare_at_price > product.base_price %}
+                                    <span class="discount-badge">SALE</span>
+                                    {% endif %}
+                                </div>
+                                <div class="product-name">{{ product.name }}</div>
+                            </div>
+
+                            <div class="product-actions">
+                                <a href="{{ product.get_absolute_url }}" class="product-try-btn">
+                                    <svg class="icon" viewBox="0 0 24 24">
+                                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                    {% trans "VIEW" %}
+                                </a>
+                                <form method="POST" action=" " style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="product-add-btn">
+                                        <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </xo-animate>
+                        {% empty %}
+                        <!-- Fallback static cards if no eyeglasses in DB yet -->
+                        <xo-animate class="product-card" xo-cascade="">
+                            <div class="product-badge-container">
+                                <span class="product-badge">{% trans "Online Exclusive" %}</span>
+                                <button class="product-wishlist"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+                            </div>
+                            <div class="product-image-wrapper">
+                                <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=300&h=300&fit=crop" alt="Spectra" class="product-image" loading="lazy">
+                            </div>
+                            <div class="product-colors"><div class="color-dot active" style="background: #4A90E2;"></div><div class="color-dot" style="background: #E8B4B8;"></div></div>
+                            <div class="product-info"><div class="product-price-row"><span class="product-code">QAR1</span><span class="product-price">₹2,499</span><span class="discount-badge">-30%</span></div><div class="product-name">Spectra | Multi</div></div>
+                            <div class="product-actions"><a href="{% url 'catalog:eyeglasses_list' %}" class="product-try-btn"><svg class="icon" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>{% trans "TRY ON" %}</a><button class="product-add-btn"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+                        </xo-animate>
+                        <xo-animate class="product-card" xo-cascade="">
+                            <div class="product-badge-container">
+                                <span class="product-badge">{% trans "Online Exclusive" %}</span>
+                                <button class="product-wishlist"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+                            </div>
+                            <div class="product-image-wrapper">
+                                <img src="https://images.unsplash.com/photo-1577803645773-f96470509666?w=300&h=300&fit=crop" alt="Stanford" class="product-image" loading="lazy">
+                            </div>
+                            <div class="product-colors"><div class="color-dot active" style="background: #B8956A;"></div><div class="color-dot" style="background: #8B7355;"></div><div class="color-dot" style="background: #2C2C2C;"></div></div>
+                            <div class="product-info"><div class="product-price-row"><span class="product-code">D | 1</span><span class="product-price">₹1,999</span><span class="discount-badge">-20%</span></div><div class="product-name">Spectra | STANFORD</div></div>
+                            <div class="product-actions"><a href="{% url 'catalog:eyeglasses_list' %}" class="product-try-btn"><svg class="icon" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>{% trans "TRY ON" %}</a><button class="product-add-btn"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+                        </xo-animate>
+                        <xo-animate class="product-card" xo-cascade="">
+                            <div class="product-badge-container">
+                                <span class="product-badge">{% trans "Online Exclusive" %}</span>
+                                <button class="product-wishlist"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+                            </div>
+                            <div class="product-image-wrapper">
+                                <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=300&h=300&fit=crop" alt="Fusion" class="product-image" loading="lazy">
+                            </div>
+                            <div class="product-colors"><div class="color-dot active" style="background: #87CEEB;"></div><div class="color-dot" style="background: #FFB6C1;"></div><div class="color-dot" style="background: #2C3E50;"></div></div>
+                            <div class="product-info"><div class="product-price-row"><span class="product-code">D | 1</span><span class="product-price">₹1,799</span><span class="discount-badge">-15%</span></div><div class="product-name">Spectra | FUSION</div></div>
+                            <div class="product-actions"><a href="{% url 'catalog:eyeglasses_list' %}" class="product-try-btn"><svg class="icon" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>{% trans "TRY ON" %}</a><button class="product-add-btn"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+                        </xo-animate>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </xo-container>
+    </div>
+</section>
+
+<br><br><br>
+
+<!-- Shop By Top Brands Section -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--top-brands color-background-1" style="--margin: 0; --pt: 80; --pb: 80;">
+        <xo-container class="xo-container--wide">
+            <xo-animate class="product-v1__heading" xo-cascade="">
+                <div class="product-v1__title-wrap">
+                    <h2 class="product-v1__title" style="text-align: center; margin-bottom: 5rem; font-size: 4.2rem; font-weight: 500; color: #ffffff;">
+                        {% trans "Shop By Top Brands" %}
+                    </h2>
+                </div>
+            </xo-animate>
+
+            <div class="top-brands-grid">
+                {% for brand in top_brands %}
+                <xo-animate class="top-brand-card" xo-cascade="">
+                    <a href="{% url 'catalog:brand_detail' brand.slug %}" class="brand-card-link">
+                        <div class="brand-card-image">
+                            {% if brand.logo %}
+                            <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" loading="lazy">
+                            {% else %}
+                            <img src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&h=700&fit=crop" alt="{{ brand.name }}" loading="lazy">
+                            {% endif %}
+                            <div class="brand-overlay">
+                                <div class="brand-logo">
+                                    <h3>{{ brand.name|upper }}</h3>
+                                    <p>EYEWEAR</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="brand-view-all">
+                            <button class="brand-btn">{% trans "View All" %}</button>
+                        </div>
+                    </a>
+                </xo-animate>
+                {% empty %}
+                <!-- Fallback static brands -->
+                <xo-animate class="top-brand-card" xo-cascade="">
+                    <a href="{% url 'catalog:brand_list' %}" class="brand-card-link">
+                        <div class="brand-card-image">
+                            <img src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&h=700&fit=crop" alt="Tom Ford Eyewear" loading="lazy">
+                            <div class="brand-overlay"><div class="brand-logo"><h3>TOM FORD</h3><p>EYEWEAR</p></div></div>
+                        </div>
+                        <div class="brand-view-all"><button class="brand-btn">View All</button></div>
+                    </a>
+                </xo-animate>
+                <xo-animate class="top-brand-card" xo-cascade="">
+                    <a href="{% url 'catalog:brand_list' %}" class="brand-card-link">
+                        <div class="brand-card-image">
+                            <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&h=700&fit=crop" alt="Ray-Ban" loading="lazy">
+                            <div class="brand-overlay"><div class="brand-logo brand-logo-dark"><h3>Ray-Ban</h3></div></div>
+                        </div>
+                        <div class="brand-view-all"><button class="brand-btn">View All</button></div>
+                    </a>
+                </xo-animate>
+                <xo-animate class="top-brand-card" xo-cascade="">
+                    <a href="{% url 'catalog:brand_list' %}" class="brand-card-link">
+                        <div class="brand-card-image">
+                            <img src="https://images.unsplash.com/photo-1577803645773-f96470509666?w=600&h=400&fit=crop" alt="Oakley" loading="lazy">
+                            <div class="brand-overlay"><div class="brand-logo"><h3>OAKLEY</h3></div></div>
+                        </div>
+                        <div class="brand-view-all"><button class="brand-btn">View All</button></div>
+                    </a>
+                </xo-animate>
+                {% endfor %}
+            </div>
+        </xo-container>
+    </div>
+</section>
+
+<br><br><br>
+
+<!-- SALE Banner -->
+<div class="banner-v270" style="--bg_custom: #f97316; --height-bg: 50%">
+    <div class="xo-section xo-section--sale-banner color-inverse" style="--margin: 0; --pt: 60; --pb: 60;">
+        <xo-container class="xo-container--wide">
+            <div class="banner-v270__heading" style="text-align: center;">
+                <xo-animate xo-duration="700" xo-order="1" xo-strength="3" xo-type="fade-up">
+                    <h2 class="banner-v270__title" style="font-size: 8rem; font-weight: 900; letter-spacing: 1.2rem; color: white; margin-bottom: 1rem;">
+                        {% trans "SALE" %}
+                    </h2>
+                </xo-animate>
+                <xo-animate xo-duration="700" xo-order="3" xo-strength="3" xo-type="fade-up">
+                    <div class="banner-v270__description" style="font-size: 2.8rem; color: white; font-weight: 600;">
+                        {% trans "Up to 50% OFF on Selected Items" %}
+                    </div>
+                </xo-animate>
+            </div>
+        </xo-container>
+    </div>
+</div>
+
+
+<!-- Our Brands Carousel Section -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--our-brands-carousel color-background-1" style="--margin: 0; --pt: 80; --pb: 80; background: #ffffff;">
+        <xo-container class="xo-container--wide">
+            <xo-animate class="our-brands-carousel-heading" xo-cascade="">
+                <div class="our-brands-carousel-title-wrap">
+                    <h2 class="our-brands-carousel-main-title" style="text-align: center; margin-bottom: 5rem; font-size: 3rem; font-weight: 700; color: #2c2c2c; text-transform: uppercase; letter-spacing: 0.15em;">
+                        {% trans "OUR BRANDS" %}
+                    </h2>
+                </div>
+            </xo-animate>
+
+            <div class="our-brands-carousel-wrapper">
+                <button class="brands-carousel-nav brands-carousel-prev" aria-label="Previous brands">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+
+                <div class="our-brands-carousel-container">
+                    <div class="our-brands-carousel-track">
+                        {% for brand in brands %}
+                        <div class="brand-carousel-item">
+                            <a href="{% url 'catalog:brand_detail' brand.slug %}" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    {% if brand.logo %}
+                                    <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" class="brand-carousel-logo" loading="lazy">
+                                    {% else %}
+                                    <span style="font-size:1.2rem;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:0.08em;">{{ brand.name }}</span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                        </div>
+                        {% empty %}
+                        <!-- Fallback static logos -->
+                        <div class="brand-carousel-item">
+                            <a href="{% url 'catalog:brand_list' %}" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ray-Ban_logo.svg/2560px-Ray-Ban_logo.svg.png" alt="Ray-Ban" class="brand-carousel-logo" loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+                        <div class="brand-carousel-item">
+                            <a href="{% url 'catalog:brand_list' %}" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Gucci_Logo.svg/2560px-Gucci_Logo.svg.png" alt="Gucci" class="brand-carousel-logo" loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+                        <div class="brand-carousel-item">
+                            <a href="{% url 'catalog:brand_list' %}" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Prada_logo.svg/2560px-Prada_logo.svg.png" alt="Prada" class="brand-carousel-logo" loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+                        <div class="brand-carousel-item">
+                            <a href="{% url 'catalog:brand_list' %}" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Oakley_logo.svg/2560px-Oakley_logo.svg.png" alt="Oakley" class="brand-carousel-logo" loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+                        <div class="brand-carousel-item">
+                            <a href="{% url 'catalog:brand_list' %}" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ray-Ban_logo.svg/2560px-Ray-Ban_logo.svg.png" alt="Ray-Ban" class="brand-carousel-logo" loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+                        <div class="brand-carousel-item">
+                            <a href="{% url 'catalog:brand_list' %}" class="brand-carousel-link">
+                                <div class="brand-carousel-logo-wrapper">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Gucci_Logo.svg/2560px-Gucci_Logo.svg.png" alt="Gucci" class="brand-carousel-logo" loading="lazy">
+                                </div>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <button class="brands-carousel-nav brands-carousel-next" aria-label="Next brands">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </xo-container>
+    </div>
+</section>
+
+
+<!-- Al Ameen Optics Blog Section -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--blog-cards color-background-1" style="--margin: 0; --pt: 80; --pb: 80; background: #e8f1f5;">
+        <xo-container class="xo-container--wide">
+            <xo-animate class="blog-cards-heading" xo-cascade="">
+                <div class="blog-cards-title-wrap">
+                    <h2 class="blog-cards-main-title" style="text-align: center; margin-bottom: 5rem; font-size: 3.5rem; font-weight: 700; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.1em;">
+                        {% trans "AL AMEEN OPTICS BLOG" %}
+                    </h2>
+                </div>
+            </xo-animate>
+
+            <div class="blog-cards-grid">
+                <xo-animate class="blog-single-card" xo-cascade="">
+                    <div class="blog-card-wrapper">
+                        <div class="blog-card-image-container">
+                            <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=800&h=900&fit=crop" alt="{% trans 'Eye Care at Al Ameen Optics' %}" class="blog-card-img" loading="lazy">
+                        </div>
+                        <div class="blog-card-content">
+                            <h3 class="blog-card-title">{% trans "Your Vision Matters More: Discover Advanced Eye Care at Al Ameen Optics" %}</h3>
+                            <p class="blog-card-excerpt">{% trans "Prepare for an exceptional eye care experience with our comprehensive vision assessment and expert optical services, designed to keep your eyes healthy and your vision crystal clear—only at Al Ameen Optics." %}</p>
+                            <a href="#" class="blog-read-more-link">
+                                {% trans "Read More" %}
+                                <svg class="blog-arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                </xo-animate>
+
+                <xo-animate class="blog-single-card" xo-cascade="">
+                    <div class="blog-card-wrapper">
+                        <div class="blog-card-image-container">
+                            <img src="https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=800&h=900&fit=crop" alt="{% trans 'Eye Examination' %}" class="blog-card-img" loading="lazy">
+                        </div>
+                        <div class="blog-card-content">
+                            <h3 class="blog-card-title">{% trans "How Often Should You Get an Eye Examination?" %}</h3>
+                            <p class="blog-card-excerpt">{% trans "Regular eye exams are essential for maintaining good vision health and catching early signs of eye conditions before they become serious. Learn how often you should visit." %}</p>
+                            <a href="#" class="blog-read-more-link">
+                                {% trans "Read More" %}
+                                <svg class="blog-arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                </xo-animate>
+
+                <xo-animate class="blog-single-card" xo-cascade="">
+                    <div class="blog-card-wrapper">
+                        <div class="blog-card-image-container">
+                            <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=800&h=900&fit=crop" alt="{% trans 'Eye Care Services' %}" class="blog-card-img" loading="lazy">
+                        </div>
+                        <div class="blog-card-content">
+                            <h3 class="blog-card-title">{% trans "Choosing the Right Sunglasses: A Complete Guide" %}</h3>
+                            <p class="blog-card-excerpt">{% trans "From UV protection ratings to frame styles for every face shape, our experts share everything you need to know before picking your next pair of sunglasses." %}</p>
+                            <a href="#" class="blog-read-more-link">
+                                {% trans "Read More" %}
+                                <svg class="blog-arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                </xo-animate>
+            </div>
+        </xo-container>
+    </div>
+</section>
+
+
+<!-- Featured Products Section (third instance) -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--featured-products color-background-1" style="--margin: 0; --pt: 50; --pb: 50; z-index: 98">
+        <xo-animate class="xo-section-bg" xo-disabled="" xo-duration="1000">
+            <xo-parallax class="xo-section-bg-image__item" xo-lerp-ease="0.4">
+                <xo-parallax-scroll class="xo-section-bg-image__url xo-background-lazyload"
+                    xo-keyframes="{'0%': { backgroundPositionY: '200px' },'100%': { backgroundPositionY: '-200px' }}">
+                </xo-parallax-scroll>
+            </xo-parallax>
+        </xo-animate>
+
+        <xo-container class="xo-container--wide">
+            <xo-animate class="product-v1__heading" xo-cascade="">
+                <div class="product-v1__title-wrap">
+                    <h2 class="product-v1__title" style="text-align: center; margin-bottom: 4rem; font-size: 4.2rem; font-weight: 500;">
+                        {% trans "Featured Products" %}
+                    </h2>
+                </div>
+            </xo-animate>
+
+            <xo-grid style="--xs: 1; --sm: 2; --xl: 4">
+                {% for product in featured_products %}
+                <xo-product xo-product-id="{{ product.id }}" xo-section-id="template--main-collection-2">
+                    <xo-animate class="xo-product-card xo-product-card--style9 color-background-1" xo-cascade="">
+                        <div class="xo-product-card__header xo-product-card__header--style9">
+                            <a href="{{ product.get_absolute_url }}">
+                                <xo-product-media style="--xo-auto-play: 1500ms" xo-binding="img"
+                                    xo-carousel-active-index="0" xo-carousel-autoplay="1500"
+                                    xo-carousel-bullet-content="<span class='xo-product-card__bullet'></span>"
+                                    xo-carousel-pagination-enabled="" xo-type="auto">
+                                    <div class="xo-product-image">
+                                        <div class="xo-image" style="--xo-ratio-percent: 1/1; --x-pos: %; --y-pos: %;">
+                                            {% with first_image=product.images.first %}
+                                            {% if first_image %}
+                                            <img alt="{{ product.name }}" src="{{ first_image.image.url }}" width="1000" height="1000" loading="lazy" />
+                                            {% elif product.image %}
+                                            <img alt="{{ product.name }}" src="{{ product.image.url }}" width="1000" height="1000" loading="lazy" />
+                                            {% else %}
+                                            <img alt="No Image" src="{% static 'img/no-image.jpg' %}" width="1000" height="1000" loading="lazy" />
+                                            {% endif %}
+                                            {% endwith %}
+                                        </div>
+                                    </div>
+                                </xo-product-media>
+                            </a>
+
+                            <div class="xo-product-card__badge">
+                                {% if product.stock_quantity == 0 or not product.is_active %}
+                                <div class="xo-badge-sold-out"><span class="xo-badge-sold-out__title">{% trans "Sold out" %}</span></div>
+                                {% else %}
+                                <div class="xo-badge-sale">{% trans "Sale" %}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="xo-product-card__actions xo-product-card__actions--style9">
+                                <xo-tooltip class="xo-product-card__icon" xo-title="{% trans 'Add to Cart' %}">
+                                    <form method="POST" action=" " class="add-to-cart-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="xo-btn xo-btn--light xo-btn--primary xo-btn--circle xo-btn--sm xo-btn--slide-up circle add-to-cart-grid-btn" data-product-id="{{ product.id }}">
+                                            <span class="xo-btn__content"><span class="xo-btn__icon">
+                                                <svg height="20" viewBox="0 0 24 24" width="20"><path d="M12,0C9.1,0,6.7,2.4,6.7,5.3v1h10.5v-1C17.2,2.4,14.9,0,12,0z M12,1.8c1.6,0,3,1.1,3.4,2.7H8.6C9,2.9,10.4,1.8,12,1.8" fill="currentColor"></path><g><path d="M17.6,6.2c0.9,0,1.6,0.7,1.6,1.6v12.9c0,0.9-0.7,1.6-1.6,1.6H6.4c-0.9,0-1.6-0.7-1.6-1.6V7.8c0-0.9,0.7-1.6,1.6-1.6H17.6 M17.6,4.5H6.4C4.5,4.5,3,6,3,7.8v12.9C3,22.5,4.5,24,6.4,24h11.3c1.8,0,3.3-1.5,3.3-3.3V7.8C21,6,19.5,4.5,17.6,4.5L17.6,4.5z" fill="currentColor"></path></g><path d="M14.8,8.8H9.2c-0.4,0-0.7-0.3-0.7-0.7v0c0-0.4,0.3-0.7,0.7-0.7h5.7c0.4,0,0.7,0.3,0.7,0.7v0C15.5,8.5,15.2,8.8,14.8,8.8z" fill="currentColor"></path></svg>
+                                            </span></span>
+                                            <span class="xo-btn__loading"><div class="xo-loader-3" style="--size: 8; --color: currentColor; --duration: 1000;"><div></div></div></span>
+                                        </button>
+                                    </form>
+                                </xo-tooltip>
+                                <xo-tooltip class="xo-product-card__icon" xo-title="{% trans 'Add to wishlist' %}">
+                                    <button class="wishlist-btn circle-btn" data-product-id="{{ product.id }}">
+                                        {% if request.user.is_authenticated and product in request.user.wishlist.products.all %}
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="red"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" /></svg>
+                                        {% else %}
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z" /></svg>
+                                        {% endif %}
+                                    </button>
+                                </xo-tooltip>
+                            </div>
+                        </div>
+
+                        <div class="xo-product-card__information">
+                            <h2 class="xo-product-card__title"><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h2>
+                            <div class="xo-product-card__price"><div class="xo-product-card__price-inner"><div class="xo-price"><div class="xo-price__container"><div class="xo-price__sale xo-price__sale--column">
+                                <span class="xo-price__item xo-price__item--accent">₹{{ product.base_price }}</span>
+                                {% if product.compare_at_price and product.compare_at_price > product.base_price %}
+                                <span class="xo-price__item xo-price__item--regular" style="text-decoration:line-through;color:#999;font-size:0.85rem;">₹{{ product.compare_at_price }}</span>
+                                {% endif %}
+                            </div></div></div></div></div>
+                        </div>
+                    </xo-animate>
+                </xo-product>
+                {% endfor %}
+            </xo-grid>
+        </xo-container>
+    </div>
+</section>
+
+
+<!-- Our Stores Section -->
+<section class="shopify-section section">
+    <div class="xo-section xo-section--our-stores color-background-1" style="--margin: 0; --pt: 80; --pb: 80; background: #f8f9fa;">
+        <xo-container class="xo-container--wide">
+            <xo-animate class="our-stores-heading" xo-cascade="">
+                <div class="our-stores-title-wrap">
+                    <h2 class="our-stores-main-title" style="text-align: center; margin-bottom: 3rem; font-size: 3.5rem; font-weight: 700; color: #1a1a1a;">
+                        {% trans "Our Stores" %}
+                    </h2>
+                </div>
+            </xo-animate>
+
+            <xo-animate class="our-stores-image-container" xo-cascade="">
+                <div class="store-image-wrapper">
+                    <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&h=800&fit=crop"
+                         alt="{% trans 'Al Ameen Optics Store' %}" class="store-front-image" loading="lazy">
+                </div>
+            </xo-animate>
+
+            <xo-animate class="our-stores-cta" xo-cascade="">
+                <div class="find-store-button-container">
+                    <a href="{% url 'content:store_locations' %}" class="find-store-btn">
+                        {% trans "Find a Store" %}
+                    </a>
+                </div>
+            </xo-animate>
+
+            <xo-animate class="benefits-title-container" xo-cascade="">
+                <h3 class="benefits-main-title">{% trans "Start Enjoying Al Ameen Benefits" %}</h3>
+            </xo-animate>
+
+            <div class="stores-benefits-grid">
+                <xo-animate class="stores-benefit-item" xo-cascade="">
+                    <div class="benefit-icon-wrapper">
+                        <svg class="benefit-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M2 3h20v18H2z"/><path d="M9 3v18M15 3v18"/><circle cx="12" cy="12" r="2"/>
+                        </svg>
+                    </div>
+                    <h4 class="benefit-title">{% trans "100% Authentic Products" %}</h4>
+                </xo-animate>
+
+                <xo-animate class="stores-benefit-item" xo-cascade="">
+                    <div class="benefit-icon-wrapper">
+                        <svg class="benefit-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
+                        </svg>
+                    </div>
+                    <h4 class="benefit-title">{% trans "Secure Payment" %}</h4>
+                </xo-animate>
+
+                <xo-animate class="stores-benefit-item" xo-cascade="">
+                    <div class="benefit-icon-wrapper">
+                        <svg class="benefit-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>
+                        </svg>
+                    </div>
+                    <h4 class="benefit-title">{% trans "Extended Warranty" %}</h4>
+                </xo-animate>
+
+                <xo-animate class="stores-benefit-item" xo-cascade="">
+                    <div class="benefit-icon-wrapper">
+                        <svg class="benefit-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M7 10v12M17 10v12M12 3v18"/><circle cx="12" cy="3" r="2"/><path d="M5 21h14"/>
+                        </svg>
+                    </div>
+                    <h4 class="benefit-title">{% trans "Trusted Since 1927" %}</h4>
+                </xo-animate>
+            </div>
+        </xo-container>
+    </div>
+</section>
+
+{% include 'widget.html' %}
+
+<script>
+// ============================================
+// AL AMEEN OPTICS - COMPLETE JAVASCRIPT
+// ============================================
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    // ============================================
+    // 1. BRANDS CAROUSEL FUNCTIONALITY
+    // ============================================
+    const initBrandsCarousel = () => {
+        const track = document.querySelector('.our-brands-carousel-track');
+        const prevBtn = document.querySelector('.brands-carousel-prev');
+        const nextBtn = document.querySelector('.brands-carousel-next');
+
+        if (!track || !prevBtn || !nextBtn) return;
+
+        const items = track.querySelectorAll('.brand-carousel-item');
+        if (items.length === 0) return;
+
+        const gap = 60;
+        let currentPosition = 0;
+        let autoScrollInterval;
+
+        function getScrollAmount() {
+            return items[0].offsetWidth + gap;
+        }
+
+        function getMaxScroll() {
+            return -(getScrollAmount() * (items.length - 4));
+        }
+
+        function updatePosition() {
+            track.style.transform = `translateX(${currentPosition}px)`;
+        }
+
+        function scrollNext() {
+            const maxScroll = getMaxScroll();
+            if (currentPosition > maxScroll) {
+                currentPosition -= getScrollAmount();
+            } else {
+                currentPosition = 0;
+            }
+            updatePosition();
+        }
+
+        function scrollPrev() {
+            if (currentPosition < 0) {
+                currentPosition += getScrollAmount();
+            } else {
+                currentPosition = getMaxScroll();
+            }
+            updatePosition();
+        }
+
+        nextBtn.addEventListener('click', () => { scrollNext(); resetAutoScroll(); });
+        prevBtn.addEventListener('click', () => { scrollPrev(); resetAutoScroll(); });
+
+        function startAutoScroll() { autoScrollInterval = setInterval(scrollNext, 3000); }
+        function stopAutoScroll() { if (autoScrollInterval) clearInterval(autoScrollInterval); }
+        function resetAutoScroll() { stopAutoScroll(); startAutoScroll(); }
+
+        startAutoScroll();
+        track.addEventListener('mouseenter', stopAutoScroll);
+        track.addEventListener('mouseleave', startAutoScroll);
+
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => { currentPosition = 0; updatePosition(); }, 250);
+        });
+    };
+
+    // ============================================
+    // 2. WISHLIST FUNCTIONALITY
+    // ============================================
+    const initWishlist = () => {
+        const wishlistButtons = document.querySelectorAll('.product-wishlist, .wishlist-btn');
+        wishlistButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.toggle('active');
+                const svg = this.querySelector('svg');
+                if (svg) {
+                    if (this.classList.contains('active')) {
+                        svg.setAttribute('fill', 'red');
+                        svg.setAttribute('stroke', 'red');
+                    } else {
+                        svg.setAttribute('fill', 'none');
+                        svg.setAttribute('stroke', '#333');
+                    }
+                }
+                const productId = this.getAttribute('data-product-id');
+                if (productId) {
+                    fetch('/wishlist/toggle/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                        body: JSON.stringify({ product_id: productId })
+                    }).catch(() => this.classList.toggle('active'));
+                }
+            });
+        });
+    };
+
+    // ============================================
+    // 3. ADD TO CART (AJAX)
+    // ============================================
+    const initAddToCart = () => {
+        document.querySelectorAll('.add-to-cart-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const btn = this.querySelector('button[type="submit"]');
+                if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+                fetch(this.action, {
+                    method: 'POST',
+                    body: new FormData(this),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    showNotification(data.message || 'Product added to cart!', 'success');
+                    if (data.cart_count !== undefined) {
+                        updateCartCount(data.cart_count);
+                    }
+                })
+                .catch(() => showNotification('Product added to cart!', 'success'))
+                .finally(() => { if (btn) { btn.disabled = false; btn.style.opacity = '1'; } });
+            });
+        });
+    };
+
+    // ============================================
+    // 4. COLOR VARIANT SELECTOR
+    // ============================================
+    const initColorSelector = () => {
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.parentElement.querySelectorAll('.color-dot').forEach(s => s.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    };
+
+    // ============================================
+    // 5. SMOOTH SCROLL
+    // ============================================
+    const initSmoothScroll = () => {
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href === '#' || href === '') return;
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    window.scrollTo({ top: target.getBoundingClientRect().top + window.pageYOffset - 80, behavior: 'smooth' });
+                }
+            });
+        });
+    };
+
+    // ============================================
+    // 6. NOTIFICATION SYSTEM
+    // ============================================
+    const showNotification = (message, type = 'info') => {
+        const existing = document.querySelector('.notification-toast');
+        if (existing) existing.remove();
+        const notification = document.createElement('div');
+        notification.className = `notification-toast notification-${type}`;
+        notification.innerHTML = `<div class="notification-content"><span class="notification-icon">${type === 'success' ? '✓' : '⚠'}</span><span class="notification-message">${message}</span></div>`;
+        notification.style.cssText = `position:fixed;top:20px;right:20px;background:${type === 'success' ? '#4CAF50' : '#f44336'};color:white;padding:16px 24px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:10000;animation:slideInRight 0.3s ease;`;
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    };
+
+    // ============================================
+    // 7. CART COUNT UPDATE
+    // ============================================
+    const updateCartCount = (count) => {
+        document.querySelectorAll('.cart-count, .header-cart-count').forEach(el => {
+            el.textContent = count;
+            el.style.display = count > 0 ? 'inline-block' : 'none';
+        });
+    };
+
+    // ============================================
+    // 8. CSRF TOKEN HELPER
+    // ============================================
+    const getCookie = (name) => {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    };
+
+    // ============================================
+    // 9. PROMO WATCH BUTTON
+    // ============================================
+    const initPromoButton = () => {
+        document.querySelectorAll('.promo-watch-btn').forEach(button => {
+            if (button.tagName === 'BUTTON') {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.href = "{% url 'content:eye_test_booking' %}";
+                });
+            }
+        });
+    };
+
+    // ============================================
+    // 10. CATEGORY CARD ANALYTICS
+    // ============================================
+    const initCategoryTracking = () => {
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const categoryName = this.querySelector('.category-title')?.textContent;
+                console.log('Category clicked:', categoryName);
+            });
+        });
+    };
+
+    // ============================================
+    // 11. ANIMATION ON SCROLL
+    // ============================================
+    const initScrollAnimations = () => {
+        const animateElements = document.querySelectorAll('[xo-cascade]');
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animated');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+            animateElements.forEach(element => observer.observe(element));
+        }
+    };
+
+    // ============================================
+    // 12. MOBILE MENU
+    // ============================================
+    const initMobileMenu = () => {
+        const menuToggle = document.querySelector('.mobile-menu-toggle');
+        const mobileMenu = document.querySelector('.mobile-menu');
+        if (menuToggle && mobileMenu) {
+            menuToggle.addEventListener('click', () => {
+                mobileMenu.classList.toggle('active');
+                menuToggle.classList.toggle('active');
+                document.body.classList.toggle('menu-open');
+            });
+        }
+    };
+
+    // ============================================
+    // 13. SEARCH
+    // ============================================
+    const initSearch = () => {
+        const searchInput = document.querySelector('.search-input');
+        const searchButton = document.querySelector('.search-button');
+        if (searchButton) {
+            searchButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                const query = searchInput?.value;
+                if (query) window.location.href = `/search/?q=${encodeURIComponent(query)}`;
+            });
+        }
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); searchButton?.click(); }
+            });
+        }
+    };
+
+    // ============================================
+    // INITIALIZE ALL
+    // ============================================
+    initBrandsCarousel();
+    initWishlist();
+    initAddToCart();
+    initColorSelector();
+    initSmoothScroll();
+    initPromoButton();
+    initCategoryTracking();
+    initScrollAnimations();
+    initMobileMenu();
+    initSearch();
+
+    console.log('🎉 Al Ameen Optics - All scripts loaded successfully!');
+});
+
+// CSS ANIMATIONS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+    .notification-content { display: flex; align-items: center; gap: 12px; }
+    .notification-icon { font-size: 20px; font-weight: bold; }
+    .notification-message { font-size: 14px; font-weight: 500; }
+    .loading { pointer-events: none; opacity: 0.6; cursor: not-allowed !important; }
+    [xo-cascade] { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    [xo-cascade].animated { opacity: 1; transform: translateY(0); }
+    .menu-open { overflow: hidden; }
+`;
+document.head.appendChild(style);
+</script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
