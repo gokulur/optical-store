@@ -11,6 +11,12 @@ import hmac
 import hashlib
 import requests
 import uuid
+import json
+import random
+import string
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
+import base64
 
 # ── Stripe ────────────────────────────────────────────────────
 try:
@@ -269,7 +275,14 @@ class PayPalPaymentService:
 
 
 # ══════════════════════════════════════════════════════════════
-# SADAD  (Qatar)
+# SADAD  (Qatar) — Correct Web Checkout 2.1 Implementation
+# ══════════════════════════════════════════════════════════════
+#
+# Sadad does NOT use a REST API with Bearer tokens.
+# It uses a form POST to https://sadadqa.com/webpurchase
+# with an AES-128-CBC encrypted checksumhash.
+#
+# Docs: https://developer.sadad.qa/
 # ══════════════════════════════════════════════════════════════
 
 class SadadPaymentError(Exception):
@@ -278,112 +291,210 @@ class SadadPaymentError(Exception):
 
 class SadadPaymentService:
     """
-    Sadad (Qatar) payment integration.
+    Sadad (Qatar) Web Checkout 2.1 integration.
 
-    Required settings (settings.py):
-        SADAD_MERCHANT_ID  = "your-merchant-id"
-        SADAD_API_KEY      = "your-api-key"       # Bearer token
-        SADAD_SECRET_KEY   = "your-secret-key"    # HMAC signature
-        SADAD_BASE_URL     = "https://api-gateway.sadad.qa"          # production
-                          or "https://api-gateway-sandbox.sadad.qa"  # sandbox
+    Required settings (settings.py / .env):
+        SADAD_MERCHANT_ID  = "4485154"          # Your Merchant ID (SadadId)
+        SADAD_SECRET_KEY   = "ecVpXr/XsjX+Fu67" # Your Secret Key from panel
+        SADAD_WEBSITE      = "alameenoptics.com" # Domain registered with Sadad
         SADAD_RETURN_URL   = "https://yoursite.com/orders/payment/sadad/return/"
+
+    For sandbox testing, use: SADAD_SANDBOX = True (default True)
+    For production, set:      SADAD_SANDBOX = False
     """
 
-    BASE_URL    = getattr(settings, 'SADAD_BASE_URL',    'https://api-gateway-sandbox.sadad.qa')
-    MERCHANT_ID = getattr(settings, 'SADAD_MERCHANT_ID', '')
-    API_KEY     = getattr(settings, 'SADAD_API_KEY',     '')
-    SECRET_KEY  = getattr(settings, 'SADAD_SECRET_KEY',  '')
-    RETURN_URL  = getattr(settings, 'SADAD_RETURN_URL',  '')
+    MERCHANT_ID  = getattr(settings, 'SADAD_MERCHANT_ID',  '')
+    SECRET_KEY   = getattr(settings, 'SADAD_SECRET_KEY',   '')
+    WEBSITE      = getattr(settings, 'SADAD_WEBSITE',      'alameenoptics.com')
+    RETURN_URL   = getattr(settings, 'SADAD_RETURN_URL',   '')
+    IS_SANDBOX   = getattr(settings, 'SADAD_SANDBOX',      True)
+
+    # Sandbox uses sadadqa.com, production uses sadad.qa
+    @classmethod
+    def _checkout_url(cls):
+        return 'https://sadadqa.com/webpurchase' if cls.IS_SANDBOX else 'https://sadad.qa/webpurchase'
+
+    # ── AES-128-CBC Encryption (mirrors Sadad's PHP encrypt_e) ──────────
 
     @classmethod
-    def _headers(cls):
-        return {
-            'Authorization': f'Bearer {cls.API_KEY}',
-            'Content-Type':  'application/json',
-            'Accept':        'application/json',
+    def _encrypt(cls, data: str, key: str) -> str:
+        """AES-128-CBC encrypt, same as Sadad's PHP encrypt_e()"""
+        iv = b'@@@@&&&&####$$$$'
+        # Decode HTML entities in key (mirrors html_entity_decode)
+        key_bytes = key.encode('utf-8')[:16]  # AES-128 = 16 bytes
+        # Pad key to 16 bytes if shorter
+        key_bytes = key_bytes.ljust(16, b'\0')[:16]
+        cipher = AES.new(key_bytes, AES.MODE_CBC, iv)
+        padded = pad(data.encode('utf-8'), AES.block_size)
+        encrypted = cipher.encrypt(padded)
+        return base64.b64encode(encrypted).decode('utf-8')
+
+    @classmethod
+    def _decrypt(cls, crypt: str, key: str) -> str:
+        """AES-128-CBC decrypt, same as Sadad's PHP decrypt_e()"""
+        iv = b'@@@@&&&&####$$$$'
+        key_bytes = key.encode('utf-8')[:16]
+        key_bytes = key_bytes.ljust(16, b'\0')[:16]
+        cipher = AES.new(key_bytes, AES.MODE_CBC, iv)
+        decoded = base64.b64decode(crypt)
+        decrypted = unpad(cipher.decrypt(decoded), AES.block_size)
+        return decrypted.decode('utf-8')
+
+    @classmethod
+    def _generate_salt(cls, length=4) -> str:
+        """Generate random salt (mirrors Sadad's PHP generateSalt_e)"""
+        chars = 'AbcDE123IJKLMN67QRSTUVWXYZaBCdefghijklmn123opq45rs67tuv89wxyz0FGH45OP89'
+        return ''.join(random.choices(chars, k=length))
+
+    @classmethod
+    def _generate_checksum(cls, data: dict, order) -> str:
+        """
+        Generate checksumhash matching Sadad's PHP getChecksumFromString().
+
+        Steps:
+          1. Build checksum_data = {'postData': form_fields, 'secretKey': url_encoded_secret}
+          2. JSON-encode it
+          3. Append |salt
+          4. SHA-256 hash → append salt
+          5. AES-128-CBC encrypt with key = (url_encoded_secret + merchantID)
+        """
+        import urllib.parse
+        secret_encoded = urllib.parse.quote(cls.SECRET_KEY, safe='')
+        salt = cls._generate_salt(4)
+
+        checksum_data = {
+            'postData':  data,
+            'secretKey': secret_encoded,
         }
+        json_str = json.dumps(checksum_data, separators=(',', ':'))
+        final_string = f"{json_str}|{salt}"
+        hash_val = hashlib.sha256(final_string.encode('utf-8')).hexdigest()
+        hash_string = hash_val + salt
+        encryption_key = secret_encoded + cls.MERCHANT_ID
+        return cls._encrypt(hash_string, encryption_key)
 
-    # ----------------------------------------------------------
+    # ── Public Methods ───────────────────────────────────────────────────
+
     @classmethod
-    def create_invoice(cls, order) -> dict:
+    def build_payment_form_data(cls, order) -> dict:
         """
-        Create a Sadad payment invoice.
-        Endpoint: POST /payment/api/v1/Init
+        Build the POST fields needed for the Sadad Web Checkout 2.1 form.
+        Returns a dict with all fields + the checksumhash, plus the action URL.
+
+        Usage in view:
+            form_data = SadadPaymentService.build_payment_form_data(order)
+            # Render a template that auto-submits a hidden form to form_data['action_url']
         """
-        if not cls.MERCHANT_ID or not cls.API_KEY:
+        if not cls.MERCHANT_ID or not cls.SECRET_KEY:
             raise SadadPaymentError(
                 "Sadad credentials not configured. "
-                "Set SADAD_MERCHANT_ID, SADAD_API_KEY, SADAD_SECRET_KEY, "
-                "SADAD_RETURN_URL in settings.py"
+                "Set SADAD_MERCHANT_ID, SADAD_SECRET_KEY, SADAD_WEBSITE, "
+                "SADAD_RETURN_URL in your .env / settings.py"
             )
 
-        payload = {
-            "MerchantId":    cls.MERCHANT_ID,
-            "OrderId":       order.order_number,
-            "Amount":        str(order.total_amount),
-            "Currency":      getattr(order, 'currency', 'QAR'),
-            "Description":   f"Payment for order {order.order_number}",
-            "ReturnUrl":     cls.RETURN_URL,
-            "CustomerName":  getattr(order, 'customer_name',  ''),
-            "CustomerEmail": getattr(order, 'customer_email', ''),
-            "CustomerPhone": getattr(order, 'customer_phone', ''),
-            "Lang":          "en",
+        from django.utils import timezone
+        txn_date = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+        amount   = f"{float(order.total_amount):.2f}"
+        phone    = (getattr(order, 'customer_phone', '') or '').replace('+', '').replace(' ', '')
+        if not phone:
+            phone = '97400000000'
+
+        # Core POST fields (order matters for checksum — must match exactly)
+        form_fields = {
+            'merchant_id':                    cls.MERCHANT_ID,
+            'ORDER_ID':                       order.order_number,
+            'WEBSITE':                        cls.WEBSITE,
+            'TXN_AMOUNT':                     amount,
+            'CUST_ID':                        getattr(order, 'customer_email', ''),
+            'EMAIL':                          getattr(order, 'customer_email', ''),
+            'MOBILE_NO':                      phone,
+            'SADAD_WEBCHECKOUT_PAGE_LANGUAGE': 'ENG',
+            'VERSION':                        '1.1',
+            'CALLBACK_URL':                   cls.RETURN_URL,
+            'txnDate':                        txn_date,
         }
 
-        try:
-            resp = requests.post(
-                f"{cls.BASE_URL}/payment/api/v1/Init",
-                json=payload,
-                headers=cls._headers(),
-                timeout=30,
-            )
-            data = resp.json()
-        except requests.RequestException as exc:
-            return {'success': False, 'error': str(exc)}
+        # Product detail (at least one product required)
+        product_fields = {
+            'productdetail[0][order_id]':  order.order_number,
+            'productdetail[0][itemname]':  f'Order {order.order_number}',
+            'productdetail[0][amount]':    amount,
+            'productdetail[0][quantity]':  '1',
+            'productdetail[0][type]':      'line_item',
+        }
 
-        if resp.status_code == 200 and data.get('IsSuccess'):
-            return {
-                'success':     True,
-                'invoice_id':  str(data.get('InvoiceId', '')),
-                'invoice_key': data.get('InvoiceKey', ''),
-                'payment_url': data.get('PaymentUrl') or data.get('InvoiceURL', ''),
-                'raw':         data,
-            }
+        # Build the checksum input (only the flat form_fields, not productdetail)
+        # Add productdetail to checksum array as nested dict (mirrors PHP)
+        checksum_input = dict(form_fields)
+        checksum_input['productdetail'] = [{
+            'order_id':  order.order_number,
+            'itemname':  f'Order {order.order_number}',
+            'amount':    amount,
+            'quantity':  '1',
+            'type':      'line_item',
+        }]
+
+        checksumhash = cls._generate_checksum(checksum_input, order)
+
+        all_fields = {}
+        all_fields.update(form_fields)
+        all_fields.update(product_fields)
+        all_fields['checksumhash'] = checksumhash
 
         return {
-            'success': False,
-            'error':   data.get('Message') or data.get('error') or f"HTTP {resp.status_code}: {data}",
-            'raw':     data,
+            'action_url': cls._checkout_url(),
+            'fields':     all_fields,
         }
 
-    # ----------------------------------------------------------
     @classmethod
-    def verify_payment(cls, invoice_id: str) -> dict:
+    def verify_callback(cls, post_data: dict) -> dict:
         """
-        Verify a Sadad invoice server-side.
-        Endpoint: POST /payment/api/v1/InquireInvoice
-        """
-        try:
-            resp = requests.post(
-                f"{cls.BASE_URL}/payment/api/v1/InquireInvoice",
-                json={"InvoiceId": invoice_id},
-                headers=cls._headers(),
-                timeout=30,
-            )
-            data = resp.json()
-        except requests.RequestException as exc:
-            return {'paid': False, 'error': str(exc)}
+        Verify the POST callback from Sadad after payment.
 
-        status = data.get('InvoiceStatus')
-        paid   = status in (2, '2', 'Paid', 'paid', 'PAID')
+        Sadad sends back:
+            ORDERID, RESPCODE, RESPMSG, TXNAMOUNT, transaction_number, checksumhash
+
+        RESPCODE == '1' means success.
+        Always verify the checksumhash before trusting the result.
+        """
+        import urllib.parse
+
+        checksumhash = post_data.get('checksumhash', '')
+        data_copy    = {k: v for k, v in post_data.items() if k != 'checksumhash'}
+
+        # Verify checksum
+        try:
+            secret_encoded   = urllib.parse.quote(cls.SECRET_KEY, safe='')
+            encryption_key   = secret_encoded + cls.MERCHANT_ID
+            decrypted        = cls._decrypt(checksumhash, encryption_key)
+            # decrypted = sha256hash + 4-char salt
+            salt             = decrypted[-4:]
+            received_hash    = decrypted[:-4]
+
+            verify_data = {
+                'postData':  data_copy,
+                'secretKey': secret_encoded,
+            }
+            json_str      = json.dumps(verify_data, separators=(',', ':'))
+            final_string  = f"{json_str}|{salt}"
+            computed_hash = hashlib.sha256(final_string.encode('utf-8')).hexdigest()
+
+            checksum_valid = (computed_hash == received_hash)
+        except Exception as e:
+            checksum_valid = False
+
+        resp_code = str(post_data.get('RESPCODE', ''))
+        paid      = checksum_valid and resp_code == '1'
 
         return {
-            'paid':           paid,
-            'status':         str(status),
-            'invoice_id':     invoice_id,
-            'transaction_id': str(data.get('TransactionId', '')),
-            'amount':         str(data.get('InvoiceValue', '')),
-            'raw':            data,
+            'paid':             paid,
+            'checksum_valid':   checksum_valid,
+            'resp_code':        resp_code,
+            'resp_msg':         post_data.get('RESPMSG', ''),
+            'order_id':         post_data.get('ORDERID', ''),
+            'transaction_id':   post_data.get('transaction_number', ''),
+            'amount':           post_data.get('TXNAMOUNT', ''),
+            'raw':              post_data,
         }
 
 
