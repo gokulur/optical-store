@@ -331,7 +331,8 @@ SADAD_SANDBOX     = config("SADAD_SANDBOX",      default=True, cast=bool)
 
 
  
-
+SADAD_BASE_URL = "https://api-gateway-sandbox.sadad.qa"
+SADAD_RETURN_URL = "http://127.0.0.1:8000/orders/payment/sadad/return/"
 
 
 # ── Stripe ────────────────────────────────────────────────────

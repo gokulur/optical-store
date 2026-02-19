@@ -372,7 +372,7 @@ def sadad_payment(request, order_number):
         order.payment_gateway        = 'sadad'
         order.payment_transaction_id = order.order_number
         order.save(update_fields=['payment_gateway', 'payment_transaction_id'])
-        return render(request, 'orders/sadad_redirect.html', {
+        return render(request, 'sadad_redirect.html', {
             'order':       order,
             'action_url':  form_data['action_url'],
             'form_fields': form_data['fields'],
@@ -667,7 +667,7 @@ def paypal_execute(request, order_number):
 @login_required
 def order_confirmation(request, order_number):
     order = get_object_or_404(Order, order_number=order_number, customer=request.user)
-    return render(request, 'orders/order_confirmation.html', {'order': order})
+    return render(request, 'order_confirmation.html', {'order': order})
 
 
 @login_required
