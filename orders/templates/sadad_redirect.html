@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Redirecting to Sadad…{% endblock %}
+
+{% block content %}
+<style>
+  .sadad-redirect-wrap {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
+    gap: 20px;
+  }
+  .sadad-logo { font-size: 48px; }
+  .sadad-title { font-size: 22px; font-weight: 700; color: #0f0f0f; }
+  .sadad-sub   { font-size: 14px; color: #7a7a7a; }
+  .sadad-spinner {
+    width: 40px; height: 40px;
+    border: 3px solid #e6e6e6;
+    border-top-color: #1a7a4a;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .sadad-manual-btn {
+    margin-top: 10px;
+    padding: 12px 28px;
+    background: #1a7a4a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .sadad-manual-btn:hover { background: #155c39; }
+</style>
+
+<div class="sadad-redirect-wrap">
+  <div class="sadad-logo">💚</div>
+  <div class="sadad-title">Redirecting to Sadad Secure Payment…</div>
+  <div class="sadad-sub">Order #{{ order.order_number }} · QAR {{ order.total_amount }}</div>
+  <div class="sadad-spinner"></div>
+  <div class="sadad-sub">Please wait, do not close this page.</div>
+  <button class="sadad-manual-btn" onclick="document.getElementById('sadadForm').submit()">
+    Click here if not redirected automatically
+  </button>
+</div>
+
+{# Hidden auto-submit form — posts directly to Sadad's hosted checkout #}
+<form id="sadadForm" action="{{ action_url }}" method="POST" style="display:none">
+  {% for key, value in form_fields.items %}
+    <input type="hidden" name="{{ key }}" value="{{ value }}">
+  {% endfor %}
+</form>
+
+<script>
+  // Auto-submit after a short delay so the user sees the loading screen
+  window.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      document.getElementById('sadadForm').submit();
+    }, 1200);
+  });
+</script>
+{% endblock %}
