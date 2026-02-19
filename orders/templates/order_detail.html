@@ -1,463 +1,304 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load i18n %}
-
-{% block title %}Order #{{ order.order_number }} · Al Ameen Optics{% endblock %}
-
+{% block title %}Order #{{ order.order_number }}{% endblock %}
 {% block content %}
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,600&display=swap');
-
-:root {
-  --od-lavender:    #e8dff5;
-  --od-lavender-dk: #ddd0ed;
-  --od-amber:       #fef3c7;
-  --od-mint:        #d1fae5;
-  --od-mint-dk:     #a7f3d0;
-  --od-pink:        #fce7f3;
-  --od-bg:          #fafaf9;
-  --od-white:       #ffffff;
-  --od-charcoal:    #1f2937;
-  --od-charcoal-lt: #374151;
-  --od-muted:       #6b7280;
-  --od-rule:        #e5e7eb;
-  --od-green:       #10b981;
-  --od-red:         #ef4444;
-  --od-blue:        #3b82f6;
-  --od-radius:      12px;
-  --od-radius-lg:   18px;
-  --od-ease:        cubic-bezier(.22,1,.36,1);
-  --od-shadow:      0 2px 12px rgba(0,0,0,.04);
-  --od-shadow-lg:   0 8px 32px rgba(0,0,0,.06);
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+:root{
+  --lav:#e8dff5;--amber:#fef3c7;--mint:#d1fae5;--pink:#fce7f3;
+  --bg:#fafaf9;--white:#fff;--ink:#1f2937;--ink2:#374151;--muted:#6b7280;
+  --rule:#e5e7eb;--green:#10b981;--red:#ef4444;
+  --r:12px;--r-lg:18px;--sh:0 2px 12px rgba(0,0,0,.04);--sh-lg:0 8px 32px rgba(0,0,0,.06);
 }
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-.od-page {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background: var(--od-bg);
-  color: var(--od-charcoal);
-  min-height: 100vh;
-  padding: 40px 20px 80px;
-}
-
-.od-container { max-width: 1100px; margin: 0 auto; }
-
-.od-header { margin-bottom: 32px; opacity: 0; animation: od-rise .6s .05s forwards; }
-
-.od-breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-.od-breadcrumb a, .od-breadcrumb span {
-  font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--od-muted); text-decoration: none; transition: color .2s;
-}
-.od-breadcrumb a:hover { color: var(--od-charcoal); }
-.od-breadcrumb__sep { color: var(--od-muted); font-size: 10px; }
-.od-breadcrumb span:last-child { color: var(--od-charcoal); }
-
-.od-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
-.od-label { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--od-muted); margin-bottom: 8px; }
-.od-title { font-family: 'DM Mono', monospace; font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 500; color: var(--od-charcoal); letter-spacing: .02em; margin-bottom: 8px; line-height: 1.1; }
-.od-date { font-size: 13px; color: var(--od-muted); font-weight: 400; }
-.od-title-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-
-.od-status-badge { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; box-shadow: var(--od-shadow); }
-.od-status-badge__dot { width: 8px; height: 8px; border-radius: 50%; animation: od-pulse 2s ease-in-out infinite; }
-.od-status-badge--pending     { background: var(--od-amber);    color: #92400e; }
-.od-status-badge--pending     .od-status-badge__dot { background: #f59e0b; }
-.od-status-badge--confirmed   { background: var(--od-mint);     color: #065f46; }
-.od-status-badge--confirmed   .od-status-badge__dot { background: var(--od-green); }
-.od-status-badge--processing  { background: var(--od-lavender); color: #5b21b6; }
-.od-status-badge--processing  .od-status-badge__dot { background: #8b5cf6; }
-.od-status-badge--shipped     { background: var(--od-pink);     color: #9f1239; }
-.od-status-badge--shipped     .od-status-badge__dot { background: #ec4899; }
-.od-status-badge--delivered   { background: var(--od-mint);     color: #065f46; }
-.od-status-badge--delivered   .od-status-badge__dot { background: var(--od-green); }
-.od-status-badge--cancelled   { background: #fee2e2;            color: #991b1b; }
-.od-status-badge--cancelled   .od-status-badge__dot { background: var(--od-red); }
-
-.od-track-btn {
-  display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px;
-  background: var(--od-charcoal); color: var(--od-white); border: none; border-radius: 100px;
-  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 11px; font-weight: 700;
-  letter-spacing: .12em; text-transform: uppercase; text-decoration: none; cursor: pointer;
-  transition: background .3s, transform .25s; box-shadow: var(--od-shadow);
-}
-.od-track-btn:hover { background: var(--od-charcoal-lt); transform: translateY(-2px); box-shadow: var(--od-shadow-lg); }
-
-.od-layout { display: grid; grid-template-columns: 1fr 360px; gap: 28px; align-items: start; }
-.od-main { min-width: 0; }
-
-.od-card {
-  background: var(--od-white); border-radius: var(--od-radius-lg); padding: 32px;
-  box-shadow: var(--od-shadow); margin-bottom: 24px;
-  opacity: 0; transform: translateY(16px);
-  transition: opacity .6s var(--od-ease), transform .6s var(--od-ease);
-}
-.od-card.revealed { opacity: 1; transform: translateY(0); }
-.od-card__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--od-rule); }
-.od-card__title { font-size: 12px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--od-charcoal); }
-.od-card__count { font-size: 11px; font-weight: 600; color: var(--od-muted); background: var(--od-lavender); padding: 4px 12px; border-radius: 100px; }
-
-.od-items-list { display: flex; flex-direction: column; gap: 0; }
-.od-item { display: flex; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--od-rule); transition: background .25s; }
-.od-item:last-child { border-bottom: none; }
-.od-item:hover { background: var(--od-lavender); margin: 0 -16px; padding: 20px 16px; border-radius: var(--od-radius); }
-.od-item__img { width: 90px; min-width: 90px; height: 90px; border-radius: var(--od-radius); overflow: hidden; background: var(--od-bg); flex-shrink: 0; }
-.od-item__img img { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
-.od-item__body { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.od-item__name { font-size: 1rem; font-weight: 700; color: var(--od-charcoal); line-height: 1.3; margin-bottom: 2px; }
-.od-item__meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--od-muted); margin-bottom: 6px; }
-.od-item__meta-item { display: flex; align-items: center; gap: 5px; }
-.od-item__meta-label { font-weight: 600; color: var(--od-charcoal-lt); }
-.od-item__lens-info { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-.od-lens-pill { padding: 4px 10px; background: var(--od-pink); border-radius: 6px; font-size: 10px; font-weight: 600; letter-spacing: .06em; color: #9f1239; }
-.od-lens-addon { padding: 4px 10px; background: var(--od-mint); border-radius: 6px; font-size: 10px; font-weight: 600; letter-spacing: .06em; color: #065f46; }
-.od-item__right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
-.od-item__qty { font-size: 12px; color: var(--od-muted); font-weight: 500; }
-.od-item__unit-price { font-size: 12px; color: var(--od-muted); }
-.od-item__total { font-family: 'DM Mono', monospace; font-size: 1.1rem; font-weight: 500; color: var(--od-charcoal); letter-spacing: .02em; }
-
-.od-address-block { background: var(--od-lavender); padding: 20px; border-radius: var(--od-radius); line-height: 1.8; }
-.od-address-block__name { font-weight: 700; color: var(--od-charcoal); margin-bottom: 4px; }
-.od-address-block__line { font-size: 14px; color: var(--od-charcoal-lt); }
-.od-address-block__phone { font-size: 13px; color: var(--od-muted); margin-top: 8px; display: flex; align-items: center; gap: 6px; }
-
-.od-payment-info { display: flex; flex-direction: column; gap: 12px; }
-.od-payment-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--od-amber); border-radius: var(--od-radius); }
-.od-payment-row__label { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #92400e; }
-.od-payment-row__value { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--od-charcoal); }
-.od-payment-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: var(--od-mint); border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #065f46; }
-.od-payment-status--pending  { background: var(--od-amber); color: #92400e; }
-.od-payment-status--failed   { background: #fee2e2;         color: #991b1b; }
-.od-payment-status--refunded { background: var(--od-pink);  color: #9f1239; }
-
-.od-sidebar { position: sticky; top: 24px; }
-.od-summary { background: var(--od-white); border-radius: var(--od-radius-lg); padding: 28px; box-shadow: var(--od-shadow); margin-bottom: 20px; opacity: 0; animation: od-rise .7s .15s forwards; }
-.od-summary__title { font-size: 12px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--od-charcoal); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--od-rule); }
-.od-summary__rows { display: flex; flex-direction: column; gap: 12px; }
-.od-summary__row { display: flex; align-items: center; justify-content: space-between; font-size: 14px; }
-.od-summary__row-label { color: var(--od-muted); font-weight: 500; }
-.od-summary__row-value { font-family: 'DM Mono', monospace; color: var(--od-charcoal); font-weight: 500; }
-.od-summary__divider { height: 1px; background: var(--od-rule); margin: 8px 0; }
-.od-summary__total { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; background: var(--od-lavender); border-radius: var(--od-radius); margin-top: 12px; }
-.od-summary__total-label { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #5b21b6; }
-.od-summary__total-value { font-family: 'DM Mono', monospace; font-size: 1.6rem; font-weight: 500; color: var(--od-charcoal); letter-spacing: .02em; }
-
-.od-actions { background: var(--od-white); border-radius: var(--od-radius-lg); padding: 24px; box-shadow: var(--od-shadow); display: flex; flex-direction: column; gap: 10px; opacity: 0; animation: od-rise .7s .25s forwards; }
-.od-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 24px; border-radius: 100px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; border: none; cursor: pointer; transition: all .3s var(--od-ease); text-align: center; }
-.od-btn--primary { background: var(--od-charcoal); color: var(--od-white); box-shadow: var(--od-shadow); }
-.od-btn--primary:hover { background: var(--od-charcoal-lt); transform: translateY(-2px); box-shadow: var(--od-shadow-lg); }
-.od-btn--outline { background: transparent; color: var(--od-charcoal); border: 2px solid var(--od-rule); }
-.od-btn--outline:hover { border-color: var(--od-charcoal); background: var(--od-lavender); }
-.od-btn--danger { background: #fee2e2; color: #991b1b; border: 2px solid #fecaca; }
-.od-btn--danger:hover { background: #fecaca; border-color: var(--od-red); }
-
-.od-help { background: var(--od-mint); border-radius: var(--od-radius-lg); padding: 20px; margin-top: 20px; opacity: 0; animation: od-rise .7s .35s forwards; }
-.od-help__title { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #065f46; margin-bottom: 8px; }
-.od-help__text { font-size: 13px; color: #064e3b; line-height: 1.6; margin-bottom: 12px; }
-.od-help__link { font-size: 12px; font-weight: 700; color: var(--od-green); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: gap .25s; }
-.od-help__link:hover { gap: 10px; }
-
-.od-history-section { opacity: 0; animation: od-rise .7s .45s forwards; }
-.od-timeline { display: flex; flex-direction: column; gap: 0; position: relative; }
-.od-timeline::before { content: ''; position: absolute; top: 28px; bottom: 28px; left: 7px; width: 2px; background: var(--od-rule); }
-.od-timeline-item { display: flex; gap: 16px; padding: 16px 0; position: relative; }
-.od-timeline-item__dot-wrap { position: relative; flex-shrink: 0; z-index: 2; }
-.od-timeline-item__dot { width: 16px; height: 16px; border-radius: 50%; background: var(--od-white); border: 3px solid var(--od-rule); transition: all .3s; }
-.od-timeline-item:hover .od-timeline-item__dot { border-color: var(--od-green); transform: scale(1.2); }
-.od-timeline-item--current .od-timeline-item__dot { border-color: var(--od-green); background: var(--od-green); box-shadow: 0 0 0 4px rgba(16,185,129,.15); }
-.od-timeline-item__body { flex: 1; padding-top: 2px; }
-.od-timeline-item__status { font-size: 14px; font-weight: 700; color: var(--od-charcoal); margin-bottom: 4px; }
-.od-timeline-item__time { font-size: 12px; color: var(--od-muted); margin-bottom: 4px; }
-.od-timeline-item__notes { font-size: 13px; color: var(--od-charcoal-lt); line-height: 1.6; }
-
-@keyframes od-rise { to { opacity: 1; transform: translateY(0); } }
-@keyframes od-pulse { 0%, 100% { opacity: .6; transform: scale(1); } 50% { opacity: 1; transform: scale(1.2); } }
-
-@media (max-width: 1024px) { .od-layout { grid-template-columns: 1fr; } .od-sidebar { position: relative; top: auto; } }
-@media (max-width: 768px) { .od-page { padding: 28px 16px 60px; } .od-card { padding: 24px 18px; } .od-summary { padding: 20px; } .od-title-row { flex-direction: column; align-items: flex-start; } .od-item { flex-direction: column; } .od-item__right { flex-direction: row; align-items: center; width: 100%; justify-content: space-between; } }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+.od{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:40px 20px 80px}
+.od-con{max-width:1100px;margin:0 auto}
+.od-hd{margin-bottom:32px}
+.od-bc{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.od-bc a,.od-bc span{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-decoration:none}
+.od-bc a:hover{color:var(--ink)}
+.od-bc__sep{font-size:10px;color:var(--muted)}
+.od-bc span:last-child{color:var(--ink)}
+.od-tr{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.od-lbl{font-size:10px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block}
+.od-title{font-family:'DM Mono',monospace;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:500;color:var(--ink);letter-spacing:.02em;margin-bottom:8px;line-height:1.1}
+.od-date{font-size:13px;color:var(--muted)}
+.od-ta{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.od-badge{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;box-shadow:var(--sh)}
+.od-badge__dot{width:8px;height:8px;border-radius:50%;animation:pulse 2s ease-in-out infinite}
+.b-pending{background:var(--amber);color:#92400e}.b-pending .od-badge__dot{background:#f59e0b}
+.b-confirmed{background:var(--mint);color:#065f46}.b-confirmed .od-badge__dot{background:var(--green)}
+.b-processing{background:var(--lav);color:#5b21b6}.b-processing .od-badge__dot{background:#8b5cf6}
+.b-shipped{background:var(--pink);color:#9f1239}.b-shipped .od-badge__dot{background:#ec4899}
+.b-delivered{background:var(--mint);color:#065f46}.b-delivered .od-badge__dot{background:var(--green)}
+.b-cancelled{background:#fee2e2;color:#991b1b}.b-cancelled .od-badge__dot{background:var(--red)}
+.od-track-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:var(--ink);color:#fff;border:none;border-radius:100px;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;transition:.25s;box-shadow:var(--sh)}
+.od-track-btn:hover{opacity:.85;transform:translateY(-2px);color:#fff;text-decoration:none}
+.od-layout{display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:start}
+.od-main{min-width:0}
+.od-card{background:var(--white);border-radius:var(--r-lg);padding:32px;box-shadow:var(--sh);margin-bottom:24px;opacity:0;transform:translateY(16px);transition:opacity .6s,transform .6s}
+.od-card.in{opacity:1;transform:none}
+.od-ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid var(--rule)}
+.od-ct{font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--ink)}
+.od-cc{font-size:11px;font-weight:600;color:var(--muted);background:var(--lav);padding:4px 12px;border-radius:100px}
+.od-items{display:flex;flex-direction:column}
+.od-item{display:flex;gap:20px;padding:20px 0;border-bottom:1px solid var(--rule);transition:background .2s}
+.od-item:last-child{border-bottom:none}
+.od-item:hover{background:var(--lav);margin:0 -16px;padding:20px 16px;border-radius:var(--r)}
+.od-item-img{width:90px;min-width:90px;height:90px;border-radius:var(--r);overflow:hidden;background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.od-item-img img{width:100%;height:100%;object-fit:contain;padding:8px}
+.od-item-body{flex:1;min-width:0}
+.od-item-name{font-size:1rem;font-weight:700;color:var(--ink);line-height:1.3;margin-bottom:4px}
+.od-item-meta{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin-bottom:6px}
+.od-item-meta-lbl{font-weight:600;color:var(--ink2)}
+.od-item-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pill-lens{padding:4px 10px;background:var(--pink);border-radius:6px;font-size:10px;font-weight:600;color:#9f1239}
+.pill-addon{padding:4px 10px;background:var(--mint);border-radius:6px;font-size:10px;font-weight:600;color:#065f46}
+.od-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.od-item-qty{font-size:12px;color:var(--muted);font-weight:500}
+.od-item-each{font-size:12px;color:var(--muted)}
+.od-item-total{font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:500;color:var(--ink)}
+.od-addr{background:var(--lav);padding:20px;border-radius:var(--r);line-height:1.8}
+.od-addr-name{font-weight:700;color:var(--ink);margin-bottom:4px}
+.od-addr-line{font-size:14px;color:var(--ink2)}
+.od-addr-phone{font-size:13px;color:var(--muted);margin-top:8px;display:flex;align-items:center;gap:6px}
+.od-pay-rows{display:flex;flex-direction:column;gap:12px}
+.od-pay-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--amber);border-radius:var(--r)}
+.od-pay-lbl{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#92400e}
+.od-pay-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--ink)}
+.ps{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.ps-completed{background:var(--mint);color:#065f46}
+.ps-pending{background:var(--amber);color:#92400e}
+.ps-failed{background:#fee2e2;color:#991b1b}
+.ps-processing{background:var(--lav);color:#5b21b6}
+.od-tl{display:flex;flex-direction:column;position:relative}
+.od-tl::before{content:'';position:absolute;top:28px;bottom:28px;left:7px;width:2px;background:var(--rule)}
+.od-tl-item{display:flex;gap:16px;padding:16px 0;position:relative}
+.od-tl-dot-wrap{position:relative;flex-shrink:0;z-index:2}
+.od-tl-dot{width:16px;height:16px;border-radius:50%;background:var(--white);border:3px solid var(--rule);transition:.3s}
+.od-tl-item:hover .od-tl-dot{border-color:var(--green);transform:scale(1.2)}
+.od-tl-item.cur .od-tl-dot{border-color:var(--green);background:var(--green);box-shadow:0 0 0 4px rgba(16,185,129,.15)}
+.od-tl-body{flex:1;padding-top:2px}
+.od-tl-status{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.od-tl-time{font-size:12px;color:var(--muted);margin-bottom:4px}
+.od-tl-notes{font-size:13px;color:var(--ink2);line-height:1.6}
+.od-sidebar{position:sticky;top:24px}
+.od-sum{background:var(--white);border-radius:var(--r-lg);padding:28px;box-shadow:var(--sh);margin-bottom:20px}
+.od-sum-title{font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--ink);margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--rule)}
+.od-sum-rows{display:flex;flex-direction:column;gap:12px}
+.od-sum-row{display:flex;align-items:center;justify-content:space-between;font-size:14px}
+.od-sum-row-lbl{color:var(--muted);font-weight:500}
+.od-sum-row-val{font-family:'DM Mono',monospace;color:var(--ink);font-weight:500}
+.od-sum-div{height:1px;background:var(--rule);margin:8px 0}
+.od-sum-total{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:var(--lav);border-radius:var(--r);margin-top:12px}
+.od-sum-total-lbl{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#5b21b6}
+.od-sum-total-val{font-family:'DM Mono',monospace;font-size:1.6rem;font-weight:500;color:var(--ink)}
+.od-acts{background:var(--white);border-radius:var(--r-lg);padding:24px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:10px}
+.od-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:100px;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;border:none;cursor:pointer;transition:.3s;text-align:center}
+.od-btn-primary{background:var(--ink);color:#fff;box-shadow:var(--sh)}.od-btn-primary:hover{opacity:.85;transform:translateY(-2px);color:#fff;text-decoration:none}
+.od-btn-outline{background:transparent;color:var(--ink);border:2px solid var(--rule)}.od-btn-outline:hover{border-color:var(--ink);background:var(--lav);text-decoration:none;color:var(--ink)}
+.od-btn-danger{background:#fee2e2;color:#991b1b;border:2px solid #fecaca}.od-btn-danger:hover{background:#fecaca;border-color:var(--red)}
+.od-help{background:var(--mint);border-radius:var(--r-lg);padding:20px;margin-top:20px}
+.od-help-title{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#065f46;margin-bottom:8px}
+.od-help-text{font-size:13px;color:#064e3b;line-height:1.6;margin-bottom:12px}
+.od-help-link{font-size:12px;font-weight:700;color:var(--green);text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.od-help-link:hover{gap:10px}
+@keyframes pulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.2)}}
+@media(max-width:1024px){.od-layout{grid-template-columns:1fr}.od-sidebar{position:relative;top:auto}}
+@media(max-width:768px){.od{padding:28px 16px 60px}.od-card{padding:24px 18px}.od-sum{padding:20px}.od-tr{flex-direction:column;align-items:flex-start}.od-item{flex-direction:column}.od-item-right{flex-direction:row;align-items:center;width:100%;justify-content:space-between}}
 </style>
 
-<div class="od-page">
-  <div class="od-container">
+<div class="od">
+<div class="od-con">
 
-    <header class="od-header">
-      <nav class="od-breadcrumb" aria-label="Breadcrumb">
-        <a href="/">Home</a>
-        <span class="od-breadcrumb__sep">/</span>
-        <a href="{% url 'orders:order_list' %}">Orders</a>
-        <span class="od-breadcrumb__sep">/</span>
-        <span>#{{ order.order_number }}</span>
-      </nav>
-
-      <div class="od-title-row">
-        <div class="od-title-group">
-          <span class="od-label">Order Details</span>
-          <h1 class="od-title">#{{ order.order_number }}</h1>
-          <p class="od-date">Placed on {{ order.created_at|date:"F j, Y" }} at {{ order.created_at|time:"g:i A" }}</p>
-        </div>
-        <div class="od-title-actions">
-          <span class="od-status-badge od-status-badge--{{ order.status }}">
-            <span class="od-status-badge__dot"></span>
-            {{ order.get_status_display }}
-          </span>
-          <a href="{% url 'orders:track_order' order.order_number %}" class="od-track-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-            </svg>
-            Track Order
-          </a>
-        </div>
+  <div class="od-hd">
+    <nav class="od-bc">
+      <a href="/">Home</a><span class="od-bc__sep">/</span>
+      <a href="{% url 'orders:order_list' %}">Orders</a><span class="od-bc__sep">/</span>
+      <span>#{{ order.order_number }}</span>
+    </nav>
+    <div class="od-tr">
+      <div>
+        <span class="od-lbl">Order Details</span>
+        <h1 class="od-title">#{{ order.order_number }}</h1>
+        <p class="od-date">Placed on {{ order.created_at|date:"F j, Y" }} at {{ order.created_at|time:"g:i A" }}</p>
       </div>
-    </header>
-
-    <div class="od-layout">
-      <main class="od-main">
-
-        <!-- Order Items -->
-        <section class="od-card">
-          <div class="od-card__header">
-            <h2 class="od-card__title">Order Items</h2>
-            <span class="od-card__count">{{ order_items|length }} item(s)</span>
-          </div>
-          <div class="od-items-list">
-            {% for item in order_items %}
-            <article class="od-item">
-              <div class="od-item__img">
-                {% if item.product.images.first %}
-                  <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product_name }}" loading="lazy">
-                {% elif item.product.image %}
-                  <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}" loading="lazy">
-                {% else %}
-                  <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;background:#f0f0f0;">👓</div>
-                {% endif %}
-              </div>
-              <div class="od-item__body">
-                <h3 class="od-item__name">{{ item.product_name }}</h3>
-                <div class="od-item__meta">
-                  {% if item.product_sku %}
-                  <span class="od-item__meta-item">
-                    <span class="od-item__meta-label">SKU:</span> {{ item.product_sku }}
-                  </span>
-                  {% endif %}
-                  {% if item.variant_details.color %}
-                  <span class="od-item__meta-item">
-                    <span class="od-item__meta-label">Color:</span> {{ item.variant_details.color }}
-                  </span>
-                  {% endif %}
-                  {% if item.variant_details.size %}
-                  <span class="od-item__meta-item">
-                    <span class="od-item__meta-label">Size:</span> {{ item.variant_details.size }}
-                  </span>
-                  {% endif %}
-                </div>
-                {% if item.lens_option_name or item.lens_addons.all %}
-                <div class="od-item__lens-info">
-                  {% if item.lens_option_name %}
-                  <span class="od-lens-pill">🔍 {{ item.lens_option_name }} ({{ order.currency }} {{ item.lens_price }})</span>
-                  {% endif %}
-                  {% for addon in item.lens_addons.all %}
-                  <span class="od-lens-addon">+ {{ addon.addon_name }} ({{ order.currency }} {{ addon.price }})</span>
-                  {% endfor %}
-                </div>
-                {% endif %}
-                {% if item.special_instructions %}
-                <p style="font-size:12px;color:var(--od-muted);margin-top:8px;font-style:italic;">Note: {{ item.special_instructions }}</p>
-                {% endif %}
-              </div>
-              <div class="od-item__right">
-                <span class="od-item__qty">Qty: {{ item.quantity }}</span>
-                <span class="od-item__unit-price">{{ order.currency }} {{ item.unit_price }} each</span>
-                <span class="od-item__total">{{ order.currency }} {{ item.subtotal }}</span>
-              </div>
-            </article>
-            {% endfor %}
-          </div>
-        </section>
-
-        <!-- Shipping Address -->
-        <section class="od-card">
-          <div class="od-card__header">
-            <h2 class="od-card__title">Shipping Address</h2>
-          </div>
-          <div class="od-address-block">
-            <p class="od-address-block__name">{{ order.customer_name }}</p>
-            <p class="od-address-block__line">{{ order.shipping_address_line1 }}</p>
-            {% if order.shipping_address_line2 %}
-            <p class="od-address-block__line">{{ order.shipping_address_line2 }}</p>
-            {% endif %}
-            <p class="od-address-block__line">
-              {{ order.shipping_city }}{% if order.shipping_state %}, {{ order.shipping_state }}{% endif %} {{ order.shipping_postal_code }}
-            </p>
-            <p class="od-address-block__line">{{ order.shipping_country }}</p>
-            {% if order.customer_phone %}
-            <p class="od-address-block__phone">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.13 13.73a19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-              </svg>
-              {{ order.customer_phone }}
-            </p>
-            {% endif %}
-          </div>
-        </section>
-
-        <!-- Payment Info -->
-        <section class="od-card">
-          <div class="od-card__header">
-            <h2 class="od-card__title">Payment Information</h2>
-          </div>
-          <div class="od-payment-info">
-            <div class="od-payment-row">
-              <span class="od-payment-row__label">Method</span>
-              <span class="od-payment-row__value">
-                {% if order.payment_method == 'cash_on_delivery' %}💵 Cash on Delivery
-                {% elif order.payment_method == 'sadad' %}💚 Sadad
-                {% elif order.payment_method == 'stripe' %}💳 Credit/Debit Card (Stripe)
-                {% elif order.payment_method == 'razorpay' %}🏦 Razorpay
-                {% elif order.payment_method == 'paypal' %}🌐 PayPal
-                {% else %}{{ order.payment_method }}{% endif %}
-              </span>
-            </div>
-            <div class="od-payment-row">
-              <span class="od-payment-row__label">Status</span>
-              <span class="od-payment-status od-payment-status--{{ order.payment_status }}">
-                {{ order.get_payment_status_display }}
-              </span>
-            </div>
-            {% if order.payment_transaction_id %}
-            <div class="od-payment-row">
-              <span class="od-payment-row__label">Transaction ID</span>
-              <span class="od-payment-row__value" style="font-size:11px;word-break:break-all;">{{ order.payment_transaction_id }}</span>
-            </div>
-            {% endif %}
-            {% if order.paid_at %}
-            <div class="od-payment-row">
-              <span class="od-payment-row__label">Paid At</span>
-              <span class="od-payment-row__value" style="font-size:12px;">{{ order.paid_at|date:"M j, Y g:i A" }}</span>
-            </div>
-            {% endif %}
-          </div>
-        </section>
-
-        <!-- Status History -->
-        {% if status_history %}
-        <section class="od-card od-history-section">
-          <div class="od-card__header">
-            <h2 class="od-card__title">Order History</h2>
-          </div>
-          <div class="od-timeline">
-            {% for history in status_history %}
-            <div class="od-timeline-item {% if forloop.first %}od-timeline-item--current{% endif %}">
-              <div class="od-timeline-item__dot-wrap">
-                <div class="od-timeline-item__dot"></div>
-              </div>
-              <div class="od-timeline-item__body">
-                <p class="od-timeline-item__status">
-                  {% if history.from_status %}{{ history.from_status|title }} → {% endif %}{{ history.to_status|title }}
-                </p>
-                <p class="od-timeline-item__time">{{ history.created_at|date:"M j, Y g:i A" }}</p>
-                {% if history.notes %}
-                <p class="od-timeline-item__notes">{{ history.notes }}</p>
-                {% endif %}
-              </div>
-            </div>
-            {% endfor %}
-          </div>
-        </section>
-        {% endif %}
-
-      </main>
-
-      <!-- Sidebar -->
-      <aside class="od-sidebar">
-        <div class="od-summary">
-          <h3 class="od-summary__title">Order Summary</h3>
-          <div class="od-summary__rows">
-            <div class="od-summary__row">
-              <span class="od-summary__row-label">Subtotal</span>
-              <span class="od-summary__row-value">{{ order.currency }} {{ order.subtotal }}</span>
-            </div>
-            {% if order.discount_amount and order.discount_amount > 0 %}
-            <div class="od-summary__row">
-              <span class="od-summary__row-label">Discount</span>
-              <span class="od-summary__row-value" style="color:var(--od-green);">-{{ order.currency }} {{ order.discount_amount }}</span>
-            </div>
-            {% endif %}
-            <div class="od-summary__row">
-              <span class="od-summary__row-label">Shipping</span>
-              <span class="od-summary__row-value">
-                {% if order.shipping_amount > 0 %}{{ order.currency }} {{ order.shipping_amount }}{% else %}Free{% endif %}
-              </span>
-            </div>
-            <div class="od-summary__row">
-              <span class="od-summary__row-label">Tax</span>
-              <span class="od-summary__row-value">{{ order.currency }} {{ order.tax_amount }}</span>
-            </div>
-            <div class="od-summary__divider"></div>
-            <div class="od-summary__total">
-              <span class="od-summary__total-label">Total</span>
-              <span class="od-summary__total-value">{{ order.currency }} {{ order.total_amount }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="od-actions">
-          {% if order.can_be_cancelled %}
-          <form method="POST" action="{% url 'orders:cancel_order' order.order_number %}"
-                onsubmit="return confirm('Are you sure you want to cancel this order?');"
-                style="margin:0;">
-            {% csrf_token %}
-            <button type="submit" class="od-btn od-btn--danger" style="width:100%;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
-              </svg>
-              Cancel Order
-            </button>
-          </form>
-          {% endif %}
-
-          <a href="{% url 'orders:track_order' order.order_number %}" class="od-btn od-btn--primary">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-            </svg>
-            Track Shipment
-          </a>
-
-          <a href="{% url 'orders:order_list' %}" class="od-btn od-btn--outline">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-            All Orders
-          </a>
-        </div>
-
-        <div class="od-help">
-          <h4 class="od-help__title">Need Help?</h4>
-          <p class="od-help__text">Our customer support team is ready to assist you with any questions about your order.</p>
-          <a href="/" class="od-help__link">
-            Contact Support
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </a>
-        </div>
-      </aside>
-
+      <div class="od-ta">
+        <span class="od-badge b-{{ order.status }}">
+          <span class="od-badge__dot"></span>{{ order.get_status_display }}
+        </span>
+        <a href="{% url 'orders:track_order' order.order_number %}" class="od-track-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Track Order
+        </a>
+      </div>
     </div>
   </div>
+
+  <div class="od-layout">
+  <main class="od-main">
+
+    <!-- Items -->
+    <section class="od-card">
+      <div class="od-ch">
+        <h2 class="od-ct">Order Items</h2>
+        <span class="od-cc">{{ order_items|length }} item(s)</span>
+      </div>
+      <div class="od-items">
+        {% for item in order_items %}
+        <article class="od-item">
+          <div class="od-item-img">
+            {% if item.product.images.first %}
+              <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product_name }}" loading="lazy">
+            {% elif item.product.image %}
+              <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}" loading="lazy">
+            {% else %}
+              <span style="font-size:30px">👓</span>
+            {% endif %}
+          </div>
+          <div class="od-item-body">
+            <h3 class="od-item-name">{{ item.product_name }}</h3>
+            <div class="od-item-meta">
+              {% if item.product_sku %}<span><span class="od-item-meta-lbl">SKU:</span> {{ item.product_sku }}</span>{% endif %}
+              {% if item.variant_details.color %}<span><span class="od-item-meta-lbl">Color:</span> {{ item.variant_details.color }}</span>{% endif %}
+              {% if item.variant_details.size %}<span><span class="od-item-meta-lbl">Size:</span> {{ item.variant_details.size }}</span>{% endif %}
+            </div>
+            {% if item.lens_option_name or item.lens_addons.all %}
+            <div class="od-item-pills">
+              {% if item.lens_option_name %}<span class="pill-lens">🔍 {{ item.lens_option_name }} ({{ order.currency }} {{ item.lens_price }})</span>{% endif %}
+              {% for addon in item.lens_addons.all %}<span class="pill-addon">+ {{ addon.addon_name }} ({{ order.currency }} {{ addon.price }})</span>{% endfor %}
+            </div>
+            {% endif %}
+            {% if item.special_instructions %}<p style="font-size:12px;color:var(--muted);margin-top:8px;font-style:italic">Note: {{ item.special_instructions }}</p>{% endif %}
+          </div>
+          <div class="od-item-right">
+            <span class="od-item-qty">Qty: {{ item.quantity }}</span>
+            <span class="od-item-each">{{ order.currency }} {{ item.unit_price }} each</span>
+            <span class="od-item-total">{{ order.currency }} {{ item.subtotal }}</span>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Shipping -->
+    <section class="od-card">
+      <div class="od-ch"><h2 class="od-ct">Shipping Address</h2></div>
+      <div class="od-addr">
+        <p class="od-addr-name">{{ order.customer_name }}</p>
+        <p class="od-addr-line">{{ order.shipping_address_line1 }}</p>
+        {% if order.shipping_address_line2 %}<p class="od-addr-line">{{ order.shipping_address_line2 }}</p>{% endif %}
+        <p class="od-addr-line">{{ order.shipping_city }}{% if order.shipping_state %}, {{ order.shipping_state }}{% endif %}{% if order.shipping_postal_code %} {{ order.shipping_postal_code }}{% endif %}</p>
+        <p class="od-addr-line">{{ order.shipping_country }}</p>
+        {% if order.customer_phone %}<p class="od-addr-phone">📞 {{ order.customer_phone }}</p>{% endif %}
+      </div>
+    </section>
+
+    <!-- Payment -->
+    <section class="od-card">
+      <div class="od-ch"><h2 class="od-ct">Payment Information</h2></div>
+      <div class="od-pay-rows">
+        <div class="od-pay-row">
+          <span class="od-pay-lbl">Method</span>
+          <span class="od-pay-val">
+            {% if order.payment_method == 'cash_on_delivery' %}💵 Cash on Delivery
+            {% elif order.payment_method == 'sadad' %}💚 Sadad
+            {% elif order.payment_method == 'stripe' %}💳 Credit/Debit Card
+            {% elif order.payment_method == 'razorpay' %}🏦 Razorpay
+            {% elif order.payment_method == 'paypal' %}🌐 PayPal
+            {% else %}{{ order.payment_method }}{% endif %}
+          </span>
+        </div>
+        <div class="od-pay-row">
+          <span class="od-pay-lbl">Status</span>
+          <span class="ps ps-{{ order.payment_status }}">{{ order.get_payment_status_display }}</span>
+        </div>
+        {% if order.payment_transaction_id %}
+        <div class="od-pay-row">
+          <span class="od-pay-lbl">Transaction ID</span>
+          <span class="od-pay-val" style="font-size:11px;word-break:break-all">{{ order.payment_transaction_id }}</span>
+        </div>
+        {% endif %}
+        {% if order.paid_at %}
+        <div class="od-pay-row">
+          <span class="od-pay-lbl">Paid At</span>
+          <span class="od-pay-val" style="font-size:12px">{{ order.paid_at|date:"M j, Y g:i A" }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- Timeline -->
+    {% if status_history %}
+    <section class="od-card">
+      <div class="od-ch"><h2 class="od-ct">Order History</h2></div>
+      <div class="od-tl">
+        {% for h in status_history %}
+        <div class="od-tl-item {% if forloop.first %}cur{% endif %}">
+          <div class="od-tl-dot-wrap"><div class="od-tl-dot"></div></div>
+          <div class="od-tl-body">
+            <p class="od-tl-status">{% if h.from_status %}{{ h.from_status|title }} → {% endif %}{{ h.to_status|title }}</p>
+            <p class="od-tl-time">{{ h.created_at|date:"M j, Y g:i A" }}</p>
+            {% if h.notes %}<p class="od-tl-notes">{{ h.notes }}</p>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+  </main>
+
+  <aside class="od-sidebar">
+    <div class="od-sum">
+      <h3 class="od-sum-title">Order Summary</h3>
+      <div class="od-sum-rows">
+        <div class="od-sum-row"><span class="od-sum-row-lbl">Subtotal</span><span class="od-sum-row-val">{{ order.currency }} {{ order.subtotal }}</span></div>
+        {% if order.discount_amount > 0 %}<div class="od-sum-row"><span class="od-sum-row-lbl">Discount</span><span class="od-sum-row-val" style="color:var(--green)">-{{ order.currency }} {{ order.discount_amount }}</span></div>{% endif %}
+        <div class="od-sum-row"><span class="od-sum-row-lbl">Shipping</span><span class="od-sum-row-val">{% if order.shipping_amount > 0 %}{{ order.currency }} {{ order.shipping_amount }}{% else %}Free{% endif %}</span></div>
+        <div class="od-sum-row"><span class="od-sum-row-lbl">Tax</span><span class="od-sum-row-val">{{ order.currency }} {{ order.tax_amount }}</span></div>
+        <div class="od-sum-div"></div>
+        <div class="od-sum-total"><span class="od-sum-total-lbl">Total</span><span class="od-sum-total-val">{{ order.currency }} {{ order.total_amount }}</span></div>
+      </div>
+    </div>
+
+    <div class="od-acts">
+      {% if order.can_be_cancelled %}
+      <form method="POST" action="{% url 'orders:cancel_order' order.order_number %}" onsubmit="return confirm('Cancel this order?');" style="margin:0">
+        {% csrf_token %}
+        <button type="submit" class="od-btn od-btn-danger" style="width:100%">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          Cancel Order
+        </button>
+      </form>
+      {% endif %}
+      <a href="{% url 'orders:track_order' order.order_number %}" class="od-btn od-btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Track Shipment
+      </a>
+      <a href="{% url 'orders:order_list' %}" class="od-btn od-btn-outline">← All Orders</a>
+    </div>
+
+    <div class="od-help">
+      <h4 class="od-help-title">Need Help?</h4>
+      <p class="od-help-text">Our support team is ready to assist with any questions about your order.</p>
+      <a href="/" class="od-help-link">Contact Support →</a>
+    </div>
+  </aside>
+  </div>
+</div>
 </div>
 
 <script>
-(function () {
-  if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) { e.target.classList.add('revealed'); io.unobserve(e.target); }
-      });
-    }, { threshold: 0.04 });
-    document.querySelectorAll('.od-card').forEach(el => io.observe(el));
+(function(){
+  var cards = document.querySelectorAll('.od-card');
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+    },{threshold:.04});
+    cards.forEach(function(el){io.observe(el);});
   } else {
-    document.querySelectorAll('.od-card').forEach(el => el.classList.add('revealed'));
+    cards.forEach(function(el){el.classList.add('in');});
   }
 })();
 </script>
