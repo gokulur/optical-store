@@ -611,56 +611,67 @@ def sadad_payment(request, order_number):
         return redirect('orders:checkout')
 
 
-@login_required
+@csrf_exempt    
 def sadad_payment_return(request):
     """
-    Sadad redirects the customer here after payment (success or failure).
-    Always verify server-side — never trust redirect params alone.
-    """
-    invoice_id = (
-        request.GET.get('invoiceId')
-        or request.GET.get('invoice_id')
-        or request.GET.get('id')
-    )
+    Sadad POSTs the payment result to CALLBACK_URL after payment.
+    Verify the checksumhash, then update the order.
 
-    if not invoice_id:
-        messages.error(request, 'Invalid payment return. No invoice reference found.')
+    NOTE: Sadad sends POST (not GET) to the callback URL.
+          We accept both just in case.
+    """
+    if request.method == 'POST':
+        post_data = request.POST.dict()
+    else:
+        post_data = request.GET.dict()
+
+    logger.info(f"Sadad callback received: {post_data}")
+
+    order_id = post_data.get('ORDERID', '')
+
+    if not order_id:
+        messages.error(request, 'Invalid payment callback. No order reference received.')
         return redirect('orders:order_list')
 
     try:
-        order = Order.objects.filter(
-            payment_transaction_id=invoice_id,
-            customer=request.user
-        ).first()
+        order = Order.objects.filter(order_number=order_id).first()
 
         if not order:
-            messages.error(request, 'Order not found for this payment reference.')
+            logger.error(f"Sadad callback: order not found for ORDERID={order_id}")
+            messages.error(request, 'Order not found.')
             return redirect('orders:order_list')
 
         if order.payment_status == 'completed':
             return redirect('orders:order_confirmation', order_number=order.order_number)
 
-        verify_result = SadadPaymentService.verify_payment(invoice_id)
+        # Verify the checksum and payment status
+        verify_result = SadadPaymentService.verify_callback(post_data)
 
-        if verify_result.get('paid'):
-            _mark_order_paid(request, order, verify_result)
+        if verify_result['paid']:
+            _mark_order_paid_sadad(order, verify_result)
             messages.success(request, '✅ Payment successful! Your order is confirmed.')
             return redirect('orders:order_confirmation', order_number=order.order_number)
         else:
-            order.payment_status = 'failed'
+            # Payment failed or checksum invalid
+            order.payment_status           = 'failed'
+            order.payment_gateway_response = post_data
             order.save()
+
+            resp_msg = verify_result.get('resp_msg', '')
+            if not verify_result['checksum_valid']:
+                resp_msg = 'Security verification failed. Please contact support.'
+
             messages.error(
                 request,
-                f"Payment was not completed (status: {verify_result.get('status', 'unknown')}). "
-                "Please try again or contact support."
+                f"Payment was not completed. {resp_msg} "
+                "Please try again or choose a different payment method."
             )
             return redirect('orders:checkout')
 
     except Exception as e:
         logger.error(f"sadad_payment_return error: {e}", exc_info=True)
-        messages.error(request, f'Error verifying payment: {str(e)}')
+        messages.error(request, f'Error processing payment: {str(e)}')
         return redirect('orders:order_list')
-
 
 @csrf_exempt
 @require_POST
