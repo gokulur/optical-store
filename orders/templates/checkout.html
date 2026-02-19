@@ -3,10 +3,8 @@
 {% block title %}Checkout — Secure Order{% endblock %}
 
 {% block content %}
-<!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
-<!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
@@ -31,62 +29,53 @@
   --serif:    'DM Serif Display', serif;
   --transition: all .2s cubic-bezier(.4,0,.2,1);
 }
-
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
 body.checkout-active{background:var(--surface);font-family:var(--font);color:var(--ink)}
 
-/* ── LAYOUT ─────────────────────────────────── */
 .ck-wrap{min-height:100vh;padding:40px 20px 80px}
 .ck-inner{max-width:1180px;margin:0 auto}
 
-/* Hero bar */
 .ck-hero{text-align:center;margin-bottom:44px}
 .ck-hero-eyebrow{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
 .ck-hero h1{font-family:var(--serif);font-size:clamp(28px,4vw,42px);font-weight:400;color:var(--ink);line-height:1.1}
 
-/* Progress */
 .ck-progress{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:48px}
 .ck-step{display:flex;align-items:center;gap:10px;padding:12px 24px;border-radius:40px;font-size:13px;font-weight:600;color:var(--ghost);letter-spacing:.3px}
 .ck-step.done{color:var(--green)}
 .ck-step.active{background:var(--ink);color:var(--white)}
-.ck-step-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:currentColor;color:transparent;position:relative;flex-shrink:0}
-.ck-step-num::after{content:attr(data-n);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:inherit;font-size:12px}
-.ck-step.done .ck-step-num{background:var(--green-bg);color:var(--green)}
-.ck-step.done .ck-step-num::after{content:'✓';color:var(--green)}
+.ck-step-num{width:26px;height:26px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;position:relative}
+.ck-step.done .ck-step-num::after{content:'✓'}
 .ck-step.active .ck-step-num{background:var(--white);color:var(--ink)}
-.ck-step.active .ck-step-num::after{color:var(--ink)}
-.ck-step-num[data-n]{background:transparent;border:2px solid currentColor}
+.ck-step:not(.done) .ck-step-num::after{content:attr(data-n)}
+.ck-step.done .ck-step-num{background:var(--green-bg);border-color:var(--green);color:var(--green)}
 .ck-divider-line{width:60px;height:1px;background:var(--line)}
 
-/* Grid */
 .ck-grid{display:grid;grid-template-columns:1fr 400px;gap:28px;align-items:start}
 
-/* Cards */
 .ck-card{background:var(--white);border-radius:var(--r);border:1px solid var(--line);padding:36px;box-shadow:var(--shadow)}
-.ck-card + .ck-card{margin-top:20px}
+.ck-card+.ck-card{margin-top:20px}
 
-/* Section headers */
 .ck-section-head{display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--line)}
 .ck-section-badge{width:32px;height:32px;border-radius:50%;background:var(--ink);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
 .ck-section-info h2{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:2px}
 .ck-section-info p{font-size:13px;color:var(--muted)}
 
-/* Form elements */
-.ck-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .ck-field{margin-bottom:20px}
 .ck-label{display:block;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink2);margin-bottom:8px}
 .ck-input{width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:14px;font-family:var(--font);color:var(--ink);background:var(--white);transition:var(--transition);outline:none}
 .ck-input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(15,15,15,.08)}
 .ck-input::placeholder{color:var(--ghost)}
-.ck-input.error{border-color:var(--error)}
+select.ck-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a7a7a' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
 .ck-error-msg{font-size:12px;color:var(--error);margin-top:5px;display:none}
 .ck-field.invalid .ck-error-msg{display:block}
 .ck-field.invalid .ck-input{border-color:var(--error)}
+.ck-field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 
-select.ck-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a7a7a' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
-
-textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
+/* Alert messages */
+.ck-alert{padding:12px 16px;border-radius:var(--r-sm);margin-bottom:20px;font-size:14px;display:flex;align-items:flex-start;gap:10px}
+.ck-alert-error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+.ck-alert-success{background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green)}
 
 /* Address cards */
 .addr-cards{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
@@ -94,23 +83,19 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
 .addr-card-wrap input[type=radio]{position:absolute;opacity:0;width:0;height:0}
 .addr-card-label{display:block;padding:16px 20px 16px 48px;border:1.5px solid var(--line);border-radius:var(--r-sm);cursor:pointer;transition:var(--transition);position:relative}
 .addr-card-label::before{content:'';position:absolute;left:18px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;border:2px solid var(--line);transition:var(--transition)}
-.addr-card-wrap input:checked + .addr-card-label{border-color:var(--ink);background:#fafafa}
-.addr-card-wrap input:checked + .addr-card-label::before{border-color:var(--ink);background:var(--ink);box-shadow:inset 0 0 0 4px var(--white)}
-.addr-card-label:hover{border-color:var(--ghost)}
+.addr-card-wrap input:checked+.addr-card-label{border-color:var(--ink);background:#fafafa}
+.addr-card-wrap input:checked+.addr-card-label::before{border-color:var(--ink);background:var(--ink);box-shadow:inset 0 0 0 4px var(--white)}
 .addr-name{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px}
 .addr-line{font-size:13px;color:var(--muted);line-height:1.5}
 .addr-badge{display:inline-block;margin-top:6px;padding:2px 8px;background:var(--green-bg);color:var(--green);border-radius:20px;font-size:11px;font-weight:600}
 
-/* Add address link */
 .add-addr-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border:1.5px dashed var(--line);border-radius:var(--r-sm);font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;transition:var(--transition);margin-top:4px}
 .add-addr-btn:hover{border-color:var(--ink);color:var(--ink)}
 
-/* Map picker button */
+/* Map picker */
 .map-pick-btn{width:100%;padding:15px;border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--surface);display:flex;align-items:center;justify-content:center;gap:12px;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;transition:var(--transition);margin-bottom:20px}
 .map-pick-btn:hover{border-color:var(--ink);background:var(--white)}
-.map-pick-btn svg{flex-shrink:0}
 
-/* Location confirmed */
 .loc-confirmed{display:none;padding:14px 16px;background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:var(--r-sm);margin-bottom:20px}
 .loc-confirmed.show{display:flex;align-items:flex-start;gap:12px}
 .loc-confirmed-icon{font-size:18px;flex-shrink:0;margin-top:1px}
@@ -119,7 +104,7 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
 .loc-change-btn{background:none;border:none;font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0;margin-top:6px;font-family:var(--font)}
 .loc-change-btn:hover{color:var(--ink)}
 
-/* Same billing toggle */
+/* Billing toggle */
 .ck-toggle-row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surface);border-radius:var(--r-sm);margin-bottom:20px;cursor:pointer}
 .ck-toggle-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--ink);cursor:pointer;flex-shrink:0}
 .ck-toggle-label{font-size:14px;font-weight:500;color:var(--ink);cursor:pointer;user-select:none}
@@ -130,26 +115,24 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
 .pay-opt-wrap input[type=radio]{position:absolute;opacity:0;width:0;height:0}
 .pay-opt-label{display:flex;align-items:center;gap:16px;padding:16px 20px;border:1.5px solid var(--line);border-radius:var(--r-sm);cursor:pointer;transition:var(--transition)}
 .pay-opt-label:hover{border-color:var(--ghost)}
-.pay-opt-wrap input:checked + .pay-opt-label{border-color:var(--ink);background:#fafafa}
+.pay-opt-wrap input:checked+.pay-opt-label{border-color:var(--ink);background:#fafafa}
 .pay-radio-circle{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;transition:var(--transition);position:relative}
-.pay-opt-wrap input:checked + .pay-opt-label .pay-radio-circle{border-color:var(--ink);background:var(--ink)}
-.pay-opt-wrap input:checked + .pay-opt-label .pay-radio-circle::after{content:'';position:absolute;width:6px;height:6px;background:var(--white);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
+.pay-opt-wrap input:checked+.pay-opt-label .pay-radio-circle{border-color:var(--ink);background:var(--ink)}
+.pay-opt-wrap input:checked+.pay-opt-label .pay-radio-circle::after{content:'';position:absolute;width:6px;height:6px;background:var(--white);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
 .pay-opt-icon{font-size:22px}
 .pay-opt-info strong{display:block;font-size:14px;font-weight:700;color:var(--ink)}
 .pay-opt-info span{font-size:12px;color:var(--muted)}
 .pay-opt-tag{margin-left:auto;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:var(--green-bg);color:var(--green)}
 
-/* Sadad sub-panel */
 .sadad-info{margin-top:12px;padding:14px 16px;background:#f0faf5;border-radius:var(--r-sm);border:1px solid var(--green-bd);font-size:13px;color:var(--green);display:none}
 .sadad-info.show{display:block}
 .sadad-methods{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .sadad-method-pill{padding:4px 12px;border:1px solid var(--green-bd);border-radius:20px;font-size:11px;font-weight:600;color:var(--green);background:var(--white)}
 
-/* Card fields */
 .card-fields{display:none;margin-top:16px;padding:16px;background:var(--surface);border-radius:var(--r-sm)}
 .card-fields.show{display:block}
 
-/* ── ORDER SUMMARY ───────────────────────────── */
+/* Order Summary */
 .ck-summary{background:var(--white);border-radius:var(--r);border:1px solid var(--line);padding:28px;position:sticky;top:24px;box-shadow:var(--shadow)}
 .ck-summary-title{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ink);margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--line)}
 .ck-item{display:flex;gap:14px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
@@ -166,7 +149,6 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
 .ck-tot-final{display:flex;justify-content:space-between;margin-top:12px;padding-top:14px;border-top:2px solid var(--ink)}
 .ck-tot-final span{font-size:18px;font-weight:700;color:var(--ink)}
 
-/* Coupon */
 .ck-coupon{display:flex;gap:8px;margin:16px 0}
 .ck-coupon input{flex:1;padding:10px 14px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:13px;font-family:var(--font);outline:none;transition:var(--transition)}
 .ck-coupon input:focus{border-color:var(--ink)}
@@ -175,17 +157,16 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
 
 /* Place order button */
 .ck-place-btn{width:100%;margin-top:20px;padding:17px;background:var(--ink);color:var(--white);border:none;border-radius:var(--r-sm);font-size:15px;font-weight:700;letter-spacing:.5px;cursor:pointer;font-family:var(--font);transition:var(--transition);position:relative;overflow:hidden}
-.ck-place-btn:hover{background:#000;transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.ck-place-btn:hover:not(:disabled){background:#000;transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
 .ck-place-btn:active{transform:translateY(0)}
-.ck-place-btn.loading{pointer-events:none}
+.ck-place-btn:disabled{opacity:.7;cursor:not-allowed}
 .ck-place-btn .btn-text{transition:opacity .2s}
 .ck-place-btn.loading .btn-text{opacity:0}
 .ck-place-btn .btn-spinner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-top-color:var(--white);border-radius:50%;animation:spin .8s linear infinite;display:none}
 .ck-place-btn.loading .btn-spinner{display:block}
-
 .ck-secure{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;font-size:12px;color:var(--muted)}
 
-/* ── MAP MODAL ───────────────────────────────── */
+/* MAP MODAL */
 .map-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .map-overlay.open{display:flex}
 .map-modal{width:min(96vw,980px);height:min(90vh,700px);background:var(--white);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);animation:modalIn .3s cubic-bezier(.4,0,.2,1)}
@@ -216,16 +197,12 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
 .map-spinner-sm{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Validation helpers */
-.ck-field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-
-/* Responsive */
 @media(max-width:900px){.ck-grid{grid-template-columns:1fr}.ck-summary{position:static}}
 @media(max-width:600px){
   .ck-wrap{padding:20px 12px 60px}
   .ck-card{padding:22px}
   .ck-hero h1{font-size:26px}
-  .ck-field-row,.ck-row{grid-template-columns:1fr}
+  .ck-field-row{grid-template-columns:1fr}
   .map-search-bar{flex-direction:column}
   .map-footer{flex-direction:column;align-items:stretch}
   .map-confirm-btn{width:100%}
@@ -245,7 +222,7 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
     <h1>Secure Checkout</h1>
   </div>
 
-  <!-- Progress steps -->
+  <!-- Progress -->
   <div class="ck-progress">
     <div class="ck-step done">
       <div class="ck-step-num" data-n="1"></div>
@@ -263,14 +240,26 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
     </div>
   </div>
 
+  <!-- Django Messages -->
+  {% if messages %}
+  <div style="margin-bottom:24px">
+    {% for message in messages %}
+    <div class="ck-alert {% if message.tags == 'error' %}ck-alert-error{% else %}ck-alert-success{% endif %}">
+      <span>{% if message.tags == 'error' %}⚠️{% else %}✅{% endif %}</span>
+      <span>{{ message }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <div class="ck-grid">
 
-    <!-- ══ LEFT COLUMN ══════════════════════════════════════ -->
+    <!-- LEFT COLUMN -->
     <div>
       <form id="checkoutForm" method="POST" action="{% url 'orders:place_order' %}" novalidate>
         {% csrf_token %}
 
-        <!-- ── 1. SHIPPING ADDRESS ──────────────────────── -->
+        <!-- 1. SHIPPING ADDRESS -->
         <div class="ck-card">
           <div class="ck-section-head">
             <div class="ck-section-badge">1</div>
@@ -287,7 +276,7 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
                 <input type="radio" name="shipping_address_id"
                        id="addr_{{ address.id }}"
                        value="{{ address.id }}"
-                       {% if address == default_shipping %}checked{% endif %}
+                       {% if address == default_shipping or forloop.first %}checked{% endif %}
                        required>
                 <label class="addr-card-label" for="addr_{{ address.id }}">
                   <div class="addr-name">{{ address.full_name }}</div>
@@ -325,52 +314,51 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
               </div>
             </div>
 
-            <input type="hidden" id="delivery_latitude" name="delivery_latitude">
+            <input type="hidden" id="delivery_latitude"  name="delivery_latitude">
             <input type="hidden" id="delivery_longitude" name="delivery_longitude">
 
-            <!-- Personal info -->
             <div class="ck-field-row">
               <div class="ck-field" id="field_full_name">
-                <label class="ck-label" for="full_name">Full Name</label>
+                <label class="ck-label" for="full_name">Full Name *</label>
                 <input class="ck-input" type="text" id="full_name" name="full_name"
                        value="{% if user.is_authenticated %}{{ user.get_full_name }}{% endif %}"
-                       placeholder="John Doe" required>
+                       placeholder="John Doe" required autocomplete="name">
                 <div class="ck-error-msg">Please enter your full name</div>
               </div>
               <div class="ck-field" id="field_phone">
-                <label class="ck-label" for="phone">Phone Number</label>
+                <label class="ck-label" for="phone">Phone Number *</label>
                 <input class="ck-input" type="tel" id="phone" name="phone"
-                       placeholder="+974 5555 1234" required>
-                <div class="ck-error-msg">Please enter a valid phone number</div>
+                       placeholder="+974 5555 1234" required autocomplete="tel">
+                <div class="ck-error-msg">Please enter a phone number</div>
               </div>
             </div>
 
             <div class="ck-field" id="field_email">
-              <label class="ck-label" for="email">Email Address</label>
+              <label class="ck-label" for="email">Email Address *</label>
               <input class="ck-input" type="email" id="email" name="email"
                      value="{% if user.is_authenticated %}{{ user.email }}{% endif %}"
-                     placeholder="john@example.com" required>
-              <div class="ck-error-msg">Please enter a valid email address</div>
+                     placeholder="john@example.com" required autocomplete="email">
+              <div class="ck-error-msg">Please enter a valid email</div>
             </div>
 
             <div class="ck-field" id="field_address_line1">
-              <label class="ck-label" for="address_line1">Street Address</label>
+              <label class="ck-label" for="address_line1">Street Address *</label>
               <input class="ck-input" type="text" id="address_line1" name="address_line1"
-                     placeholder="Building, Street, Area" required>
+                     placeholder="Building, Street, Area" required autocomplete="street-address">
               <div class="ck-error-msg">Street address is required</div>
             </div>
 
             <div class="ck-field-row">
               <div class="ck-field" id="field_city">
-                <label class="ck-label" for="city">City</label>
+                <label class="ck-label" for="city">City *</label>
                 <input class="ck-input" type="text" id="city" name="city"
-                       placeholder="Doha" required>
+                       placeholder="Doha" required autocomplete="address-level2">
                 <div class="ck-error-msg">City is required</div>
               </div>
-              <div class="ck-field" id="field_postal_code">
+              <div class="ck-field">
                 <label class="ck-label" for="postal_code">Postal Code</label>
                 <input class="ck-input" type="text" id="postal_code" name="postal_code"
-                       placeholder="00974">
+                       placeholder="00974" autocomplete="postal-code">
               </div>
             </div>
 
@@ -381,16 +369,16 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
                        placeholder="e.g. Al Wakra">
               </div>
               <div class="ck-field" id="field_country">
-                <label class="ck-label" for="country">Country</label>
+                <label class="ck-label" for="country">Country *</label>
                 <input class="ck-input" type="text" id="country" name="country"
-                       value="Qatar" required>
+                       value="Qatar" required autocomplete="country-name">
                 <div class="ck-error-msg">Country is required</div>
               </div>
             </div>
           {% endif %}
         </div>
 
-        <!-- ── 2. BILLING ADDRESS ───────────────────────── -->
+        <!-- 2. BILLING ADDRESS -->
         <div class="ck-card">
           <div class="ck-section-head">
             <div class="ck-section-badge">2</div>
@@ -412,7 +400,7 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
                 <div class="addr-card-wrap">
                   <input type="radio" name="billing_address_id"
                          id="baddr_{{ address.id }}" value="{{ address.id }}"
-                         {% if address == default_billing %}checked{% endif %}>
+                         {% if address == default_billing or forloop.first %}checked{% endif %}>
                   <label class="addr-card-label" for="baddr_{{ address.id }}">
                     <div class="addr-name">{{ address.full_name }}</div>
                     <div class="addr-line">{{ address.address_line1 }}, {{ address.city }}</div>
@@ -449,7 +437,7 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
           </div>
         </div>
 
-        <!-- ── 3. PAYMENT METHOD ────────────────────────── -->
+        <!-- 3. PAYMENT METHOD -->
         <div class="ck-card">
           <div class="ck-section-head">
             <div class="ck-section-badge">3</div>
@@ -461,10 +449,8 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
 
           <div class="pay-opts">
 
-            <!-- Cash on delivery -->
             <div class="pay-opt-wrap">
-              <input type="radio" name="payment_method" id="pm_cod"
-                     value="cash_on_delivery" checked required onchange="onPaymentChange()">
+              <input type="radio" name="payment_method" id="pm_cod" value="cash_on_delivery" checked required onchange="onPaymentChange()">
               <label class="pay-opt-label" for="pm_cod">
                 <div class="pay-radio-circle"></div>
                 <div class="pay-opt-icon">💵</div>
@@ -476,10 +462,8 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
               </label>
             </div>
 
-            <!-- Sadad -->
             <div class="pay-opt-wrap">
-              <input type="radio" name="payment_method" id="pm_sadad"
-                     value="sadad" onchange="onPaymentChange()">
+              <input type="radio" name="payment_method" id="pm_sadad" value="sadad" onchange="onPaymentChange()">
               <label class="pay-opt-label" for="pm_sadad">
                 <div class="pay-radio-circle"></div>
                 <div class="pay-opt-icon">💚</div>
@@ -499,35 +483,30 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
               </div>
             </div>
 
-            <!-- Stripe card -->
             <div class="pay-opt-wrap">
-              <input type="radio" name="payment_method" id="pm_stripe"
-                     value="stripe" onchange="onPaymentChange()">
+              <input type="radio" name="payment_method" id="pm_stripe" value="stripe" onchange="onPaymentChange()">
               <label class="pay-opt-label" for="pm_stripe">
                 <div class="pay-radio-circle"></div>
                 <div class="pay-opt-icon">💳</div>
                 <div class="pay-opt-info">
                   <strong>Credit / Debit Card</strong>
-                  <span>Visa, Mastercard, Amex — powered by Stripe</span>
+                  <span>Visa, Mastercard — powered by Stripe</span>
                 </div>
               </label>
             </div>
             <div class="card-fields" id="stripeFields">
               <div class="ck-field">
                 <label class="ck-label">Card Number</label>
-                <input class="ck-input" type="text" id="cardNumber"
-                       placeholder="1234 5678 9012 3456" maxlength="19" inputmode="numeric">
+                <input class="ck-input" type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" inputmode="numeric">
               </div>
               <div class="ck-field-row">
                 <div class="ck-field">
                   <label class="ck-label">Expiry</label>
-                  <input class="ck-input" type="text" id="cardExpiry"
-                         placeholder="MM / YY" maxlength="7" inputmode="numeric">
+                  <input class="ck-input" type="text" id="cardExpiry" placeholder="MM / YY" maxlength="7" inputmode="numeric">
                 </div>
                 <div class="ck-field">
                   <label class="ck-label">CVC</label>
-                  <input class="ck-input" type="text" id="cardCvc"
-                         placeholder="123" maxlength="4" inputmode="numeric">
+                  <input class="ck-input" type="text" id="cardCvc" placeholder="123" maxlength="4" inputmode="numeric">
                 </div>
               </div>
               <div class="ck-field">
@@ -536,10 +515,8 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
               </div>
             </div>
 
-            <!-- Razorpay -->
             <div class="pay-opt-wrap">
-              <input type="radio" name="payment_method" id="pm_razorpay"
-                     value="razorpay" onchange="onPaymentChange()">
+              <input type="radio" name="payment_method" id="pm_razorpay" value="razorpay" onchange="onPaymentChange()">
               <label class="pay-opt-label" for="pm_razorpay">
                 <div class="pay-radio-circle"></div>
                 <div class="pay-opt-icon">🏦</div>
@@ -550,10 +527,8 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
               </label>
             </div>
 
-            <!-- PayPal -->
             <div class="pay-opt-wrap">
-              <input type="radio" name="payment_method" id="pm_paypal"
-                     value="paypal" onchange="onPaymentChange()">
+              <input type="radio" name="payment_method" id="pm_paypal" value="paypal" onchange="onPaymentChange()">
               <label class="pay-opt-label" for="pm_paypal">
                 <div class="pay-radio-circle"></div>
                 <div class="pay-opt-icon">🌐</div>
@@ -567,7 +542,7 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
           </div>
         </div>
 
-        <!-- ── 4. ORDER NOTES ────────────────────────────── -->
+        <!-- 4. ORDER NOTES -->
         <div class="ck-card">
           <div class="ck-section-head">
             <div class="ck-section-badge">4</div>
@@ -580,10 +555,10 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
                     placeholder="E.g. Please leave at the door, ring twice…"></textarea>
         </div>
 
-      </form><!-- /form — button is OUTSIDE to avoid nested-form issues, uses form="checkoutForm" -->
+      </form>
     </div>
 
-    <!-- ══ RIGHT COLUMN — SUMMARY ════════════════════════════ -->
+    <!-- RIGHT COLUMN — SUMMARY -->
     <div>
       <div class="ck-summary">
         <div class="ck-summary-title">Your Order</div>
@@ -597,9 +572,9 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
           {% endif %}
           <div class="ck-item-body">
             <div class="ck-item-name">{{ item.product.name }}</div>
-            <div class="ck-item-sub">Qty {{ item.quantity }} &middot; {{ order.currency|default:"QAR" }} {{ item.unit_price }}</div>
+            <div class="ck-item-sub">Qty {{ item.quantity }} &middot; QAR {{ item.unit_price }}</div>
           </div>
-          <div class="ck-item-price">{{ order.currency|default:"QAR" }} {% widthratio item.unit_price 1 item.quantity %}</div>
+          <div class="ck-item-price">QAR {{ item.unit_price }}</div>
         </div>
         {% endfor %}
 
@@ -618,15 +593,21 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
           </div>
           <div class="ck-tot-row">
             <span>Shipping</span>
-            <span>{% if shipping == 0 %}<span style="color:var(--green);font-weight:700">FREE</span>{% else %}QAR {{ shipping }}{% endif %}</span>
+            <span>
+              {% if shipping == 0 %}
+                <span style="color:var(--green);font-weight:700">FREE</span>
+              {% else %}
+                QAR {{ shipping }}
+              {% endif %}
+            </span>
           </div>
           <div class="ck-tot-row">
             <span>Tax</span>
             <span>QAR {{ tax }}</span>
           </div>
-          <div class="ck-tot-row" id="discountRow" style="display:none;color:var(--green)">
-            <span>Discount</span>
-            <span id="discountAmt">—</span>
+          <div class="ck-tot-row" id="discountRow" style="display:none">
+            <span style="color:var(--green)">Discount</span>
+            <span id="discountAmt" style="color:var(--green)">—</span>
           </div>
         </div>
 
@@ -635,14 +616,16 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
           <span id="totalDisplay">QAR {{ total }}</span>
         </div>
 
-        <!-- Place order -->
+        <!-- Place Order Button -->
         <button type="submit" form="checkoutForm" class="ck-place-btn" id="placeOrderBtn" onclick="handleSubmit(event)">
           <span class="btn-text">Place Order →</span>
           <div class="btn-spinner"></div>
         </button>
 
         <div class="ck-secure">
-          <svg width="12" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C8 2 5 5 5 9v3H3v10h18V12h-2V9c0-4-3-7-7-7zm0 13a2 2 0 100-4 2 2 0 000 4z"/></svg>
+          <svg width="12" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C8 2 5 5 5 9v3H3v10h18V12h-2V9c0-4-3-7-7-7zm0 13a2 2 0 100-4 2 2 0 000 4z"/>
+          </svg>
           256-bit SSL encrypted &bull; PCI DSS compliant
         </div>
       </div>
@@ -652,11 +635,11 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
 </div><!-- /ck-inner -->
 </div><!-- /ck-wrap -->
 
-<!-- ══ MAP MODAL ══════════════════════════════════════════════ -->
+<!-- MAP MODAL -->
 <div id="mapOverlay" class="map-overlay" onclick="overlayClick(event)">
   <div class="map-modal">
     <div class="map-head">
-      <h3>Pin Delivery Location</h3>
+      <h3>📍 Pin Delivery Location</h3>
       <button class="map-close" onclick="closeMap()" type="button">
         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -671,8 +654,7 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
           </svg>
         </span>
         <input type="text" id="mapSearch" class="map-search-input"
-               placeholder="Search city, area, or landmark…"
-               onkeydown="if(event.key==='Enter'){e.preventDefault();searchLocation()}">
+               placeholder="Search city, area, or landmark…">
       </div>
       <button type="button" class="map-loc-btn" onclick="useMyLocation()">
         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -694,8 +676,7 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
         <div class="map-foot-addr" id="mapFootAddr">Click anywhere on the map to drop a pin</div>
         <div class="map-foot-coords" id="mapFootCoords"></div>
       </div>
-      <button type="button" class="map-confirm-btn" id="mapConfirmBtn"
-              onclick="confirmLocation()" disabled>
+      <button type="button" class="map-confirm-btn" id="mapConfirmBtn" onclick="confirmLocation()" disabled>
         Confirm Location
       </button>
     </div>
@@ -704,62 +685,49 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-/* ═════════════════════════════════════════════
-   GLOBAL STATE
-═════════════════════════════════════════════ */
+/* ── MAP ── */
 let map = null, marker = null, accuracyRing = null;
 let selLat = null, selLng = null, selAddr = '';
 
-/* ═════════════════════════════════════════════
-   MAP MODAL
-═════════════════════════════════════════════ */
 const pin = L.divIcon({
   className: '',
-  html: `<div style="
-    width:36px;height:36px;background:#0f0f0f;
-    border:3px solid #fff;border-radius:50% 50% 50% 0;
-    transform:rotate(-45deg);
-    box-shadow:0 4px 14px rgba(0,0,0,.35);
-    display:flex;align-items:center;justify-content:center;
-  "><div style="width:10px;height:10px;background:#fff;border-radius:50%;transform:rotate(45deg)"></div></div>`,
+  html: `<div style="width:36px;height:36px;background:#0f0f0f;border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 4px 14px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;">
+           <div style="width:10px;height:10px;background:#fff;border-radius:50%;transform:rotate(45deg)"></div>
+         </div>`,
   iconSize:[36,36], iconAnchor:[18,36]
 });
 
 function openMap(){
   document.getElementById('mapOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  document.body.style.overflow='hidden';
   setTimeout(initMap, 280);
 }
 function closeMap(){
   document.getElementById('mapOverlay').classList.remove('open');
-  document.body.style.overflow = '';
+  document.body.style.overflow='';
 }
 function overlayClick(e){
-  if(e.target === document.getElementById('mapOverlay')) closeMap();
+  if(e.target===document.getElementById('mapOverlay')) closeMap();
 }
-
 function initMap(){
   if(map){ map.remove(); map=null; }
-  const defaultCenter = [25.2854, 51.5310]; // Doha, Qatar
-  map = L.map('deliveryMap',{center:defaultCenter,zoom:12,zoomControl:true,maxZoom:19});
+  map = L.map('deliveryMap',{center:[25.2854,51.5310],zoom:12,maxZoom:19});
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     attribution:'© OpenStreetMap contributors',maxZoom:19
   }).addTo(map);
   map.on('click', e => placeMarker(e.latlng.lat, e.latlng.lng));
 }
-
-function placeMarker(lat, lng){
+function placeMarker(lat,lng){
   if(marker) map.removeLayer(marker);
   if(accuracyRing) map.removeLayer(accuracyRing);
   marker = L.marker([lat,lng],{icon:pin}).addTo(map);
   selLat=lat; selLng=lng;
   document.getElementById('mapConfirmBtn').disabled=false;
-  reverseGeocode(lat, lng);
+  reverseGeocode(lat,lng);
 }
-
-async function reverseGeocode(lat, lng){
-  document.getElementById('mapFootAddr').textContent = 'Looking up address…';
-  document.getElementById('mapFootCoords').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+async function reverseGeocode(lat,lng){
+  document.getElementById('mapFootAddr').textContent='Looking up address…';
+  document.getElementById('mapFootCoords').textContent=`${lat.toFixed(6)}, ${lng.toFixed(6)}`;
   try{
     const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
     const d = await r.json();
@@ -771,201 +739,153 @@ async function reverseGeocode(lat, lng){
     if(a.city||a.town||a.village) parts.push(a.city||a.town||a.village);
     if(a.state) parts.push(a.state);
     if(a.country) parts.push(a.country);
-    selAddr = parts.length ? parts.join(', ') : d.display_name||`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    selAddr = parts.length ? parts.join(', ') : (d.display_name||`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
     document.getElementById('mapFootAddr').textContent = selAddr;
-    // Auto-fill form fields
-    const city = a.city||a.town||a.village||'';
+    const city   = a.city||a.town||a.village||'';
     const street = [a.house_number,a.road,a.neighbourhood].filter(Boolean).join(', ');
-    if(document.getElementById('address_line1')) document.getElementById('address_line1').value = street;
-    if(document.getElementById('city') && city) document.getElementById('city').value = city;
-    if(document.getElementById('postal_code') && a.postcode) document.getElementById('postal_code').value = a.postcode;
-  } catch(e){
-    selAddr = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-    document.getElementById('mapFootAddr').textContent = selAddr;
+    if(document.getElementById('address_line1')) document.getElementById('address_line1').value=street;
+    if(document.getElementById('city')&&city) document.getElementById('city').value=city;
+    if(document.getElementById('postal_code')&&a.postcode) document.getElementById('postal_code').value=a.postcode;
+  }catch(e){
+    selAddr=`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    document.getElementById('mapFootAddr').textContent=selAddr;
   }
 }
-
 async function searchLocation(){
-  const q = document.getElementById('mapSearch').value.trim();
+  const q=document.getElementById('mapSearch').value.trim();
   if(!q) return;
   showMapLoader(true);
   try{
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`);
-    const d = await r.json();
-    if(d.length){
-      const lat=parseFloat(d[0].lat), lng=parseFloat(d[0].lon);
-      map.setView([lat,lng],17);
-      placeMarker(lat,lng);
-    } else {
-      alert('Location not found. Try a different search term.');
-    }
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`);
+    const d=await r.json();
+    if(d.length){ const lat=parseFloat(d[0].lat),lng=parseFloat(d[0].lon); map.setView([lat,lng],17); placeMarker(lat,lng); }
+    else alert('Location not found. Try a different search term.');
   }catch(e){ alert('Search failed. Check your connection.'); }
   showMapLoader(false);
 }
-
 function useMyLocation(){
-  if(!navigator.geolocation){ alert('Geolocation is not supported by your browser.'); return; }
+  if(!navigator.geolocation){ alert('Geolocation not supported.'); return; }
   showMapLoader(true);
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const {latitude:lat, longitude:lng, accuracy} = pos.coords;
-    map.setView([lat,lng],17);
-    placeMarker(lat,lng);
-    if(accuracyRing) map.removeLayer(accuracyRing);
-    accuracyRing = L.circle([lat,lng],{
-      radius:accuracy,color:'#1a7a4a',
-      fillColor:'#1a7a4a',fillOpacity:.12,weight:1.5
-    }).addTo(map);
-    showMapLoader(false);
-  },
-  err=>{ alert('Could not get your location. Try searching instead.'); showMapLoader(false); },
-  {enableHighAccuracy:true,timeout:12000,maximumAge:0});
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      const {latitude:lat,longitude:lng,accuracy}=pos.coords;
+      map.setView([lat,lng],17); placeMarker(lat,lng);
+      if(accuracyRing) map.removeLayer(accuracyRing);
+      accuracyRing=L.circle([lat,lng],{radius:accuracy,color:'#1a7a4a',fillColor:'#1a7a4a',fillOpacity:.12,weight:1.5}).addTo(map);
+      showMapLoader(false);
+    },
+    ()=>{ alert('Could not get your location. Try searching instead.'); showMapLoader(false); },
+    {enableHighAccuracy:true,timeout:12000,maximumAge:0}
+  );
 }
-
-function showMapLoader(on){
-  document.getElementById('mapLoadingOverlay').classList.toggle('on',on);
-}
-
+function showMapLoader(on){ document.getElementById('mapLoadingOverlay').classList.toggle('on',on); }
 function confirmLocation(){
   if(!selLat||!selLng){ alert('Please select a location on the map first.'); return; }
-  document.getElementById('delivery_latitude').value = selLat;
-  document.getElementById('delivery_longitude').value = selLng;
-  // Show confirmed box
-  document.getElementById('locAddr').textContent = selAddr;
-  document.getElementById('locCoords').textContent = `Lat ${selLat.toFixed(6)} · Lng ${selLng.toFixed(6)}`;
+  document.getElementById('delivery_latitude').value=selLat;
+  document.getElementById('delivery_longitude').value=selLng;
+  document.getElementById('locAddr').textContent=selAddr;
+  document.getElementById('locCoords').textContent=`Lat ${selLat.toFixed(6)} · Lng ${selLng.toFixed(6)}`;
   document.getElementById('locConfirmed').classList.add('show');
   closeMap();
 }
-
-// Search on Enter
 document.addEventListener('DOMContentLoaded',()=>{
-  const s = document.getElementById('mapSearch');
-  if(s) s.addEventListener('keypress', e=>{ if(e.key==='Enter'){e.preventDefault();searchLocation();} });
+  const s=document.getElementById('mapSearch');
+  if(s) s.addEventListener('keypress',e=>{ if(e.key==='Enter'){e.preventDefault();searchLocation();} });
 });
-document.addEventListener('keydown', e=>{
-  if(e.key==='Escape' && document.getElementById('mapOverlay').classList.contains('open')) closeMap();
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&document.getElementById('mapOverlay').classList.contains('open')) closeMap();
 });
 
-/* ═════════════════════════════════════════════
-   PAYMENT METHOD TOGGLE
-═════════════════════════════════════════════ */
+/* ── PAYMENT TOGGLE ── */
 function onPaymentChange(){
-  const pm = document.querySelector('input[name=payment_method]:checked')?.value;
+  const pm=document.querySelector('input[name=payment_method]:checked')?.value;
   document.getElementById('sadadInfo').classList.toggle('show', pm==='sadad');
   document.getElementById('stripeFields').classList.toggle('show', pm==='stripe');
 }
 
-/* ═════════════════════════════════════════════
-   BILLING TOGGLE
-═════════════════════════════════════════════ */
+/* ── BILLING TOGGLE ── */
 function toggleBilling(){
-  const checked = document.getElementById('sameAsBilling').checked;
-  document.getElementById('billingSection').style.display = checked ? 'none' : 'block';
+  const checked=document.getElementById('sameAsBilling').checked;
+  document.getElementById('billingSection').style.display=checked?'none':'block';
 }
 
-/* ═════════════════════════════════════════════
-   CARD FORMATTING
-═════════════════════════════════════════════ */
-function formatCard(e){
-  let v = e.target.value.replace(/\D/g,'').substring(0,16);
-  e.target.value = v.replace(/(.{4})/g,'$1 ').trim();
-}
-function formatExpiry(e){
-  let v = e.target.value.replace(/\D/g,'').substring(0,4);
-  if(v.length>=2) v = v.substring(0,2)+' / '+v.substring(2);
-  e.target.value = v;
-}
+/* ── CARD FORMATTING ── */
 document.addEventListener('DOMContentLoaded',()=>{
   const cn=document.getElementById('cardNumber');
   const cx=document.getElementById('cardExpiry');
-  if(cn) cn.addEventListener('input',formatCard);
-  if(cx) cx.addEventListener('input',formatExpiry);
+  if(cn) cn.addEventListener('input',e=>{
+    let v=e.target.value.replace(/\D/g,'').substring(0,16);
+    e.target.value=v.replace(/(.{4})/g,'$1 ').trim();
+  });
+  if(cx) cx.addEventListener('input',e=>{
+    let v=e.target.value.replace(/\D/g,'').substring(0,4);
+    if(v.length>=2) v=v.substring(0,2)+' / '+v.substring(2);
+    e.target.value=v;
+  });
 });
 
-/* ═════════════════════════════════════════════
-   COUPON
-═════════════════════════════════════════════ */
+/* ── COUPON ── */
 function applyCoupon(){
-  const code = document.getElementById('couponInput').value.trim().toUpperCase();
-  const msg = document.getElementById('couponMsg');
+  const code=document.getElementById('couponInput').value.trim().toUpperCase();
   if(!code){ showCouponMsg('Enter a coupon code first.','error'); return; }
-  // Example local validation – in production: call your API
-  const coupons = { 'SAVE10': 10, 'WELCOME': 15 };
+  const coupons={'SAVE10':10,'WELCOME':15};
   if(coupons[code]){
-    const pct = coupons[code];
-    showCouponMsg(`✓ "${code}" applied — ${pct}% off!`, 'success');
+    const pct=coupons[code];
+    showCouponMsg(`✓ "${code}" applied — ${pct}% off!`,'success');
     document.getElementById('discountRow').style.display='flex';
-    document.getElementById('discountAmt').textContent = `-QAR (${pct}% off)`;
+    document.getElementById('discountAmt').textContent=`-${pct}% off`;
   } else {
     showCouponMsg('Invalid or expired coupon code.','error');
   }
 }
-function showCouponMsg(text, type){
-  const el = document.getElementById('couponMsg');
-  el.textContent=text;
-  el.style.display='block';
-  el.style.color = type==='success' ? 'var(--green)' : 'var(--error)';
+function showCouponMsg(text,type){
+  const el=document.getElementById('couponMsg');
+  el.textContent=text; el.style.display='block';
+  el.style.color=type==='success'?'var(--green)':'var(--error)';
 }
 
-/* ═════════════════════════════════════════════
-   FORM VALIDATION & SUBMIT
-═════════════════════════════════════════════ */
-const REQUIRED_FIELDS = [
-  { id:'full_name',     msg:'Please enter your full name' },
-  { id:'phone',         msg:'Please enter a phone number' },
-  { id:'email',         msg:'Please enter a valid email', type:'email' },
-  { id:'address_line1', msg:'Street address is required' },
-  { id:'city',          msg:'City is required' },
-  { id:'country',       msg:'Country is required' },
+/* ── VALIDATION & SUBMIT ── */
+const REQUIRED_FIELDS=[
+  {id:'full_name',     msg:'Please enter your full name'},
+  {id:'phone',         msg:'Please enter a phone number'},
+  {id:'email',         msg:'Please enter a valid email',type:'email'},
+  {id:'address_line1', msg:'Street address is required'},
+  {id:'city',          msg:'City is required'},
+  {id:'country',       msg:'Country is required'},
 ];
 
 function validateForm(){
-  // If user has a saved address selected, skip manual field validation
-  const hasSavedAddr = !!document.querySelector('input[name="shipping_address_id"]:checked');
+  const hasSavedAddr=!!document.querySelector('input[name="shipping_address_id"]:checked');
   if(hasSavedAddr){
-    const pm = document.querySelector('input[name=payment_method]:checked');
+    const pm=document.querySelector('input[name=payment_method]:checked');
     if(!pm){ alert('Please select a payment method.'); return false; }
     return true;
   }
-
-  let ok = true;
-  let firstBadEl = null;
-
+  let ok=true, firstBad=null;
   REQUIRED_FIELDS.forEach(f=>{
-    const el = document.getElementById(f.id);
+    const el=document.getElementById(f.id);
     if(!el) return;
-    const wrap = document.getElementById('field_'+f.id);
-    const val = el.value.trim();
-    let valid = val.length > 0;
-    if(f.type==='email') valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    const wrap=document.getElementById('field_'+f.id);
+    const val=el.value.trim();
+    let valid=val.length>0;
+    if(f.type==='email') valid=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
     if(!valid){
       if(wrap) wrap.classList.add('invalid');
-      if(!firstBadEl) firstBadEl = el;
-      ok = false;
+      if(!firstBad) firstBad=el;
+      ok=false;
     } else {
       if(wrap) wrap.classList.remove('invalid');
     }
   });
-
-  if(firstBadEl) firstBadEl.focus();
-
-  // Map location: soft warning, not a hard block
-  const lat = document.getElementById('delivery_latitude');
-  if(lat && !lat.value && ok){
-    const proceed = confirm('No map pin selected. Continue with your typed address only?');
-    if(!proceed){ ok = false; }
-  }
-
-  // Payment method
-  const pm = document.querySelector('input[name=payment_method]:checked');
-  if(!pm){ alert('Please select a payment method.'); ok = false; }
-
+  if(firstBad) firstBad.focus();
+  const pm=document.querySelector('input[name=payment_method]:checked');
+  if(!pm){ alert('Please select a payment method.'); return false; }
   return ok;
 }
 
-// Clear error on input
 document.addEventListener('DOMContentLoaded',()=>{
   REQUIRED_FIELDS.forEach(f=>{
-    const el = document.getElementById(f.id);
+    const el=document.getElementById(f.id);
     if(el) el.addEventListener('input',()=>{
       document.getElementById('field_'+f.id)?.classList.remove('invalid');
     });
@@ -974,31 +894,16 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 function handleSubmit(e){
   if(!validateForm()){ e.preventDefault(); return false; }
-  const btn = document.getElementById('placeOrderBtn');
+  const btn=document.getElementById('placeOrderBtn');
   btn.classList.add('loading');
-  btn.disabled = true;
-
-  // Safety: if page hasn't navigated after 12s (server error/slow), reset button
-  // so user isn't stuck on a spinning button with no feedback
-  window._submitTimer = setTimeout(()=>{
+  btn.disabled=true;
+  // Safety reset after 20 seconds if server doesn't respond
+  window._submitTimer=setTimeout(()=>{
     btn.classList.remove('loading');
-    btn.disabled = false;
-    btn.querySelector('.btn-text').textContent = '⚠️ Try Again';
-    console.warn('Place order timed out — server may have returned an error.');
-  }, 12000);
+    btn.disabled=false;
+  }, 20000);
 }
-
-// Clear the safety timer when the page actually navigates away
-window.addEventListener('beforeunload', ()=>{ clearTimeout(window._submitTimer); });
-
-/* ═════════════════════════════════════════════
-   ADDRESS CARD SELECTION HIGHLIGHT (radio)
-═════════════════════════════════════════════ */
-document.addEventListener('change', e=>{
-  if(e.target.name==='shipping_address_id' || e.target.name==='billing_address_id'){
-    // visual handled by CSS :checked
-  }
-});
+window.addEventListener('beforeunload',()=>{ clearTimeout(window._submitTimer); });
 </script>
 </body>
 {% endblock %}

@@ -1,12 +1,4 @@
-# orders/views.py — COMPLETE FIXED VERSION
-# Fixes:
-#  1. cart.currency crash → hardcoded 'QAR' fallback
-#  2. lens_addons iteration crash → safe attribute access
-#  3. Better error logging with full traceback
-#  4. Decimal conversion safety
-#  5. Cart clear only after successful order for COD
-#  6. All payment routes working
-
+# orders/views.py — COMPLETE WORKING VERSION
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -56,15 +48,40 @@ def generate_transaction_id():
 
 
 def safe_decimal(value, default='0.00'):
-    """Safely convert a value to Decimal."""
+    """Safely convert any value to Decimal."""
     try:
+        if value is None or value == '':
+            return Decimal(default)
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal(default)
 
 
+def calculate_cart_totals(cart_items):
+    """Calculate subtotal, tax, shipping, total from cart items."""
+    subtotal = Decimal('0.00')
+    for item in cart_items:
+        item_price = safe_decimal(getattr(item, 'unit_price', 0))
+        item_total = item_price * item.quantity
+        lens_price = safe_decimal(getattr(item, 'lens_price', 0))
+        if lens_price > 0:
+            item_total += lens_price * item.quantity
+        try:
+            for addon in item.lens_addons.all():
+                addon_price = safe_decimal(getattr(addon, 'price', 0))
+                item_total += addon_price * item.quantity
+        except Exception:
+            pass
+        subtotal += item_total
+
+    tax      = Decimal('0.00')
+    shipping = Decimal('0.00') if subtotal >= Decimal('200.00') else Decimal('20.00')
+    total    = subtotal + tax + shipping
+    return subtotal, tax, shipping, total
+
+
 # ─────────────────────────────────────────────────────────────
-# CHECKOUT
+# CHECKOUT VIEW
 # ─────────────────────────────────────────────────────────────
 
 @login_required
@@ -82,18 +99,7 @@ def checkout(request):
     default_shipping   = shipping_addresses.filter(is_default_shipping=True).first()
     default_billing    = shipping_addresses.filter(is_default_billing=True).first()
 
-    subtotal = Decimal('0.00')
-    for item in cart_items:
-        item_total = safe_decimal(item.unit_price) * item.quantity
-        if getattr(item, 'lens_price', None):
-            item_total += safe_decimal(item.lens_price) * item.quantity
-        for addon in item.lens_addons.all():
-            item_total += safe_decimal(addon.price) * item.quantity
-        subtotal += item_total
-
-    tax      = Decimal('0.00')
-    shipping = Decimal('0.00') if subtotal >= Decimal('200.00') else Decimal('20.00')
-    total    = subtotal + tax + shipping
+    subtotal, tax, shipping, total = calculate_cart_totals(cart_items)
 
     context = {
         'cart':                   cart,
@@ -113,8 +119,6 @@ def checkout(request):
 
 # ─────────────────────────────────────────────────────────────
 # PLACE ORDER
-# NOTE: NO @transaction.atomic at the top level — order must be
-# committed BEFORE redirecting to any external payment gateway.
 # ─────────────────────────────────────────────────────────────
 
 @login_required
@@ -137,34 +141,37 @@ def place_order(request):
             messages.error(request, 'Please select a payment method.')
             return redirect('orders:checkout')
 
-        # ── Shipping address ──────────────────────────────────
+        # ── Resolve shipping address ──────────────────────────
         shipping_address_id = request.POST.get('shipping_address_id', '').strip()
         if shipping_address_id:
             try:
-                shipping_address = Address.objects.get(
-                    id=shipping_address_id, user=request.user
-                )
+                addr = Address.objects.get(id=shipping_address_id, user=request.user)
                 shipping_info = {
-                    'line1':       shipping_address.address_line1,
-                    'line2':       getattr(shipping_address, 'address_line2', '') or '',
-                    'city':        shipping_address.city,
-                    'state':       getattr(shipping_address, 'state', '') or '',
-                    'country':     shipping_address.country,
-                    'postal_code': getattr(shipping_address, 'postal_code', '') or '',
-                    'phone':       getattr(shipping_address, 'phone', '') or '',
-                    'name':        getattr(shipping_address, 'full_name', '') or request.user.get_full_name(),
+                    'line1':       addr.address_line1,
+                    'line2':       getattr(addr, 'address_line2', '') or '',
+                    'city':        addr.city,
+                    'state':       getattr(addr, 'state', '') or '',
+                    'country':     addr.country,
+                    'postal_code': getattr(addr, 'postal_code', '') or '',
+                    'phone':       getattr(addr, 'phone', '') or '',
+                    'name':        getattr(addr, 'full_name', '') or request.user.get_full_name(),
                 }
             except Address.DoesNotExist:
-                messages.error(request, 'Selected address not found.')
+                messages.error(request, 'Selected shipping address not found.')
                 return redirect('orders:checkout')
         else:
-            # Manual address entry
             full_name = request.POST.get('full_name', '').strip()
-            city      = request.POST.get('city', '').strip()
             address1  = request.POST.get('address_line1', '').strip()
+            city      = request.POST.get('city', '').strip()
 
-            if not full_name or not city or not address1:
-                messages.error(request, 'Please fill in all required address fields.')
+            if not full_name:
+                messages.error(request, 'Full name is required.')
+                return redirect('orders:checkout')
+            if not address1:
+                messages.error(request, 'Street address is required.')
+                return redirect('orders:checkout')
+            if not city:
+                messages.error(request, 'City is required.')
                 return redirect('orders:checkout')
 
             shipping_info = {
@@ -172,34 +179,34 @@ def place_order(request):
                 'line2':       request.POST.get('address_line2', ''),
                 'city':        city,
                 'state':       request.POST.get('state', ''),
-                'country':     request.POST.get('country', 'Qatar'),
+                'country':     request.POST.get('country', 'Qatar') or 'Qatar',
                 'postal_code': request.POST.get('postal_code', ''),
                 'phone':       request.POST.get('phone', ''),
                 'name':        full_name,
             }
 
-        # ── Delivery coordinates (optional) ──────────────────
+        # ── GPS coordinates (optional) ────────────────────────
         delivery_latitude  = request.POST.get('delivery_latitude', '').strip() or None
         delivery_longitude = request.POST.get('delivery_longitude', '').strip() or None
 
-        # ── Billing address ───────────────────────────────────
-        billing_same = request.POST.get('same_as_shipping') in ('on', 'true', '1', 'yes')
+        # ── Resolve billing address ───────────────────────────
+        same_as_shipping = request.POST.get('same_as_shipping', '')
+        billing_same     = same_as_shipping in ('on', 'true', '1', 'yes', 'True')
+
         if billing_same:
             billing_info = shipping_info.copy()
         else:
-            billing_address_id = request.POST.get('billing_address_id', '').strip()
-            if billing_address_id:
+            billing_addr_id = request.POST.get('billing_address_id', '').strip()
+            if billing_addr_id:
                 try:
-                    billing_address = Address.objects.get(
-                        id=billing_address_id, user=request.user
-                    )
+                    baddr = Address.objects.get(id=billing_addr_id, user=request.user)
                     billing_info = {
-                        'line1':       billing_address.address_line1,
-                        'line2':       getattr(billing_address, 'address_line2', '') or '',
-                        'city':        billing_address.city,
-                        'state':       getattr(billing_address, 'state', '') or '',
-                        'country':     billing_address.country,
-                        'postal_code': getattr(billing_address, 'postal_code', '') or '',
+                        'line1':       baddr.address_line1,
+                        'line2':       getattr(baddr, 'address_line2', '') or '',
+                        'city':        baddr.city,
+                        'state':       getattr(baddr, 'state', '') or '',
+                        'country':     baddr.country,
+                        'postal_code': getattr(baddr, 'postal_code', '') or '',
                     }
                 except Address.DoesNotExist:
                     billing_info = shipping_info.copy()
@@ -209,39 +216,20 @@ def place_order(request):
                     'line2':       '',
                     'city':        request.POST.get('billing_city', ''),
                     'state':       '',
-                    'country':     request.POST.get('billing_country', 'Qatar'),
+                    'country':     request.POST.get('billing_country', 'Qatar') or 'Qatar',
                     'postal_code': '',
                 }
 
         # ── Calculate totals ──────────────────────────────────
-        subtotal = Decimal('0.00')
-        for item in cart_items:
-            item_price = safe_decimal(getattr(item, 'unit_price', 0))
-            item_total = item_price * item.quantity
+        subtotal, tax, shipping_amount, total = calculate_cart_totals(cart_items)
 
-            lens_price = safe_decimal(getattr(item, 'lens_price', 0))
-            if lens_price > 0:
-                item_total += lens_price * item.quantity
-
-            for addon in item.lens_addons.all():
-                addon_price = safe_decimal(getattr(addon, 'price', 0))
-                item_total += addon_price * item.quantity
-
-            subtotal += item_total
-
-        tax             = Decimal('0.00')
-        shipping_amount = Decimal('0.00') if subtotal >= Decimal('200.00') else Decimal('20.00')
-        total           = subtotal + tax + shipping_amount
-
-        # ── Determine currency ────────────────────────────────
-        # Safely get currency from cart, default to QAR
-        currency = 'QAR'
+        # ── Currency ──────────────────────────────────────────
         try:
-            currency = str(getattr(cart, 'currency', 'QAR') or 'QAR')
+            currency = str(getattr(cart, 'currency', None) or 'QAR')
         except Exception:
             currency = 'QAR'
 
-        # ── Create Order ──────────────────────────────────────
+        # ── Create Order record ───────────────────────────────
         order = Order.objects.create(
             order_number             = generate_order_number(),
             customer                 = request.user,
@@ -255,7 +243,7 @@ def place_order(request):
             total_amount             = total,
             customer_email           = request.user.email,
             customer_phone           = shipping_info.get('phone', ''),
-            customer_name            = shipping_info.get('name', request.user.get_full_name()),
+            customer_name            = shipping_info.get('name', ''),
             shipping_address_line1   = shipping_info.get('line1', ''),
             shipping_address_line2   = shipping_info.get('line2', ''),
             shipping_city            = shipping_info.get('city', ''),
@@ -284,30 +272,38 @@ def place_order(request):
             if lens_price > 0:
                 item_subtotal += lens_price * cart_item.quantity
 
-            # Build variant details safely
             variant_details = None
-            if cart_item.variant:
+            if getattr(cart_item, 'variant', None):
                 variant_details = {
                     'color': getattr(cart_item.variant, 'color_name', None),
                     'size':  getattr(cart_item.variant, 'size', None),
                 }
 
+            product_sku = ''
+            try:
+                product_sku = str(getattr(cart_item.product, 'sku', '') or '')
+            except Exception:
+                pass
+
+            lens_option_name = ''
+            try:
+                if getattr(cart_item, 'lens_option', None):
+                    lens_option_name = cart_item.lens_option.name or ''
+            except Exception:
+                pass
+
             order_item = OrderItem.objects.create(
                 order                    = order,
                 product                  = cart_item.product,
-                variant                  = cart_item.variant,
+                variant                  = getattr(cart_item, 'variant', None),
                 product_name             = cart_item.product.name,
-                product_sku              = getattr(cart_item.product, 'sku', '') or '',
+                product_sku              = product_sku,
                 variant_details          = variant_details,
                 quantity                 = cart_item.quantity,
                 unit_price               = item_price,
                 requires_prescription    = getattr(cart_item, 'requires_prescription', False),
                 lens_option              = getattr(cart_item, 'lens_option', None),
-                lens_option_name         = (
-                    cart_item.lens_option.name
-                    if getattr(cart_item, 'lens_option', None)
-                    else ''
-                ),
+                lens_option_name         = lens_option_name,
                 lens_price               = lens_price,
                 prescription_data        = getattr(cart_item, 'prescription_data', None),
                 contact_lens_left_power  = getattr(cart_item, 'contact_lens_left_power', None),
@@ -316,34 +312,32 @@ def place_order(request):
                 special_instructions     = getattr(cart_item, 'special_instructions', '') or '',
             )
 
-            # Add-ons — safely iterate
+            # Lens add-ons — wrapped safely
             try:
                 for addon_item in cart_item.lens_addons.all():
-                    addon_obj  = getattr(addon_item, 'addon', None)
-                    addon_name = getattr(addon_obj, 'name', '') if addon_obj else getattr(addon_item, 'name', '')
-                    addon_price = safe_decimal(getattr(addon_item, 'price', 0))
+                    addon_obj = getattr(addon_item, 'addon', None)
                     if addon_obj:
                         OrderItemLensAddOn.objects.create(
                             order_item = order_item,
                             addon      = addon_obj,
-                            addon_name = addon_name,
-                            price      = addon_price,
+                            addon_name = getattr(addon_obj, 'name', ''),
+                            price      = safe_decimal(getattr(addon_item, 'price', 0)),
                         )
             except Exception as addon_err:
-                logger.warning(f"Addon processing error for cart_item {cart_item.id}: {addon_err}")
+                logger.warning(f"Addon error for cart_item {cart_item.id}: {addon_err}")
 
+        # Initial status history
         OrderStatusHistory.objects.create(
             order      = order,
             to_status  = 'pending',
-            notes      = 'Order created',
+            notes      = 'Order created online',
             changed_by = request.user,
         )
 
-        logger.info(f"Order {order.order_number} created successfully for {request.user.email}, payment: {payment_method}")
+        logger.info(f"Order {order.order_number} created for {request.user.email} | method={payment_method} | total={total}")
 
-        # ── Route to payment handler ──────────────────────────
+        # ── Route to payment ──────────────────────────────────
         if payment_method == 'cash_on_delivery':
-            # Clear cart and confirm
             cart.items.all().delete()
             order.status       = 'confirmed'
             order.confirmed_at = timezone.now()
@@ -352,10 +346,10 @@ def place_order(request):
                 order       = order,
                 from_status = 'pending',
                 to_status   = 'confirmed',
-                notes       = 'Cash on delivery order confirmed',
+                notes       = 'Cash on delivery — confirmed at placement',
                 changed_by  = request.user,
             )
-            messages.success(request, '✅ Order placed successfully! Pay when your order arrives.')
+            messages.success(request, f'✅ Order {order.order_number} placed! Pay when your order arrives.')
             return redirect('orders:order_confirmation', order_number=order.order_number)
 
         elif payment_method == 'sadad':
@@ -371,58 +365,49 @@ def place_order(request):
             return redirect('orders:paypal_payment', order_number=order.order_number)
 
         else:
-            messages.error(request, f'Unknown payment method: "{payment_method}".')
             order.delete()
+            messages.error(request, f'Unknown payment method: {payment_method}')
             return redirect('orders:checkout')
 
     except Exception as e:
-        logger.error(f"place_order CRASH: {type(e).__name__}: {e}", exc_info=True)
-        messages.error(request, f'Error placing order: {str(e)}')
+        logger.error(f"place_order CRASH — {type(e).__name__}: {e}", exc_info=True)
+        messages.error(request, f'Something went wrong: {str(e)}')
         return redirect('orders:checkout')
 
 
 # ─────────────────────────────────────────────────────────────
-# SADAD (Qatar) — Web Checkout 2.1
+# SADAD
 # ─────────────────────────────────────────────────────────────
 
 @login_required
 def sadad_payment(request, order_number):
     order = get_object_or_404(Order, order_number=order_number, customer=request.user)
-
     if order.payment_status == 'completed':
         return redirect('orders:order_confirmation', order_number=order.order_number)
-
     try:
         form_data = SadadPaymentService.build_payment_form_data(order)
-
         order.payment_gateway        = 'sadad'
         order.payment_transaction_id = order.order_number
         order.save(update_fields=['payment_gateway', 'payment_transaction_id'])
-
         return render(request, 'orders/sadad_redirect.html', {
             'order':       order,
             'action_url':  form_data['action_url'],
             'form_fields': form_data['fields'],
         })
-
     except SadadPaymentError as e:
         logger.error(f"Sadad config error: {e}")
         messages.error(request, str(e))
         return redirect('orders:checkout')
     except Exception as e:
         logger.error(f"sadad_payment error: {e}", exc_info=True)
-        messages.error(request, f'Sadad init error: {str(e)}')
+        messages.error(request, f'Sadad error: {str(e)}')
         return redirect('orders:checkout')
 
 
 @csrf_exempt
 def sadad_payment_return(request):
-    if request.method == 'POST':
-        post_data = request.POST.dict()
-    else:
-        post_data = request.GET.dict()
-
-    logger.info(f"Sadad callback received: {post_data}")
+    post_data = request.POST.dict() if request.method == 'POST' else request.GET.dict()
+    logger.info(f"Sadad callback: {post_data}")
     order_id = post_data.get('ORDERID', '').strip()
 
     if not order_id:
@@ -447,14 +432,13 @@ def sadad_payment_return(request):
             order.payment_status           = 'failed'
             order.payment_gateway_response = post_data
             order.save(update_fields=['payment_status', 'payment_gateway_response'])
-            msg = 'Security check failed.' if not verify['checksum_valid'] else (
-                f"Payment not completed: {verify.get('resp_msg', 'unknown error')}"
-            )
+            msg = ('Security check failed.' if not verify['checksum_valid']
+                   else f"Payment failed: {verify.get('resp_msg', 'unknown error')}")
             messages.error(request, msg)
             return redirect('orders:checkout')
     except Exception as e:
         logger.error(f"sadad_payment_return error: {e}", exc_info=True)
-        messages.error(request, f'Payment error: {str(e)}')
+        messages.error(request, f'Payment processing error: {str(e)}')
         return redirect('orders:order_list')
 
 
@@ -549,9 +533,9 @@ def stripe_payment(request, order_number):
             order.payment_transaction_id = result['payment_intent_id']
             order.save()
             return render(request, 'stripe_payment.html', {
-                'order': order,
-                'client_secret': result['client_secret'],
-                'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY,
+                'order':                  order,
+                'client_secret':          result['client_secret'],
+                'stripe_publishable_key': getattr(settings, 'STRIPE_PUBLISHABLE_KEY', ''),
             })
         messages.error(request, f"Stripe error: {result.get('error')}")
         return redirect('orders:checkout')
@@ -574,10 +558,7 @@ def stripe_payment_confirm(request, order_number):
             order.confirmed_at   = timezone.now()
             order.save()
             get_or_create_cart(request).items.all().delete()
-            return JsonResponse({
-                'success': True,
-                'redirect_url': reverse('orders:order_confirmation', args=[order.order_number])
-            })
+            return JsonResponse({'success': True, 'redirect_url': reverse('orders:order_confirmation', args=[order.order_number])})
         return JsonResponse({'success': False, 'error': result.get('error')})
     except Exception as e:
         logger.error(f"stripe_payment_confirm error: {e}", exc_info=True)
@@ -600,11 +581,11 @@ def razorpay_payment(request, order_number):
             order.payment_transaction_id = result['razorpay_order_id']
             order.save()
             return render(request, 'razorpay_payment.html', {
-                'order':              order,
-                'razorpay_order_id':  result['razorpay_order_id'],
-                'razorpay_key_id':    result['key_id'],
-                'amount':             result['amount'],
-                'currency':           result['currency'],
+                'order':             order,
+                'razorpay_order_id': result['razorpay_order_id'],
+                'razorpay_key_id':   result['key_id'],
+                'amount':            result['amount'],
+                'currency':          result['currency'],
             })
         messages.error(request, result.get('error'))
         return redirect('orders:checkout')
@@ -634,10 +615,7 @@ def razorpay_payment_verify(request):
             cart = Cart.objects.filter(customer=order.customer).first()
             if cart:
                 cart.items.all().delete()
-            return JsonResponse({
-                'success': True,
-                'redirect_url': reverse('orders:order_confirmation', args=[order.order_number])
-            })
+            return JsonResponse({'success': True, 'redirect_url': reverse('orders:order_confirmation', args=[order.order_number])})
         order.payment_status = 'failed'
         order.save()
         return JsonResponse({'success': False, 'error': result.get('error')})
@@ -680,7 +658,7 @@ def paypal_execute(request, order_number):
     payment_id = request.GET.get('paymentId')
     payer_id   = request.GET.get('PayerID')
     if not payment_id or not payer_id:
-        messages.error(request, 'Payment cancelled.')
+        messages.error(request, 'Payment cancelled or incomplete.')
         return redirect('orders:checkout')
     try:
         result = PayPalPaymentService.execute_payment(payment_id, payer_id)
@@ -691,7 +669,7 @@ def paypal_execute(request, order_number):
             order.confirmed_at   = timezone.now()
             order.save()
             get_or_create_cart(request).items.all().delete()
-            messages.success(request, 'Payment successful!')
+            messages.success(request, '✅ Payment successful!')
             return redirect('orders:order_confirmation', order_number=order.order_number)
         messages.error(request, result.get('error'))
         return redirect('orders:checkout')
@@ -718,8 +696,8 @@ def order_list(request):
     if status_filter and status_filter != 'all':
         orders = orders.filter(status=status_filter)
     return render(request, 'order_list.html', {
-        'orders': orders,
-        'status_filter': status_filter,
+        'orders':         orders,
+        'status_filter':  status_filter,
         'order_statuses': Order.ORDER_STATUS,
     })
 
@@ -729,9 +707,7 @@ def order_detail(request, order_number):
     order = get_object_or_404(Order, order_number=order_number, customer=request.user)
     return render(request, 'order_detail.html', {
         'order':                order,
-        'order_items':          order.items.select_related(
-            'product', 'variant', 'lens_option'
-        ).prefetch_related('lens_addons'),
+        'order_items':          order.items.select_related('product', 'variant', 'lens_option').prefetch_related('lens_addons'),
         'status_history':       order.status_history.all(),
         'payment_transactions': order.payment_transactions.all(),
     })
@@ -741,10 +717,7 @@ def order_detail(request, order_number):
 def track_order(request, order_number):
     order              = get_object_or_404(Order, order_number=order_number, customer=request.user)
     status_progression = ['pending', 'confirmed', 'processing', 'shipped', 'delivered']
-    current_index      = (
-        status_progression.index(order.status)
-        if order.status in status_progression else 0
-    )
+    current_index      = status_progression.index(order.status) if order.status in status_progression else 0
     return render(request, 'track_order.html', {
         'order':                order,
         'status_history':       order.status_history.all(),
@@ -764,13 +737,10 @@ def cancel_order(request, order_number):
     order.status = 'cancelled'
     order.save()
     OrderStatusHistory.objects.create(
-        order       = order,
-        from_status = old_status,
-        to_status   = 'cancelled',
-        notes       = 'Cancelled by customer',
-        changed_by  = request.user,
+        order=order, from_status=old_status, to_status='cancelled',
+        notes='Cancelled by customer', changed_by=request.user,
     )
-    messages.success(request, 'Order cancelled.')
+    messages.success(request, 'Order cancelled successfully.')
     return redirect('orders:order_detail', order_number=order_number)
 
 

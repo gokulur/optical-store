@@ -1,69 +1,79 @@
 {% extends 'base.html' %}
-{# SAVE THIS FILE AS: templates/orders/sadad_redirect.html #}
+{% load static %}
 {% block title %}Redirecting to Sadad…{% endblock %}
 
 {% block content %}
 <style>
-  .sadad-redirect-wrap {
-    min-height: 80vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    font-family: 'DM Sans', sans-serif;
-    text-align: center;
-    gap: 20px;
-  }
-  .sadad-logo { font-size: 48px; }
-  .sadad-title { font-size: 22px; font-weight: 700; color: #0f0f0f; }
-  .sadad-sub   { font-size: 14px; color: #7a7a7a; }
-  .sadad-spinner {
-    width: 40px; height: 40px;
-    border: 3px solid #e6e6e6;
-    border-top-color: #1a7a4a;
-    border-radius: 50%;
-    animation: spin .8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .sadad-manual-btn {
-    margin-top: 10px;
-    padding: 12px 28px;
-    background: #1a7a4a;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-  }
-  .sadad-manual-btn:hover { background: #155c39; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+.sadad-wrap{
+  min-height:80vh;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;font-family:'DM Sans',sans-serif;text-align:center;gap:20px;
+  background:#f5f4f0;padding:40px 20px;
+}
+.sadad-card{
+  background:#fff;border-radius:16px;padding:48px 40px;
+  box-shadow:0 4px 24px rgba(0,0,0,.09);max-width:460px;width:100%;
+}
+.sadad-logo-text{font-size:32px;font-weight:800;color:#00a651;letter-spacing:3px;margin-bottom:4px}
+.sadad-title{font-size:20px;font-weight:700;color:#0f0f0f;margin:16px 0 8px}
+.sadad-sub{font-size:14px;color:#7a7a7a;line-height:1.6}
+.sadad-amount{font-size:28px;font-weight:800;color:#0f0f0f;margin:20px 0}
+.sadad-amount span{font-size:16px;font-weight:500;color:#7a7a7a}
+.sadad-spinner{
+  width:48px;height:48px;border:4px solid #e6e6e6;border-top-color:#00a651;
+  border-radius:50%;animation:spin .8s linear infinite;margin:20px auto;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sadad-manual-btn{
+  margin-top:16px;padding:14px 32px;background:#00a651;color:#fff;border:none;
+  border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
+  transition:all .2s;width:100%;
+}
+.sadad-manual-btn:hover{background:#008f44;transform:translateY(-1px)}
+.sadad-security{margin-top:20px;font-size:12px;color:#b8b8b8}
+.sadad-redirect-note{
+  background:#e8f5e9;border-left:4px solid #00a651;padding:12px 16px;
+  border-radius:6px;margin:16px 0;font-size:13px;color:#2e7d32;text-align:left;
+}
+@media(max-width:500px){.sadad-card{padding:32px 24px}}
 </style>
 
-<div class="sadad-redirect-wrap">
-  <div class="sadad-logo">💚</div>
-  <div class="sadad-title">Redirecting to Sadad Secure Payment…</div>
-  <div class="sadad-sub">Order #{{ order.order_number }} · QAR {{ order.total_amount }}</div>
-  <div class="sadad-spinner"></div>
-  <div class="sadad-sub">Please wait, do not close this page.</div>
-  <button class="sadad-manual-btn" onclick="document.getElementById('sadadForm').submit()">
-    Click here if not redirected automatically
-  </button>
+<div class="sadad-wrap">
+  <div class="sadad-card">
+    <div class="sadad-logo-text">SADAD</div>
+    <div class="sadad-title">Redirecting to Secure Payment</div>
+    <div class="sadad-amount">
+      {{ order.currency }} {{ order.total_amount }}
+      <br><span>Order #{{ order.order_number }}</span>
+    </div>
+
+    <div class="sadad-redirect-note">
+      ℹ️ You will be redirected to <strong>Sadad's secure payment page</strong> to complete your payment with Credit/Debit card, QPay, or Sadad Balance.
+    </div>
+
+    <div class="sadad-spinner"></div>
+    <div class="sadad-sub">Please wait — do not close or refresh this page.</div>
+
+    <button class="sadad-manual-btn" onclick="document.getElementById('sadadAutoForm').submit()">
+      Click here if not redirected automatically
+    </button>
+
+    <div class="sadad-security">🔒 Secured by Sadad · PCI-DSS Compliant · Qatar Central Bank Licensed</div>
+  </div>
 </div>
 
-{# Hidden auto-submit form — posts directly to Sadad's hosted checkout #}
-<form id="sadadForm" action="{{ action_url }}" method="POST" style="display:none">
+{# Hidden auto-submit form — posts directly to Sadad's hosted checkout page #}
+<form id="sadadAutoForm" action="{{ action_url }}" method="POST" style="display:none">
   {% for key, value in form_fields.items %}
     <input type="hidden" name="{{ key }}" value="{{ value }}">
   {% endfor %}
 </form>
 
 <script>
-  // Auto-submit after a short delay so the user sees the loading screen
   window.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
-      document.getElementById('sadadForm').submit();
-    }, 1200);
+      document.getElementById('sadadAutoForm').submit();
+    }, 1500);
   });
 </script>
 {% endblock %}

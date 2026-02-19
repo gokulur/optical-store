@@ -1,5 +1,258 @@
-{% extends 'catalog/base.html' %}
-{% block title %}Order Confirmation{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Order Confirmed — {{ order.order_number }}{% endblock %}
+
 {% block content %}
-<div class="confirmation-page"><div class="container"><div class="success-icon">✓</div><h1>Order Confirmed!</h1><p>Thank you for your order. We'll send you updates via email.</p><div class="order-info-card"><h2>Order Details</h2><p><strong>Order Number:</strong> {{ order.order_number }}</p><p><strong>Total:</strong> {{ order.total_amount }} QAR</p><p><strong>Payment:</strong> {{ order.get_payment_method_display }}</p><p><strong>Estimated Delivery:</strong> 3-5 business days</p></div><div class="actions"><a href="{% url 'orders:order_detail' order.order_number %}" class="btn btn-primary">View Order Details</a><a href="{% url 'catalog:home' %}" class="btn btn-outline">Continue Shopping</a></div></div></div>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0f0f0f;--muted:#7a7a7a;--line:#e6e6e6;--surface:#f5f4f0;
+  --white:#fff;--green:#1a7a4a;--green-bg:#edf6f1;--green-bd:#b5ddc8;
+  --r:10px;--r-sm:6px;--shadow:0 2px 12px rgba(0,0,0,.07);
+  --font:'DM Sans',sans-serif;--serif:'DM Serif Display',serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--surface);font-family:var(--font);color:var(--ink)}
+
+.conf-wrap{min-height:100vh;padding:60px 20px 80px;display:flex;align-items:flex-start;justify-content:center}
+.conf-inner{max-width:700px;width:100%}
+
+/* Success banner */
+.conf-banner{background:var(--green);border-radius:var(--r);padding:40px;text-align:center;margin-bottom:28px;color:#fff}
+.conf-icon{font-size:56px;margin-bottom:16px;animation:popIn .5s cubic-bezier(.4,0,.2,1)}
+@keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
+.conf-title{font-family:var(--serif);font-size:clamp(24px,4vw,36px);font-weight:400;margin-bottom:8px}
+.conf-sub{font-size:15px;opacity:.85}
+.conf-order-num{display:inline-block;margin-top:16px;padding:8px 20px;background:rgba(255,255,255,.2);border-radius:30px;font-size:14px;font-weight:700;letter-spacing:.5px}
+
+/* Cards */
+.conf-card{background:var(--white);border-radius:var(--r);border:1px solid var(--line);padding:28px;box-shadow:var(--shadow);margin-bottom:20px}
+.conf-card-title{font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+
+/* Order details grid */
+.conf-details{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.conf-detail-label{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.conf-detail-val{font-size:14px;font-weight:500;color:var(--ink);line-height:1.5}
+.conf-status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700}
+.badge-pending{background:#fef3c7;color:#92400e}
+.badge-confirmed{background:var(--green-bg);color:var(--green)}
+.badge-processing{background:#dbeafe;color:#1e40af}
+.badge-shipped{background:#ede9fe;color:#5b21b6}
+.badge-delivered{background:var(--green-bg);color:var(--green)}
+.badge-paid{background:var(--green-bg);color:var(--green)}
+
+/* Items */
+.conf-item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.conf-item:last-child{border-bottom:none;padding-bottom:0}
+.conf-item-img{width:60px;height:60px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--line);flex-shrink:0;background:var(--surface)}
+.conf-item-placeholder{width:60px;height:60px;background:var(--surface);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.conf-item-name{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.conf-item-sub{font-size:12px;color:var(--muted)}
+.conf-item-price{font-size:13px;font-weight:700;color:var(--ink);margin-left:auto;white-space:nowrap;padding-left:10px}
+
+/* Totals */
+.conf-tot-row{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);padding:5px 0}
+.conf-tot-row span:last-child{font-weight:600;color:var(--ink)}
+.conf-tot-final{display:flex;justify-content:space-between;margin-top:12px;padding-top:14px;border-top:2px solid var(--ink)}
+.conf-tot-final span{font-size:18px;font-weight:700;color:var(--ink)}
+
+/* Shipping / Tracking */
+.conf-addr{font-size:14px;line-height:1.7;color:var(--ink)}
+
+/* What next steps */
+.conf-steps{display:flex;flex-direction:column;gap:12px}
+.conf-step{display:flex;align-items:flex-start;gap:14px;padding:16px;background:var(--surface);border-radius:var(--r-sm)}
+.conf-step-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+.conf-step-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.conf-step-desc{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* Action buttons */
+.conf-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.conf-btn{padding:14px 28px;border-radius:var(--r-sm);font-size:14px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s;cursor:pointer;border:none;font-family:var(--font)}
+.conf-btn-primary{background:var(--ink);color:#fff}
+.conf-btn-primary:hover{background:#000;transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.conf-btn-secondary{background:var(--white);color:var(--ink);border:1.5px solid var(--line)}
+.conf-btn-secondary:hover{border-color:var(--ink)}
+
+@media(max-width:600px){
+  .conf-details{grid-template-columns:1fr}
+  .conf-actions{flex-direction:column}
+  .conf-btn{width:100%;justify-content:center}
+}
+</style>
+
+<div class="conf-wrap">
+<div class="conf-inner">
+
+  <!-- Success Banner -->
+  <div class="conf-banner">
+    <div class="conf-icon">✅</div>
+    <div class="conf-title">Order Confirmed!</div>
+    <div class="conf-sub">
+      {% if order.payment_method == 'cash_on_delivery' %}
+        Your order has been placed. Pay when your order arrives.
+      {% else %}
+        Thank you for your payment. Your order is being processed.
+      {% endif %}
+    </div>
+    <div class="conf-order-num">Order #{{ order.order_number }}</div>
+  </div>
+
+  <!-- Order Info -->
+  <div class="conf-card">
+    <div class="conf-card-title">Order Details</div>
+    <div class="conf-details">
+      <div>
+        <div class="conf-detail-label">Order Number</div>
+        <div class="conf-detail-val">{{ order.order_number }}</div>
+      </div>
+      <div>
+        <div class="conf-detail-label">Date</div>
+        <div class="conf-detail-val">{{ order.created_at|date:"N j, Y, g:i A" }}</div>
+      </div>
+      <div>
+        <div class="conf-detail-label">Order Status</div>
+        <div class="conf-detail-val">
+          <span class="conf-status-badge badge-{{ order.status }}">
+            {{ order.get_status_display }}
+          </span>
+        </div>
+      </div>
+      <div>
+        <div class="conf-detail-label">Payment Status</div>
+        <div class="conf-detail-val">
+          {% if order.payment_status == 'completed' %}
+            <span class="conf-status-badge badge-paid">✓ Paid</span>
+          {% elif order.payment_method == 'cash_on_delivery' %}
+            <span class="conf-status-badge badge-pending">💵 Pay on Delivery</span>
+          {% else %}
+            <span class="conf-status-badge badge-pending">{{ order.get_payment_status_display }}</span>
+          {% endif %}
+        </div>
+      </div>
+      <div>
+        <div class="conf-detail-label">Payment Method</div>
+        <div class="conf-detail-val">
+          {% if order.payment_method == 'cash_on_delivery' %}💵 Cash on Delivery
+          {% elif order.payment_method == 'sadad' %}💚 Sadad
+          {% elif order.payment_method == 'stripe' %}💳 Credit/Debit Card
+          {% elif order.payment_method == 'razorpay' %}🏦 Razorpay
+          {% elif order.payment_method == 'paypal' %}🌐 PayPal
+          {% else %}{{ order.payment_method }}{% endif %}
+        </div>
+      </div>
+      <div>
+        <div class="conf-detail-label">Customer</div>
+        <div class="conf-detail-val">{{ order.customer_name }}<br>{{ order.customer_email }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Items -->
+  <div class="conf-card">
+    <div class="conf-card-title">Items Ordered</div>
+    {% for item in order.items.all %}
+    <div class="conf-item">
+      {% if item.product.image %}
+        <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}" class="conf-item-img">
+      {% else %}
+        <div class="conf-item-placeholder">👓</div>
+      {% endif %}
+      <div style="flex:1;min-width:0">
+        <div class="conf-item-name">{{ item.product_name }}</div>
+        <div class="conf-item-sub">Qty {{ item.quantity }} &middot; {{ order.currency }} {{ item.unit_price }}</div>
+        {% if item.lens_option_name %}
+          <div class="conf-item-sub" style="color:#1a7a4a">🔍 {{ item.lens_option_name }}</div>
+        {% endif %}
+      </div>
+      <div class="conf-item-price">{{ order.currency }} {{ item.subtotal }}</div>
+    </div>
+    {% endfor %}
+
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)">
+      <div class="conf-tot-row"><span>Subtotal</span><span>{{ order.currency }} {{ order.subtotal }}</span></div>
+      <div class="conf-tot-row">
+        <span>Shipping</span>
+        <span>{% if order.shipping_amount == 0 %}<span style="color:var(--green);font-weight:700">FREE</span>{% else %}{{ order.currency }} {{ order.shipping_amount }}{% endif %}</span>
+      </div>
+      {% if order.tax_amount > 0 %}
+      <div class="conf-tot-row"><span>Tax</span><span>{{ order.currency }} {{ order.tax_amount }}</span></div>
+      {% endif %}
+      {% if order.discount_amount > 0 %}
+      <div class="conf-tot-row" style="color:var(--green)"><span>Discount</span><span>-{{ order.currency }} {{ order.discount_amount }}</span></div>
+      {% endif %}
+      <div class="conf-tot-final">
+        <span>Total</span>
+        <span>{{ order.currency }} {{ order.total_amount }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delivery Address -->
+  <div class="conf-card">
+    <div class="conf-card-title">Delivery Address</div>
+    <div class="conf-addr">
+      <strong>{{ order.customer_name }}</strong><br>
+      {{ order.shipping_address_line1 }}{% if order.shipping_address_line2 %}, {{ order.shipping_address_line2 }}{% endif %}<br>
+      {{ order.shipping_city }}{% if order.shipping_state %}, {{ order.shipping_state }}{% endif %} {{ order.shipping_postal_code }}<br>
+      {{ order.shipping_country }}<br>
+      📞 {{ order.customer_phone }}
+    </div>
+    {% if order.delivery_latitude and order.delivery_longitude %}
+    <div style="margin-top:12px;font-size:12px;color:var(--muted);font-family:monospace">
+      📍 GPS: {{ order.delivery_latitude }}, {{ order.delivery_longitude }}
+    </div>
+    {% endif %}
+    {% if order.customer_notes %}
+    <div style="margin-top:14px;padding:12px;background:var(--surface);border-radius:6px;font-size:13px;color:var(--muted)">
+      <strong style="color:var(--ink)">Notes:</strong> {{ order.customer_notes }}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- What happens next -->
+  <div class="conf-card">
+    <div class="conf-card-title">What Happens Next</div>
+    <div class="conf-steps">
+      <div class="conf-step">
+        <div class="conf-step-icon">📧</div>
+        <div>
+          <div class="conf-step-title">Confirmation Email</div>
+          <div class="conf-step-desc">A confirmation email has been sent to {{ order.customer_email }}</div>
+        </div>
+      </div>
+      <div class="conf-step">
+        <div class="conf-step-icon">📦</div>
+        <div>
+          <div class="conf-step-title">Order Processing</div>
+          <div class="conf-step-desc">We'll prepare your order and notify you when it's ready to ship.</div>
+        </div>
+      </div>
+      <div class="conf-step">
+        <div class="conf-step-icon">🚚</div>
+        <div>
+          <div class="conf-step-title">Delivery</div>
+          <div class="conf-step-desc">Your order will be delivered to your address. 
+            {% if order.payment_method == 'cash_on_delivery' %}Please have exact change ready.{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="conf-actions">
+    <a href="{% url 'orders:order_detail' order.order_number %}" class="conf-btn conf-btn-primary">
+      📋 View Order Details
+    </a>
+    <a href="{% url 'orders:track_order' order.order_number %}" class="conf-btn conf-btn-secondary">
+      🚚 Track Order
+    </a>
+    <a href="/" class="conf-btn conf-btn-secondary">
+      🛍️ Continue Shopping
+    </a>
+  </div>
+
+</div>
+</div>
 {% endblock %}
