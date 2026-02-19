@@ -1,4 +1,4 @@
-# orders/views.py — COMPLETE WORKING VERSION
+# orders/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -31,24 +31,23 @@ from .payment_services import (
 logger = logging.getLogger(__name__)
 
 
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 # HELPERS
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 
 def generate_order_number():
-    timestamp  = timezone.now().strftime('%Y%m%d')
-    random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-    return f"ORD-{timestamp}-{random_str}"
+    ts  = timezone.now().strftime('%Y%m%d')
+    rnd = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    return f"ORD-{ts}-{rnd}"
 
 
 def generate_transaction_id():
-    timestamp  = timezone.now().strftime('%Y%m%d%H%M%S')
-    random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-    return f"TXN-{timestamp}-{random_str}"
+    ts  = timezone.now().strftime('%Y%m%d%H%M%S')
+    rnd = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    return f"TXN-{ts}-{rnd}"
 
 
 def safe_decimal(value, default='0.00'):
-    """Safely convert any value to Decimal."""
     try:
         if value is None or value == '':
             return Decimal(default)
@@ -58,7 +57,6 @@ def safe_decimal(value, default='0.00'):
 
 
 def calculate_cart_totals(cart_items):
-    """Calculate subtotal, tax, shipping, total from cart items."""
     subtotal = Decimal('0.00')
     for item in cart_items:
         item_price = safe_decimal(getattr(item, 'unit_price', 0))
@@ -68,8 +66,7 @@ def calculate_cart_totals(cart_items):
             item_total += lens_price * item.quantity
         try:
             for addon in item.lens_addons.all():
-                addon_price = safe_decimal(getattr(addon, 'price', 0))
-                item_total += addon_price * item.quantity
+                item_total += safe_decimal(getattr(addon, 'price', 0)) * item.quantity
         except Exception:
             pass
         subtotal += item_total
@@ -80,13 +77,13 @@ def calculate_cart_totals(cart_items):
     return subtotal, tax, shipping, total
 
 
-# ─────────────────────────────────────────────────────────────
-# CHECKOUT VIEW
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
+# CHECKOUT
+# ─────────────────────────────────────────────
 
 @login_required
 def checkout(request):
-    cart       = get_or_create_cart(request)
+    cart = get_or_create_cart(request)
     cart_items = cart.items.select_related(
         'product', 'variant', 'lens_option'
     ).prefetch_related('lens_addons')
@@ -98,100 +95,89 @@ def checkout(request):
     shipping_addresses = request.user.addresses.all()
     default_shipping   = shipping_addresses.filter(is_default_shipping=True).first()
     default_billing    = shipping_addresses.filter(is_default_billing=True).first()
-
     subtotal, tax, shipping, total = calculate_cart_totals(cart_items)
 
-    context = {
-        'cart':                   cart,
-        'cart_items':             cart_items,
-        'shipping_addresses':     shipping_addresses,
-        'default_shipping':       default_shipping,
-        'default_billing':        default_billing,
-        'subtotal':               subtotal,
-        'tax':                    tax,
-        'shipping':               shipping,
-        'total':                  total,
-        'stripe_publishable_key': getattr(settings, 'STRIPE_PUBLISHABLE_KEY', ''),
-        'razorpay_key_id':        getattr(settings, 'RAZORPAY_KEY_ID', ''),
-    }
-    return render(request, 'checkout.html', context)
+    return render(request, 'checkout.html', {
+        'cart':               cart,
+        'cart_items':         cart_items,
+        'shipping_addresses': shipping_addresses,
+        'default_shipping':   default_shipping,
+        'default_billing':    default_billing,
+        'subtotal':           subtotal,
+        'tax':                tax,
+        'shipping':           shipping,
+        'total':              total,
+    })
 
 
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 # PLACE ORDER
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 
 @login_required
 @require_POST
 def place_order(request):
     try:
-        cart       = get_or_create_cart(request)
-        cart_items = list(cart.items.select_related(
-            'product', 'variant', 'lens_option'
-        ).prefetch_related('lens_addons', 'lens_addons__addon'))
+        cart = get_or_create_cart(request)
+        cart_items = list(
+            cart.items.select_related('product', 'variant', 'lens_option')
+                      .prefetch_related('lens_addons', 'lens_addons__addon')
+        )
 
         if not cart_items:
             messages.error(request, 'Your cart is empty.')
             return redirect('cart:cart_view')
 
         payment_method = request.POST.get('payment_method', '').strip()
-        customer_notes = request.POST.get('customer_notes', '')
+        customer_notes = request.POST.get('customer_notes', '').strip()
 
         if not payment_method:
             messages.error(request, 'Please select a payment method.')
             return redirect('orders:checkout')
 
-        # ── Resolve shipping address ──────────────────────────
+        # ── Shipping address ──────────────────
         shipping_address_id = request.POST.get('shipping_address_id', '').strip()
         if shipping_address_id:
             try:
                 addr = Address.objects.get(id=shipping_address_id, user=request.user)
                 shipping_info = {
-                    'line1':       addr.address_line1,
-                    'line2':       getattr(addr, 'address_line2', '') or '',
-                    'city':        addr.city,
-                    'state':       getattr(addr, 'state', '') or '',
+                    'line1':  addr.address_line1,
+                    'line2':  getattr(addr, 'address_line2', '') or '',
+                    'city':   addr.city,
+                    'state':  getattr(addr, 'state', '') or '',
                     'country':     addr.country,
                     'postal_code': getattr(addr, 'postal_code', '') or '',
-                    'phone':       getattr(addr, 'phone', '') or '',
-                    'name':        getattr(addr, 'full_name', '') or request.user.get_full_name(),
+                    'phone':  getattr(addr, 'phone', '') or '',
+                    'name':   getattr(addr, 'full_name', '') or request.user.get_full_name() or request.user.email,
                 }
             except Address.DoesNotExist:
-                messages.error(request, 'Selected shipping address not found.')
+                messages.error(request, 'Shipping address not found.')
                 return redirect('orders:checkout')
         else:
             full_name = request.POST.get('full_name', '').strip()
             address1  = request.POST.get('address_line1', '').strip()
             city      = request.POST.get('city', '').strip()
-
-            if not full_name:
-                messages.error(request, 'Full name is required.')
+            if not full_name or not address1 or not city:
+                messages.error(request, 'Please fill in all required address fields.')
                 return redirect('orders:checkout')
-            if not address1:
-                messages.error(request, 'Street address is required.')
-                return redirect('orders:checkout')
-            if not city:
-                messages.error(request, 'City is required.')
-                return redirect('orders:checkout')
-
             shipping_info = {
                 'line1':       address1,
-                'line2':       request.POST.get('address_line2', ''),
+                'line2':       request.POST.get('address_line2', '').strip(),
                 'city':        city,
-                'state':       request.POST.get('state', ''),
-                'country':     request.POST.get('country', 'Qatar') or 'Qatar',
-                'postal_code': request.POST.get('postal_code', ''),
-                'phone':       request.POST.get('phone', ''),
+                'state':       request.POST.get('state', '').strip(),
+                'country':     request.POST.get('country', 'Qatar').strip() or 'Qatar',
+                'postal_code': request.POST.get('postal_code', '').strip(),
+                'phone':       request.POST.get('phone', '').strip(),
                 'name':        full_name,
             }
 
-        # ── GPS coordinates (optional) ────────────────────────
-        delivery_latitude  = request.POST.get('delivery_latitude', '').strip() or None
-        delivery_longitude = request.POST.get('delivery_longitude', '').strip() or None
+        # ── GPS ───────────────────────────────
+        lat_raw = request.POST.get('delivery_latitude', '').strip() or None
+        lng_raw = request.POST.get('delivery_longitude', '').strip() or None
 
-        # ── Resolve billing address ───────────────────────────
+        # ── Billing address ───────────────────
         same_as_shipping = request.POST.get('same_as_shipping', '')
-        billing_same     = same_as_shipping in ('on', 'true', '1', 'yes', 'True')
+        billing_same = same_as_shipping in ('on', 'true', '1', 'yes', 'True')
 
         if billing_same:
             billing_info = shipping_info.copy()
@@ -201,10 +187,10 @@ def place_order(request):
                 try:
                     baddr = Address.objects.get(id=billing_addr_id, user=request.user)
                     billing_info = {
-                        'line1':       baddr.address_line1,
-                        'line2':       getattr(baddr, 'address_line2', '') or '',
-                        'city':        baddr.city,
-                        'state':       getattr(baddr, 'state', '') or '',
+                        'line1':  baddr.address_line1,
+                        'line2':  getattr(baddr, 'address_line2', '') or '',
+                        'city':   baddr.city,
+                        'state':  getattr(baddr, 'state', '') or '',
                         'country':     baddr.country,
                         'postal_code': getattr(baddr, 'postal_code', '') or '',
                     }
@@ -212,47 +198,46 @@ def place_order(request):
                     billing_info = shipping_info.copy()
             else:
                 billing_info = {
-                    'line1':       request.POST.get('billing_address_line1', ''),
-                    'line2':       '',
-                    'city':        request.POST.get('billing_city', ''),
-                    'state':       '',
-                    'country':     request.POST.get('billing_country', 'Qatar') or 'Qatar',
+                    'line1':  request.POST.get('billing_address_line1', '').strip(),
+                    'line2':  '',
+                    'city':   request.POST.get('billing_city', '').strip(),
+                    'state':  '',
+                    'country':     request.POST.get('billing_country', 'Qatar').strip() or 'Qatar',
                     'postal_code': '',
                 }
 
-        # ── Calculate totals ──────────────────────────────────
+        # ── Totals ────────────────────────────
         subtotal, tax, shipping_amount, total = calculate_cart_totals(cart_items)
 
-        # ── Currency ──────────────────────────────────────────
         try:
             currency = str(getattr(cart, 'currency', None) or 'QAR')
         except Exception:
             currency = 'QAR'
 
-        # ── Create Order record ───────────────────────────────
+        # ── Create order atomically ───────────
         with transaction.atomic():
             order = Order.objects.create(
-                order_number             = generate_order_number(),
-                customer                 = request.user,
-                order_type               = 'online',
-                status                   = 'pending',
-                currency                 = currency,
-                subtotal                 = subtotal,
-                tax_amount               = tax,
-                shipping_amount          = shipping_amount,
-                discount_amount          = Decimal('0.00'),
-                total_amount             = total,
-                customer_email           = request.user.email,
-                customer_phone           = shipping_info.get('phone', ''),
-                customer_name            = shipping_info.get('name', ''),
+                order_number          = generate_order_number(),
+                customer              = request.user,
+                order_type            = 'online',
+                status                = 'pending',
+                currency              = currency,
+                subtotal              = subtotal,
+                tax_amount            = tax,
+                shipping_amount       = shipping_amount,
+                discount_amount       = Decimal('0.00'),
+                total_amount          = total,
+                customer_email        = request.user.email,
+                customer_phone        = shipping_info.get('phone', ''),
+                customer_name         = shipping_info.get('name', ''),
                 shipping_address_line1   = shipping_info.get('line1', ''),
                 shipping_address_line2   = shipping_info.get('line2', ''),
                 shipping_city            = shipping_info.get('city', ''),
                 shipping_state           = shipping_info.get('state', ''),
                 shipping_country         = shipping_info.get('country', 'Qatar'),
                 shipping_postal_code     = shipping_info.get('postal_code', ''),
-                delivery_latitude        = safe_decimal(delivery_latitude) if delivery_latitude else None,
-                delivery_longitude       = safe_decimal(delivery_longitude) if delivery_longitude else None,
+                delivery_latitude        = safe_decimal(lat_raw) if lat_raw else None,
+                delivery_longitude       = safe_decimal(lng_raw) if lng_raw else None,
                 billing_same_as_shipping = billing_same,
                 billing_address_line1    = billing_info.get('line1', ''),
                 billing_address_line2    = billing_info.get('line2', ''),
@@ -265,7 +250,6 @@ def place_order(request):
                 customer_notes           = customer_notes,
             )
 
-            # ── Create Order Items ────────────────────────────────
             for cart_item in cart_items:
                 item_price    = safe_decimal(getattr(cart_item, 'unit_price', 0))
                 lens_price    = safe_decimal(getattr(cart_item, 'lens_price', 0))
@@ -289,7 +273,7 @@ def place_order(request):
                 lens_option_name = ''
                 try:
                     if getattr(cart_item, 'lens_option', None):
-                        lens_option_name = cart_item.lens_option.name or ''
+                        lens_option_name = str(cart_item.lens_option.name or '')
                 except Exception:
                     pass
 
@@ -313,7 +297,6 @@ def place_order(request):
                     special_instructions     = getattr(cart_item, 'special_instructions', '') or '',
                 )
 
-                # Lens add-ons — wrapped safely
                 try:
                     for addon_item in cart_item.lens_addons.all():
                         addon_obj = getattr(addon_item, 'addon', None)
@@ -324,10 +307,9 @@ def place_order(request):
                                 addon_name = getattr(addon_obj, 'name', ''),
                                 price      = safe_decimal(getattr(addon_item, 'price', 0)),
                             )
-                except Exception as addon_err:
-                    logger.warning(f"Addon error for cart_item {cart_item.id}: {addon_err}")
+                except Exception as e:
+                    logger.warning(f"Addon error cart_item {cart_item.id}: {e}")
 
-            # Initial status history
             OrderStatusHistory.objects.create(
                 order      = order,
                 to_status  = 'pending',
@@ -335,9 +317,9 @@ def place_order(request):
                 changed_by = request.user,
             )
 
-        logger.info(f"Order {order.order_number} created for {request.user.email} | method={payment_method} | total={total}")
+        logger.info(f"Order {order.order_number} created | user={request.user.email} | method={payment_method} | total={total}")
 
-        # ── Route to payment ──────────────────────────────────
+        # ── Route to payment ──────────────────
         if payment_method == 'cash_on_delivery':
             cart.items.all().delete()
             order.status       = 'confirmed'
@@ -371,14 +353,14 @@ def place_order(request):
             return redirect('orders:checkout')
 
     except Exception as e:
-        logger.error(f"place_order CRASH — {type(e).__name__}: {e}", exc_info=True)
-        messages.error(request, f'Something went wrong placing your order. Please try again.')
+        logger.error(f"place_order error — {type(e).__name__}: {e}", exc_info=True)
+        messages.error(request, 'Something went wrong. Please try again.')
         return redirect('orders:checkout')
 
 
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 # SADAD
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 
 @login_required
 def sadad_payment(request, order_number):
@@ -397,7 +379,7 @@ def sadad_payment(request, order_number):
         })
     except SadadPaymentError as e:
         logger.error(f"Sadad config error: {e}")
-        messages.error(request, str(e))
+        messages.error(request, f'Sadad not configured: {e}')
         return redirect('orders:checkout')
     except Exception as e:
         logger.error(f"sadad_payment error: {e}", exc_info=True)
@@ -408,7 +390,7 @@ def sadad_payment(request, order_number):
 @csrf_exempt
 def sadad_payment_return(request):
     post_data = request.POST.dict() if request.method == 'POST' else request.GET.dict()
-    logger.info(f"Sadad callback: {post_data}")
+    logger.info(f"Sadad return callback: {post_data}")
     order_id = post_data.get('ORDERID', '').strip()
 
     if not order_id:
@@ -433,13 +415,12 @@ def sadad_payment_return(request):
             order.payment_status           = 'failed'
             order.payment_gateway_response = post_data
             order.save(update_fields=['payment_status', 'payment_gateway_response'])
-            msg = ('Security check failed.' if not verify['checksum_valid']
-                   else f"Payment failed: {verify.get('resp_msg', 'unknown error')}")
+            msg = 'Security check failed.' if not verify['checksum_valid'] else f"Payment failed: {verify.get('resp_msg','unknown')}"
             messages.error(request, msg)
             return redirect('orders:checkout')
     except Exception as e:
         logger.error(f"sadad_payment_return error: {e}", exc_info=True)
-        messages.error(request, f'Payment processing error: {str(e)}')
+        messages.error(request, 'Payment processing error.')
         return redirect('orders:order_list')
 
 
@@ -505,22 +486,21 @@ def _mark_order_paid_sadad(order, verify_result):
         )
     )
 
-    cart = Cart.objects.filter(customer=order.customer).first()
-    if cart:
-        cart.items.all().delete()
+    Cart.objects.filter(customer=order.customer).first() and \
+        Cart.objects.filter(customer=order.customer).first().items.all().delete()
 
     OrderStatusHistory.objects.create(
         order       = order,
         from_status = 'pending',
         to_status   = 'confirmed',
-        notes       = f"Paid via Sadad (txn: {verify_result.get('transaction_id', '')})",
+        notes       = f"Paid via Sadad (txn: {verify_result.get('transaction_id','')})",
         changed_by  = order.customer,
     )
 
 
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 # STRIPE
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 
 @login_required
 def stripe_payment(request, order_number):
@@ -566,9 +546,9 @@ def stripe_payment_confirm(request, order_number):
         return JsonResponse({'success': False, 'error': str(e)})
 
 
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 # RAZORPAY
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 
 @login_required
 def razorpay_payment(request, order_number):
@@ -588,7 +568,7 @@ def razorpay_payment(request, order_number):
                 'amount':            result['amount'],
                 'currency':          result['currency'],
             })
-        messages.error(request, result.get('error'))
+        messages.error(request, result.get('error', 'Razorpay error'))
         return redirect('orders:checkout')
     except Exception as e:
         logger.error(f"razorpay_payment error: {e}", exc_info=True)
@@ -625,9 +605,9 @@ def razorpay_payment_verify(request):
         return JsonResponse({'success': False, 'error': str(e)})
 
 
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 # PAYPAL
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 
 @login_required
 def paypal_payment(request, order_number):
@@ -645,7 +625,7 @@ def paypal_payment(request, order_number):
             order.payment_transaction_id = result['payment_id']
             order.save()
             return redirect(result['approval_url'])
-        messages.error(request, result.get('error'))
+        messages.error(request, result.get('error', 'PayPal error'))
         return redirect('orders:checkout')
     except Exception as e:
         logger.error(f"paypal_payment error: {e}", exc_info=True)
@@ -672,7 +652,7 @@ def paypal_execute(request, order_number):
             get_or_create_cart(request).items.all().delete()
             messages.success(request, '✅ Payment successful!')
             return redirect('orders:order_confirmation', order_number=order.order_number)
-        messages.error(request, result.get('error'))
+        messages.error(request, result.get('error', 'PayPal error'))
         return redirect('orders:checkout')
     except Exception as e:
         logger.error(f"paypal_execute error: {e}", exc_info=True)
@@ -680,9 +660,9 @@ def paypal_execute(request, order_number):
         return redirect('orders:checkout')
 
 
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 # ORDER MANAGEMENT
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 
 @login_required
 def order_confirmation(request, order_number):
@@ -692,7 +672,7 @@ def order_confirmation(request, order_number):
 
 @login_required
 def order_list(request):
-    orders        = Order.objects.filter(customer=request.user).order_by('-created_at')
+    orders = Order.objects.filter(customer=request.user).order_by('-created_at')
     status_filter = request.GET.get('status')
     if status_filter and status_filter != 'all':
         orders = orders.filter(status=status_filter)
@@ -716,9 +696,9 @@ def order_detail(request, order_number):
 
 @login_required
 def track_order(request, order_number):
-    order              = get_object_or_404(Order, order_number=order_number, customer=request.user)
+    order = get_object_or_404(Order, order_number=order_number, customer=request.user)
     status_progression = ['pending', 'confirmed', 'processing', 'shipped', 'delivered']
-    current_index      = status_progression.index(order.status) if order.status in status_progression else 0
+    current_index = status_progression.index(order.status) if order.status in status_progression else 0
     return render(request, 'track_order.html', {
         'order':                order,
         'status_history':       order.status_history.all(),
