@@ -1,4 +1,4 @@
-# orders/views.py - COMPLETE WITH ALL PAYMENT INTEGRATIONS
+# orders/views.py - COMPLETE FIXED VERSION
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -82,32 +82,35 @@ def checkout(request):
     total    = subtotal + tax + shipping
 
     context = {
-        'cart':                 cart,
-        'cart_items':           cart_items,
-        'shipping_addresses':   shipping_addresses,
-        'default_shipping':     default_shipping,
-        'default_billing':      default_billing,
-        'subtotal':             subtotal,
-        'tax':                  tax,
-        'shipping':             shipping,
-        'total':                total,
+        'cart':                   cart,
+        'cart_items':             cart_items,
+        'shipping_addresses':     shipping_addresses,
+        'default_shipping':       default_shipping,
+        'default_billing':        default_billing,
+        'subtotal':               subtotal,
+        'tax':                    tax,
+        'shipping':               shipping,
+        'total':                  total,
         'stripe_publishable_key': getattr(settings, 'STRIPE_PUBLISHABLE_KEY', ''),
-        'razorpay_key_id':      getattr(settings, 'RAZORPAY_KEY_ID', ''),
+        'razorpay_key_id':        getattr(settings, 'RAZORPAY_KEY_ID', ''),
     }
     return render(request, 'checkout.html', context)
 
 
 # ─────────────────────────────────────────────────────────────
-# PLACE ORDER
+# PLACE ORDER  — NOTE: no @transaction.atomic here on purpose.
+# We commit the order BEFORE redirecting to the payment gateway
+# so that the order exists when the gateway callback comes back.
 # ─────────────────────────────────────────────────────────────
 
 @login_required
 @require_POST
-@transaction.atomic
 def place_order(request):
     try:
         cart       = get_or_create_cart(request)
-        cart_items = cart.items.all()
+        cart_items = cart.items.select_related(
+            'product', 'variant', 'lens_option'
+        ).prefetch_related('lens_addons', 'lens_addons__addon')
 
         if not cart_items.exists():
             messages.error(request, 'Your cart is empty.')
@@ -116,20 +119,24 @@ def place_order(request):
         payment_method = request.POST.get('payment_method', '').strip()
         customer_notes = request.POST.get('customer_notes', '')
 
+        if not payment_method:
+            messages.error(request, 'Please select a payment method.')
+            return redirect('orders:checkout')
+
         # ── Shipping address ──────────────────────────────────
         if request.POST.get('shipping_address_id'):
             shipping_address = get_object_or_404(
                 Address, id=request.POST.get('shipping_address_id'), user=request.user
             )
             shipping_info = {
-                'line1':        shipping_address.address_line1,
-                'line2':        shipping_address.address_line2 or '',
-                'city':         shipping_address.city,
-                'state':        shipping_address.state or '',
-                'country':      shipping_address.country,
-                'postal_code':  shipping_address.postal_code or '',
-                'phone':        shipping_address.phone or '',
-                'name':         shipping_address.full_name,
+                'line1':       shipping_address.address_line1,
+                'line2':       shipping_address.address_line2 or '',
+                'city':        shipping_address.city,
+                'state':       shipping_address.state or '',
+                'country':     shipping_address.country,
+                'postal_code': shipping_address.postal_code or '',
+                'phone':       shipping_address.phone or '',
+                'name':        shipping_address.full_name,
             }
         else:
             shipping_info = {
@@ -183,11 +190,11 @@ def place_order(request):
                 item_total += addon.price * item.quantity
             subtotal += item_total
 
-        tax               = Decimal('0.00')
-        shipping_amount   = Decimal('0.00') if subtotal >= Decimal('200.00') else Decimal('20.00')
-        total             = subtotal + tax + shipping_amount
+        tax             = Decimal('0.00')
+        shipping_amount = Decimal('0.00') if subtotal >= Decimal('200.00') else Decimal('20.00')
+        total           = subtotal + tax + shipping_amount
 
-        # ── Create Order ──────────────────────────────────────
+        # ── Create Order (committed immediately — NOT inside atomic) ──
         order = Order.objects.create(
             order_number             = generate_order_number(),
             customer                 = request.user,
@@ -238,17 +245,17 @@ def place_order(request):
                     'color': cart_item.variant.color_name if cart_item.variant else None,
                     'size':  cart_item.variant.size       if cart_item.variant else None,
                 },
-                quantity                    = cart_item.quantity,
-                unit_price                  = cart_item.unit_price,
-                requires_prescription       = cart_item.requires_prescription,
-                lens_option                 = cart_item.lens_option,
-                lens_option_name            = cart_item.lens_option.name if cart_item.lens_option else '',
-                lens_price                  = cart_item.lens_price,
-                prescription_data           = cart_item.prescription_data,
-                contact_lens_left_power     = cart_item.contact_lens_left_power,
-                contact_lens_right_power    = cart_item.contact_lens_right_power,
-                subtotal                    = item_subtotal,
-                special_instructions        = cart_item.special_instructions,
+                quantity                 = cart_item.quantity,
+                unit_price               = cart_item.unit_price,
+                requires_prescription    = cart_item.requires_prescription,
+                lens_option              = cart_item.lens_option,
+                lens_option_name         = cart_item.lens_option.name if cart_item.lens_option else '',
+                lens_price               = cart_item.lens_price,
+                prescription_data        = cart_item.prescription_data,
+                contact_lens_left_power  = cart_item.contact_lens_left_power,
+                contact_lens_right_power = cart_item.contact_lens_right_power,
+                subtotal                 = item_subtotal,
+                special_instructions     = cart_item.special_instructions,
             )
 
             for addon_item in cart_item.lens_addons.all():
@@ -273,6 +280,10 @@ def place_order(request):
             messages.success(request, 'Order placed successfully! Pay when your order arrives.')
             return redirect('orders:order_confirmation', order_number=order.order_number)
 
+        elif payment_method == 'sadad':
+            # Redirect straight to sadad_payment view — no intermediate page
+            return redirect('orders:sadad_payment', order_number=order.order_number)
+
         elif payment_method == 'stripe':
             return redirect('orders:stripe_payment', order_number=order.order_number)
 
@@ -282,12 +293,9 @@ def place_order(request):
         elif payment_method == 'paypal':
             return redirect('orders:paypal_payment', order_number=order.order_number)
 
-        elif payment_method == 'sadad':
-            return redirect('orders:sadad_payment', order_number=order.order_number)
-
         else:
             messages.error(request, f'Unknown payment method: "{payment_method}". Please try again.')
-            order.delete()   # roll back the order — user can resubmit
+            order.delete()
             return redirect('orders:checkout')
 
     except Exception as e:
@@ -315,8 +323,8 @@ def stripe_payment(request, order_number):
             order.payment_transaction_id = result['payment_intent_id']
             order.save()
             context = {
-                'order':                 order,
-                'client_secret':         result['client_secret'],
+                'order':                  order,
+                'client_secret':          result['client_secret'],
                 'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY,
             }
             return render(request, 'stripe_payment.html', context)
@@ -398,11 +406,11 @@ def razorpay_payment(request, order_number):
             order.payment_transaction_id = result['razorpay_order_id']
             order.save()
             context = {
-                'order':              order,
-                'razorpay_order_id':  result['razorpay_order_id'],
-                'razorpay_key_id':    result['key_id'],
-                'amount':             result['amount'],
-                'currency':           result['currency'],
+                'order':             order,
+                'razorpay_order_id': result['razorpay_order_id'],
+                'razorpay_key_id':   result['key_id'],
+                'amount':            result['amount'],
+                'currency':          result['currency'],
             }
             return render(request, 'razorpay_payment.html', context)
         else:
@@ -417,14 +425,12 @@ def razorpay_payment(request, order_number):
 @require_POST
 def razorpay_payment_verify(request):
     try:
-        data = json.loads(request.body)
-
+        data                = json.loads(request.body)
         razorpay_order_id   = data.get('razorpay_order_id')
         razorpay_payment_id = data.get('razorpay_payment_id')
         razorpay_signature  = data.get('razorpay_signature')
 
-        order = Order.objects.get(payment_transaction_id=razorpay_order_id)
-
+        order  = Order.objects.get(payment_transaction_id=razorpay_order_id)
         result = RazorpayPaymentService.verify_payment(
             razorpay_order_id, razorpay_payment_id, razorpay_signature
         )
@@ -495,8 +501,7 @@ def paypal_payment(request, order_number):
             reverse('orders:paypal_execute', args=[order.order_number])
         )
         cancel_url = request.build_absolute_uri(reverse('orders:checkout'))
-
-        result = PayPalPaymentService.create_payment(order, return_url, cancel_url)
+        result     = PayPalPaymentService.create_payment(order, return_url, cancel_url)
 
         if result['success']:
             order.payment_gateway        = 'paypal'
@@ -513,16 +518,15 @@ def paypal_payment(request, order_number):
 
 @login_required
 def paypal_execute(request, order_number):
-    order = get_object_or_404(Order, order_number=order_number, customer=request.user)
+    order      = get_object_or_404(Order, order_number=order_number, customer=request.user)
+    payment_id = request.GET.get('paymentId')
+    payer_id   = request.GET.get('PayerID')
+
+    if not payment_id or not payer_id:
+        messages.error(request, 'Payment cancelled or invalid.')
+        return redirect('orders:checkout')
 
     try:
-        payment_id = request.GET.get('paymentId')
-        payer_id   = request.GET.get('PayerID')
-
-        if not payment_id or not payer_id:
-            messages.error(request, 'Payment cancelled or invalid.')
-            return redirect('orders:checkout')
-
         result = PayPalPaymentService.execute_payment(payment_id, payer_id)
 
         if result['success']:
@@ -569,15 +573,23 @@ def paypal_execute(request, order_number):
 
 
 # ─────────────────────────────────────────────────────────────
-# SADAD  (Qatar)
+# SADAD (Qatar) — Web Checkout 2.1
+# ─────────────────────────────────────────────────────────────
+#
+# FLOW:
+#   1. place_order  →  redirect to sadad_payment (GET)
+#   2. sadad_payment builds the AES-signed form, renders sadad_redirect.html
+#   3. sadad_redirect.html auto-submits form → Sadad hosted checkout
+#   4. Customer pays on Sadad's page
+#   5. Sadad POSTs result to CALLBACK_URL (sadad_payment_return)
+#   6. sadad_payment_return verifies checksum, marks order paid
 # ─────────────────────────────────────────────────────────────
 
 @login_required
 def sadad_payment(request, order_number):
     """
-    Renders a hidden auto-submit HTML form that POSTs the customer directly
-    to Sadad's hosted checkout page (Web Checkout 2.1).
-    No REST API call is made here — the form IS the payment initiation.
+    GET: Build Sadad form fields + checksumhash, render auto-submit page.
+    This is a GET view — place_order redirects here with a 302.
     """
     order = get_object_or_404(Order, order_number=order_number, customer=request.user)
 
@@ -586,13 +598,13 @@ def sadad_payment(request, order_number):
         return redirect('orders:order_confirmation', order_number=order.order_number)
 
     try:
+        # Build the signed form data for Sadad Web Checkout 2.1
         form_data = SadadPaymentService.build_payment_form_data(order)
 
-        # Store that we're attempting Sadad payment
-        order.payment_gateway = 'sadad'
-        # Store the order_number as the reference (it becomes ORDERID in Sadad callback)
-        order.payment_transaction_id = order.order_number
-        order.save()
+        # Record that this order is going through Sadad
+        order.payment_gateway        = 'sadad'
+        order.payment_transaction_id = order.order_number  # ORDERID we send to Sadad
+        order.save(update_fields=['payment_gateway', 'payment_transaction_id'])
 
         context = {
             'order':       order,
@@ -602,23 +614,20 @@ def sadad_payment(request, order_number):
         return render(request, 'orders/sadad_redirect.html', context)
 
     except SadadPaymentError as e:
-        logger.error(f"Sadad config error: {e}")
-        messages.error(request, str(e))
+        logger.error(f"Sadad config error for order {order_number}: {e}")
+        messages.error(request, f'Sadad is not configured: {e}')
         return redirect('orders:checkout')
     except Exception as e:
-        logger.error(f"sadad_payment view error: {e}", exc_info=True)
+        logger.error(f"sadad_payment error for order {order_number}: {e}", exc_info=True)
         messages.error(request, f'Error initializing Sadad payment: {str(e)}')
         return redirect('orders:checkout')
 
 
-@csrf_exempt    
+@csrf_exempt   # Sadad POSTs to this URL — must be CSRF-exempt
 def sadad_payment_return(request):
     """
-    Sadad POSTs the payment result to CALLBACK_URL after payment.
-    Verify the checksumhash, then update the order.
-
-    NOTE: Sadad sends POST (not GET) to the callback URL.
-          We accept both just in case.
+    Sadad POSTs payment result here (CALLBACK_URL).
+    Supports both POST (normal) and GET (browser redirect fallback).
     """
     if request.method == 'POST':
         post_data = request.POST.dict()
@@ -627,70 +636,73 @@ def sadad_payment_return(request):
 
     logger.info(f"Sadad callback received: {post_data}")
 
-    order_id = post_data.get('ORDERID', '')
+    # Sadad sends ORDERID (the order_number we passed as ORDER_ID)
+    order_id = post_data.get('ORDERID', '').strip()
 
     if not order_id:
-        messages.error(request, 'Invalid payment callback. No order reference received.')
+        logger.warning("Sadad callback: missing ORDERID in payload")
+        messages.error(request, 'Invalid payment response — no order reference.')
         return redirect('orders:order_list')
 
     try:
         order = Order.objects.filter(order_number=order_id).first()
-
         if not order:
-            logger.error(f"Sadad callback: order not found for ORDERID={order_id}")
+            logger.error(f"Sadad callback: no order found for ORDERID={order_id}")
             messages.error(request, 'Order not found.')
             return redirect('orders:order_list')
 
+        # Already paid (e.g. webhook arrived first) — just redirect
         if order.payment_status == 'completed':
             return redirect('orders:order_confirmation', order_number=order.order_number)
 
-        # Verify the checksum and payment status
+        # Verify checksumhash and RESPCODE
         verify_result = SadadPaymentService.verify_callback(post_data)
+        logger.info(f"Sadad verify result for {order_id}: {verify_result}")
 
         if verify_result['paid']:
             _mark_order_paid_sadad(order, verify_result)
             messages.success(request, '✅ Payment successful! Your order is confirmed.')
             return redirect('orders:order_confirmation', order_number=order.order_number)
         else:
-            # Payment failed or checksum invalid
             order.payment_status           = 'failed'
             order.payment_gateway_response = post_data
-            order.save()
+            order.save(update_fields=['payment_status', 'payment_gateway_response'])
 
-            resp_msg = verify_result.get('resp_msg', '')
-            if not verify_result['checksum_valid']:
-                resp_msg = 'Security verification failed. Please contact support.'
-
-            messages.error(
-                request,
-                f"Payment was not completed. {resp_msg} "
-                "Please try again or choose a different payment method."
-            )
+            if not verify_result.get('checksum_valid'):
+                error_msg = 'Payment security check failed. Please contact support.'
+            else:
+                error_msg = (
+                    f"Payment not completed (code: {verify_result.get('resp_code', '?')}, "
+                    f"reason: {verify_result.get('resp_msg', 'unknown')}). "
+                    "Please try again."
+                )
+            messages.error(request, error_msg)
             return redirect('orders:checkout')
 
     except Exception as e:
         logger.error(f"sadad_payment_return error: {e}", exc_info=True)
-        messages.error(request, f'Error processing payment: {str(e)}')
+        messages.error(request, f'Error processing Sadad payment: {str(e)}')
         return redirect('orders:order_list')
+
 
 @csrf_exempt
 @require_POST
 def sadad_webhook(request):
     """
-    Optional: Sadad server-to-server webhook for payment events.
-    Configure webhook URL in panel.sadad.qa → Webhook Settings.
+    Server-to-server webhook from Sadad.
+    Configure in panel.sadad.qa → Webhook Settings.
     """
     try:
         try:
             data = json.loads(request.body)
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, ValueError):
             data = request.POST.dict()
 
-        logger.info(f"Sadad webhook received: {data}")
+        logger.info(f"Sadad webhook: {data}")
 
-        order_id       = str(data.get('ORDERID') or data.get('invoiceId') or data.get('id', ''))
-        resp_code      = str(data.get('RESPCODE', ''))
-        transaction_id = str(data.get('transaction_number') or data.get('transactionId', ''))
+        order_id       = str(data.get('ORDERID') or data.get('invoiceId') or data.get('id', '')).strip()
+        resp_code      = str(data.get('RESPCODE', '')).strip()
+        transaction_id = str(data.get('transaction_number') or data.get('transactionId', '')).strip()
 
         if not order_id:
             return HttpResponse("Missing ORDERID", status=400)
@@ -698,7 +710,7 @@ def sadad_webhook(request):
         try:
             order = Order.objects.get(order_number=order_id)
         except Order.DoesNotExist:
-            logger.warning(f"Sadad webhook: order not found for ORDERID={order_id}")
+            logger.warning(f"Sadad webhook: no order for ORDERID={order_id}")
             return HttpResponse("Order not found", status=404)
 
         if resp_code == '1' and order.payment_status != 'completed':
@@ -718,8 +730,8 @@ def sadad_webhook(request):
         elif resp_code not in ('', '1') and order.payment_status not in ('completed', 'failed'):
             order.payment_status           = 'failed'
             order.payment_gateway_response = data
-            order.save()
-            logger.info(f"Sadad webhook: order {order.order_number} marked FAILED (RESPCODE={resp_code})")
+            order.save(update_fields=['payment_status', 'payment_gateway_response'])
+            logger.info(f"Sadad webhook: order {order.order_number} FAILED (RESPCODE={resp_code})")
 
         return HttpResponse("OK", status=200)
 
@@ -729,12 +741,12 @@ def sadad_webhook(request):
 
 
 # ─────────────────────────────────────────────────────────────
-# SADAD HELPERS
+# SADAD SHARED HELPER
 # ─────────────────────────────────────────────────────────────
 
 @transaction.atomic
 def _mark_order_paid_sadad(order, verify_result: dict):
-    """Mark order as paid after confirmed Sadad payment."""
+    """Mark order paid and record PaymentTransaction. Used by both callback and webhook."""
     order.payment_status           = 'completed'
     order.payment_gateway_response = verify_result.get('raw', verify_result)
     order.paid_at                  = timezone.now()
@@ -742,23 +754,23 @@ def _mark_order_paid_sadad(order, verify_result: dict):
     order.confirmed_at             = timezone.now()
     order.save()
 
+    # get_or_create prevents duplicate transactions if both callback + webhook fire
     PaymentTransaction.objects.get_or_create(
         order                  = order,
-        gateway_transaction_id = verify_result.get('transaction_id', order.order_number),
+        gateway_transaction_id = verify_result.get('transaction_id') or order.order_number,
         defaults=dict(
-            transaction_id         = generate_transaction_id(),
-            transaction_type       = 'payment',
-            status                 = 'completed',
-            amount                 = order.total_amount,
-            currency               = order.currency,
-            payment_gateway        = 'sadad',
-            payment_method         = 'sadad',
-            gateway_response       = verify_result.get('raw', verify_result),
-            completed_at           = timezone.now(),
+            transaction_id   = generate_transaction_id(),
+            transaction_type = 'payment',
+            status           = 'completed',
+            amount           = order.total_amount,
+            currency         = order.currency,
+            payment_gateway  = 'sadad',
+            payment_method   = 'sadad',
+            gateway_response = verify_result.get('raw', verify_result),
+            completed_at     = timezone.now(),
         )
     )
 
-    # Clear the cart
     cart = Cart.objects.filter(customer=order.customer).first()
     if cart:
         cart.items.all().delete()
@@ -768,44 +780,6 @@ def _mark_order_paid_sadad(order, verify_result: dict):
         from_status = 'pending',
         to_status   = 'confirmed',
         notes       = f"Payment confirmed via Sadad (txn: {verify_result.get('transaction_id', '')})",
-        changed_by  = order.customer,
-    )
-
-
-
-@transaction.atomic
-def _mark_order_paid_webhook(order, verify_result: dict):
-    """Same as above but called from webhook (no request object)."""
-    order.payment_status           = 'completed'
-    order.payment_gateway_response = verify_result.get('raw', verify_result)
-    order.paid_at                  = timezone.now()
-    order.status                   = 'confirmed'
-    order.confirmed_at             = timezone.now()
-    order.save()
-
-    PaymentTransaction.objects.create(
-        order                  = order,
-        transaction_id         = generate_transaction_id(),
-        gateway_transaction_id = verify_result.get('transaction_id', ''),
-        transaction_type       = 'payment',
-        status                 = 'completed',
-        amount                 = order.total_amount,
-        currency               = order.currency,
-        payment_gateway        = 'sadad',
-        payment_method         = 'sadad',
-        gateway_response       = verify_result.get('raw', verify_result),
-        completed_at           = timezone.now(),
-    )
-
-    cart = Cart.objects.filter(customer=order.customer).first()
-    if cart:
-        cart.items.all().delete()
-
-    OrderStatusHistory.objects.create(
-        order       = order,
-        from_status = 'pending',
-        to_status   = 'confirmed',
-        notes       = 'Payment confirmed via Sadad (webhook)',
         changed_by  = order.customer,
     )
 
@@ -822,52 +796,41 @@ def order_confirmation(request, order_number):
 
 @login_required
 def order_list(request):
-    orders = Order.objects.filter(customer=request.user).order_by('-created_at')
-
+    orders        = Order.objects.filter(customer=request.user).order_by('-created_at')
     status_filter = request.GET.get('status')
     if status_filter and status_filter != 'all':
         orders = orders.filter(status=status_filter)
 
-    context = {
+    return render(request, 'order_list.html', {
         'orders':         orders,
         'status_filter':  status_filter,
         'order_statuses': Order.ORDER_STATUS,
-    }
-    return render(request, 'order_list.html', context)
+    })
 
 
 @login_required
 def order_detail(request, order_number):
     order = get_object_or_404(Order, order_number=order_number, customer=request.user)
-
-    order_items          = order.items.select_related('product', 'variant', 'lens_option').prefetch_related('lens_addons')
-    status_history       = order.status_history.all()
-    payment_transactions = order.payment_transactions.all()
-
-    context = {
+    return render(request, 'order_detail.html', {
         'order':                order,
-        'order_items':          order_items,
-        'status_history':       status_history,
-        'payment_transactions': payment_transactions,
-    }
-    return render(request, 'order_detail.html', context)
+        'order_items':          order.items.select_related('product', 'variant', 'lens_option').prefetch_related('lens_addons'),
+        'status_history':       order.status_history.all(),
+        'payment_transactions': order.payment_transactions.all(),
+    })
 
 
 @login_required
 def track_order(request, order_number):
-    order = get_object_or_404(Order, order_number=order_number, customer=request.user)
-
-    status_history     = order.status_history.all()
+    order              = get_object_or_404(Order, order_number=order_number, customer=request.user)
     status_progression = ['pending', 'confirmed', 'processing', 'shipped', 'delivered']
     current_index      = status_progression.index(order.status) if order.status in status_progression else 0
 
-    context = {
+    return render(request, 'track_order.html', {
         'order':                order,
-        'status_history':       status_history,
+        'status_history':       order.status_history.all(),
         'status_progression':   status_progression,
         'current_status_index': current_index,
-    }
-    return render(request, 'track_order.html', context)
+    })
 
 
 @login_required
