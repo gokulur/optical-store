@@ -575,10 +575,9 @@ def paypal_execute(request, order_number):
 @login_required
 def sadad_payment(request, order_number):
     """
-    Initiates Sadad payment:
-      1. Creates a Sadad invoice via API
-      2. Stores the invoice ID on the order
-      3. Redirects customer to Sadad's hosted checkout page
+    Renders a hidden auto-submit HTML form that POSTs the customer directly
+    to Sadad's hosted checkout page (Web Checkout 2.1).
+    No REST API call is made here — the form IS the payment initiation.
     """
     order = get_object_or_404(Order, order_number=order_number, customer=request.user)
 
@@ -587,21 +586,20 @@ def sadad_payment(request, order_number):
         return redirect('orders:order_confirmation', order_number=order.order_number)
 
     try:
-        result = SadadPaymentService.create_invoice(order)
+        form_data = SadadPaymentService.build_payment_form_data(order)
 
-        if result['success']:
-            order.payment_gateway        = 'sadad'
-            order.payment_transaction_id = result['invoice_id']
-            order.payment_gateway_response = {
-                'invoice_id':  result['invoice_id'],
-                'invoice_key': result['invoice_key'],
-                'payment_url': result['payment_url'],
-            }
-            order.save()
-            return redirect(result['payment_url'])
-        else:
-            messages.error(request, f"Could not initiate Sadad payment: {result.get('error')}")
-            return redirect('orders:checkout')
+        # Store that we're attempting Sadad payment
+        order.payment_gateway = 'sadad'
+        # Store the order_number as the reference (it becomes ORDERID in Sadad callback)
+        order.payment_transaction_id = order.order_number
+        order.save()
+
+        context = {
+            'order':       order,
+            'action_url':  form_data['action_url'],
+            'form_fields': form_data['fields'],
+        }
+        return render(request, 'orders/sadad_redirect.html', context)
 
     except SadadPaymentError as e:
         logger.error(f"Sadad config error: {e}")
