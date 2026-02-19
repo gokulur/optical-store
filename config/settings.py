@@ -275,15 +275,17 @@ LANGUAGE_COOKIE_AGE = 31536000  # 1 year
 
 
 
-# ══════════════════════════════════════════════════════════════
-# ADD TO settings.py  — Sadad (Qatar) Payment Gateway
-# ══════════════════════════════════════════════════════════════
+
 
 # ── Sadad ─────────────────────────────────────────────────────
 # Get these from: https://panel.sadad.qa → Integration Settings
-SADAD_MERCHANT_ID = "YOUR_MERCHANT_ID"         
-SADAD_API_KEY     = "YOUR_API_KEY"              
-SADAD_SECRET_KEY  = "YOUR_SECRET_KEY"            
+# SADAD_MERCHANT_ID = "YOUR_MERCHANT_ID"         
+# SADAD_API_KEY     = "YOUR_API_KEY"              
+# SADAD_SECRET_KEY  = "YOUR_SECRET_KEY"       
+#      
+
+ 
+
 
 # Switch to production URL when ready:
 SADAD_BASE_URL    = "https://api-gateway-sandbox.sadad.qa"   
