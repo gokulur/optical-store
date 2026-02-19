@@ -1,885 +1,782 @@
 {% extends 'base.html' %}
-{% block content %}
-<title>{% block title %}{{ product.name }}{% endblock %}</title>
 {% load static %}
+{% block title %}{{ product.name }} - Accessories{% endblock %}
+
+{% block content %}
 
 <style>
-    .shopify-payment-button__button {
-        height: clamp(25px, var(--shopify-accelerated-checkout-button-block-size, 44px), 55px);
-        min-height: clamp(25px, var(--shopify-accelerated-checkout-button-block-size, 44px), 55px);
-        border-radius: var(--shopify-accelerated-checkout-button-border-radius, 0px);
-        width: 100%;
-        border: none;
-        box-shadow: 0 0 0 0 transparent;
-        color: #fff;
-        cursor: pointer;
-        display: block;
-        font-size: 1em;
-        font-weight: 500;
-        line-height: 1;
-        text-align: center;
-        transition: background .2s ease-in-out;
-    }
-    
-    /* Color Lens Swatches */
-    .color-swatch {
-        display: inline-block;
-        margin: 8px;
-        cursor: pointer;
-        text-align: center;
-        transition: transform 0.2s;
-    }
-    
-    .color-swatch:hover {
-        transform: scale(1.05);
-    }
-    
-    .color-swatch.disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-    
-    .color-swatch img {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        border: 2px solid #ddd;
-        object-fit: cover;
-    }
-    
-    .color-swatch.selected img {
-        border-color: #000;
-        border-width: 3px;
-    }
-    
-    .color-swatch-name {
-        font-size: 12px;
-        margin-top: 4px;
-    }
-    
-    .power-badge {
-        font-size: 10px;
-        background: #e8f5e9;
-        color: #2e7d32;
-        padding: 2px 6px;
-        border-radius: 3px;
-        margin-top: 2px;
-        display: inline-block;
-    }
-    
-    /* Lens Selection Modal */
-    .lens-modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0,0,0,0.5);
-    }
-    
-    .lens-modal-content {
-        background-color: #fefefe;
-        margin: 5% auto;
-        padding: 30px;
-        border: 1px solid #888;
-        width: 90%;
-        max-width: 900px;
-        border-radius: 8px;
-        max-height: 80vh;
-        overflow-y: auto;
-    }
-    
-    .lens-option {
-        border: 2px solid #e0e0e0;
-        padding: 20px;
-        margin-bottom: 15px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    
-    .lens-option:hover {
-        border-color: #000;
-        background-color: #f9f9f9;
-    }
-    
-    .lens-option.selected {
-        border-color: #000;
-        background-color: #f0f0f0;
-    }
-    
-    .lens-price {
-        font-size: 24px;
-        font-weight: bold;
-        color: #000;
-    }
-    
-    .addon-item {
-        display: flex;
-        align-items: center;
-        padding: 10px;
-        margin: 8px 0;
-        border: 1px solid #e0e0e0;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-    
-    .addon-item input[type="radio"] {
-        margin-right: 10px;
-    }
-    
-    /* Power Selection */
-    .power-selection {
-        display: none;
-        margin-top: 20px;
-        padding: 20px;
-        background: #f9f9f9;
-        border-radius: 8px;
-    }
-    
-    .power-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin-top: 15px;
-    }
-    
-    .eye-section {
-        border: 1px solid #ddd;
-        padding: 15px;
-        border-radius: 5px;
-    }
-    
-    .power-select {
-        width: 100%;
-        padding: 8px;
-        margin: 5px 0;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-    }
-    
-    /* Stock notification */
-    .stock-notification {
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: #fef3c7;
-        border-left: 4px solid #f59e0b;
-        padding: 16px 24px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        z-index: 99999;
-        transform: translateX(400px);
-        transition: transform 0.3s ease;
-        max-width: 400px;
-    }
-    
-    .stock-notification.show {
-        transform: translateX(0);
-    }
-    
-    .custom-notification {
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: white;
-        padding: 16px 24px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        z-index: 99999;
-        transform: translateX(400px);
-        transition: transform 0.3s ease;
-    }
-    
-    .custom-notification.show {
-        transform: translateX(0);
-    }
-    
-    @media (max-width: 768px) {
-        .lens-modal-content {
-            width: 95%;
-            margin: 10% auto;
-            padding: 20px;
-        }
-        
-        .power-grid {
-            grid-template-columns: 1fr;
-        }
-    }
+  /* ─── DESIGN TOKENS ─────────────────────────────── */
+  :root {
+    --black: #0a0a0a;
+    --white: #fafafa;
+    --gold: #b8976a;
+    --gold-light: #d4b896;
+    --sand: #f5f0e8;
+    --muted: #888;
+    --border: #e5e0d8;
+    --radius: 10px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.08);
+    --transition: all 0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ─── BREADCRUMB ─────────────────────────────────── */
+  .sg-breadcrumb {
+    padding: 14px 0;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+  .sg-breadcrumb a { color: var(--muted); text-decoration: none; }
+  .sg-breadcrumb a:hover { color: var(--black); }
+  .sg-breadcrumb span { margin: 0 6px; }
+
+  /* ─── PRODUCT LAYOUT ─────────────────────────────── */
+  .sg-product-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+    padding: 0 0 60px;
+  }
+  @media (max-width: 900px) {
+    .sg-product-wrap { grid-template-columns: 1fr; gap: 28px; }
+  }
+
+  /* ─── GALLERY ─────────────────────────────────────── */
+  .sg-gallery { position: sticky; top: 100px; }
+  .sg-main-img {
+    width: 100%;
+    aspect-ratio: 1/1;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--sand);
+    position: relative;
+    margin-bottom: 14px;
+    cursor: zoom-in;
+  }
+  .sg-main-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.4s ease;
+    display: block;
+  }
+  .sg-main-img:hover img { transform: scale(1.04); }
+
+  .sg-thumbs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .sg-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--sand);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: var(--transition);
+    flex-shrink: 0;
+  }
+  .sg-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .sg-thumb.active, .sg-thumb:hover { border-color: var(--gold); }
+
+  /* ─── PRODUCT INFO ───────────────────────────────── */
+  .sg-badges {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .sg-badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: var(--sand);
+    color: var(--gold);
+  }
+  .sg-badge.new { background: #f0f7ee; color: #3a8a2e; }
+
+  .sg-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .sg-title {
+    font-size: clamp(22px, 2.4vw, 30px);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--black);
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+
+  .sg-wishlist-btn {
+    background: none;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+  }
+  .sg-wishlist-btn:hover { border-color: #e05f5f; background: #fff0f0; }
+  .sg-wishlist-btn.active { border-color: #e05f5f; background: #fff0f0; }
+
+  .sg-brand { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .sg-brand strong { color: var(--black); }
+  .sg-sku { font-size: 12px; color: #bbb; margin-bottom: 20px; }
+
+  .sg-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: var(--sand);
+    border-radius: var(--radius);
+  }
+  .sg-price {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--black);
+    letter-spacing: -0.03em;
+  }
+  .sg-price-old {
+    font-size: 16px;
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+  .sg-discount-badge {
+    font-size: 12px;
+    font-weight: 700;
+    background: #2a7a2a;
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  /* ─── SECTION LABEL ──────────────────────────────── */
+  .sg-section-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  /* ─── COLOR VARIANTS ─────────────────────────────── */
+  .sg-colors {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .sg-color-swatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .sg-color-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    box-shadow: 0 0 0 1px var(--border);
+    transition: var(--transition);
+    position: relative;
+  }
+  .sg-color-swatch.active .sg-color-dot,
+  .sg-color-swatch:hover .sg-color-dot {
+    box-shadow: 0 0 0 2px var(--gold);
+    transform: scale(1.1);
+  }
+  .sg-color-name { font-size: 11px; color: var(--muted); }
+
+  /* ─── SIZE SELECT ────────────────────────────────── */
+  .sg-size-select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 15px;
+    background: white;
+    color: var(--black);
+    cursor: pointer;
+    transition: var(--transition);
+    margin-bottom: 24px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+  }
+  .sg-size-select:focus { border-color: var(--gold); outline: none; }
+
+  /* ─── QUANTITY ───────────────────────────────────── */
+  .sg-qty-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    width: fit-content;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .sg-qty-btn {
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: var(--sand);
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    color: var(--black);
+  }
+  .sg-qty-btn:hover { background: var(--border); }
+  .sg-qty-input {
+    width: 52px;
+    height: 44px;
+    border: none;
+    border-left: 2px solid var(--border);
+    border-right: 2px solid var(--border);
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--black);
+    background: white;
+  }
+  .sg-qty-input:focus { outline: none; }
+
+  /* ─── ACTION BUTTONS ─────────────────────────────── */
+  .sg-actions { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+
+  .sg-btn-cart {
+    padding: 16px 24px;
+    background: var(--black);
+    border: 2px solid var(--black);
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: var(--transition);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+  }
+  .sg-btn-cart:hover { background: #333; border-color: #333; }
+  .sg-btn-cart.loading { pointer-events: none; opacity: 0.7; }
+
+  .sg-btn-buy {
+    padding: 16px 24px;
+    background: var(--gold);
+    border: 2px solid var(--gold);
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: var(--transition);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    width: 100%;
+  }
+  .sg-btn-buy:hover { background: #a37d55; border-color: #a37d55; }
+
+  /* ─── SHIPPING INFO ───────────────────────────────── */
+  .sg-shipping {
+    background: var(--sand);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .sg-shipping-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--black);
+  }
+  .sg-shipping-icon {
+    width: 32px;
+    height: 32px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ─── SPECS TABLE ────────────────────────────────── */
+  .sg-specs { margin-top: 8px; }
+  .sg-specs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .sg-specs-table tr { border-bottom: 1px solid var(--border); }
+  .sg-specs-table td { padding: 10px 0; vertical-align: top; }
+  .sg-specs-table td:first-child { font-weight: 600; color: var(--black); width: 44%; }
+  .sg-specs-table td:last-child { color: var(--muted); }
+
+  /* ─── DESCRIPTION SECTION ────────────────────────── */
+  .sg-desc-section {
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+  }
+  .sg-section-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--black);
+  }
+  .sg-desc-body { font-size: 15px; line-height: 1.8; color: #555; }
+
+  /* ─── RELATED PRODUCTS ───────────────────────────── */
+  .sg-related-section { padding: 40px 0; border-top: 1px solid var(--border); }
+  .sg-related-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-top: 24px;
+  }
+  @media (max-width: 900px) { .sg-related-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 500px) { .sg-related-grid { grid-template-columns: 1fr 1fr; gap: 12px; } }
+
+  .sg-product-card {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: var(--transition);
+    background: white;
+  }
+  .sg-product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+    border-color: var(--gold-light);
+  }
+  .sg-card-img { aspect-ratio: 1/1; background: var(--sand); overflow: hidden; }
+  .sg-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.4s ease;
+    display: block;
+  }
+  .sg-product-card:hover .sg-card-img img { transform: scale(1.06); }
+  .sg-card-info { padding: 14px; }
+  .sg-card-brand { font-size: 11px; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+  .sg-card-name { font-size: 14px; font-weight: 600; margin: 4px 0; color: var(--black); }
+  .sg-card-price { font-size: 15px; font-weight: 700; color: var(--black); }
+
+  /* ─── TOAST ──────────────────────────────────────── */
+  .sg-toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 99999;
+    background: var(--black);
+    color: white;
+    padding: 14px 22px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.24);
+    transform: translateY(60px);
+    opacity: 0;
+    transition: all 0.32s cubic-bezier(0.4,0,0.2,1);
+    pointer-events: none;
+  }
+  .sg-toast.show { transform: translateY(0); opacity: 1; }
+  .sg-toast.success { background: #2a7a2a; }
+  .sg-toast.error { background: #b42020; }
+
+  /* ─── CONTAINER ──────────────────────────────────── */
+  .sg-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
 </style>
 
-<main class="content-for-layout focus-none" id="xo-main-content" role="main" tabindex="-1">
-    <!-- Breadcrumb -->
-    <section class="shopify-section section">
-        <div class="xo-section color-background-1" style="--margin: 0;--pt: 15;--pb: 15;">
-            <xo-container class="xo-container--box">
-                <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
-                    <ol class="breadcrumb__list" style="--justify:flex-start">
-                        <li class="breadcrumb__item">
-                            <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
-                            <span class="breadcrumb__separator">/</span>
-                        </li>
-                        <li class="breadcrumb__item">
-                            <a class="breadcrumb__link" href=" ">{{ product.category.name }}</a>
-                            <span class="breadcrumb__separator">/</span>
-                        </li>
-                        <li class="breadcrumb__item breadcrumb__item--current">
-                            <a aria-current="page" class="breadcrumb__link breadcrumb--current">{{ product.name }}</a>
-                        </li>
-                    </ol>
-                </nav>
-            </xo-container>
+<div class="sg-container">
+  <!-- Breadcrumb -->
+  <nav class="sg-breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'home' %}">Home</a>
+    <span>/</span>
+    <a href="{% url 'catalog:accessories_list' %}">Accessories</a>
+    <span>/</span>
+    <span style="color: var(--black);">{{ product.name }}</span>
+  </nav>
+
+  <!-- Main Product Section -->
+  <div class="sg-product-wrap">
+
+    <!-- ── GALLERY ── -->
+    <div class="sg-gallery">
+      <div class="sg-main-img" id="mainImgWrap">
+        {% if product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" id="mainImg" />
+        {% endif %}
+      </div>
+      <div class="sg-thumbs" id="thumbStrip">
+        {% if product.image %}
+        <div class="sg-thumb active" onclick="switchImage(this, '{{ product.image.url }}')">
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" />
         </div>
-    </section>
-
-    <!-- Main Product Section -->
-    <section class="shopify-section section">
-        <div class="xo-section color-background-1" style="--margin: 0;--pt: 0;--pb: 0;">
-            <xo-container class="xo-container--box">
-                <xo-grid>
-                    <!-- Product Images -->
-                    <xo-animate style="--xs: 12; --md: 7">
-                        <!-- Desktop Gallery -->
-                        <div class="xo-product-info-media-style3" style="position: sticky;">
-                            <xo-gallery aria-label="Gallery Viewer">
-                                <xo-carousel xo-name="product-information-desktop">
-                                    <div class="xo-product-info-media-style3__top">
-                                        <xo-carousel-inner>
-                                            <xo-carousel-list aria-label="Slider" role="list">
-                                                <!-- Main Product Image -->
-                                                {% if product.image %}
-                                                <xo-carousel-slide class="xo-product-info-media-style3__slide">
-                                                    <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
-                                                        <xo-gallery-item>
-                                                            <div class="xo-product-info-media-style3__image">
-                                                                <div class="xo-media" style="--media-aspect-ratio: 1/1">
-                                                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                                        <img alt="{{ product.name }}" 
-                                                                             src="{{ product.image.url }}" 
-                                                                             loading="lazy" 
-                                                                             id="mainProductImage"/>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </xo-gallery-item>
-                                                    </xo-image-zoom>
-                                                </xo-carousel-slide>
-                                                {% endif %}
-
-                                                <!-- Gallery Images -->
-                                                {% for image in product.images.all %}
-                                                <xo-carousel-slide class="xo-product-info-media-style3__slide">
-                                                    <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
-                                                        <xo-gallery-item>
-                                                            <div class="xo-product-info-media-style3__image">
-                                                                <div class="xo-media" style="--media-aspect-ratio: 1/1">
-                                                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                                        <img alt="{{ product.name }}" 
-                                                                             src="{{ image.image.url }}" 
-                                                                             loading="lazy"/>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </xo-gallery-item>
-                                                    </xo-image-zoom>
-                                                </xo-carousel-slide>
-                                                {% endfor %}
-                                            </xo-carousel-list>
-                                        </xo-carousel-inner>
-                                        
-                                        <!-- Desktop Arrow Navigation -->
-                                        <xo-carousel-prev class="xo-product-info-media-style3__arrow xo-product-info-media-style3__arrow--left">
-                                            <button>
-                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" fill="currentColor"></path>
-                                                </svg>
-                                            </button>
-                                        </xo-carousel-prev>
-                                        <xo-carousel-next class="xo-product-info-media-style3__arrow xo-product-info-media-style3__arrow--right">
-                                            <button>
-                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c12.5-12.5 12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="currentColor"></path>
-                                                </svg>
-                                            </button>
-                                        </xo-carousel-next>
-                                        
-                                        <!-- Desktop Thumbnails -->
-                                        <xo-carousel-thumbnail class="xo-product-info-media-style3__thumbnails" xo-gap="10" xo-per-view="5">
-                                            <xo-carousel-inner>
-                                                <xo-carousel-list>
-                                                    {% if product.image %}
-                                                    <xo-carousel-slide class="xo-product-info-media-style3__thumb-slide">
-                                                        <div class="xo-media" style="--media-aspect-ratio: 1/1">
-                                                            <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                                <img src="{{ product.image.url }}" alt="thumbnail"/>
-                                                            </div>
-                                                        </div>
-                                                    </xo-carousel-slide>
-                                                    {% endif %}
-                                                    {% for image in product.images.all %}
-                                                    <xo-carousel-slide class="xo-product-info-media-style3__thumb-slide">
-                                                        <div class="xo-media" style="--media-aspect-ratio: 1/1">
-                                                            <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                                <img src="{{ image.image.url }}" alt="thumbnail"/>
-                                                            </div>
-                                                        </div>
-                                                    </xo-carousel-slide>
-                                                    {% endfor %}
-                                                </xo-carousel-list>
-                                            </xo-carousel-inner>
-                                        </xo-carousel-thumbnail>
-                                    </div>
-                                </xo-carousel>
-                            </xo-gallery>
-                        </div>
-                        
-                        <!-- Mobile Gallery -->
-                        <div class="xo-product-info-media-mobile">
-                            <xo-gallery aria-label="Gallery Viewer">
-                                <xo-carousel xo-name="product-information-mobile">
-                                    <div class="xo-product-info-media-mobile__top">
-                                        <xo-carousel-inner>
-                                            <xo-carousel-list aria-label="Slider" role="list" style="height: fit-content">
-                                                <!-- Main Product Image Mobile -->
-                                                {% if product.image %}
-                                                <xo-carousel-slide class="xo-product-info-media-mobile__slide">
-                                                    <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
-                                                        <xo-gallery-item>
-                                                            <div class="xo-product-info-media-mobile__image">
-                                                                <div class="xo-media" style="--media-aspect-ratio: 1/1">
-                                                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                                        <img alt="{{ product.name }}" 
-                                                                             src="{{ product.image.url }}" 
-                                                                             loading="lazy"/>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </xo-gallery-item>
-                                                    </xo-image-zoom>
-                                                </xo-carousel-slide>
-                                                {% endif %}
-
-                                                <!-- Gallery Images Mobile -->
-                                                {% for image in product.images.all %}
-                                                <xo-carousel-slide class="xo-product-info-media-mobile__slide">
-                                                    <xo-image-zoom xo-use-wheel="false" xo-zoom="3">
-                                                        <xo-gallery-item>
-                                                            <div class="xo-product-info-media-mobile__image">
-                                                                <div class="xo-media" style="--media-aspect-ratio: 1/1">
-                                                                    <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                                        <img alt="{{ product.name }}" 
-                                                                             src="{{ image.image.url }}" 
-                                                                             loading="lazy"/>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </xo-gallery-item>
-                                                    </xo-image-zoom>
-                                                </xo-carousel-slide>
-                                                {% endfor %}
-                                            </xo-carousel-list>
-                                        </xo-carousel-inner>
-                                        
-                                        <!-- Mobile Arrow Navigation -->
-                                        <xo-carousel-prev class="xo-product-info-media-mobile__arrow xo-product-info-media-mobile__arrow--left">
-                                            <button>
-                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" fill="currentColor"></path>
-                                                </svg>
-                                            </button>
-                                        </xo-carousel-prev>
-                                        <xo-carousel-next class="xo-product-info-media-mobile__arrow xo-product-info-media-mobile__arrow--right">
-                                            <button>
-                                                <svg height="12" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c12.5-12.5 12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="currentColor"></path>
-                                                </svg>
-                                            </button>
-                                        </xo-carousel-next>
-                                    </div>
-                                    
-                                    <!-- Mobile Pagination Dots -->
-                                    <xo-carousel-pagination class="xo-product-info-media-mobile__pagination"></xo-carousel-pagination>
-                                    
-                                    <!-- Mobile Thumbnails -->
-                                    <xo-carousel-thumbnail class="xo-product-info-media-mobile__thumbnails" xo-gap="10" xo-per-view="5">
-                                        <xo-carousel-inner style="padding-bottom: 0.1rem; margin-bottom: -0.1rem;">
-                                            <xo-carousel-list aria-label="Slider" role="list" style="padding-right: 0.2rem; margin-right: -0.2rem;">
-                                                {% if product.image %}
-                                                <xo-carousel-slide class="xo-product-info-media-mobile__thumb-slide">
-                                                    <div class="xo-media" style="--media-aspect-ratio: 1/1">
-                                                        <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                            <img src="{{ product.image.url }}" alt="thumbnail"/>
-                                                        </div>
-                                                    </div>
-                                                </xo-carousel-slide>
-                                                {% endif %}
-                                                {% for image in product.images.all %}
-                                                <xo-carousel-slide class="xo-product-info-media-mobile__thumb-slide">
-                                                    <div class="xo-media" style="--media-aspect-ratio: 1/1">
-                                                        <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                            <img src="{{ image.image.url }}" alt="thumbnail"/>
-                                                        </div>
-                                                    </div>
-                                                </xo-carousel-slide>
-                                                {% endfor %}
-                                            </xo-carousel-list>
-                                        </xo-carousel-inner>
-                                    </xo-carousel-thumbnail>
-                                </xo-carousel>
-                            </xo-gallery>
-                        </div>
-                    </xo-animate>
-
-                    <!-- Product Info -->
-                    <xo-animate class="main-product__right" style="--xs: 12; --md: 5">
-                        <div class="xo-product-info-content" style="position: sticky; top: 9.3rem">
-                            <!-- Product Title -->
-                            <div class="xo-product-info-content__header">
-                                <h1 class="xo-product-info-content__title" style="--fz:2.4rem">
-                                    {{ product.name }}
-                                </h1>
-                                <button class="wishlist-btn circle-btn" data-product-id="{{ product.id }}">
-                                    {% if product in request.user.wishlist.products.all %}
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="red">
-                                        <path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/>
-                                    </svg>
-                                    {% else %}
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
-                                        <path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/>
-                                    </svg>
-                                    {% endif %}
-                                </button>
-                            </div>
-
-                            <!-- Brand -->
-                            {% if product.brand %}
-                            <p style="margin: 10px 0; font-size: 14px; color: #666;">
-                                Brand: <strong>{{ product.brand.name }}</strong>
-                            </p>
-                            {% endif %}
-
-                            <!-- Price -->
-                            <div class="xo-product-info-content__price" style="padding: 20px 0;">
-                                <div class="xo-price xo-price--larger">
-                                    <div class="xo-price__container">
-                                        <div class="xo-price__sale">
-                                            <span class="xo-price__item xo-price__item--accent" id="productPrice">
-                                                QAR {{ product.base_price }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Description -->
-                            <p class="xo-product-info-content__description" style="padding-bottom: 30px;">
-                                {{ product.description|linebreaksbr }}
-                            </p>
-
-                            <!-- Color Selection for Contact Lenses -->
-                            {% if product.product_type == 'contact_lenses' and contact_lens %}
-                            <div style="padding-bottom: 20px;">
-                                <h3 style="font-size: 16px; margin-bottom: 15px;">Select Color:</h3>
-                                <div id="colorSwatches">
-                                    {% for color in colors %}
-                                    <div class="color-swatch {% if not color.is_active %}disabled{% endif %}" 
-                                         data-color-id="{{ color.id }}"
-                                         data-color-name="{{ color.name }}"
-                                         data-power-enabled="{{ color.power_enabled }}"
-                                         onclick="selectColor(this)">
-                                        <img src="{{ color.image.url }}" alt="{{ color.name }}"/>
-                                        <div class="color-swatch-name">{{ color.name }}</div>
-                                        {% if color.power_enabled %}
-                                        <span class="power-badge">Power Available</span>
-                                        {% else %}
-                                        <span class="power-badge" style="background: #fce4ec; color: #c2185b;">Plano Only</span>
-                                        {% endif %}
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            {% endif %}
-
-                            <!-- Product Form -->
-                            <form method="POST" id="product_form_{{ product.id }}">
-                                {% csrf_token %}
-                                <input type="hidden" name="product_id" value="{{ product.id }}">
-                                <input type="hidden" name="selected_color_id" id="selectedColorId">
-                                <input type="hidden" name="selected_lens_option" id="selectedLensOption">
-                                <input type="hidden" name="power_left" id="powerLeft">
-                                <input type="hidden" name="power_right" id="powerRight">
-
-                                <!-- Quantity -->
-                                <xo-cart-quantity class="xo-quantity-style2" style="--width: 13.5rem; --height: 5rem">
-                                    <xo-cart-quantity-minus class="xo-quantity-style2__button">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" viewBox="0 0 10 2">
-                                            <path fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 110 1H1A.5.5 0 01.5 1z" fill="currentColor"/>
-                                        </svg>
-                                    </xo-cart-quantity-minus>
-                                    <input class="xo-quantity-style2__number" 
-                                           type="number" 
-                                           name="quantity" 
-                                           value="1" 
-                                           min="1" 
-                                           max="{{ product.stock }}">
-                                    <xo-cart-quantity-plus class="xo-quantity-style2__button">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" viewBox="0 0 10 10">
-                                            <path fill-rule="evenodd" d="M1 4.51a.5.5 0 000 1h3.5l.01 3.5a.5.5 0 001-.01V5.5l3.5-.01a.5.5 0 00-.01-1H5.5L5.49.99a.5.5 0 00-1 .01v3.5l-3.5.01H1z" fill="currentColor"/>
-                                        </svg>
-                                    </xo-cart-quantity-plus>
-                                </xo-cart-quantity>
-
-                                <div class="xo-space xo-space--vertical" style="--space: 2.5rem"></div>
-
-                                <!-- Buttons for Sunglasses/Eyeglasses -->
-                                {% if product.product_type in 'sunglasses,eyeglasses' %}
-                                <button type="button" 
-                                        class="xo-btn xo-btn--light xo-btn--primary xo-btn--block"
-                                        onclick="openLensModal()"
-                                        style="margin-bottom: 15px;">
-                                    <span class="xo-btn__content">
-                                        <span class="xo-btn__text">Select Lenses</span>
-                                    </span>
-                                </button>
-                                {% endif %}
-
-                                <!-- Add to Cart -->
-                                <button type="button" 
-                                        class="xo-btn xo-btn--light xo-btn--primary xo-btn--block add-to-cart-btn"
-                                        data-url="">
-                                    <span class="xo-btn__content">
-                                        <span class="xo-btn__text">Add to Cart</span>
-                                    </span>
-                                </button>
-
-                                <div class="xo-space xo-space--vertical" style="--space: 1.5rem"></div>
-
-                                <!-- Buy Now -->
-                                <button type="submit" 
-                                        formaction=""
-                                        class="shopify-payment-button__button"
-                                        style="background: #000;">
-                                    Buy it now
-                                </button>
-                            </form>
-
-                            <!-- Shipping Info -->
-                            <div class="shipping" style="margin-top: 30px;">
-                                <div class="shipping_item" style="display: flex; gap: 15px; margin-bottom: 15px;">
-                                    <svg height="27" width="24" viewBox="0 0 150 150">
-                                        <path d="M139.75,121.3c-0.34,0.71-0.59,1.47-1.03,2.12..." fill="currentColor"/>
-                                    </svg>
-                                    <p style="margin: 0;">Estimate delivery: <strong>12-26 days</strong> (International), <strong>3-6 days</strong> India.</p>
-                                </div>
-                                <div class="shipping_item" style="display: flex; gap: 15px;">
-                                    <svg height="27" width="22" viewBox="0 0 150 150">
-                                        <path d="M94.51,19.67c0,0.77,0,1.36,0,1.96..." fill="currentColor"/>
-                                    </svg>
-                                    <p style="margin: 0;">Return within <strong>45 days</strong> of purchase.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </xo-animate>
-                </xo-grid>
-            </xo-container>
+        {% endif %}
+        {% for image in images %}
+        <div class="sg-thumb" onclick="switchImage(this, '{{ image.image.url }}')">
+          <img src="{{ image.image.url }}" alt="{{ product.name }}" />
         </div>
-    </section>
-
-    <!-- Contact Lens Details -->
-    {% if product.product_type == 'contact_lenses' and contact_lens %}
-    <section class="shopify-section section">
-        <div class="xo-section color-background-1" style="--pt: 30; --pb: 30;">
-            <xo-container class="xo-container--box">
-                <h2 style="margin-bottom: 20px;">Lens Details</h2>
-                <xo-grid style="--xs: 1; --md: 2; gap: 20px;">
-                    <div>
-                        <p><strong>Brand:</strong> {{ contact_lens.brand_name }}</p>
-                        <p><strong>Package Size:</strong> Pack of {{ contact_lens.package_size }}</p>
-                        <p><strong>Replacement:</strong> {{ contact_lens.replacement_schedule }}</p>
-                        <p><strong>Lens Type:</strong> {{ contact_lens.lens_type }}</p>
-                    </div>
-                    <div>
-                        <p><strong>Intended Use:</strong> {{ contact_lens.intended_use }}</p>
-                        <p><strong>Diameter:</strong> {{ contact_lens.diameter }} mm</p>
-                        <p><strong>Base Curve:</strong> {{ contact_lens.base_curve }}</p>
-                        <p><strong>Water Content:</strong> {{ contact_lens.water_content }}%</p>
-                    </div>
-                </xo-grid>
-            </xo-container>
-        </div>
-    </section>
-    {% endif %}
-
-    <!-- Product Tabs -->
-    <section class="shopify-section section">
-        <div class="xo-section color-background-1" style="--pt: 50; --pb: 50;">
-            <xo-container class="xo-container--box">
-                <xo-tabs>
-                    <xo-list class="product-information-tabs__header">
-                        <xo-list-item>
-                            <xo-tabs-trigger class="product-information-tabs__trigger" xo-active xo-name="tab-description">
-                                Description
-                            </xo-tabs-trigger>
-                        </xo-list-item>
-                        <xo-list-item>
-                            <xo-tabs-trigger class="product-information-tabs__trigger" xo-name="tab-shipping">
-                                Shipping & Return
-                            </xo-tabs-trigger>
-                        </xo-list-item>
-                        {% if specifications %}
-                        <xo-list-item>
-                            <xo-tabs-trigger class="product-information-tabs__trigger" xo-name="tab-specs">
-                                Specifications
-                            </xo-tabs-trigger>
-                        </xo-list-item>
-                        {% endif %}
-                    </xo-list>
-                    <xo-tabs-content>
-                        <xo-tabs-pane xo-name="tab-description">
-                            <div style="padding: 20px;">
-                                {{ product.description|linebreaksbr }}
-                            </div>
-                        </xo-tabs-pane>
-                        <xo-tabs-pane xo-name="tab-shipping">
-                            <div style="padding: 20px;">
-                                <p>Returns accepted within 45 days of purchase on unworn items.</p>
-                                <p>Free shipping on orders over 100 QAR.</p>
-                            </div>
-                        </xo-tabs-pane>
-                        {% if specifications %}
-                        <xo-tabs-pane xo-name="tab-specs">
-                            <div style="padding: 20px;">
-                                <table style="width: 100%;">
-                                    {% for spec in specifications %}
-                                    <tr>
-                                        <td style="padding: 10px; font-weight: bold;">{{ spec.name }}</td>
-                                        <td style="padding: 10px;">{{ spec.value }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </table>
-                            </div>
-                        </xo-tabs-pane>
-                        {% endif %}
-                    </xo-tabs-content>
-                </xo-tabs>
-            </xo-container>
-        </div>
-    </section>
-
-    <!-- Related Products -->
-    {% if related_products %}
-    <section class="shopify-section section">
-        <div class="xo-section color-background-1" style="--pt: 50; --pb: 50;">
-            <xo-container class="xo-container--box">
-                <h2 class="xo-section-heading__title" style="text-align: center; margin-bottom: 30px;">
-                    You Might Also Like
-                </h2>
-                <xo-grid style="--xs: 1; --sm: 2; --md: 4; gap: 20px;">
-                    {% for rp in related_products %}
-                    <div class="product-card">
-                        <a href="{% url 'product_detail' rp.slug %}">
-                            {% if rp.image %}
-                            <img src="{{ rp.image.url }}" alt="{{ rp.name }}" style="width: 100%; border-radius: 8px;"/>
-                            {% endif %}
-                            <h3 style="margin-top: 10px; font-size: 16px;">{{ rp.name }}</h3>
-                            <p style="font-weight: bold;">QAR {{ rp.base_price }}</p>
-                        </a>
-                    </div>
-                    {% endfor %}
-                </xo-grid>
-            </xo-container>
-        </div>
-    </section>
-    {% endif %}
-</main>
-
-<!-- Lens Selection Modal -->
-<div id="lensModal" class="lens-modal">
-    <div class="lens-modal-content">
-        <span class="close" onclick="closeLensModal()" style="float: right; font-size: 28px; cursor: pointer;">&times;</span>
-        <h2>Select Your Lenses</h2>
-        <div id="lensOptions">
-            <!-- Lens options will be loaded here via JavaScript or Django -->
-        </div>
-        <button onclick="confirmLensSelection()" class="xo-btn xo-btn--primary" style="margin-top: 20px;">
-            Confirm Selection
-        </button>
+        {% endfor %}
+      </div>
     </div>
-</div>
 
+    <!-- ── PRODUCT INFO ── -->
+    <div class="sg-info">
+
+      <!-- Badges -->
+      <div class="sg-badges">
+        {% if product.is_featured %}<span class="sg-badge">Featured</span>{% endif %}
+        {% if product.compare_at_price %}<span class="sg-badge new">Sale</span>{% endif %}
+        {% if product.category %}<span class="sg-badge">{{ product.category.name }}</span>{% endif %}
+      </div>
+
+      <!-- Title -->
+      <div class="sg-title-row">
+        <h1 class="sg-title">{{ product.name }}</h1>
+        <button class="sg-wishlist-btn{% if product in request.user.wishlist.products.all %} active{% endif %}"
+                id="wishlistBtn"
+                data-product-id="{{ product.id }}"
+                onclick="toggleWishlist(this)"
+                title="Add to wishlist">
+          {% if product in request.user.wishlist.products.all %}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="red"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/></svg>
+          {% else %}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/></svg>
+          {% endif %}
+        </button>
+      </div>
+
+      <!-- Brand -->
+      {% if product.brand %}
+      <p class="sg-brand">Brand: <strong>{{ product.brand.name }}</strong></p>
+      {% endif %}
+
+      <!-- SKU -->
+      {% if product.sku %}
+      <p class="sg-sku">SKU: {{ product.sku }}</p>
+      {% endif %}
+
+      <!-- Price -->
+      <div class="sg-price-row">
+        <span class="sg-price">QAR {{ product.base_price }}</span>
+        {% if product.compare_at_price %}
+        <span class="sg-price-old">QAR {{ product.compare_at_price }}</span>
+        <span class="sg-discount-badge">SAVE QAR {{ product.compare_at_price|floatformat:0 }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Short Description -->
+      {% if product.short_description %}
+      <p style="font-size:14px;color:#555;line-height:1.7;margin-bottom:20px;">{{ product.short_description }}</p>
+      {% endif %}
+
+      <!-- Form -->
+      <form id="productForm" method="POST" action="{% url 'cart:add_to_cart' %}" onsubmit="return false;">
+        {% csrf_token %}
+        <input type="hidden" name="product_id" value="{{ product.id }}">
+        <input type="hidden" name="selected_variant_id" id="selectedVariantId" value="">
+
+        <!-- Color Variants -->
+        {% if variants %}
+        <div style="margin-bottom:24px;">
+          <p class="sg-section-label">Color / Variant</p>
+          <div class="sg-colors">
+            {% for variant in variants %}
+            <div class="sg-color-swatch{% if forloop.first %} active{% endif %}"
+                 onclick="selectVariant(this, '{{ variant.id }}', '{{ variant.color_name }}')"
+                 title="{{ variant.color_name }}"
+                 data-variant-id="{{ variant.id }}">
+              {% if variant.color_code %}
+              <div class="sg-color-dot" style="background:{{ variant.color_code }};"></div>
+              {% else %}
+              <div class="sg-color-dot" style="background:linear-gradient(135deg,#ccc,#aaa);"></div>
+              {% endif %}
+              <span class="sg-color-name">{{ variant.color_name }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Size (if applicable) -->
+        {% with first_size=variants.0.size %}
+        {% if first_size %}
+        <div style="margin-bottom:4px;">
+          <p class="sg-section-label">Size</p>
+          <select class="sg-size-select" name="selected_size" id="sizeSelect">
+            <option value="">Choose Size</option>
+            {% for variant in variants %}
+            {% if variant.size %}
+            <option value="{{ variant.size }}">{{ variant.size }}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Quantity -->
+        <div style="margin-bottom:20px;">
+          <p class="sg-section-label">Quantity</p>
+          <div class="sg-qty-row">
+            <button type="button" class="sg-qty-btn" onclick="changeQty(-1)">−</button>
+            <input class="sg-qty-input" type="number" name="quantity" id="qtyInput" value="1" min="1" max="{{ product.stock_quantity|default:99 }}" readonly>
+            <button type="button" class="sg-qty-btn" onclick="changeQty(1)">+</button>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="sg-actions">
+          <button type="button" class="sg-btn-cart" id="addToCartBtn" onclick="addToCart()">
+            Add to Cart
+          </button>
+          <button type="submit" class="sg-btn-buy" onclick="buyNow()">Buy it now →</button>
+        </div>
+      </form>
+
+      <!-- Shipping Info -->
+      <div class="sg-shipping">
+        <div class="sg-shipping-item">
+          <div class="sg-shipping-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="3" width="15" height="13" rx="1"/>
+              <path d="M16 8h4l3 5v3h-7V8z"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/>
+              <circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+          </div>
+          <span>Estimated delivery: <strong>3–6 business days</strong> (Qatar/GCC)</span>
+        </div>
+        <div class="sg-shipping-item">
+          <div class="sg-shipping-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+          </div>
+          <span>Free returns within <strong>45 days</strong> of purchase</span>
+        </div>
+        <div class="sg-shipping-item">
+          <div class="sg-shipping-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <span>Authentic products — <strong>100% genuine</strong></span>
+        </div>
+      </div>
+
+      <!-- Specifications -->
+      {% if specifications %}
+      <div class="sg-specs">
+        <p class="sg-section-label">Specifications</p>
+        <table class="sg-specs-table">
+          {% for spec in specifications %}
+          <tr>
+            <td>{{ spec.spec_key }}</td>
+            <td>{{ spec.spec_value }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+      {% endif %}
+
+    </div><!-- /sg-info -->
+  </div><!-- /sg-product-wrap -->
+
+  <!-- About This Product -->
+  {% if product.description %}
+  <div class="sg-desc-section">
+    <h2 class="sg-section-title">About This Product</h2>
+    <div class="sg-desc-body">{{ product.description|linebreaksbr }}</div>
+  </div>
+  {% endif %}
+
+  <!-- Related Products -->
+  {% if related_products %}
+  <div class="sg-related-section">
+    <h2 class="sg-section-title">You May Also Like</h2>
+    <div class="sg-related-grid">
+      {% for related in related_products %}
+      <a href="{% url 'catalog:product_detail' related.slug %}" class="sg-product-card">
+        <div class="sg-card-img">
+          {% if related.image %}<img src="{{ related.image.url }}" alt="{{ related.name }}" loading="lazy">{% endif %}
+        </div>
+        <div class="sg-card-info">
+          {% if related.brand %}<p class="sg-card-brand">{{ related.brand.name }}</p>{% endif %}
+          <p class="sg-card-name">{{ related.name }}</p>
+          <p class="sg-card-price">QAR {{ related.base_price }}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div><!-- /sg-container -->
+
+<!-- Toast -->
+<div class="sg-toast" id="sgToast"></div>
 
 <script>
-// ------------------------------
-// Color selection for contact lenses
-// ------------------------------
-let selectedColorId = null;
+// ── Variant selection ──────────────────────────────────────
+let selectedVariantId = '';
 
-function selectColor(element) {
-    if (element.classList.contains('disabled')) return;
-
-    document.querySelectorAll('.color-swatch').forEach(swatch => {
-        swatch.classList.remove('selected');
-    });
-
-    element.classList.add('selected');
-    selectedColorId = element.dataset.colorId;
-    document.getElementById('selectedColorId').value = selectedColorId;
-
-    const colorImage = element.querySelector('img')?.src;
-    const mainImage = document.getElementById('mainProductImage');
-    if (mainImage && colorImage) {
-        mainImage.src = colorImage;
-    }
+function selectVariant(el, id, name) {
+  document.querySelectorAll('.sg-color-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  selectedVariantId = id;
+  document.getElementById('selectedVariantId').value = id;
 }
 
-// ------------------------------
-// Lens Modal
-// ------------------------------
-function openLensModal() {
-    document.getElementById('lensModal').style.display = 'block';
+// ── Gallery ────────────────────────────────────────────────
+function switchImage(thumb, src) {
+  document.querySelectorAll('.sg-thumb').forEach(t => t.classList.remove('active'));
+  thumb.classList.add('active');
+  const mainImg = document.getElementById('mainImg');
+  if (mainImg) mainImg.src = src;
 }
 
-function closeLensModal() {
-    document.getElementById('lensModal').style.display = 'none';
+// ── Quantity ───────────────────────────────────────────────
+function changeQty(delta) {
+  const input = document.getElementById('qtyInput');
+  const max = parseInt(input.max) || 99;
+  const current = parseInt(input.value) || 1;
+  const next = Math.min(Math.max(1, current + delta), max);
+  input.value = next;
 }
 
-function confirmLensSelection() {
-    const selected = document.querySelector('.lens-option.selected');
-    if (selected) {
-        document.getElementById('selectedLensOption').value = selected.dataset.optionId;
-        closeLensModal();
-        showNotification('Lens option selected successfully', 'success');
+// ── Add to Cart ────────────────────────────────────────────
+function addToCart() {
+  const btn = document.getElementById('addToCartBtn');
+  btn.classList.add('loading');
+  btn.textContent = 'Adding...';
+
+  const form = document.getElementById('productForm');
+  const formData = new FormData(form);
+  formData.set('quantity', document.getElementById('qtyInput').value);
+
+  const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  fetch("{% url 'cart:add_to_cart' %}", {
+    method: 'POST',
+    body: formData,
+    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrfToken }
+  })
+  .then(r => r.json())
+  .then(data => {
+    btn.classList.remove('loading');
+    btn.textContent = 'Add to Cart';
+    if (data.success) {
+      showToast('Added to cart!', 'success');
+      const cartCount = document.getElementById('cartCount');
+      if (cartCount && data.cart_count) cartCount.textContent = data.cart_count;
     } else {
-        showNotification('Please select a lens option', 'warning');
+      showToast(data.message || 'Error adding to cart', 'error');
     }
+  })
+  .catch(() => {
+    btn.classList.remove('loading');
+    btn.textContent = 'Add to Cart';
+    showToast('Something went wrong. Please try again.', 'error');
+  });
 }
 
-// ------------------------------
-// Quantity Controls
-// ------------------------------
-document.addEventListener('DOMContentLoaded', function() {
-    const quantityContainers = document.querySelectorAll('.xo-cart-quantity');
-
-    quantityContainers.forEach(container => {
-        const quantityInput = container.querySelector('input[type="number"]');
-        const plusBtn = container.querySelector('xo-cart-quantity-plus');
-        const minusBtn = container.querySelector('xo-cart-quantity-minus');
-
-        if (!quantityInput || !plusBtn || !minusBtn) return;
-
-        const maxStock = parseInt(quantityInput.getAttribute('max')) || 999;
-        const minQuantity = 1;
-
-        plusBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            let currentValue = parseInt(quantityInput.value) || 1;
-
-            if (currentValue < maxStock) {
-                quantityInput.value = currentValue + 1;
-            } else {
-                showStockNotification(`Maximum stock: ${maxStock}`);
-            }
-        });
-
-        minusBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            let currentValue = parseInt(quantityInput.value) || 1;
-
-            if (currentValue > minQuantity) {
-                quantityInput.value = currentValue - 1;
-            }
-        });
-    });
-});
-
-// ------------------------------
-// Stock Notification
-// ------------------------------
-function showStockNotification(message) {
-    let notif = document.createElement('div');
-    notif.className = 'stock-notification';
-    notif.innerHTML = `<strong>Stock Alert</strong><br>${message}`;
-    document.body.appendChild(notif);
-
-    setTimeout(() => notif.classList.add('show'), 50);
-
-    setTimeout(() => {
-        notif.classList.remove('show');
-        setTimeout(() => notif.remove(), 300);
-    }, 3000);
+// ── Buy Now ────────────────────────────────────────────────
+function buyNow() {
+  const form = document.getElementById('productForm');
+  form.action = "{% url 'orders:checkout' %}";
+  form.method = 'POST';
+  form.submit();
 }
 
-// ------------------------------
-// General Notification
-// ------------------------------
-function showNotification(message, type = 'success') {
-    let notif = document.createElement('div');
-    notif.className = 'custom-notification';
-    notif.innerHTML = message;
-
-    if (type === 'warning') {
-        notif.style.borderLeft = '4px solid #f59e0b';
-    } else if (type === 'error') {
-        notif.style.borderLeft = '4px solid #dc2626';
+// ── Wishlist ───────────────────────────────────────────────
+function toggleWishlist(btn) {
+  const productId = btn.dataset.productId;
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  fetch('/users/wishlist/toggle/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken,
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: JSON.stringify({ product_id: productId })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.added) {
+      btn.classList.add('active');
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="red"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/></svg>';
+      showToast('Added to wishlist', 'success');
     } else {
-        notif.style.borderLeft = '4px solid #16a34a';
+      btn.classList.remove('active');
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/></svg>';
+      showToast('Removed from wishlist', '');
     }
-
-    document.body.appendChild(notif);
-
-    setTimeout(() => notif.classList.add('show'), 50);
-
-    setTimeout(() => {
-        notif.classList.remove('show');
-        setTimeout(() => notif.remove(), 300);
-    }, 3000);
+  })
+  .catch(() => showToast('Login required to use wishlist', 'error'));
 }
 
-// ------------------------------
-// Lens option selection
-// ------------------------------
-document.addEventListener('click', function(e) {
-    const option = e.target.closest('.lens-option');
-    if (!option) return;
+// ── Toast ──────────────────────────────────────────────────
+let toastTimer;
+function showToast(message, type) {
+  const toast = document.getElementById('sgToast');
+  toast.textContent = message;
+  toast.className = 'sg-toast show' + (type ? ' ' + type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 3200);
+}
 
-    document.querySelectorAll('.lens-option').forEach(el => {
-        el.classList.remove('selected');
-    });
+// ── Keyboard: close on Escape ──────────────────────────────
+document.addEventListener('keydown', e => { if (e.key === 'Escape') {} });
 
-    option.classList.add('selected');
-});
-
-// ------------------------------
-// Add to Cart AJAX
-// ------------------------------
-document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const form = this.closest('form');
-        const url = this.dataset.url;
-        const formData = new FormData(form);
-
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
-            },
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showNotification('Added to cart successfully', 'success');
-            } else {
-                showNotification(data.message || 'Something went wrong', 'error');
-            }
-        })
-        .catch(() => {
-            showNotification('Server error. Try again.', 'error');
-        });
-    });
+// ── Init ───────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const firstSwatch = document.querySelector('.sg-color-swatch');
+  if (firstSwatch) {
+    selectedVariantId = firstSwatch.dataset.variantId || '';
+    document.getElementById('selectedVariantId').value = selectedVariantId;
+  }
 });
 </script>
+
 {% endblock %}
