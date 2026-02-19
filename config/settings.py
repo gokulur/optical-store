@@ -285,13 +285,15 @@ LANGUAGE_COOKIE_AGE = 31536000  # 1 year
 #      
 
  
+# ── Sadad (Qatar) Web Checkout 2.1 ───────────────────────────────────────────
+SADAD_MERCHANT_ID = config("SADAD_MERCHANT_ID", default="")
+SADAD_SECRET_KEY  = config("SADAD_SECRET_KEY",  default="")   # was SADAD_API_KEY — renamed!
+SADAD_WEBSITE     = config("SADAD_WEBSITE",      default="alameenoptics.com")
+SADAD_RETURN_URL  = config("SADAD_RETURN_URL",   default="")
+SADAD_SANDBOX     = config("SADAD_SANDBOX",      default=True, cast=bool)
 
 
-# Switch to production URL when ready:
-SADAD_BASE_URL    = "https://api-gateway-sandbox.sadad.qa"   
-# SADAD_BASE_URL  = "https://api-gateway.sadad.qa"         
 
-SADAD_RETURN_URL  = "https://yoursite.com/orders/payment/sadad/return/"
 
 # ── Stripe ────────────────────────────────────────────────────
 STRIPE_SECRET_KEY      = "sk_test_..."
