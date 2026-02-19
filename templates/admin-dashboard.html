@@ -225,6 +225,39 @@
     </div>
   </li>
 
+
+  <!-- Medical Lenses -->
+<li class="nav-item menu-items">
+  <a class="nav-link" data-toggle="collapse" href="#medicalLensMenu">
+    <span class="menu-icon">
+      <i class="mdi mdi-glasses"></i>
+    </span>
+    <span class="menu-title">Medical Lenses</span>
+    <i class="menu-arrow"></i>
+  </a>
+
+  <div class="collapse" id="medicalLensMenu">
+    <ul class="nav flex-column sub-menu">
+
+      <li class="nav-item">
+        <a class="nav-link"
+           href="{% url 'adminpanel:medical_lens_list' %}">
+           All Medical Lenses
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link"
+           href="{% url 'adminpanel:medical_lens_add' %}">
+           Add Medical Lens
+        </a>
+      </li>
+
+    </ul>
+  </div>
+</li>
+
+
   <!-- Prescription Lenses -->
   <li class="nav-item menu-items">
     <a class="nav-link" data-toggle="collapse" href="#lensMenu">
