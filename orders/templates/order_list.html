@@ -5,451 +5,113 @@
 
 {% block content %}
 <style>
-    /* Order List Wrapper - Isolated Styles */
     .orderlist-wrapper {
         background: #ffffff;
         min-height: 100vh;
         padding: 40px 20px;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
-
-    .orderlist-wrapper * {
-        box-sizing: border-box;
-    }
-
-    .orderlist-container {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
+    .orderlist-wrapper * { box-sizing: border-box; }
+    .orderlist-container { max-width: 1200px; margin: 0 auto; }
     .orderlist-title {
-        font-size: 32px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 40px;
-        text-align: center;
-        letter-spacing: -0.5px;
+        font-size: 32px; font-weight: 600; color: #1a1a1a;
+        margin-bottom: 40px; text-align: center; letter-spacing: -0.5px;
     }
-
-    /* Filter Bar */
     .orderlist-filter-bar {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin-bottom: 40px;
-        flex-wrap: wrap;
+        display: flex; justify-content: center; gap: 10px;
+        margin-bottom: 40px; flex-wrap: wrap;
     }
-
     .orderlist-filter-btn {
-        padding: 10px 24px;
-        background: white;
-        border: 2px solid #e8e8e8;
-        border-radius: 25px;
-        font-size: 14px;
-        font-weight: 600;
-        color: #6a6a6a;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        cursor: pointer;
+        padding: 10px 24px; background: white; border: 2px solid #e8e8e8;
+        border-radius: 25px; font-size: 14px; font-weight: 600; color: #6a6a6a;
+        text-decoration: none; transition: all 0.3s ease; cursor: pointer;
     }
-
-    .orderlist-filter-btn:hover {
-        border-color: #1a1a1a;
-        color: #1a1a1a;
-        text-decoration: none;
-    }
-
-    .orderlist-filter-btn.active {
-        background: #1a1a1a;
-        border-color: #1a1a1a;
-        color: #ffffff;
-    }
-
-    /* Order Card */
+    .orderlist-filter-btn:hover { border-color: #1a1a1a; color: #1a1a1a; text-decoration: none; }
+    .orderlist-filter-btn.active { background: #1a1a1a; border-color: #1a1a1a; color: #ffffff; }
     .orderlist-card {
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-        border: 1px solid #e8e8e8;
-        margin-bottom: 30px;
-        transition: all 0.3s ease;
+        background: #ffffff; border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.08); overflow: hidden;
+        border: 1px solid #e8e8e8; margin-bottom: 30px; transition: all 0.3s ease;
     }
-
-    .orderlist-card:hover {
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-        transform: translateY(-2px);
-    }
-
+    .orderlist-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12); transform: translateY(-2px); }
     .orderlist-header {
-        padding: 24px 30px;
-        border-bottom: 1px solid #e8e8e8;
-        background: #fafafa;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 15px;
+        padding: 24px 30px; border-bottom: 1px solid #e8e8e8; background: #fafafa;
+        display: flex; justify-content: space-between; align-items: center;
+        flex-wrap: wrap; gap: 15px;
     }
-
-    .orderlist-order-id {
-        font-size: 18px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin: 0;
-    }
-
-    .orderlist-order-date {
-        font-size: 13px;
-        color: #6a6a6a;
-        margin-top: 4px;
-    }
-
-    /* Status Badges */
+    .orderlist-order-id { font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0; }
+    .orderlist-order-date { font-size: 13px; color: #6a6a6a; margin-top: 4px; }
     .orderlist-status {
-        display: inline-block;
-        padding: 6px 16px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        display: inline-block; padding: 6px 16px; border-radius: 20px;
+        font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
     }
-
-    .orderlist-status-pending {
-        background: #fff8e6;
-        color: #7a5a00;
-    }
-
-    .orderlist-status-processing {
-        background: #e3f2fd;
-        color: #1565c0;
-    }
-
-    .orderlist-status-shipped {
-        background: #f3e5f5;
-        color: #6a1b9a;
-    }
-
-    .orderlist-status-delivered {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
-
-    .orderlist-status-cancelled {
-        background: #ffebee;
-        color: #c62828;
-    }
-
-    .orderlist-status-confirmed {
-        background: #e3f2fd;
-        color: #1565c0;
-    }
-
-    .orderlist-status-completed {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
-
-    /* Order Body */
-    .orderlist-body {
-        padding: 0;
-    }
-
-    .orderlist-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .orderlist-table thead {
-        background: #fafafa;
-    }
-
+    .orderlist-status-pending    { background: #fff8e6; color: #7a5a00; }
+    .orderlist-status-processing { background: #e3f2fd; color: #1565c0; }
+    .orderlist-status-shipped    { background: #f3e5f5; color: #6a1b9a; }
+    .orderlist-status-delivered  { background: #e8f5e9; color: #2e7d32; }
+    .orderlist-status-cancelled  { background: #ffebee; color: #c62828; }
+    .orderlist-status-confirmed  { background: #e3f2fd; color: #1565c0; }
+    .orderlist-status-refunded   { background: #fce4ec; color: #880e4f; }
+    .orderlist-body { padding: 0; }
+    .orderlist-table { width: 100%; border-collapse: collapse; }
+    .orderlist-table thead { background: #fafafa; }
     .orderlist-table th {
-        padding: 16px 30px;
-        text-align: left;
-        font-size: 13px;
-        font-weight: 600;
-        color: #4a4a4a;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        padding: 16px 30px; text-align: left; font-size: 13px; font-weight: 600;
+        color: #4a4a4a; text-transform: uppercase; letter-spacing: 0.5px;
         border-bottom: 1px solid #e8e8e8;
     }
-
     .orderlist-table td {
-        padding: 20px 30px;
-        border-bottom: 1px solid #f5f5f5;
-        vertical-align: middle;
+        padding: 20px 30px; border-bottom: 1px solid #f5f5f5; vertical-align: middle;
     }
-
-    .orderlist-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    /* Product Display */
-    .orderlist-product {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-
+    .orderlist-table tbody tr:last-child td { border-bottom: none; }
+    .orderlist-product { display: flex; align-items: center; gap: 16px; }
     .orderlist-product-image {
-        width: 80px;
-        height: 80px;
-        border-radius: 8px;
-        overflow: hidden;
-        flex-shrink: 0;
-        border: 1px solid #e8e8e8;
+        width: 80px; height: 80px; border-radius: 8px; overflow: hidden;
+        flex-shrink: 0; border: 1px solid #e8e8e8; background: #f5f5f5;
+        display: flex; align-items: center; justify-content: center;
     }
-
-    .orderlist-product-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .orderlist-product-info {
-        flex: 1;
-    }
-
-    .orderlist-product-name {
-        font-size: 15px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 6px;
-        line-height: 1.4;
-    }
-
-    .orderlist-product-price {
-        font-size: 14px;
-        color: #6a6a6a;
-    }
-
-    .orderlist-quantity {
-        font-size: 15px;
-        color: #1a1a1a;
-        font-weight: 500;
-    }
-
-    .orderlist-total {
-        font-size: 15px;
-        color: #1a1a1a;
-        font-weight: 600;
-    }
-
-    /* Footer */
+    .orderlist-product-image img { width: 100%; height: 100%; object-fit: cover; }
+    .orderlist-product-image .placeholder-icon { font-size: 28px; }
+    .orderlist-product-info { flex: 1; }
+    .orderlist-product-name { font-size: 15px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; line-height: 1.4; }
+    .orderlist-product-price { font-size: 14px; color: #6a6a6a; }
+    .orderlist-quantity { font-size: 15px; color: #1a1a1a; font-weight: 500; }
+    .orderlist-total { font-size: 15px; color: #1a1a1a; font-weight: 600; }
     .orderlist-footer {
-        padding: 24px 30px;
-        background: #fafafa;
-        border-top: 1px solid #e8e8e8;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 20px;
+        padding: 24px 30px; background: #fafafa; border-top: 1px solid #e8e8e8;
+        display: flex; justify-content: space-between; align-items: center;
+        flex-wrap: wrap; gap: 20px;
     }
-
-    .orderlist-grand-total {
-        font-size: 18px;
-        font-weight: 600;
-        color: #1a1a1a;
-    }
-
-    .orderlist-grand-total span {
-        color: #1a1a1a;
-        margin-left: 8px;
-    }
-
-    .orderlist-actions {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-    }
-
+    .orderlist-grand-total { font-size: 18px; font-weight: 600; color: #1a1a1a; }
+    .orderlist-grand-total span { color: #1a1a1a; margin-left: 8px; }
+    .orderlist-actions { display: flex; gap: 12px; flex-wrap: wrap; }
     .orderlist-btn {
-        display: inline-block;
-        padding: 12px 28px;
-        background: #1a1a1a;
-        color: #ffffff;
-        border: 2px solid #1a1a1a;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        cursor: pointer;
+        display: inline-block; padding: 12px 28px; background: #1a1a1a; color: #ffffff;
+        border: 2px solid #1a1a1a; border-radius: 6px; font-size: 14px; font-weight: 600;
+        text-decoration: none; transition: all 0.2s ease; cursor: pointer;
     }
-
-    .orderlist-btn:hover {
-        background: #000000;
-        border-color: #000000;
-        color: #ffffff;
-        text-decoration: none;
-        transform: translateY(-1px);
-    }
-
-    .orderlist-btn-outline {
-        background: white;
-        color: #1a1a1a;
-        border: 2px solid #1a1a1a;
-    }
-
-    .orderlist-btn-outline:hover {
-        background: #1a1a1a;
-        color: white;
-    }
-
-    /* Empty State */
-    .orderlist-empty {
-        text-align: center;
-        padding: 80px 20px;
-    }
-
-    .orderlist-empty-icon {
-        font-size: 64px;
-        margin-bottom: 20px;
-    }
-
-    .orderlist-empty-title {
-        font-size: 24px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 12px;
-    }
-
-    .orderlist-empty-text {
-        font-size: 15px;
-        color: #6a6a6a;
-        margin-bottom: 30px;
-    }
-
+    .orderlist-btn:hover { background: #000; border-color: #000; color: #fff; text-decoration: none; transform: translateY(-1px); }
+    .orderlist-btn-outline { background: white; color: #1a1a1a; border: 2px solid #1a1a1a; }
+    .orderlist-btn-outline:hover { background: #1a1a1a; color: white; }
+    .orderlist-empty { text-align: center; padding: 80px 20px; }
+    .orderlist-empty-icon { font-size: 64px; margin-bottom: 20px; }
+    .orderlist-empty-title { font-size: 24px; font-weight: 600; color: #1a1a1a; margin-bottom: 12px; }
+    .orderlist-empty-text { font-size: 15px; color: #6a6a6a; margin-bottom: 30px; }
     .orderlist-empty-btn {
-        display: inline-block;
-        padding: 14px 32px;
-        background: #1a1a1a;
-        color: #ffffff;
-        border: 2px solid #1a1a1a;
-        border-radius: 6px;
-        font-size: 15px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.2s ease;
+        display: inline-block; padding: 14px 32px; background: #1a1a1a; color: #fff;
+        border: 2px solid #1a1a1a; border-radius: 6px; font-size: 15px; font-weight: 600;
+        text-decoration: none; transition: all 0.2s ease;
     }
-
-    .orderlist-empty-btn:hover {
-        background: #000000;
-        border-color: #000000;
-        color: #ffffff;
-        text-decoration: none;
-    }
-
-    /* Responsive */
+    .orderlist-empty-btn:hover { background: #000; text-decoration: none; color: #fff; }
     @media (max-width: 768px) {
-        .orderlist-wrapper {
-            padding: 20px 10px;
-        }
-
-        .orderlist-title {
-            font-size: 24px;
-            margin-bottom: 30px;
-        }
-
-        .orderlist-header {
-            padding: 20px;
-        }
-
-        .orderlist-order-id {
-            font-size: 16px;
-        }
-
-        .orderlist-table {
-            display: block;
-            overflow-x: auto;
-        }
-
-        .orderlist-table th,
-        .orderlist-table td {
-            padding: 12px 15px;
-        }
-
-        .orderlist-product {
-            gap: 12px;
-        }
-
-        .orderlist-product-image {
-            width: 60px;
-            height: 60px;
-        }
-
-        .orderlist-product-name {
-            font-size: 14px;
-        }
-
-        .orderlist-footer {
-            padding: 20px;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .orderlist-actions {
-            width: 100%;
-        }
-
-        .orderlist-btn {
-            flex: 1;
-            text-align: center;
-        }
-    }
-
-    /* Mobile Table Layout */
-    @media (max-width: 576px) {
-        .orderlist-table thead {
-            display: none;
-        }
-
-        .orderlist-table,
-        .orderlist-table tbody,
-        .orderlist-table tr,
-        .orderlist-table td {
-            display: block;
-        }
-
-        .orderlist-table tr {
-            margin-bottom: 20px;
-            border: 1px solid #e8e8e8;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .orderlist-table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #f5f5f5;
-        }
-
-        .orderlist-table td:last-child {
-            border-bottom: none;
-        }
-
-        .orderlist-table td::before {
-            content: attr(data-label);
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #4a4a4a;
-            font-size: 12px;
-            text-transform: uppercase;
-        }
-
-        .orderlist-product {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .orderlist-product-image {
-            width: 100%;
-            height: 200px;
-        }
+        .orderlist-wrapper { padding: 20px 10px; }
+        .orderlist-title { font-size: 24px; margin-bottom: 30px; }
+        .orderlist-header, .orderlist-footer { padding: 20px; }
+        .orderlist-table { display: block; overflow-x: auto; }
+        .orderlist-table th, .orderlist-table td { padding: 12px 15px; }
+        .orderlist-footer { flex-direction: column; align-items: flex-start; }
+        .orderlist-actions { width: 100%; }
+        .orderlist-btn { flex: 1; text-align: center; }
     }
 </style>
 
@@ -459,31 +121,18 @@
 
         <!-- Filter Bar -->
         <div class="orderlist-filter-bar">
-            <a href="?status=all" class="orderlist-filter-btn {% if not status_filter or status_filter == 'all' %}active{% endif %}">
-                All Orders
-            </a>
-            <a href="?status=pending" class="orderlist-filter-btn {% if status_filter == 'pending' %}active{% endif %}">
-                Pending
-            </a>
-            <a href="?status=processing" class="orderlist-filter-btn {% if status_filter == 'processing' %}active{% endif %}">
-                Processing
-            </a>
-            <a href="?status=shipped" class="orderlist-filter-btn {% if status_filter == 'shipped' %}active{% endif %}">
-                Shipped
-            </a>
-            <a href="?status=delivered" class="orderlist-filter-btn {% if status_filter == 'delivered' %}active{% endif %}">
-                Delivered
-            </a>
-            <a href="?status=cancelled" class="orderlist-filter-btn {% if status_filter == 'cancelled' %}active{% endif %}">
-                Cancelled
-            </a>
+            <a href="?status=all" class="orderlist-filter-btn {% if not status_filter or status_filter == 'all' %}active{% endif %}">All Orders</a>
+            <a href="?status=pending"    class="orderlist-filter-btn {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
+            <a href="?status=confirmed"  class="orderlist-filter-btn {% if status_filter == 'confirmed' %}active{% endif %}">Confirmed</a>
+            <a href="?status=processing" class="orderlist-filter-btn {% if status_filter == 'processing' %}active{% endif %}">Processing</a>
+            <a href="?status=shipped"    class="orderlist-filter-btn {% if status_filter == 'shipped' %}active{% endif %}">Shipped</a>
+            <a href="?status=delivered"  class="orderlist-filter-btn {% if status_filter == 'delivered' %}active{% endif %}">Delivered</a>
+            <a href="?status=cancelled"  class="orderlist-filter-btn {% if status_filter == 'cancelled' %}active{% endif %}">Cancelled</a>
         </div>
 
-        <!-- Orders List -->
         {% if orders %}
             {% for order in orders %}
             <div class="orderlist-card">
-                <!-- Order Header -->
                 <div class="orderlist-header">
                     <div>
                         <h3 class="orderlist-order-id">Order #{{ order.order_number }}</h3>
@@ -494,7 +143,6 @@
                     </span>
                 </div>
 
-                <!-- Order Items Table -->
                 <div class="orderlist-body">
                     <table class="orderlist-table">
                         <thead>
@@ -511,16 +159,16 @@
                                     <div class="orderlist-product">
                                         <div class="orderlist-product-image">
                                             {% if item.product.image %}
-                                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" loading="lazy">
+                                                <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}" loading="lazy">
                                             {% elif item.product.images.first %}
-                                                <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}" loading="lazy">
+                                                <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product_name }}" loading="lazy">
                                             {% else %}
-                                                <img src="{% static 'images/no-image.jpg' %}" alt="No Image">
+                                                <span class="placeholder-icon">👓</span>
                                             {% endif %}
                                         </div>
                                         <div class="orderlist-product-info">
-                                            <div class="orderlist-product-name">{{ item.product.name }}</div>
-                                            <div class="orderlist-product-price">QAR {{ item.price }} per item</div>
+                                            <div class="orderlist-product-name">{{ item.product_name }}</div>
+                                            <div class="orderlist-product-price">{{ order.currency }} {{ item.unit_price }} per item</div>
                                         </div>
                                     </div>
                                 </td>
@@ -528,7 +176,7 @@
                                     <span class="orderlist-quantity">{{ item.quantity }}</span>
                                 </td>
                                 <td data-label="Total">
-                                    <span class="orderlist-total">QAR {{ item.get_total|default:item.subtotal }}</span>
+                                    <span class="orderlist-total">{{ order.currency }} {{ item.subtotal }}</span>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -536,34 +184,27 @@
                     </table>
                 </div>
 
-                <!-- Order Footer -->
                 <div class="orderlist-footer">
                     <div class="orderlist-grand-total">
-                        Total Amount: <span>QAR {{ order.total_amount }}</span>
+                        Total Amount: <span>{{ order.currency }} {{ order.total_amount }}</span>
                     </div>
                     <div class="orderlist-actions">
-                        <a href="{% url 'orders:order_detail' order.order_number %}" class="orderlist-btn">
-                            View Details
-                        </a>
-                        <a href="{% url 'orders:track_order' order.order_number %}" class="orderlist-btn orderlist-btn-outline">
-                            Track Order
-                        </a>
+                        <a href="{% url 'orders:order_detail' order.order_number %}" class="orderlist-btn">View Details</a>
+                        <a href="{% url 'orders:track_order' order.order_number %}" class="orderlist-btn orderlist-btn-outline">Track Order</a>
                     </div>
                 </div>
             </div>
             {% endfor %}
         {% else %}
-            <!-- Empty State -->
             <div class="orderlist-card">
                 <div class="orderlist-empty">
                     <div class="orderlist-empty-icon">📦</div>
                     <h2 class="orderlist-empty-title">No Orders Yet</h2>
                     <p class="orderlist-empty-text">You haven't placed any orders yet. Start shopping to see your orders here!</p>
-                    <a href="{% url 'catalog:home' %}" class="orderlist-empty-btn">Start Shopping</a>
+                    <a href="/" class="orderlist-empty-btn">Start Shopping</a>
                 </div>
             </div>
         {% endif %}
     </div>
 </div>
-
 {% endblock %}

@@ -230,109 +230,110 @@ def place_order(request):
             currency = 'QAR'
 
         # ── Create Order record ───────────────────────────────
-        order = Order.objects.create(
-            order_number             = generate_order_number(),
-            customer                 = request.user,
-            order_type               = 'online',
-            status                   = 'pending',
-            currency                 = currency,
-            subtotal                 = subtotal,
-            tax_amount               = tax,
-            shipping_amount          = shipping_amount,
-            discount_amount          = Decimal('0.00'),
-            total_amount             = total,
-            customer_email           = request.user.email,
-            customer_phone           = shipping_info.get('phone', ''),
-            customer_name            = shipping_info.get('name', ''),
-            shipping_address_line1   = shipping_info.get('line1', ''),
-            shipping_address_line2   = shipping_info.get('line2', ''),
-            shipping_city            = shipping_info.get('city', ''),
-            shipping_state           = shipping_info.get('state', ''),
-            shipping_country         = shipping_info.get('country', 'Qatar'),
-            shipping_postal_code     = shipping_info.get('postal_code', ''),
-            delivery_latitude        = safe_decimal(delivery_latitude) if delivery_latitude else None,
-            delivery_longitude       = safe_decimal(delivery_longitude) if delivery_longitude else None,
-            billing_same_as_shipping = billing_same,
-            billing_address_line1    = billing_info.get('line1', ''),
-            billing_address_line2    = billing_info.get('line2', ''),
-            billing_city             = billing_info.get('city', ''),
-            billing_state            = billing_info.get('state', ''),
-            billing_country          = billing_info.get('country', 'Qatar'),
-            billing_postal_code      = billing_info.get('postal_code', ''),
-            payment_method           = payment_method,
-            payment_status           = 'pending',
-            customer_notes           = customer_notes,
-        )
-
-        # ── Create Order Items ────────────────────────────────
-        for cart_item in cart_items:
-            item_price    = safe_decimal(getattr(cart_item, 'unit_price', 0))
-            lens_price    = safe_decimal(getattr(cart_item, 'lens_price', 0))
-            item_subtotal = item_price * cart_item.quantity
-            if lens_price > 0:
-                item_subtotal += lens_price * cart_item.quantity
-
-            variant_details = None
-            if getattr(cart_item, 'variant', None):
-                variant_details = {
-                    'color': getattr(cart_item.variant, 'color_name', None),
-                    'size':  getattr(cart_item.variant, 'size', None),
-                }
-
-            product_sku = ''
-            try:
-                product_sku = str(getattr(cart_item.product, 'sku', '') or '')
-            except Exception:
-                pass
-
-            lens_option_name = ''
-            try:
-                if getattr(cart_item, 'lens_option', None):
-                    lens_option_name = cart_item.lens_option.name or ''
-            except Exception:
-                pass
-
-            order_item = OrderItem.objects.create(
-                order                    = order,
-                product                  = cart_item.product,
-                variant                  = getattr(cart_item, 'variant', None),
-                product_name             = cart_item.product.name,
-                product_sku              = product_sku,
-                variant_details          = variant_details,
-                quantity                 = cart_item.quantity,
-                unit_price               = item_price,
-                requires_prescription    = getattr(cart_item, 'requires_prescription', False),
-                lens_option              = getattr(cart_item, 'lens_option', None),
-                lens_option_name         = lens_option_name,
-                lens_price               = lens_price,
-                prescription_data        = getattr(cart_item, 'prescription_data', None),
-                contact_lens_left_power  = getattr(cart_item, 'contact_lens_left_power', None),
-                contact_lens_right_power = getattr(cart_item, 'contact_lens_right_power', None),
-                subtotal                 = item_subtotal,
-                special_instructions     = getattr(cart_item, 'special_instructions', '') or '',
+        with transaction.atomic():
+            order = Order.objects.create(
+                order_number             = generate_order_number(),
+                customer                 = request.user,
+                order_type               = 'online',
+                status                   = 'pending',
+                currency                 = currency,
+                subtotal                 = subtotal,
+                tax_amount               = tax,
+                shipping_amount          = shipping_amount,
+                discount_amount          = Decimal('0.00'),
+                total_amount             = total,
+                customer_email           = request.user.email,
+                customer_phone           = shipping_info.get('phone', ''),
+                customer_name            = shipping_info.get('name', ''),
+                shipping_address_line1   = shipping_info.get('line1', ''),
+                shipping_address_line2   = shipping_info.get('line2', ''),
+                shipping_city            = shipping_info.get('city', ''),
+                shipping_state           = shipping_info.get('state', ''),
+                shipping_country         = shipping_info.get('country', 'Qatar'),
+                shipping_postal_code     = shipping_info.get('postal_code', ''),
+                delivery_latitude        = safe_decimal(delivery_latitude) if delivery_latitude else None,
+                delivery_longitude       = safe_decimal(delivery_longitude) if delivery_longitude else None,
+                billing_same_as_shipping = billing_same,
+                billing_address_line1    = billing_info.get('line1', ''),
+                billing_address_line2    = billing_info.get('line2', ''),
+                billing_city             = billing_info.get('city', ''),
+                billing_state            = billing_info.get('state', ''),
+                billing_country          = billing_info.get('country', 'Qatar'),
+                billing_postal_code      = billing_info.get('postal_code', ''),
+                payment_method           = payment_method,
+                payment_status           = 'pending',
+                customer_notes           = customer_notes,
             )
 
-            # Lens add-ons — wrapped safely
-            try:
-                for addon_item in cart_item.lens_addons.all():
-                    addon_obj = getattr(addon_item, 'addon', None)
-                    if addon_obj:
-                        OrderItemLensAddOn.objects.create(
-                            order_item = order_item,
-                            addon      = addon_obj,
-                            addon_name = getattr(addon_obj, 'name', ''),
-                            price      = safe_decimal(getattr(addon_item, 'price', 0)),
-                        )
-            except Exception as addon_err:
-                logger.warning(f"Addon error for cart_item {cart_item.id}: {addon_err}")
+            # ── Create Order Items ────────────────────────────────
+            for cart_item in cart_items:
+                item_price    = safe_decimal(getattr(cart_item, 'unit_price', 0))
+                lens_price    = safe_decimal(getattr(cart_item, 'lens_price', 0))
+                item_subtotal = item_price * cart_item.quantity
+                if lens_price > 0:
+                    item_subtotal += lens_price * cart_item.quantity
 
-        # Initial status history
-        OrderStatusHistory.objects.create(
-            order      = order,
-            to_status  = 'pending',
-            notes      = 'Order created online',
-            changed_by = request.user,
-        )
+                variant_details = None
+                if getattr(cart_item, 'variant', None):
+                    variant_details = {
+                        'color': getattr(cart_item.variant, 'color_name', None),
+                        'size':  getattr(cart_item.variant, 'size', None),
+                    }
+
+                product_sku = ''
+                try:
+                    product_sku = str(getattr(cart_item.product, 'sku', '') or '')
+                except Exception:
+                    pass
+
+                lens_option_name = ''
+                try:
+                    if getattr(cart_item, 'lens_option', None):
+                        lens_option_name = cart_item.lens_option.name or ''
+                except Exception:
+                    pass
+
+                order_item = OrderItem.objects.create(
+                    order                    = order,
+                    product                  = cart_item.product,
+                    variant                  = getattr(cart_item, 'variant', None),
+                    product_name             = cart_item.product.name,
+                    product_sku              = product_sku,
+                    variant_details          = variant_details,
+                    quantity                 = cart_item.quantity,
+                    unit_price               = item_price,
+                    requires_prescription    = getattr(cart_item, 'requires_prescription', False),
+                    lens_option              = getattr(cart_item, 'lens_option', None),
+                    lens_option_name         = lens_option_name,
+                    lens_price               = lens_price,
+                    prescription_data        = getattr(cart_item, 'prescription_data', None),
+                    contact_lens_left_power  = getattr(cart_item, 'contact_lens_left_power', None),
+                    contact_lens_right_power = getattr(cart_item, 'contact_lens_right_power', None),
+                    subtotal                 = item_subtotal,
+                    special_instructions     = getattr(cart_item, 'special_instructions', '') or '',
+                )
+
+                # Lens add-ons — wrapped safely
+                try:
+                    for addon_item in cart_item.lens_addons.all():
+                        addon_obj = getattr(addon_item, 'addon', None)
+                        if addon_obj:
+                            OrderItemLensAddOn.objects.create(
+                                order_item = order_item,
+                                addon      = addon_obj,
+                                addon_name = getattr(addon_obj, 'name', ''),
+                                price      = safe_decimal(getattr(addon_item, 'price', 0)),
+                            )
+                except Exception as addon_err:
+                    logger.warning(f"Addon error for cart_item {cart_item.id}: {addon_err}")
+
+            # Initial status history
+            OrderStatusHistory.objects.create(
+                order      = order,
+                to_status  = 'pending',
+                notes      = 'Order created online',
+                changed_by = request.user,
+            )
 
         logger.info(f"Order {order.order_number} created for {request.user.email} | method={payment_method} | total={total}")
 
@@ -371,7 +372,7 @@ def place_order(request):
 
     except Exception as e:
         logger.error(f"place_order CRASH — {type(e).__name__}: {e}", exc_info=True)
-        messages.error(request, f'Something went wrong: {str(e)}')
+        messages.error(request, f'Something went wrong placing your order. Please try again.')
         return redirect('orders:checkout')
 
 
