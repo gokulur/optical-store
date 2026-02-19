@@ -1,0 +1,242 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  .page-header {
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+  }
+  .card { box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); border: none; }
+  .lens-badge { font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; background: #f3f3f3; color: #555; margin-right: 4px; display: inline-block; }
+  .lens-thumb { width: 48px; height: 48px; object-fit: contain; border-radius: 4px; border: 1px solid #eee; background: #fafafa; }
+  .filter-card { background: #f8f9fa; border-radius: 8px; padding: 16px; margin-bottom: 20px; border: 1px solid #e9ecef; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+          <h3 class="mb-1"><i class="mdi mdi-glasses"></i> Medical / Prescription Lenses</h3>
+          <p class="mb-0 opacity-75">Manage lens brands, types, index options & pricing</p>
+        </div>
+        <a href="{% url 'adminpanel:lens_option_add' %}" class="btn btn-gradient-primary">
+          <i class="mdi mdi-plus"></i> Add Lens Option
+        </a>
+      </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Filters -->
+    <div class="filter-card">
+      <form method="GET" class="row align-items-end" id="filterForm">
+        <div class="col-md-3">
+          <label class="small font-weight-bold text-muted mb-1">Search</label>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text bg-white"><i class="mdi mdi-magnify text-muted"></i></span>
+            </div>
+            <input type="text" class="form-control" name="search" placeholder="Brand, type, index..." value="{{ search|default:'' }}">
+          </div>
+        </div>
+
+        <div class="col-md-2">
+          <label class="small font-weight-bold text-muted mb-1">Lens Brand</label>
+          <select class="form-control" name="lens_brand" onchange="this.form.submit()">
+            <option value="">All Brands</option>
+            {% for brand in lens_brands %}
+            <option value="{{ brand.slug }}" {% if brand.slug in selected_lens_brands %}selected{% endif %}>{{ brand.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="small font-weight-bold text-muted mb-1">Lens Type</label>
+          <select class="form-control" name="lens_type" onchange="this.form.submit()">
+            <option value="">All Types</option>
+            {% for lt in lens_types %}
+            <option value="{{ lt.slug }}" {% if lt.slug in selected_lens_types %}selected{% endif %}>{{ lt.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="small font-weight-bold text-muted mb-1">Index</label>
+          <select class="form-control" name="index" onchange="this.form.submit()">
+            <option value="">All Indexes</option>
+            {% for idx in index_options %}
+            <option value="{{ idx }}" {% if idx|stringformat:"s" in selected_indexes %}selected{% endif %}>{{ idx }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="small font-weight-bold text-muted mb-1">Sort</label>
+          <select class="form-control" name="sort" onchange="this.form.submit()">
+            <option value="-created_at" {% if current_sort == '-created_at' %}selected{% endif %}>Newest First</option>
+            <option value="base_price" {% if current_sort == 'base_price' %}selected{% endif %}>Price: Low → High</option>
+            <option value="-base_price" {% if current_sort == '-base_price' %}selected{% endif %}>Price: High → Low</option>
+            <option value="name" {% if current_sort == 'name' %}selected{% endif %}>Name A–Z</option>
+          </select>
+        </div>
+
+        <div class="col-md-1">
+          <button type="submit" class="btn btn-primary btn-block"><i class="mdi mdi-filter"></i></button>
+        </div>
+
+        {% if request.GET %}
+        <div class="col-12 mt-2">
+          <a href="{% url 'adminpanel:lens_option_list' %}" class="btn btn-sm btn-light">
+            <i class="mdi mdi-close"></i> Clear Filters
+          </a>
+        </div>
+        {% endif %}
+      </form>
+    </div>
+
+    <!-- Table -->
+    <div class="row">
+      <div class="col-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="card-title mb-0 text-muted">
+                Showing <strong>{{ lens_options.paginator.count }}</strong> lens option(s)
+              </h6>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="thead-light">
+                  <tr>
+                    <th>#</th>
+                    <th>Brand</th>
+                    <th>Lens Type</th>
+                    <th>Index</th>
+                    <th>Power Range</th>
+                    <th>Base Price</th>
+                    <th>Status</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for option in lens_options %}
+                  <tr>
+                    <td class="text-muted small">{{ forloop.counter }}</td>
+
+                    <td>
+                      <div class="font-weight-bold">{{ option.lens_brand.name }}</div>
+                    </td>
+
+                    <td>
+                      <span class="badge badge-gradient-info">{{ option.lens_type.name }}</span>
+                    </td>
+
+                    <td>
+                      <span class="lens-badge">{{ option.index }}</span>
+                    </td>
+
+                    <td>
+                      <small class="text-muted">
+                        {{ option.min_power }} → {{ option.max_power }}
+                      </small>
+                    </td>
+
+                    <td>
+                      <strong class="text-success">QAR {{ option.base_price }}</strong>
+                    </td>
+
+                    <td>
+                      {% if option.is_active %}
+                        <span class="badge badge-success">Active</span>
+                      {% else %}
+                        <span class="badge badge-secondary">Inactive</span>
+                      {% endif %}
+                    </td>
+
+                    <td class="text-right">
+                      <a href="{% url 'adminpanel:lens_option_edit' option.id %}"
+                         class="btn btn-inverse-warning btn-sm btn-icon" title="Edit">
+                        <i class="mdi mdi-pencil"></i>
+                      </a>
+                      <a href="{% url 'adminpanel:lens_option_delete' option.id %}"
+                         class="btn btn-inverse-danger btn-sm btn-icon" title="Delete"
+                         onclick="return confirm('Delete this lens option?')">
+                        <i class="mdi mdi-delete"></i>
+                      </a>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                      <i class="mdi mdi-glasses" style="font-size: 3rem; display:block; margin-bottom:10px;"></i>
+                      No medical lens options found.
+                      <br>
+                      <a href="{% url 'adminpanel:lens_option_add' %}" class="btn btn-sm btn-primary mt-3">
+                        <i class="mdi mdi-plus"></i> Add Your First Lens Option
+                      </a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav class="mt-3">
+              <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}">
+                    <i class="mdi mdi-chevron-left"></i>
+                  </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                  {% if page_obj.number == num %}
+                  <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                  {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}&{{ request.GET.urlencode }}">{{ num }}</a>
+                  </li>
+                  {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}">
+                    <i class="mdi mdi-chevron-right"></i>
+                  </a>
+                </li>
+                {% endif %}
+              </ul>
+            </nav>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
