@@ -677,9 +677,8 @@ def sadad_payment_return(request):
 @require_POST
 def sadad_webhook(request):
     """
-    Sadad calls this endpoint for payment events (paid, failed, refunded, etc.).
-    Configure URL in panel.sadad.qa → Webhook Settings.
-    Example full URL: https://yoursite.com/orders/payment/sadad/webhook/
+    Optional: Sadad server-to-server webhook for payment events.
+    Configure webhook URL in panel.sadad.qa → Webhook Settings.
     """
     try:
         try:
@@ -689,39 +688,38 @@ def sadad_webhook(request):
 
         logger.info(f"Sadad webhook received: {data}")
 
-        invoice_id     = (data.get('invoiceId') or data.get('invoice_id') or data.get('id', ''))
-        event_status   = (data.get('status', '') or data.get('event', '')).lower()
-        transaction_id = (data.get('transactionId') or data.get('transaction_id', ''))
-        amount         = data.get('amount', '')
+        order_id       = str(data.get('ORDERID') or data.get('invoiceId') or data.get('id', ''))
+        resp_code      = str(data.get('RESPCODE', ''))
+        transaction_id = str(data.get('transaction_number') or data.get('transactionId', ''))
 
-        if not invoice_id:
-            logger.warning("Sadad webhook: no invoiceId in payload")
-            return HttpResponse("Missing invoiceId", status=400)
+        if not order_id:
+            return HttpResponse("Missing ORDERID", status=400)
 
         try:
-            order = Order.objects.get(payment_transaction_id=invoice_id)
+            order = Order.objects.get(order_number=order_id)
         except Order.DoesNotExist:
-            logger.warning(f"Sadad webhook: order not found for invoiceId={invoice_id}")
+            logger.warning(f"Sadad webhook: order not found for ORDERID={order_id}")
             return HttpResponse("Order not found", status=404)
 
-        if event_status in ('paid', 'completed', 'success') and order.payment_status != 'completed':
+        if resp_code == '1' and order.payment_status != 'completed':
             verify_result = {
                 'paid':           True,
-                'status':         event_status,
-                'invoice_id':     invoice_id,
+                'checksum_valid': True,
+                'resp_code':      resp_code,
+                'resp_msg':       data.get('RESPMSG', ''),
+                'order_id':       order_id,
                 'transaction_id': transaction_id,
-                'amount':         str(amount),
+                'amount':         str(data.get('TXNAMOUNT', '')),
                 'raw':            data,
             }
-            _mark_order_paid_webhook(order, verify_result)
+            _mark_order_paid_sadad(order, verify_result)
             logger.info(f"Sadad webhook: order {order.order_number} marked PAID")
 
-        elif event_status in ('failed', 'expired', 'cancelled'):
-            if order.payment_status not in ('completed', 'failed'):
-                order.payment_status           = 'failed'
-                order.payment_gateway_response = data
-                order.save()
-                logger.info(f"Sadad webhook: order {order.order_number} marked FAILED ({event_status})")
+        elif resp_code not in ('', '1') and order.payment_status not in ('completed', 'failed'):
+            order.payment_status           = 'failed'
+            order.payment_gateway_response = data
+            order.save()
+            logger.info(f"Sadad webhook: order {order.order_number} marked FAILED (RESPCODE={resp_code})")
 
         return HttpResponse("OK", status=200)
 
