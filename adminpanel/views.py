@@ -1911,3 +1911,194 @@ def coupon_usage_history(request):
         'search':         search,
         'total_discount': total_discount,
     })
+
+
+
+ 
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.db.models import Q
+from catalog.models import LensOption, LensBrand, LensType
+
+
+# ─── Index choices used by both Add and Edit views ────────────────────────────
+INDEX_CHOICES = [
+    ("1.50", "1.50 (Standard)"),
+    ("1.56", "1.56 (Mid-Index)"),
+    ("1.60", "1.60 (Thin)"),
+    ("1.67", "1.67 (Extra Thin)"),
+    ("1.74", "1.74 (Ultra Thin)"),
+]
+
+
+# ─── LIST ─────────────────────────────────────────────────────────────────────
+def lens_option_list(request):
+    queryset = LensOption.objects.select_related('lens_brand', 'lens_type').all()
+
+    # --- Filters ---
+    search = request.GET.get('search', '').strip()
+    if search:
+        queryset = queryset.filter(
+            Q(lens_brand__name__icontains=search) |
+            Q(lens_type__name__icontains=search) |
+            Q(index__icontains=search)
+        )
+
+    selected_lens_brands = request.GET.getlist('lens_brand')
+    if selected_lens_brands:
+        queryset = queryset.filter(lens_brand__slug__in=selected_lens_brands)
+
+    selected_lens_types = request.GET.getlist('lens_type')
+    if selected_lens_types:
+        queryset = queryset.filter(lens_type__slug__in=selected_lens_types)
+
+    selected_indexes = request.GET.getlist('index')
+    if selected_indexes:
+        queryset = queryset.filter(index__in=selected_indexes)
+
+    # --- Sorting ---
+    sort_option = request.GET.get('sort', '-id')
+    valid_sorts = ['-id', 'base_price', '-base_price', 'name', '-name', '-created_at']
+    if sort_option not in valid_sorts:
+        sort_option = '-id'
+    queryset = queryset.order_by(sort_option)
+
+    # --- Pagination ---
+    paginator = Paginator(queryset, 24)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    # --- Sidebar data ---
+    index_options = (
+        LensOption.objects
+        .values_list('index', flat=True)
+        .distinct()
+        .order_by('index')
+    )
+
+    context = {
+        'lens_options': page_obj,
+        'page_obj': page_obj,
+        'is_paginated': page_obj.has_other_pages(),
+        'lens_brands': LensBrand.objects.filter(is_active=True).order_by('name'),
+        'lens_types': LensType.objects.filter(is_active=True).order_by('name'),
+        'index_options': index_options,
+        'selected_lens_brands': selected_lens_brands,
+        'selected_lens_types': selected_lens_types,
+        'selected_indexes': selected_indexes,
+        'current_sort': sort_option,
+        'search': search,
+    }
+    return render(request, 'adminpanel/medical/medical_lens_list.html', context)
+
+
+# ─── ADD ──────────────────────────────────────────────────────────────────────
+def lens_option_add(request):
+    if request.method == 'POST':
+        lens_brand_id = request.POST.get('lens_brand')
+        lens_type_id  = request.POST.get('lens_type')
+        index         = request.POST.get('index', '').strip()
+        base_price    = request.POST.get('base_price')
+        min_power     = request.POST.get('min_power')
+        max_power     = request.POST.get('max_power')
+        is_active     = request.POST.get('is_active') == 'on'
+
+        # Basic validation
+        errors = []
+        if not lens_brand_id:
+            errors.append("Please select a lens brand.")
+        if not lens_type_id:
+            errors.append("Please select a lens type.")
+        if not index:
+            errors.append("Please select a lens index.")
+        if not base_price:
+            errors.append("Base price is required.")
+        if not min_power or not max_power:
+            errors.append("Both minimum and maximum power are required.")
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+        else:
+            try:
+                LensOption.objects.create(
+                    lens_brand_id=lens_brand_id,
+                    lens_type_id=lens_type_id,
+                    index=index,
+                    base_price=base_price,
+                    min_power=min_power,
+                    max_power=max_power,
+                    is_active=is_active,
+                )
+                messages.success(request, "Lens option added successfully!")
+                return redirect('adminpanel:lens_option_list')
+            except Exception as ex:
+                messages.error(request, f"Error saving lens option: {ex}")
+
+    context = {
+        'lens_brands': LensBrand.objects.filter(is_active=True).order_by('name'),
+        'lens_types':  LensType.objects.filter(is_active=True).order_by('name'),
+        'index_choices': INDEX_CHOICES,
+    }
+    return render(request, 'adminpanel/medical/medical_lens_add.html', context)
+
+
+# ─── EDIT ─────────────────────────────────────────────────────────────────────
+def lens_option_edit(request, option_id):
+    lens_option = get_object_or_404(LensOption, pk=option_id)
+
+    if request.method == 'POST':
+        lens_brand_id = request.POST.get('lens_brand')
+        lens_type_id  = request.POST.get('lens_type')
+        index         = request.POST.get('index', '').strip()
+        base_price    = request.POST.get('base_price')
+        min_power     = request.POST.get('min_power')
+        max_power     = request.POST.get('max_power')
+        is_active     = request.POST.get('is_active') == 'on'
+
+        errors = []
+        if not lens_brand_id:
+            errors.append("Please select a lens brand.")
+        if not lens_type_id:
+            errors.append("Please select a lens type.")
+        if not index:
+            errors.append("Please select a lens index.")
+        if not base_price:
+            errors.append("Base price is required.")
+        if not min_power or not max_power:
+            errors.append("Both minimum and maximum power are required.")
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+        else:
+            try:
+                lens_option.lens_brand_id = lens_brand_id
+                lens_option.lens_type_id  = lens_type_id
+                lens_option.index         = index
+                lens_option.base_price    = base_price
+                lens_option.min_power     = min_power
+                lens_option.max_power     = max_power
+                lens_option.is_active     = is_active
+                lens_option.save()
+                messages.success(request, "Lens option updated successfully!")
+                return redirect('adminpanel:lens_option_list')
+            except Exception as ex:
+                messages.error(request, f"Error updating lens option: {ex}")
+
+    context = {
+        'lens_option':   lens_option,
+        'lens_brands':   LensBrand.objects.filter(is_active=True).order_by('name'),
+        'lens_types':    LensType.objects.filter(is_active=True).order_by('name'),
+        'index_choices': INDEX_CHOICES,
+    }
+    return render(request, 'adminpanel/medical/medical_lens_edit.html', context)
+
+
+# ─── DELETE ───────────────────────────────────────────────────────────────────
+def lens_option_delete(request, option_id):
+    lens_option = get_object_or_404(LensOption, pk=option_id)
+    lens_option.delete()
+    messages.success(request, "Lens option deleted successfully.")
+    return redirect('adminpanel:lens_option_list')

@@ -121,4 +121,10 @@ urlpatterns = [
     path('promotions/usage/',         views.coupon_usage_history, name='coupon_usage_history'),
 
 
+    # --- MEDICAL LENSES ---
+    path("medical-lenses/",views.lens_option_list,name="medical_lens_list"),
+    path("medical-lenses/add/",views.lens_option_add,name="medical_lens_add"),
+    path("medical-lenses/edit/<int:option_id>/",views.lens_option_edit,name="medical_lens_edit"),
+    path("medical-lenses/delete/<int:option_id>/",views.lens_option_delete,name="medical_lens_delete"),
+
 ]
