@@ -733,8 +733,8 @@ def sadad_webhook(request):
 # ─────────────────────────────────────────────────────────────
 
 @transaction.atomic
-def _mark_order_paid(request, order, verify_result: dict):
-    """Update order + create PaymentTransaction after confirmed Sadad payment (with request)."""
+def _mark_order_paid_sadad(order, verify_result: dict):
+    """Mark order as paid after confirmed Sadad payment."""
     order.payment_status           = 'completed'
     order.payment_gateway_response = verify_result.get('raw', verify_result)
     order.paid_at                  = timezone.now()
@@ -742,33 +742,35 @@ def _mark_order_paid(request, order, verify_result: dict):
     order.confirmed_at             = timezone.now()
     order.save()
 
-    PaymentTransaction.objects.create(
+    PaymentTransaction.objects.get_or_create(
         order                  = order,
-        transaction_id         = generate_transaction_id(),
-        gateway_transaction_id = verify_result.get('transaction_id', ''),
-        transaction_type       = 'payment',
-        status                 = 'completed',
-        amount                 = order.total_amount,
-        currency               = order.currency,
-        payment_gateway        = 'sadad',
-        payment_method         = 'sadad',
-        gateway_response       = verify_result.get('raw', verify_result),
-        completed_at           = timezone.now(),
+        gateway_transaction_id = verify_result.get('transaction_id', order.order_number),
+        defaults=dict(
+            transaction_id         = generate_transaction_id(),
+            transaction_type       = 'payment',
+            status                 = 'completed',
+            amount                 = order.total_amount,
+            currency               = order.currency,
+            payment_gateway        = 'sadad',
+            payment_method         = 'sadad',
+            gateway_response       = verify_result.get('raw', verify_result),
+            completed_at           = timezone.now(),
+        )
     )
 
-    try:
-        cart = get_or_create_cart(request)
+    # Clear the cart
+    cart = Cart.objects.filter(customer=order.customer).first()
+    if cart:
         cart.items.all().delete()
-    except Exception:
-        pass
 
     OrderStatusHistory.objects.create(
         order       = order,
         from_status = 'pending',
         to_status   = 'confirmed',
-        notes       = 'Payment confirmed via Sadad',
-        changed_by  = request.user,
+        notes       = f"Payment confirmed via Sadad (txn: {verify_result.get('transaction_id', '')})",
+        changed_by  = order.customer,
     )
+
 
 
 @transaction.atomic
