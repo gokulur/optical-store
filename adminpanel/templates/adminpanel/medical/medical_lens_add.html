@@ -1,0 +1,237 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  .section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #3e4b5b;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f2f4f6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .card { box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); border: none; margin-bottom: 20px; }
+  .info-box {
+    background: linear-gradient(135deg, #e0f2fe, #f0fdf4);
+    border-left: 4px solid #0ea5e9;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 0.875rem;
+    color: #374151;
+  }
+  .required-star { color: #dc3545; }
+  .form-control:focus { border-color: #b66dff; box-shadow: 0 0 0 0.2rem rgba(182,109,255,0.2); }
+  .power-row { background: #f8f9fa; border-radius: 6px; padding: 14px; border: 1px solid #e9ecef; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <!-- Page Header -->
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h3 class="mb-1"><i class="mdi mdi-plus-circle-outline"></i> Add Medical Lens Option</h3>
+        <p class="text-muted mb-0">Create a new prescription lens option with brand, type & pricing</p>
+      </div>
+      <a href="{% url 'adminpanel:lens_option_list' %}" class="btn btn-outline-secondary">
+        <i class="mdi mdi-arrow-left"></i> Back to List
+      </a>
+    </div>
+
+    <div class="info-box">
+      <i class="mdi mdi-information-outline text-info mr-2"></i>
+      <strong>Medical Lens Options</strong> represent specific lens configurations (brand + type + index) that customers can choose when ordering eyeglasses. Each option has a power range and base price.
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="row">
+
+        <!-- Left Column: Main Info -->
+        <div class="col-lg-8">
+
+          <!-- Brand & Type -->
+          <div class="card">
+            <div class="card-body">
+              <h5 class="section-title"><i class="mdi mdi-tag-outline mr-1"></i> Lens Identity</h5>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Lens Brand <span class="required-star">*</span></label>
+                    <select class="form-control" name="lens_brand" required>
+                      <option value="">— Select Brand —</option>
+                      {% for brand in lens_brands %}
+                      <option value="{{ brand.id }}">{{ brand.name }}</option>
+                      {% endfor %}
+                    </select>
+                    <small class="text-muted">e.g. Essilor, Zeiss, Hoya, Nikon</small>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Lens Type <span class="required-star">*</span></label>
+                    <select class="form-control" name="lens_type" required>
+                      <option value="">— Select Type —</option>
+                      {% for lt in lens_types %}
+                      <option value="{{ lt.id }}">{{ lt.name }}</option>
+                      {% endfor %}
+                    </select>
+                    <small class="text-muted">e.g. Single Vision, Progressive, Bifocal</small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Lens Index <span class="required-star">*</span></label>
+                    <select class="form-control" name="index" required>
+                      <option value="">— Select Index —</option>
+                      <option value="1.50">1.50 (Standard)</option>
+                      <option value="1.56">1.56 (Mid-Index)</option>
+                      <option value="1.60">1.60 (Thin)</option>
+                      <option value="1.67">1.67 (Extra Thin)</option>
+                      <option value="1.74">1.74 (Ultra Thin)</option>
+                    </select>
+                    <small class="text-muted">Higher = thinner lens</small>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Base Price (QAR) <span class="required-star">*</span></label>
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text">QAR</span>
+                      </div>
+                      <input type="number" class="form-control" name="base_price" step="0.01" min="0"
+                             placeholder="0.00" required>
+                    </div>
+                    <small class="text-muted">Price per pair for this lens configuration</small>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Power Range -->
+          <div class="card">
+            <div class="card-body">
+              <h5 class="section-title"><i class="mdi mdi-eye-outline mr-1"></i> Prescription Power Range</h5>
+
+              <div class="power-row">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-0">
+                      <label class="font-weight-bold">Minimum Power <span class="required-star">*</span></label>
+                      <div class="input-group">
+                        <input type="number" class="form-control" name="min_power"
+                               step="0.25" placeholder="-6.00" required>
+                        <div class="input-group-append">
+                          <span class="input-group-text">D</span>
+                        </div>
+                      </div>
+                      <small class="text-muted">e.g. -6.00 (use negative for minus power)</small>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-0">
+                      <label class="font-weight-bold">Maximum Power <span class="required-star">*</span></label>
+                      <div class="input-group">
+                        <input type="number" class="form-control" name="max_power"
+                               step="0.25" placeholder="+4.00" required>
+                        <div class="input-group-append">
+                          <span class="input-group-text">D</span>
+                        </div>
+                      </div>
+                      <small class="text-muted">e.g. +4.00 (use positive for plus power)</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert alert-light border mt-3 mb-0 small">
+                <i class="mdi mdi-information text-primary mr-1"></i>
+                The power range defines which prescriptions this lens supports. Customers will only be able to select powers within this range at checkout.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Settings -->
+        <div class="col-lg-4">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="section-title"><i class="mdi mdi-cogs mr-1"></i> Settings</h5>
+
+              <div class="form-group">
+                <div class="form-check">
+                  <label class="form-check-label font-weight-bold">
+                    <input type="checkbox" class="form-check-input" name="is_active" checked>
+                    Active
+                  </label>
+                  <small class="d-block text-muted">Inactive options won't appear in checkout</small>
+                </div>
+              </div>
+
+              <hr>
+
+              <div class="alert alert-warning small">
+                <i class="mdi mdi-alert-outline mr-1"></i>
+                <strong>Tip:</strong> Make sure the brand and type exist before adding. Go to
+                <a href="{% url 'adminpanel:lens_category_list' %}">Lens Categories</a> to manage lens types.
+              </div>
+
+              <div class="mt-3">
+                <button type="submit" class="btn btn-gradient-primary btn-block btn-lg">
+                  <i class="mdi mdi-content-save mr-1"></i> Save Lens Option
+                </button>
+                <a href="{% url 'adminpanel:lens_option_list' %}" class="btn btn-light btn-block mt-2">
+                  Cancel
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Reference Card -->
+          <div class="card border-left-info">
+            <div class="card-body">
+              <h6 class="font-weight-bold text-info mb-3">
+                <i class="mdi mdi-book-open-outline"></i> Index Quick Reference
+              </h6>
+              <table class="table table-sm table-borderless mb-0 small">
+                <thead>
+                  <tr class="text-muted">
+                    <th>Index</th>
+                    <th>Thickness</th>
+                    <th>Best For</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td><code>1.50</code></td><td>Standard</td><td>Low prescriptions</td></tr>
+                  <tr><td><code>1.56</code></td><td>Mid-thin</td><td>±2.00 range</td></tr>
+                  <tr><td><code>1.60</code></td><td>Thin</td><td>±4.00 range</td></tr>
+                  <tr><td><code>1.67</code></td><td>Extra thin</td><td>±6.00 range</td></tr>
+                  <tr><td><code>1.74</code></td><td>Ultra thin</td><td>High prescriptions</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}
