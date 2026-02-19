@@ -1437,9 +1437,21 @@ body { font-family: var(--font-body); }
                     aria-label="Remove {{ item.product.name }}">
               ✕ Remove
             </button>
-            {% if item.product.product_type in 'eyeglasses,sunglasses' %}
-            <a href="{% url 'product_detail' item.product.slug %}" class="ci-edit-lens">
-              ✏ Edit Configuration
+            {% if item.product.product_type == 'eyeglasses' %}
+            <a href="{% url 'catalog:eyeglass_detail' item.product.slug %}" class="ci-edit-lens">
+              ✏ Edit Lens Configuration
+            </a>
+            {% elif item.product.product_type == 'sunglasses' %}
+            <a href="{% url 'catalog:sunglass_detail' item.product.slug %}" class="ci-edit-lens">
+              ✏ Edit Lens Configuration
+            </a>
+            {% elif item.product.product_type == 'contact_lenses' %}
+            <a href="{% url 'catalog:contact_lens_detail' item.product.slug %}" class="ci-edit-lens">
+              ✏ Edit Power / Color
+            </a>
+            {% elif item.product.product_type == 'reading_glasses' %}
+            <a href="{% url 'catalog:product_detail' item.product.slug %}" class="ci-edit-lens">
+              ✏ Edit Reading Power
             </a>
             {% endif %}
           </div>
