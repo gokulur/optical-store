@@ -1,79 +1,66 @@
-{% extends 'base.html' %}
-{% load static %}
-{% block title %}Redirecting to Sadad…{% endblock %}
-
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redirecting to Sadad Payment…</title>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-.sadad-wrap{
-  min-height:80vh;display:flex;align-items:center;justify-content:center;
-  flex-direction:column;font-family:'DM Sans',sans-serif;text-align:center;gap:20px;
-  background:#f5f4f0;padding:40px 20px;
-}
-.sadad-card{
-  background:#fff;border-radius:16px;padding:48px 40px;
-  box-shadow:0 4px 24px rgba(0,0,0,.09);max-width:460px;width:100%;
-}
-.sadad-logo-text{font-size:32px;font-weight:800;color:#00a651;letter-spacing:3px;margin-bottom:4px}
-.sadad-title{font-size:20px;font-weight:700;color:#0f0f0f;margin:16px 0 8px}
-.sadad-sub{font-size:14px;color:#7a7a7a;line-height:1.6}
-.sadad-amount{font-size:28px;font-weight:800;color:#0f0f0f;margin:20px 0}
-.sadad-amount span{font-size:16px;font-weight:500;color:#7a7a7a}
-.sadad-spinner{
-  width:48px;height:48px;border:4px solid #e6e6e6;border-top-color:#00a651;
-  border-radius:50%;animation:spin .8s linear infinite;margin:20px auto;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-.sadad-manual-btn{
-  margin-top:16px;padding:14px 32px;background:#00a651;color:#fff;border:none;
-  border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
-  transition:all .2s;width:100%;
-}
-.sadad-manual-btn:hover{background:#008f44;transform:translateY(-1px)}
-.sadad-security{margin-top:20px;font-size:12px;color:#b8b8b8}
-.sadad-redirect-note{
-  background:#e8f5e9;border-left:4px solid #00a651;padding:12px 16px;
-  border-radius:6px;margin:16px 0;font-size:13px;color:#2e7d32;text-align:left;
-}
-@media(max-width:500px){.sadad-card{padding:32px 24px}}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f5f4f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .wrap{text-align:center;padding:48px 32px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.08);max-width:440px;width:100%;margin:20px}
+  .logo{font-size:42px;margin-bottom:20px}
+  h1{font-size:22px;font-weight:700;color:#0f0f0f;margin-bottom:8px}
+  p{font-size:15px;color:#6a6a6a;line-height:1.6;margin-bottom:28px}
+  .spinner{width:48px;height:48px;border:4px solid #e5e7eb;border-top-color:#1a7a4a;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 24px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .order-badge{display:inline-block;padding:6px 16px;background:#edf6f1;border:1px solid #b5ddc8;border-radius:20px;font-size:13px;font-weight:600;color:#1a7a4a;margin-bottom:24px}
+  .manual-btn{margin-top:20px;padding:12px 28px;background:#1a1a1a;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+  .security{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px;font-size:12px;color:#9ca3af}
 </style>
+</head>
+<body>
 
-<div class="sadad-wrap">
-  <div class="sadad-card">
-    <div class="sadad-logo-text">SADAD</div>
-    <div class="sadad-title">Redirecting to Secure Payment</div>
-    <div class="sadad-amount">
-      {{ order.currency }} {{ order.total_amount }}
-      <br><span>Order #{{ order.order_number }}</span>
-    </div>
+<div class="wrap">
+  <div class="logo">💚</div>
+  <div class="order-badge">Order #{{ order.order_number }}</div>
+  <div class="spinner"></div>
+  <h1>Redirecting to Sadad</h1>
+  <p>Please wait while we securely redirect you to<br><strong>Sadad Payment Gateway</strong> to complete your payment.</p>
 
-    <div class="sadad-redirect-note">
-      ℹ️ You will be redirected to <strong>Sadad's secure payment page</strong> to complete your payment with Credit/Debit card, QPay, or Sadad Balance.
-    </div>
-
-    <div class="sadad-spinner"></div>
-    <div class="sadad-sub">Please wait — do not close or refresh this page.</div>
-
-    <button class="sadad-manual-btn" onclick="document.getElementById('sadadAutoForm').submit()">
-      Click here if not redirected automatically
-    </button>
-
-    <div class="sadad-security">🔒 Secured by Sadad · PCI-DSS Compliant · Qatar Central Bank Licensed</div>
+  <div class="security">
+    <svg width="12" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+      <rect x="3" y="11" width="18" height="11" rx="2"/>
+      <path d="M7 11V7a5 5 0 0110 0v4"/>
+    </svg>
+    256-bit SSL &bull; Secure payment
   </div>
+
+  <button class="manual-btn" id="manualBtn" style="display:none" onclick="document.getElementById('sadadForm').submit()">
+    Click here if not redirected automatically
+  </button>
 </div>
 
-{# Hidden auto-submit form — posts directly to Sadad's hosted checkout page #}
-<form id="sadadAutoForm" action="{{ action_url }}" method="POST" style="display:none">
-  {% for key, value in form_fields.items %}
-    <input type="hidden" name="{{ key }}" value="{{ value }}">
+<!-- THE FORM — posts to Sadad -->
+<form id="sadadForm" action="{{ action_url }}" method="POST" style="display:none">
+  {% for name, value in form_fields.items %}
+  <input type="hidden" name="{{ name }}" value="{{ value }}">
   {% endfor %}
 </form>
 
 <script>
-  window.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-      document.getElementById('sadadAutoForm').submit();
-    }, 1500);
-  });
+  // Auto-submit immediately
+  window.onload = function() {
+    try {
+      document.getElementById('sadadForm').submit();
+    } catch(e) {
+      document.getElementById('manualBtn').style.display = 'inline-block';
+    }
+  };
+
+  // Show manual button after 4 seconds if redirect hasn't happened
+  setTimeout(function() {
+    document.getElementById('manualBtn').style.display = 'inline-block';
+  }, 4000);
 </script>
-{% endblock %}
+</body>
+</html>

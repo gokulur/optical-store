@@ -14,6 +14,7 @@ import uuid
 import json
 import random
 import string
+import re
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 import base64
@@ -51,7 +52,6 @@ except ImportError:
 
 
 class PaymentGatewayError(Exception):
-    """Custom exception for payment gateway errors"""
     pass
 
 
@@ -60,7 +60,6 @@ class PaymentGatewayError(Exception):
 # ══════════════════════════════════════════════════════════════
 
 class StripePaymentService:
-    """Stripe payment integration"""
 
     @staticmethod
     def create_payment_intent(order):
@@ -72,9 +71,9 @@ class StripePaymentService:
                 currency=order.currency.lower(),
                 description=f"Order {order.order_number}",
                 metadata={
-                    'order_id':      str(order.id),
-                    'order_number':  order.order_number,
-                    'customer_email':order.customer_email,
+                    'order_id':       str(order.id),
+                    'order_number':   order.order_number,
+                    'customer_email': order.customer_email,
                 },
                 receipt_email=order.customer_email,
             )
@@ -95,11 +94,10 @@ class StripePaymentService:
         try:
             intent = stripe.PaymentIntent.retrieve(payment_intent_id)
             return {
-                'success':        intent.status == 'succeeded',
-                'status':         intent.status,
-                'payment_intent': intent,
-                'amount':         Decimal(intent.amount) / 100,
-                'currency':       intent.currency.upper(),
+                'success':  intent.status == 'succeeded',
+                'status':   intent.status,
+                'amount':   Decimal(intent.amount) / 100,
+                'currency': intent.currency.upper(),
             }
         except stripe.error.StripeError as e:
             return {'success': False, 'error': str(e)}
@@ -113,12 +111,7 @@ class StripePaymentService:
             if amount:
                 params['amount'] = int(amount * 100)
             refund = stripe.Refund.create(**params)
-            return {
-                'success':   True,
-                'refund_id': refund.id,
-                'status':    refund.status,
-                'amount':    Decimal(refund.amount) / 100,
-            }
+            return {'success': True, 'refund_id': refund.id, 'status': refund.status, 'amount': Decimal(refund.amount) / 100}
         except stripe.error.StripeError as e:
             return {'success': False, 'error': str(e)}
 
@@ -128,7 +121,6 @@ class StripePaymentService:
 # ══════════════════════════════════════════════════════════════
 
 class RazorpayPaymentService:
-    """Razorpay payment integration (popular in India)"""
 
     @staticmethod
     def create_order(order):
@@ -140,9 +132,9 @@ class RazorpayPaymentService:
                 'currency': order.currency,
                 'receipt':  order.order_number,
                 'notes':    {
-                    'order_id':      str(order.id),
-                    'order_number':  order.order_number,
-                    'customer_email':order.customer_email,
+                    'order_id':       str(order.id),
+                    'order_number':   order.order_number,
+                    'customer_email': order.customer_email,
                 }
             })
             return {
@@ -160,12 +152,11 @@ class RazorpayPaymentService:
         if not razorpay_client:
             raise PaymentGatewayError("Razorpay is not configured")
         try:
-            params_dict = {
+            razorpay_client.utility.verify_payment_signature({
                 'razorpay_order_id':   razorpay_order_id,
                 'razorpay_payment_id': razorpay_payment_id,
                 'razorpay_signature':  razorpay_signature
-            }
-            razorpay_client.utility.verify_payment_signature(params_dict)
+            })
             payment = razorpay_client.payment.fetch(razorpay_payment_id)
             return {
                 'success':      True,
@@ -174,26 +165,6 @@ class RazorpayPaymentService:
                 'status':       payment['status'],
                 'amount':       Decimal(payment['amount']) / 100,
                 'method':       payment.get('method', ''),
-                'card_last4':   payment.get('card', {}).get('last4', ''),
-                'card_network': payment.get('card', {}).get('network', ''),
-            }
-        except Exception as e:
-            return {'success': False, 'error': str(e)}
-
-    @staticmethod
-    def create_refund(payment_id, amount=None):
-        if not razorpay_client:
-            raise PaymentGatewayError("Razorpay is not configured")
-        try:
-            params = {'payment_id': payment_id}
-            if amount:
-                params['amount'] = int(amount * 100)
-            refund = razorpay_client.refund.create(**params)
-            return {
-                'success':   True,
-                'refund_id': refund['id'],
-                'status':    refund['status'],
-                'amount':    Decimal(refund['amount']) / 100,
             }
         except Exception as e:
             return {'success': False, 'error': str(e)}
@@ -204,7 +175,6 @@ class RazorpayPaymentService:
 # ══════════════════════════════════════════════════════════════
 
 class PayPalPaymentService:
-    """PayPal payment integration"""
 
     @staticmethod
     def create_payment(order, return_url, cancel_url):
@@ -223,18 +193,14 @@ class PayPalPaymentService:
                         "currency": order.currency,
                         "quantity": 1
                     }]},
-                    "amount": {"total": str(order.total_amount), "currency": order.currency},
+                    "amount":      {"total": str(order.total_amount), "currency": order.currency},
                     "description": f"Payment for Order {order.order_number}"
                 }]
             })
             if payment.create():
                 for link in payment.links:
                     if link.rel == "approval_url":
-                        return {
-                            'success':      True,
-                            'payment_id':   payment.id,
-                            'approval_url': str(link.href),
-                        }
+                        return {'success': True, 'payment_id': payment.id, 'approval_url': str(link.href)}
             return {'success': False, 'error': payment.error}
         except Exception as e:
             return {'success': False, 'error': str(e)}
@@ -246,43 +212,23 @@ class PayPalPaymentService:
         try:
             payment = PayPalPayment.find(payment_id)
             if payment.execute({"payer_id": payer_id}):
-                return {
-                    'success':     True,
-                    'payment_id':  payment.id,
-                    'state':       payment.state,
-                    'payer_email': payment.payer.get('payer_info', {}).get('email', ''),
-                }
+                return {'success': True, 'payment_id': payment.id, 'state': payment.state}
             return {'success': False, 'error': payment.error}
         except Exception as e:
             return {'success': False, 'error': str(e)}
 
-    @staticmethod
-    def create_refund(sale_id, amount=None):
-        if not PayPalPayment:
-            raise PaymentGatewayError("PayPal is not configured")
-        try:
-            from paypalrestsdk import Sale
-            sale   = Sale.find(sale_id)
-            params = {}
-            if amount:
-                params['amount'] = {'total': str(amount), 'currency': 'USD'}
-            refund = sale.refund(params)
-            if refund.success():
-                return {'success': True, 'refund_id': refund.id, 'state': refund.state}
-            return {'success': False, 'error': refund.error}
-        except Exception as e:
-            return {'success': False, 'error': str(e)}
-
 
 # ══════════════════════════════════════════════════════════════
-# SADAD  (Qatar) — Correct Web Checkout 2.1 Implementation
+# SADAD  (Qatar) — Web Checkout 2.1
 # ══════════════════════════════════════════════════════════════
 #
-# Sadad does NOT use a REST API with Bearer tokens.
-# It uses a form POST to https://sadadqa.com/webpurchase
-# with an AES-128-CBC encrypted checksumhash.
+#  CRITICAL FIXES applied here:
+#  1. ORDER_ID must be alphanumeric only — strip hyphens from order number
+#  2. CALLBACK_URL must be a real public URL (set SADAD_RETURN_URL in .env
+#     to your ngrok / production URL, e.g. https://abc.ngrok.io/orders/payment/sadad/return/)
+#  3. productdetail field names must match Sadad's exact spec
+#  4. TXN_DATE format must be YYYY-MM-DD HH:MM:SS
 #
-# Docs: https://developer.sadad.qa/
 # ══════════════════════════════════════════════════════════════
 
 class SadadPaymentError(Exception):
@@ -291,210 +237,197 @@ class SadadPaymentError(Exception):
 
 class SadadPaymentService:
     """
-    Sadad (Qatar) Web Checkout 2.1 integration.
+    Sadad (Qatar) Web Checkout 2.1.
 
-    Required settings (settings.py / .env):
-        SADAD_MERCHANT_ID  = "4485154"          # Your Merchant ID (SadadId)
-        SADAD_SECRET_KEY   = "ecVpXr/XsjX+Fu67" # Your Secret Key from panel
-        SADAD_WEBSITE      = "alameenoptics.com" # Domain registered with Sadad
-        SADAD_RETURN_URL   = "https://yoursite.com/orders/payment/sadad/return/"
+    Required .env settings:
+        SADAD_MERCHANT_ID  = "4485154"
+        SADAD_SECRET_KEY   = "ecVpXr/XsjX+Fu67"
+        SADAD_WEBSITE      = "alameenoptics.com"
+        SADAD_RETURN_URL   = "https://YOUR-PUBLIC-DOMAIN.com/orders/payment/sadad/return/"
+        SADAD_SANDBOX      = True   (False for production)
 
-    For sandbox testing, use: SADAD_SANDBOX = True (default True)
-    For production, set:      SADAD_SANDBOX = False
+    LOCAL DEVELOPMENT:
+        Use ngrok: ngrok http 8000
+        Then set SADAD_RETURN_URL=https://xxxx.ngrok.io/orders/payment/sadad/return/
     """
 
-    MERCHANT_ID  = getattr(settings, 'SADAD_MERCHANT_ID',  '')
-    SECRET_KEY   = getattr(settings, 'SADAD_SECRET_KEY',   '')
-    WEBSITE      = getattr(settings, 'SADAD_WEBSITE',      'alameenoptics.com')
-    RETURN_URL   = getattr(settings, 'SADAD_RETURN_URL',   '')
-    IS_SANDBOX   = getattr(settings, 'SADAD_SANDBOX',      True)
+    MERCHANT_ID = getattr(settings, 'SADAD_MERCHANT_ID', '')
+    SECRET_KEY  = getattr(settings, 'SADAD_SECRET_KEY',  '')
+    WEBSITE     = getattr(settings, 'SADAD_WEBSITE',     'alameenoptics.com')
+    RETURN_URL  = getattr(settings, 'SADAD_RETURN_URL',  '')
+    IS_SANDBOX  = getattr(settings, 'SADAD_SANDBOX',     True)
 
-    # Sandbox uses sadadqa.com, production uses sadad.qa
     @classmethod
     def _checkout_url(cls):
-        return 'https://sadadqa.com/webpurchase' if cls.IS_SANDBOX else 'https://sadad.qa/webpurchase'
+        return ('https://sadadqa.com/webpurchase'
+                if cls.IS_SANDBOX
+                else 'https://sadad.qa/webpurchase')
 
-    # ── AES-128-CBC Encryption (mirrors Sadad's PHP encrypt_e) ──────────
+    @classmethod
+    def _sanitize_order_id(cls, order_number: str) -> str:
+        """
+        Sadad ORDER_ID must be alphanumeric only (no hyphens, spaces, etc.).
+        Strip all non-alphanumeric characters and limit to 20 chars.
+        e.g. "ORD-20250219-ABC123"  →  "ORD20250219ABC123"
+        """
+        return re.sub(r'[^A-Za-z0-9]', '', order_number)[:20]
+
+    # ── AES-128-CBC (matches Sadad PHP encrypt_e / decrypt_e) ──
 
     @classmethod
     def _encrypt(cls, data: str, key: str) -> str:
-        """AES-128-CBC encrypt, same as Sadad's PHP encrypt_e()"""
-        iv = b'@@@@&&&&####$$$$'
-        # Decode HTML entities in key (mirrors html_entity_decode)
-        key_bytes = key.encode('utf-8')[:16]  # AES-128 = 16 bytes
-        # Pad key to 16 bytes if shorter
-        key_bytes = key_bytes.ljust(16, b'\0')[:16]
-        cipher = AES.new(key_bytes, AES.MODE_CBC, iv)
-        padded = pad(data.encode('utf-8'), AES.block_size)
-        encrypted = cipher.encrypt(padded)
-        return base64.b64encode(encrypted).decode('utf-8')
+        iv        = b'@@@@&&&&####$$$$'
+        key_bytes = key.encode('utf-8')[:16].ljust(16, b'\0')
+        cipher    = AES.new(key_bytes, AES.MODE_CBC, iv)
+        padded    = pad(data.encode('utf-8'), AES.block_size)
+        return base64.b64encode(cipher.encrypt(padded)).decode('utf-8')
 
     @classmethod
     def _decrypt(cls, crypt: str, key: str) -> str:
-        """AES-128-CBC decrypt, same as Sadad's PHP decrypt_e()"""
-        iv = b'@@@@&&&&####$$$$'
-        key_bytes = key.encode('utf-8')[:16]
-        key_bytes = key_bytes.ljust(16, b'\0')[:16]
-        cipher = AES.new(key_bytes, AES.MODE_CBC, iv)
-        decoded = base64.b64decode(crypt)
-        decrypted = unpad(cipher.decrypt(decoded), AES.block_size)
-        return decrypted.decode('utf-8')
+        iv        = b'@@@@&&&&####$$$$'
+        key_bytes = key.encode('utf-8')[:16].ljust(16, b'\0')
+        cipher    = AES.new(key_bytes, AES.MODE_CBC, iv)
+        decoded   = base64.b64decode(crypt)
+        return unpad(cipher.decrypt(decoded), AES.block_size).decode('utf-8')
 
     @classmethod
-    def _generate_salt(cls, length=4) -> str:
-        """Generate random salt (mirrors Sadad's PHP generateSalt_e)"""
+    def _generate_salt(cls, length: int = 4) -> str:
         chars = 'AbcDE123IJKLMN67QRSTUVWXYZaBCdefghijklmn123opq45rs67tuv89wxyz0FGH45OP89'
         return ''.join(random.choices(chars, k=length))
 
     @classmethod
-    def _generate_checksum(cls, data: dict, order) -> str:
-        """
-        Generate checksumhash matching Sadad's PHP getChecksumFromString().
-
-        Steps:
-          1. Build checksum_data = {'postData': form_fields, 'secretKey': url_encoded_secret}
-          2. JSON-encode it
-          3. Append |salt
-          4. SHA-256 hash → append salt
-          5. AES-128-CBC encrypt with key = (url_encoded_secret + merchantID)
-        """
+    def _generate_checksum(cls, checksum_input: dict) -> str:
         import urllib.parse
-        secret_encoded = urllib.parse.quote(cls.SECRET_KEY, safe='')
-        salt = cls._generate_salt(4)
+        secret_encoded  = urllib.parse.quote(cls.SECRET_KEY, safe='')
+        salt            = cls._generate_salt(4)
+        payload         = {'postData': checksum_input, 'secretKey': secret_encoded}
+        json_str        = json.dumps(payload, separators=(',', ':'))
+        final_string    = f"{json_str}|{salt}"
+        hash_val        = hashlib.sha256(final_string.encode('utf-8')).hexdigest()
+        encryption_key  = secret_encoded + cls.MERCHANT_ID
+        return cls._encrypt(hash_val + salt, encryption_key)
 
-        checksum_data = {
-            'postData':  data,
-            'secretKey': secret_encoded,
-        }
-        json_str = json.dumps(checksum_data, separators=(',', ':'))
-        final_string = f"{json_str}|{salt}"
-        hash_val = hashlib.sha256(final_string.encode('utf-8')).hexdigest()
-        hash_string = hash_val + salt
-        encryption_key = secret_encoded + cls.MERCHANT_ID
-        return cls._encrypt(hash_string, encryption_key)
-
-    # ── Public Methods ───────────────────────────────────────────────────
+    # ── Public: build form data ─────────────────────────────────
 
     @classmethod
     def build_payment_form_data(cls, order) -> dict:
         """
-        Build the POST fields needed for the Sadad Web Checkout 2.1 form.
-        Returns a dict with all fields + the checksumhash, plus the action URL.
+        Build POST fields for Sadad Web Checkout 2.1.
 
-        Usage in view:
-            form_data = SadadPaymentService.build_payment_form_data(order)
-            # Render a template that auto-submits a hidden form to form_data['action_url']
+        Returns dict with:
+            action_url  — the Sadad endpoint to POST to
+            fields      — all form fields including checksumhash
         """
         if not cls.MERCHANT_ID or not cls.SECRET_KEY:
             raise SadadPaymentError(
-                "Sadad credentials not configured. "
-                "Set SADAD_MERCHANT_ID, SADAD_SECRET_KEY, SADAD_WEBSITE, "
-                "SADAD_RETURN_URL in your .env / settings.py"
+                "Sadad credentials missing. "
+                "Set SADAD_MERCHANT_ID and SADAD_SECRET_KEY in your .env file."
             )
 
-        from django.utils import timezone
-        txn_date = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
-        amount   = f"{float(order.total_amount):.2f}"
-        phone    = (getattr(order, 'customer_phone', '') or '').replace('+', '').replace(' ', '')
+        if not cls.RETURN_URL or 'localhost' in cls.RETURN_URL or '127.0.0.1' in cls.RETURN_URL:
+            raise SadadPaymentError(
+                "SADAD_RETURN_URL cannot be localhost/127.0.0.1 — "
+                "Sadad servers cannot reach your local machine. "
+                "Use ngrok (https://ngrok.com) for local testing: "
+                "run 'ngrok http 8000' and set SADAD_RETURN_URL=https://xxxx.ngrok.io/orders/payment/sadad/return/"
+            )
+
+        # Alphanumeric-only order ID
+        safe_order_id = cls._sanitize_order_id(order.order_number)
+        txn_date      = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+        amount        = f"{float(order.total_amount):.2f}"
+
+        # Phone — digits only, fallback to merchant's number
+        phone = re.sub(r'[^0-9]', '', getattr(order, 'customer_phone', '') or '')
         if not phone:
-            phone = '97400000000'
+            phone = '97412345678'
 
-        # Core POST fields (order matters for checksum — must match exactly)
+        # ── Core POST fields ─────────────────────────────────────
         form_fields = {
-            'merchant_id':                    cls.MERCHANT_ID,
-            'ORDER_ID':                       order.order_number,
-            'WEBSITE':                        cls.WEBSITE,
-            'TXN_AMOUNT':                     amount,
-            'CUST_ID':                        getattr(order, 'customer_email', ''),
-            'EMAIL':                          getattr(order, 'customer_email', ''),
-            'MOBILE_NO':                      phone,
+            'merchant_id':                     cls.MERCHANT_ID,
+            'ORDER_ID':                        safe_order_id,
+            'WEBSITE':                         cls.WEBSITE,
+            'TXN_AMOUNT':                      amount,
+            'CUST_ID':                         order.customer_email,
+            'EMAIL':                           order.customer_email,
+            'MOBILE_NO':                       phone,
             'SADAD_WEBCHECKOUT_PAGE_LANGUAGE': 'ENG',
-            'VERSION':                        '1.1',
-            'CALLBACK_URL':                   cls.RETURN_URL,
-            'txnDate':                        txn_date,
+            'VERSION':                         '1.1',
+            'CALLBACK_URL':                    cls.RETURN_URL,
+            'txnDate':                         txn_date,
         }
 
-        # Product detail (at least one product required)
-        product_fields = {
-            'productdetail[0][order_id]':  order.order_number,
-            'productdetail[0][itemname]':  f'Order {order.order_number}',
-            'productdetail[0][amount]':    amount,
-            'productdetail[0][quantity]':  '1',
-            'productdetail[0][type]':      'line_item',
-        }
-
-        # Build the checksum input (only the flat form_fields, not productdetail)
-        # Add productdetail to checksum array as nested dict (mirrors PHP)
-        checksum_input = dict(form_fields)
-        checksum_input['productdetail'] = [{
-            'order_id':  order.order_number,
-            'itemname':  f'Order {order.order_number}',
-            'amount':    amount,
-            'quantity':  '1',
-            'type':      'line_item',
+        # ── Product detail (nested structure for checksum) ───────
+        product_detail = [{
+            'order_id': safe_order_id,
+            'itemname': f'Order {safe_order_id}',
+            'amount':   amount,
+            'quantity': '1',
+            'type':     'line_item',
         }]
 
-        checksumhash = cls._generate_checksum(checksum_input, order)
+        # Checksum input = flat fields + productdetail array
+        checksum_input = dict(form_fields)
+        checksum_input['productdetail'] = product_detail
 
-        all_fields = {}
-        all_fields.update(form_fields)
-        all_fields.update(product_fields)
-        all_fields['checksumhash'] = checksumhash
+        checksumhash = cls._generate_checksum(checksum_input)
+
+        # ── Final flat POST fields (productdetail as indexed keys) ─
+        all_fields = dict(form_fields)
+        all_fields['productdetail[0][order_id]']  = safe_order_id
+        all_fields['productdetail[0][itemname]']  = f'Order {safe_order_id}'
+        all_fields['productdetail[0][amount]']    = amount
+        all_fields['productdetail[0][quantity]']  = '1'
+        all_fields['productdetail[0][type]']      = 'line_item'
+        all_fields['checksumhash']                = checksumhash
 
         return {
-            'action_url': cls._checkout_url(),
-            'fields':     all_fields,
+            'action_url':     cls._checkout_url(),
+            'fields':         all_fields,
+            'safe_order_id':  safe_order_id,   # store this in the order
         }
+
+    # ── Public: verify callback ─────────────────────────────────
 
     @classmethod
     def verify_callback(cls, post_data: dict) -> dict:
         """
-        Verify the POST callback from Sadad after payment.
-
-        Sadad sends back:
-            ORDERID, RESPCODE, RESPMSG, TXNAMOUNT, transaction_number, checksumhash
-
+        Verify POST callback from Sadad after payment.
         RESPCODE == '1' means success.
-        Always verify the checksumhash before trusting the result.
         """
         import urllib.parse
 
         checksumhash = post_data.get('checksumhash', '')
         data_copy    = {k: v for k, v in post_data.items() if k != 'checksumhash'}
 
-        # Verify checksum
+        checksum_valid = False
         try:
-            secret_encoded   = urllib.parse.quote(cls.SECRET_KEY, safe='')
-            encryption_key   = secret_encoded + cls.MERCHANT_ID
-            decrypted        = cls._decrypt(checksumhash, encryption_key)
-            # decrypted = sha256hash + 4-char salt
-            salt             = decrypted[-4:]
-            received_hash    = decrypted[:-4]
+            secret_encoded  = urllib.parse.quote(cls.SECRET_KEY, safe='')
+            encryption_key  = secret_encoded + cls.MERCHANT_ID
+            decrypted       = cls._decrypt(checksumhash, encryption_key)
+            salt            = decrypted[-4:]
+            received_hash   = decrypted[:-4]
 
-            verify_data = {
-                'postData':  data_copy,
-                'secretKey': secret_encoded,
-            }
-            json_str      = json.dumps(verify_data, separators=(',', ':'))
-            final_string  = f"{json_str}|{salt}"
-            computed_hash = hashlib.sha256(final_string.encode('utf-8')).hexdigest()
-
-            checksum_valid = (computed_hash == received_hash)
-        except Exception as e:
+            verify_payload  = {'postData': data_copy, 'secretKey': secret_encoded}
+            json_str        = json.dumps(verify_payload, separators=(',', ':'))
+            final_string    = f"{json_str}|{salt}"
+            computed_hash   = hashlib.sha256(final_string.encode('utf-8')).hexdigest()
+            checksum_valid  = (computed_hash == received_hash)
+        except Exception:
             checksum_valid = False
 
         resp_code = str(post_data.get('RESPCODE', ''))
         paid      = checksum_valid and resp_code == '1'
 
         return {
-            'paid':             paid,
-            'checksum_valid':   checksum_valid,
-            'resp_code':        resp_code,
-            'resp_msg':         post_data.get('RESPMSG', ''),
-            'order_id':         post_data.get('ORDERID', ''),
-            'transaction_id':   post_data.get('transaction_number', ''),
-            'amount':           post_data.get('TXNAMOUNT', ''),
-            'raw':              post_data,
+            'paid':           paid,
+            'checksum_valid': checksum_valid,
+            'resp_code':      resp_code,
+            'resp_msg':       post_data.get('RESPMSG', ''),
+            'order_id':       post_data.get('ORDERID', ''),
+            'transaction_id': post_data.get('transaction_number', ''),
+            'amount':         post_data.get('TXNAMOUNT', ''),
+            'raw':            post_data,
         }
 
 
@@ -503,8 +436,6 @@ class SadadPaymentService:
 # ══════════════════════════════════════════════════════════════
 
 class PaymentGatewayFactory:
-    """Factory to get appropriate payment service"""
-
     GATEWAYS = {
         'stripe':   StripePaymentService,
         'razorpay': RazorpayPaymentService,
@@ -516,5 +447,5 @@ class PaymentGatewayFactory:
     def get_service(cls, gateway_name):
         service = cls.GATEWAYS.get(gateway_name.lower())
         if not service:
-            raise PaymentGatewayError(f"Unsupported payment gateway: {gateway_name}")
+            raise PaymentGatewayError(f"Unsupported gateway: {gateway_name}")
         return service
