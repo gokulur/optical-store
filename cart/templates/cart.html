@@ -3,301 +3,366 @@
 {% block title %}Shopping Cart — Optical Store{% endblock %}
 
 {% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+
 <style>
 /* ═══════════════════════════════════════════════════════
-   DESIGN TOKENS
+   DESIGN TOKENS — Premium Optical
 ═══════════════════════════════════════════════════════ */
 :root {
-  --black: #0a0a0a;
-  --white: #fafafa;
+  --obsidian: #0d0d0f;
+  --charcoal: #1a1a1f;
+  --graphite: #2e2e36;
   --gold: #b8976a;
   --gold-light: #d4b896;
-  --sand: #f5f0e8;
-  --muted: #888;
-  --border: #e5e0d8;
-  --success: #2e7d32;
-  --success-bg: #f0f7ee;
-  --warning: #f57f17;
-  --warning-bg: #fff8e1;
-  --info: #1565c0;
-  --info-bg: #e3f2fd;
-  --danger: #c62828;
-  --danger-bg: #ffebee;
-  --radius: 10px;
-  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  --gold-pale: #f5ede0;
+  --sand: #f7f3ed;
+  --ivory: #faf8f5;
+  --white: #ffffff;
+  --muted: #8a8a95;
+  --border: #e8e4dc;
+  --border-dark: #d4cfc5;
+  --success: #2a6b2e;
+  --success-bg: #edf7ee;
+  --success-border: #b2d9b5;
+  --warning: #b05a00;
+  --warning-bg: #fff5e6;
+  --warning-border: #f5c887;
+  --info: #1a4fa0;
+  --info-bg: #eaf1fc;
+  --info-border: #9dbff0;
+  --danger: #b02020;
+  --danger-bg: #fceaea;
+  --danger-border: #f0b0b0;
+  --purple: #5e3a8a;
+  --purple-bg: #f3edfb;
+  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow: 0 4px 24px rgba(0,0,0,0.09);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,0.14);
   --transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { font-family: var(--font-body); }
+
+/* ═══════════════════════════════════════════════════════
+   PAGE SCAFFOLD
+═══════════════════════════════════════════════════════ */
+.cp {
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: 0 28px 100px;
 }
 
 /* ═══════════════════════════════════════════════════════
-   PAGE LAYOUT
+   PAGE HEADER
 ═══════════════════════════════════════════════════════ */
-.cart-page {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 24px 80px;
-}
-
-.cart-heading {
-  padding: 40px 0 30px;
+.cp-header {
+  padding: 48px 0 32px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 40px;
+  margin-bottom: 48px;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
-.cart-heading h1 {
-  font-size: clamp(24px, 3vw, 36px);
-  font-weight: 800;
-  letter-spacing: -0.03em;
+.cp-header-left h1 {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
   margin: 0 0 6px;
-  color: var(--black);
+  color: var(--obsidian);
+  line-height: 1.1;
 }
 
-.cart-heading p {
+.cp-header-left p {
+  font-size: 13px;
   color: var(--muted);
-  font-size: 14px;
   margin: 0;
+  font-weight: 400;
 }
 
-.cart-grid {
-  display: grid;
-  grid-template-columns: 1fr 370px;
-  gap: 40px;
-  align-items: start;
+/* Breadcrumb */
+.cp-breadcrumb {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cp-breadcrumb a { color: var(--muted); text-decoration: none; }
+.cp-breadcrumb a:hover { color: var(--gold); }
+.cp-breadcrumb-sep { opacity: 0.4; }
+
+/* ═══════════════════════════════════════════════════════
+   PROGRESS STEPS
+═══════════════════════════════════════════════════════ */
+.checkout-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--sand);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 24px;
+  margin-bottom: 36px;
 }
 
-@media (max-width: 960px) {
-  .cart-grid { grid-template-columns: 1fr; gap: 32px; }
+.cstep {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  flex: 1;
+}
+
+.cstep.active { color: var(--obsidian); }
+.cstep.active .cstep-num { background: var(--obsidian); color: var(--white); }
+
+.cstep-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cstep-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  margin: 0 12px;
+}
+
+@media (max-width: 640px) {
+  .cstep-label { display: none; }
+  .cstep-line { margin: 0 8px; }
 }
 
 /* ═══════════════════════════════════════════════════════
    ALERTS
 ═══════════════════════════════════════════════════════ */
-.cart-alert {
+.cp-alert {
   padding: 14px 18px;
   border-radius: var(--radius);
   margin-bottom: 16px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   display: flex;
   align-items: center;
   gap: 10px;
 }
-.cart-alert--success { background: var(--success-bg); color: var(--success); border: 1px solid #a5d6a7; }
-.cart-alert--error   { background: var(--danger-bg);  color: var(--danger);  border: 1px solid #ef9a9a; }
-.cart-alert--info    { background: var(--info-bg);    color: var(--info);    border: 1px solid #90caf9; }
+.cp-alert--success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.cp-alert--error   { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+.cp-alert--info    { background: var(--info-bg);    color: var(--info);    border: 1px solid var(--info-border); }
 
 /* ═══════════════════════════════════════════════════════
-   CART TABLE HEADER
+   LAYOUT GRID
 ═══════════════════════════════════════════════════════ */
-.cart-table-header {
+.cp-grid {
   display: grid;
-  grid-template-columns: 1fr 160px 140px 120px;
+  grid-template-columns: 1fr 390px;
+  gap: 36px;
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .cp-grid { grid-template-columns: 1fr; gap: 28px; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LEFT PANEL
+═══════════════════════════════════════════════════════ */
+.cp-left-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 2px solid var(--obsidian);
+  margin-bottom: 0;
+}
+
+.cp-col-labels {
+  display: grid;
+  grid-template-columns: 1fr 150px 130px 110px;
   gap: 16px;
-  padding: 0 0 14px;
-  border-bottom: 2px solid var(--black);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
-@media (max-width: 700px) { .cart-table-header { display: none; } }
+@media (max-width: 750px) { .cp-col-labels { display: none; } }
 
 /* ═══════════════════════════════════════════════════════
-   CART ITEM ROW
+   CART ITEM — BASE CARD
 ═══════════════════════════════════════════════════════ */
-.cart-item-row {
+.ci-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-top: 16px;
+  overflow: hidden;
+  transition: var(--transition), opacity 0.35s ease, transform 0.35s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.ci-card:hover { border-color: var(--gold); box-shadow: var(--shadow); }
+.ci-card.removing { opacity: 0; transform: translateX(60px); pointer-events: none; }
+
+/* Type banner at top of card */
+.ci-type-banner {
+  padding: 8px 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ci-type-banner--eyeglasses  { background: #f0f7ee; color: var(--success); border-bottom: 1px solid var(--success-border); }
+.ci-type-banner--sunglasses  { background: var(--purple-bg); color: var(--purple); border-bottom: 1px solid #d4c0f0; }
+.ci-type-banner--contact     { background: var(--info-bg); color: var(--info); border-bottom: 1px solid var(--info-border); }
+.ci-type-banner--accessories { background: var(--sand); color: #555; border-bottom: 1px solid var(--border); }
+.ci-type-banner--reading     { background: #fff9f0; color: #a05a00; border-bottom: 1px solid #f5d9a8; }
+
+/* ── Main row ── */
+.ci-main {
   display: grid;
-  grid-template-columns: 1fr 160px 140px 120px;
+  grid-template-columns: 1fr 150px 130px 110px;
   gap: 16px;
   align-items: center;
-  padding: 26px 0;
-  border-bottom: 1px solid var(--border);
-  transition: opacity 0.35s ease, transform 0.35s ease;
+  padding: 20px 20px 0;
 }
 
-.cart-item-row.removing {
-  opacity: 0;
-  transform: translateX(50px);
-  pointer-events: none;
-}
-
-@media (max-width: 700px) {
-  .cart-item-row { grid-template-columns: 1fr; gap: 14px; }
+@media (max-width: 750px) {
+  .ci-main { grid-template-columns: 1fr; gap: 14px; }
 }
 
 /* ── Product cell ── */
-.cart-item-product {
+.ci-product {
   display: flex;
   gap: 16px;
   align-items: flex-start;
 }
 
-.cart-item-img-link {
-  display: block;
-  width: 100px;
-  height: 100px;
-  border-radius: 10px;
+.ci-img-wrap {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--radius);
   overflow: hidden;
   background: var(--sand);
   border: 1px solid var(--border);
   flex-shrink: 0;
+  position: relative;
 }
 
-.cart-item-img-link img {
+.ci-img-wrap img {
   width: 100%;
   height: 100%;
   object-fit: contain;
   display: block;
+  transition: transform 0.4s ease;
 }
+.ci-img-wrap:hover img { transform: scale(1.07); }
 
-.cart-item-meta { flex: 1; min-width: 0; }
+.ci-meta { flex: 1; min-width: 0; }
 
-.cart-item-type {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: 4px;
-}
-
-.cart-item-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--black);
+.ci-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--obsidian);
   text-decoration: none;
-  line-height: 1.3;
+  line-height: 1.35;
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
+  transition: color 0.2s;
 }
-.cart-item-name:hover { color: var(--gold); }
+.ci-name:hover { color: var(--gold); }
 
-.cart-item-brand { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.ci-brand {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-weight: 400;
+}
 
-.cart-item-unit-price { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+.ci-unit-price {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
 
-/* ── Option badges ── */
-.cart-badges {
+/* ── Badges ── */
+.ci-badges {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  margin-bottom: 10px;
 }
 
 .cbadge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  white-space: nowrap;
-  font-weight: 500;
-}
-
-.cbadge-frame    { background: var(--sand);    color: #555;    border: 1px solid var(--border); }
-.cbadge-lens     { background: #f0f7ee;         color: #2e7d32; border: 1px solid #a5d6a7; }
-.cbadge-addon    { background: #fff3e0;         color: #e65100; border: 1px solid #ffcc80; }
-.cbadge-sunglass { background: #f3e5f5;         color: #6a1b9a; border: 1px solid #ce93d8; }
-.cbadge-contact  { background: #e3f2fd;         color: #1565c0; border: 1px solid #90caf9; }
-.cbadge-color    { background: #fce4ec;         color: #880e4f; border: 1px solid #f48fb1; }
-.cbadge-reading  { background: #e8f5e9;         color: #1b5e20; border: 1px solid #81c784; }
-
-/* ── Prescription block ── */
-.rx-block {
-  background: var(--warning-bg);
-  border: 1px solid #ffe082;
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin-bottom: 10px;
-  font-size: 12px;
-}
-
-.rx-block-title {
-  font-weight: 700;
-  color: var(--warning);
   font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 7px;
-}
-
-.rx-row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  color: #555;
-  font-size: 11px;
-  margin-bottom: 3px;
-}
-
-.rx-eye { font-weight: 700; color: var(--black); min-width: 64px; }
-
-/* ── Note block ── */
-.note-block {
-  background: var(--sand);
-  border-radius: 6px;
-  padding: 7px 10px;
-  font-size: 12px;
-  color: #555;
-  font-style: italic;
-  margin-bottom: 8px;
-}
-
-/* ── Stock warning ── */
-.stock-warning {
-  font-size: 11px;
-  color: #c62828;
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
   font-weight: 600;
-  display: none;
-  margin-top: 4px;
+  letter-spacing: 0.02em;
 }
 
-.stock-warning.visible { display: block; }
+.cbadge-frame    { background: var(--sand);    color: #444; border: 1px solid var(--border-dark); }
+.cbadge-lens     { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.cbadge-addon    { background: #fff5e6; color: #a05000; border: 1px solid #f5c887; }
+.cbadge-sunglass { background: var(--purple-bg); color: var(--purple); border: 1px solid #d4c0f0; }
+.cbadge-contact  { background: var(--info-bg); color: var(--info); border: 1px solid var(--info-border); }
+.cbadge-color    { background: #fce8f0; color: #8b1a4a; border: 1px solid #f0b0cc; }
+.cbadge-reading  { background: #e8f5e9; color: #1b5e20; border: 1px solid #81c784; }
 
-/* ── Remove button ── */
-.cart-remove-btn {
-  background: none;
-  border: none;
-  font-size: 12px;
-  color: var(--muted);
-  cursor: pointer;
-  padding: 4px 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  text-decoration: underline;
-  transition: var(--transition);
-  margin-top: 6px;
-}
-.cart-remove-btn:hover { color: var(--danger); }
-.cart-remove-btn:disabled { opacity: 0.4; cursor: wait; }
-
-/* ── Quantity controls ── */
+/* ── Quantity ── */
 .qty-control {
   display: inline-flex;
   align-items: center;
-  border: 2px solid var(--border);
-  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
   overflow: hidden;
-  background: white;
+  background: var(--white);
   transition: var(--transition);
 }
 
-.qty-control.loading {
-  opacity: 0.45;
-  pointer-events: none;
-}
+.qty-control:focus-within { border-color: var(--gold); }
+.qty-control.loading { opacity: 0.4; pointer-events: none; }
 
 .qty-btn {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border: none;
   background: var(--sand);
   cursor: pointer;
-  font-size: 18px;
-  color: var(--black);
+  font-size: 17px;
+  color: var(--obsidian);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -305,241 +370,285 @@
   user-select: none;
   flex-shrink: 0;
   line-height: 1;
+  font-weight: 300;
 }
 
-.qty-btn:hover:not([disabled]) { background: var(--border); }
-
-.qty-btn[disabled],
-.qty-btn.at-limit {
-  opacity: 0.3;
-  cursor: not-allowed;
-  background: var(--sand);
-}
+.qty-btn:hover:not([disabled]) { background: var(--gold-pale); color: var(--gold); }
+.qty-btn[disabled], .qty-btn.at-limit { opacity: 0.3; cursor: not-allowed; }
 
 .qty-input {
-  width: 48px;
-  height: 38px;
+  width: 44px;
+  height: 36px;
   border: none;
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
   text-align: center;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  color: var(--black);
-  background: white;
+  color: var(--obsidian);
+  background: var(--white);
   pointer-events: none;
+  font-family: var(--font-body);
 }
 
 /* ── Item total ── */
-.cart-item-total {
-  font-size: 17px;
-  font-weight: 800;
-  color: var(--black);
+.ci-total {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--obsidian);
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
   transition: color 0.35s;
+  text-align: right;
 }
 
-.cart-item-total.flash { color: var(--success); }
+.ci-total.flash { color: var(--success); }
 
-/* Mobile labels */
-@media (max-width: 700px) {
-  .cart-item-qty-cell,
-  .cart-item-total-cell {
+@media (max-width: 750px) {
+  .ci-total { text-align: left; }
+  .qty-cell, .price-cell, .total-cell {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
-  .cart-item-qty-cell::before  { content: 'Quantity:'; font-size: 12px; color: var(--muted); font-weight: 600; }
-  .cart-item-total-cell::before { content: 'Total:';    font-size: 12px; color: var(--muted); font-weight: 600; }
-  .cart-desktop-price { display: none !important; }
+  .qty-cell::before  { content: 'Qty:';   font-size: 11px; color: var(--muted); font-weight: 600; }
+  .price-cell::before { content: 'Unit:';  font-size: 11px; color: var(--muted); font-weight: 600; }
+  .total-cell::before { content: 'Total:'; font-size: 11px; color: var(--muted); font-weight: 600; }
 }
 
-/* ═══════════════════════════════════════════════════════
-   SIDEBAR / ORDER SUMMARY
-═══════════════════════════════════════════════════════ */
-.cart-summary {
-  position: sticky;
-  top: 90px;
-  background: white;
+/* ── Desktop unit price column ── */
+.price-col {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.price-col .lens-sub {
+  font-size: 10px;
+  color: #bbb;
+  margin-top: 3px;
+}
+
+/* ── Expandable config section ── */
+.ci-config {
+  padding: 0 20px 16px;
+}
+
+.ci-config-inner {
+  background: var(--sand);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: var(--shadow);
+  margin-top: 14px;
 }
 
-.cart-summary-header {
-  padding: 20px 24px 16px;
+.ci-config-tabs {
+  display: flex;
   border-bottom: 1px solid var(--border);
 }
 
-.cart-summary-header h2 {
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin: 0;
-  color: var(--black);
-}
-
-.cart-summary-body { padding: 20px 24px; }
-
-/* Free shipping bar */
-.free-ship-bar {
-  background: var(--sand);
-  border-radius: 10px;
-  padding: 14px 16px;
-  margin-bottom: 20px;
-}
-
-.free-ship-text {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--black);
-  margin-bottom: 8px;
-}
-
-.free-ship-text.qualified { color: var(--success); }
-
-.free-ship-track {
-  height: 6px;
-  background: #ddd;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.free-ship-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--gold), #7cb342);
-  border-radius: 3px;
-  transition: width 0.55s ease;
-}
-
-/* Summary rows */
-.sum-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  font-size: 14px;
-  color: #444;
-}
-
-.sum-row--total {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 2px solid var(--black);
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--black);
-}
-
-.sum-note {
+.ci-config-tab {
+  flex: 1;
+  padding: 10px 14px;
   font-size: 11px;
-  color: var(--muted);
-  margin: 10px 0 20px;
-  text-align: center;
-}
-
-/* Buttons */
-.btn-checkout {
-  width: 100%;
-  padding: 16px;
-  background: var(--black);
-  color: white;
-  border: 2px solid var(--black);
-  border-radius: var(--radius);
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: var(--transition);
-  text-decoration: none;
-  display: block;
-  text-align: center;
-  margin-bottom: 12px;
-}
-
-.btn-checkout:hover { background: #333; border-color: #333; color: white; }
-
-.btn-checkout.disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.btn-secondary {
-  width: 100%;
-  padding: 13px;
-  background: transparent;
-  color: var(--black);
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
-  text-decoration: none;
-  display: block;
+  text-align: center;
+  cursor: default;
+  color: var(--muted);
+  border-right: 1px solid var(--border);
+}
+.ci-config-tab:last-child { border-right: none; }
+.ci-config-tab.active { background: white; color: var(--obsidian); }
+.ci-config-tab.filled { color: var(--success); }
+
+.ci-config-body { padding: 14px 16px; }
+
+/* Prescription grid */
+.rx-grid {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr 1fr;
+  gap: 6px 10px;
+  font-size: 11px;
+  align-items: center;
+}
+
+.rx-head { font-weight: 700; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+.rx-eye  { font-weight: 700; color: var(--obsidian); font-size: 11px; }
+.rx-val  { background: white; border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; font-size: 11px; color: #333; text-align: center; }
+
+/* Sunglass lens options display */
+.sg-lens-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sg-lens-chip {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 11px;
+}
+
+.sg-lens-chip strong { display: block; font-size: 12px; color: var(--obsidian); margin-bottom: 2px; }
+.sg-lens-chip span   { color: var(--muted); }
+
+/* Contact lens power display */
+.cl-power-display {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.cl-power-box {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
   text-align: center;
 }
 
-.btn-secondary:hover { border-color: var(--black); color: var(--black); }
+.cl-power-box .cl-eye  { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 4px; }
+.cl-power-box .cl-pwr  { font-size: 18px; font-weight: 700; color: var(--obsidian); font-family: var(--font-display); }
+.cl-power-box .cl-unit { font-size: 10px; color: var(--muted); }
 
-/* Benefits */
-.cart-benefits {
-  margin-top: 20px;
-  padding-top: 20px;
+/* Add-ons list */
+.addon-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.addon-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.addon-item-name { color: var(--obsidian); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.addon-item-price { color: var(--gold); font-weight: 700; }
+
+/* Stock warning */
+.stock-warn {
+  display: none;
+  font-size: 11px;
+  color: var(--danger);
+  font-weight: 600;
+  margin-top: 6px;
+}
+.stock-warn.visible { display: block; }
+
+/* Note */
+.ci-note {
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  border-radius: 6px;
+  padding: 7px 11px;
+  font-size: 11px;
+  color: #7a3e00;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+/* ── Footer row of card ── */
+.ci-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px 16px;
   border-top: 1px solid var(--border);
+  margin-top: 14px;
 }
 
-.benefit-row {
-  display: flex;
+.ci-remove-btn {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 5px 0;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: #555;
-  margin-bottom: 10px;
+  gap: 5px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  transition: var(--transition);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
-.benefit-icon {
-  width: 28px;
-  height: 28px;
-  background: var(--sand);
-  border-radius: 50%;
+.ci-remove-btn:hover { color: var(--danger); }
+.ci-remove-btn:disabled { opacity: 0.4; cursor: wait; }
+
+.ci-edit-lens {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--obsidian);
+  cursor: pointer;
+  padding: 5px 12px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  transition: var(--transition);
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  flex-shrink: 0;
+  gap: 5px;
+  text-decoration: none;
+}
+
+.ci-edit-lens:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ═══════════════════════════════════════════════════════
+   SAVINGS CHIPS
+═══════════════════════════════════════════════════════ */
+.savings-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
 }
 
 /* ═══════════════════════════════════════════════════════
-   EMPTY CART
+   CONTINUE SHOPPING
 ═══════════════════════════════════════════════════════ */
-.empty-cart {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 80px 40px;
+.cp-continue {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
-.empty-cart-icon { font-size: 72px; margin-bottom: 20px; opacity: 0.45; }
-.empty-cart h2   { font-size: 28px; font-weight: 800; margin-bottom: 10px; color: var(--black); }
-.empty-cart p    { font-size: 15px; color: var(--muted); margin-bottom: 30px; }
-
-.btn-shop {
-  display: inline-block;
-  padding: 14px 32px;
-  background: var(--black);
-  color: white;
+.cp-continue-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 22px;
+  background: transparent;
+  color: var(--obsidian);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius);
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   text-decoration: none;
-  margin: 4px;
   transition: var(--transition);
+  font-family: var(--font-body);
 }
-
-.btn-shop:hover { opacity: 0.8; color: white; }
+.cp-continue-btn:hover { border-color: var(--obsidian); color: var(--obsidian); }
 
 /* ═══════════════════════════════════════════════════════
    TRUST STRIP
@@ -550,64 +659,447 @@
   gap: 1px;
   background: var(--border);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  margin-top: 40px;
+  margin-top: 32px;
 }
 
-@media (max-width: 700px) { .trust-strip { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .trust-strip { grid-template-columns: repeat(2, 1fr); } }
 
-.trust-tile {
-  background: white;
-  padding: 18px;
+.tt {
+  background: var(--white);
+  padding: 18px 16px;
   text-align: center;
+  transition: background 0.2s;
+}
+.tt:hover { background: var(--sand); }
+
+.tt-icon  { font-size: 20px; margin-bottom: 6px; }
+.tt-title { font-size: 12px; font-weight: 700; color: var(--obsidian); margin-bottom: 2px; }
+.tt-desc  { font-size: 10px; color: var(--muted); }
+
+/* ═══════════════════════════════════════════════════════
+   ORDER SUMMARY SIDEBAR
+═══════════════════════════════════════════════════════ */
+.order-panel {
+  position: sticky;
+  top: 88px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow);
 }
 
-.trust-tile-icon  { font-size: 22px; margin-bottom: 7px; }
-.trust-tile-title { font-size: 12px; font-weight: 700; color: var(--black); margin-bottom: 2px; }
-.trust-tile-desc  { font-size: 11px; color: var(--muted); }
+.op-head {
+  background: var(--obsidian);
+  color: var(--white);
+  padding: 18px 24px;
+}
+
+.op-head h2 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 2px;
+  letter-spacing: 0.01em;
+}
+
+.op-head p {
+  font-size: 11px;
+  opacity: 0.5;
+  margin: 0;
+}
+
+.op-body { padding: 22px 24px; }
+
+/* Free ship bar */
+.fs-bar {
+  background: var(--sand);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 22px;
+}
+
+.fs-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--obsidian);
+  margin-bottom: 9px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fs-text.qualified { color: var(--success); }
+
+.fs-track {
+  height: 5px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.fs-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), #7cb342);
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Promo code */
+.promo-wrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.promo-input {
+  flex: 1;
+  height: 40px;
+  padding: 0 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-family: var(--font-body);
+  color: var(--obsidian);
+  background: var(--white);
+  transition: border-color 0.2s;
+  outline: none;
+}
+.promo-input:focus { border-color: var(--gold); }
+.promo-input::placeholder { color: var(--muted); }
+
+.promo-btn {
+  height: 40px;
+  padding: 0 16px;
+  background: var(--obsidian);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body);
+  letter-spacing: 0.04em;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.promo-btn:hover { background: var(--graphite); }
+
+/* Summary rows */
+.op-divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+.sr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 11px;
+  font-size: 13px;
+  color: #555;
+  font-weight: 400;
+}
+
+.sr-label { display: flex; align-items: center; gap: 6px; }
+
+.sr--total {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 2px solid var(--obsidian);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--obsidian);
+  font-family: var(--font-display);
+}
+
+.sr-free { color: var(--success); font-weight: 700; font-size: 12px; }
+.sr-note { font-size: 10px; color: var(--muted); margin: 8px 0 20px; text-align: center; }
+
+/* Checkout CTA */
+.btn-checkout {
+  width: 100%;
+  padding: 16px;
+  background: var(--obsidian);
+  color: var(--white);
+  border: 2px solid var(--obsidian);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-family: var(--font-body);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-checkout::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 30%, rgba(184,151,106,0.15) 100%);
+  pointer-events: none;
+}
+
+.btn-checkout:hover { background: var(--charcoal); border-color: var(--charcoal); color: var(--white); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.22); }
+.btn-checkout.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; transform: none; }
+
+.btn-shop-more {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: var(--obsidian);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  display: block;
+  text-align: center;
+  font-family: var(--font-body);
+}
+.btn-shop-more:hover { border-color: var(--obsidian); color: var(--obsidian); }
+
+/* Payment icons */
+.pay-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.pay-icon {
+  background: var(--sand);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+/* Benefits */
+.op-benefits {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.ben-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #555;
+}
+
+.ben-icon {
+  width: 26px;
+  height: 26px;
+  background: var(--sand);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   EMPTY CART
+═══════════════════════════════════════════════════════ */
+.empty-cart {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px 40px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+
+.empty-icon { font-size: 64px; opacity: 0.35; margin-bottom: 20px; }
+.empty-cart h2 { font-family: var(--font-display); font-size: 34px; font-weight: 600; color: var(--obsidian); margin-bottom: 10px; }
+.empty-cart p  { font-size: 15px; color: var(--muted); margin-bottom: 32px; }
+
+.empty-cats {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 26px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition);
+  border: 1.5px solid transparent;
+}
+
+.btn-cat--dark   { background: var(--obsidian); color: white; }
+.btn-cat--gold   { background: var(--gold); color: white; }
+.btn-cat--blue   { background: #1a4fa0; color: white; }
+.btn-cat:hover   { opacity: 0.85; transform: translateY(-1px); }
 
 /* ═══════════════════════════════════════════════════════
    TOAST
 ═══════════════════════════════════════════════════════ */
-.cart-toast {
+.cp-toast {
   position: fixed;
   bottom: 28px;
   right: 28px;
   z-index: 99999;
-  background: var(--black);
-  color: white;
+  background: var(--obsidian);
+  color: var(--white);
   padding: 14px 20px;
-  border-radius: 10px;
-  font-size: 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
   font-weight: 600;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.22);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
   transform: translateY(70px);
   opacity: 0;
-  transition: all 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.32s cubic-bezier(0.4,0,0.2,1);
   pointer-events: none;
   max-width: 300px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
 }
-.cart-toast.show     { transform: translateY(0); opacity: 1; }
-.cart-toast.t-ok     { background: var(--success); }
-.cart-toast.t-err    { background: var(--danger); }
-.cart-toast.t-warn   { background: var(--warning); }
+.cp-toast.show     { transform: translateY(0); opacity: 1; }
+.cp-toast.t-ok     { background: var(--success); }
+.cp-toast.t-err    { background: var(--danger); }
+.cp-toast.t-warn   { background: var(--warning); }
+
+/* ═══════════════════════════════════════════════════════
+   SECTION TITLE (SEPARATORS)
+═══════════════════════════════════════════════════════ */
+.sec-sep {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 26px 0 8px;
+}
+.sec-sep-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.sec-sep-line { flex: 1; height: 1px; background: var(--border); }
+
+/* ═══════════════════════════════════════════════════════
+   LENS POWER CONFIG (EYEGLASS / SUNGLASS SECTIONS)
+═══════════════════════════════════════════════════════ */
+.lens-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+.lens-summary-row .label { color: var(--muted); }
+.lens-summary-row .val   { font-weight: 600; color: var(--obsidian); }
+
+/* PRICE DELTA */
+.delta-plus  { color: var(--warning); font-size: 12px; font-weight: 700; }
+.delta-free  { color: var(--success); font-size: 12px; font-weight: 700; }
+
+/* ── sunglass lens type pill display ── */
+.sl-type-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--purple-bg);
+  color: var(--purple);
+  border: 1px solid #d4c0f0;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE ADJUSTMENTS
+═══════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .cp { padding: 0 16px 80px; }
+  .cp-header { padding: 28px 0 20px; }
+  .checkout-steps { padding: 12px 16px; }
+  .op-body { padding: 18px 18px; }
+}
 </style>
 
-<div class="cart-page">
+<div class="cp">
 
-  <!-- ── Heading ── -->
-  <div class="cart-heading">
-    <h1>Your Shopping Cart</h1>
-    {% if cart_items %}
-    <p id="cart-head-label">{{ cart_items|length }} item{{ cart_items|length|pluralize }} in your cart</p>
-    {% endif %}
+  <!-- HEADER -->
+  <div class="cp-header">
+    <div class="cp-header-left">
+      <div class="cp-breadcrumb" style="margin-bottom:10px;">
+        <a href="{% url 'home' %}">Home</a>
+        <span class="cp-breadcrumb-sep">›</span>
+        <span>Cart</span>
+      </div>
+      <h1>Your Cart</h1>
+      {% if cart_items %}
+      <p id="cart-head-label">
+        {{ cart_items|length }} item{{ cart_items|length|pluralize }} · Review your selection below
+      </p>
+      {% endif %}
+    </div>
   </div>
 
-  <!-- ── Django Messages ── -->
+  <!-- CHECKOUT STEPS -->
+  <div class="checkout-steps">
+    <div class="cstep active">
+      <div class="cstep-num">1</div>
+      <span class="cstep-label">Cart</span>
+    </div>
+    <div class="cstep-line"></div>
+    <div class="cstep">
+      <div class="cstep-num">2</div>
+      <span class="cstep-label">Delivery</span>
+    </div>
+    <div class="cstep-line"></div>
+    <div class="cstep">
+      <div class="cstep-num">3</div>
+      <span class="cstep-label">Payment</span>
+    </div>
+    <div class="cstep-line"></div>
+    <div class="cstep">
+      <div class="cstep-num">4</div>
+      <span class="cstep-label">Confirm</span>
+    </div>
+  </div>
+
+  <!-- ALERTS -->
   {% if messages %}
   {% for message in messages %}
-  <div class="cart-alert cart-alert--{{ message.tags }}">
+  <div class="cp-alert cp-alert--{{ message.tags }}">
     {% if message.tags == 'success' %}✓{% elif message.tags == 'error' %}✕{% else %}ℹ{% endif %}
     {{ message }}
   </div>
@@ -615,372 +1107,485 @@
   {% endif %}
 
   {% if cart_items %}
-  <!-- ════════════════════════════════
-       CART GRID
-  ════════════════════════════════ -->
-  <div class="cart-grid">
+  <div class="cp-grid">
 
-    <!-- ────────────────────────────
-         LEFT  — Cart Items
-    ──────────────────────────────── -->
+    <!-- ══════════════════════════════════
+         LEFT — CART ITEMS
+    ═════════════════════════════════════ -->
     <div>
-
-      <!-- Desktop column headers -->
-      <div class="cart-table-header">
-        <div>Product</div>
-        <div>Quantity</div>
-        <div style="text-align:center;">Unit Price</div>
-        <div style="text-align:right;">Total</div>
+      <!-- Column labels -->
+      <div class="cp-left-head">
+        <div class="cp-col-labels">
+          <div>Product</div>
+          <div style="text-align:center;">Quantity</div>
+          <div style="text-align:center;">Unit Price</div>
+          <div style="text-align:right;">Total</div>
+        </div>
       </div>
 
-      <!-- Rows -->
       <div id="cart-rows">
         {% for item in cart_items %}
-        {# Determine stock ceiling for this item #}
         {% with stock=item.product.stock_quantity|default:9999 %}
-        <div class="cart-item-row"
+
+        <div class="ci-card"
              id="cart-row-{{ item.id }}"
              data-item-id="{{ item.id }}"
              data-stock="{{ stock }}">
 
-          <!-- ── Product info ── -->
-          <div class="cart-item-product">
-            <a href="{% url 'product_detail' item.product.slug %}" class="cart-item-img-link">
-              {% if item.product.images.first %}
-                <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}" loading="lazy">
-              {% elif item.product.image %}
-                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" loading="lazy">
-              {% else %}
-                <img src="{% static 'img/no-image.jpg' %}" alt="No image">
-              {% endif %}
-            </a>
-
-            <div class="cart-item-meta">
-
-              <!-- Product type label -->
-              <div class="cart-item-type">
-                {% if item.product.product_type == 'eyeglasses' %}Eyeglasses
-                {% elif item.product.product_type == 'sunglasses' %}Sunglasses
-                {% elif item.product.product_type == 'contact_lenses' %}Contact Lenses
-                {% elif item.product.product_type == 'reading_glasses' %}Reading Glasses
-                {% elif item.product.product_type == 'accessories' %}Accessory
-                {% else %}{{ item.product.product_type|title }}{% endif %}
-              </div>
-
-              <a href="{% url 'product_detail' item.product.slug %}" class="cart-item-name">
-                {{ item.product.name }}
-              </a>
-
-              {% if item.product.brand %}
-              <div class="cart-item-brand">{{ item.product.brand.name }}</div>
-              {% endif %}
-
-              <div class="cart-item-unit-price">QAR {{ item.unit_price }} each</div>
-
-              <!-- ── Variant / Frame badges ── -->
-              <div class="cart-badges">
-                {% if item.variant %}
-                  {% if item.variant.color_name %}
-                  <span class="cbadge cbadge-frame">
-                    {% if item.variant.color_code %}
-                    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ item.variant.color_code }};border:1px solid #ccc;"></span>
-                    {% endif %}
-                    {{ item.variant.color_name }}
-                  </span>
-                  {% endif %}
-                  {% if item.variant.size %}
-                  <span class="cbadge cbadge-frame">Size: {{ item.variant.size }}</span>
-                  {% endif %}
-                {% endif %}
-
-                {# ── Eyeglass lens ── #}
-                {% if item.lens_option %}
-                <span class="cbadge cbadge-lens">
-                  🔍 {{ item.lens_option.lens_brand.name }}
-                  {% if item.lens_option.lens_type %} · {{ item.lens_option.lens_type.name }}{% endif %}
-                  {% if item.lens_option.index %} ({{ item.lens_option.index }}){% endif %}
-                </span>
-                {% endif %}
-
-                {# ── Sunglass lens ── #}
-                {% if item.sunglass_lens_option %}
-                <span class="cbadge cbadge-sunglass">
-                  🕶 {{ item.sunglass_lens_option }}
-                  {% if item.lens_color %} · {{ item.lens_color }}{% endif %}
-                </span>
-                {% endif %}
-
-                {# ── Lens price badge ── #}
-                {% if item.lens_price and item.lens_price > 0 %}
-                <span class="cbadge cbadge-addon">+QAR {{ item.lens_price }} lens</span>
-                {% endif %}
-              </div>
-
-              {# ── Lens add-ons ── #}
-              {% if item.lens_addons.all %}
-              <div class="cart-badges">
-                {% for addon_obj in item.lens_addons.all %}
-                <span class="cbadge cbadge-addon">✦ {{ addon_obj.addon.name }} +QAR {{ addon_obj.price }}</span>
-                {% endfor %}
-              </div>
-              {% endif %}
-
-              {# ── Prescription ── #}
-              {% if item.prescription_data %}
-              <div class="rx-block">
-                <div class="rx-block-title">Rx Prescription</div>
-
-                {# Eyeglass / Sunglass prescription format #}
-                {% if item.prescription_data.right_sph or item.prescription_data.right_cyl %}
-                <div class="rx-row">
-                  <span class="rx-eye">Right (OD):</span>
-                  <span>SPH {{ item.prescription_data.right_sph|default:"—" }}</span>
-                  <span>CYL {{ item.prescription_data.right_cyl|default:"—" }}</span>
-                  <span>AXIS {{ item.prescription_data.right_axis|default:"—" }}</span>
-                  {% if item.prescription_data.right_add %}<span>ADD {{ item.prescription_data.right_add }}</span>{% endif %}
-                </div>
-                {% endif %}
-                {% if item.prescription_data.left_sph or item.prescription_data.left_cyl %}
-                <div class="rx-row">
-                  <span class="rx-eye">Left (OS):</span>
-                  <span>SPH {{ item.prescription_data.left_sph|default:"—" }}</span>
-                  <span>CYL {{ item.prescription_data.left_cyl|default:"—" }}</span>
-                  <span>AXIS {{ item.prescription_data.left_axis|default:"—" }}</span>
-                  {% if item.prescription_data.left_add %}<span>ADD {{ item.prescription_data.left_add }}</span>{% endif %}
-                </div>
-                {% endif %}
-
-                {# Nested right_eye / left_eye format (add_eyeglass_to_cart) #}
-                {% if item.prescription_data.right_eye %}
-                <div class="rx-row">
-                  <span class="rx-eye">Right (OD):</span>
-                  <span>SPH {{ item.prescription_data.right_eye.sph|default:"—" }}</span>
-                  <span>CYL {{ item.prescription_data.right_eye.cyl|default:"—" }}</span>
-                  <span>AXIS {{ item.prescription_data.right_eye.axis|default:"—" }}</span>
-                  {% if item.prescription_data.right_eye.add %}<span>ADD {{ item.prescription_data.right_eye.add }}</span>{% endif %}
-                </div>
-                {% endif %}
-                {% if item.prescription_data.left_eye %}
-                <div class="rx-row">
-                  <span class="rx-eye">Left (OS):</span>
-                  <span>SPH {{ item.prescription_data.left_eye.sph|default:"—" }}</span>
-                  <span>CYL {{ item.prescription_data.left_eye.cyl|default:"—" }}</span>
-                  <span>AXIS {{ item.prescription_data.left_eye.axis|default:"—" }}</span>
-                  {% if item.prescription_data.left_eye.add %}<span>ADD {{ item.prescription_data.left_eye.add }}</span>{% endif %}
-                </div>
-                {% endif %}
-
-                {# Contact lens color #}
-                {% if item.prescription_data.color_name %}
-                <div class="rx-row">
-                  <span class="rx-eye">Color:</span>
-                  <span>{{ item.prescription_data.color_name }}</span>
-                </div>
-                {% endif %}
-              </div>
-              {% endif %}
-
-              {# ── Contact lens power ── #}
-              {% if item.contact_lens_left_power or item.contact_lens_right_power %}
-              <div class="cart-badges">
-                <span class="cbadge cbadge-contact">L: {{ item.contact_lens_left_power|default:"Plano" }}</span>
-                <span class="cbadge cbadge-contact">R: {{ item.contact_lens_right_power|default:"Plano" }}</span>
-              </div>
-              {% endif %}
-
-              {# ── Special instructions ── #}
-              {% if item.special_instructions %}
-              <div class="note-block">📝 {{ item.special_instructions }}</div>
-              {% endif %}
-
-              {# ── Stock warning (shown by JS) ── #}
-              <div class="stock-warning" id="stock-warn-{{ item.id }}">
-                ⚠ Maximum available stock reached
-              </div>
-
-              <!-- Remove -->
-              <button class="cart-remove-btn"
-                      data-item-id="{{ item.id }}"
-                      aria-label="Remove {{ item.product.name }}">
-                🗑 Remove
-              </button>
-
-            </div><!-- /cart-item-meta -->
-          </div><!-- /cart-item-product -->
-
-          <!-- ── Quantity ── -->
-          <div class="cart-item-qty-cell">
-            <div class="qty-control" id="qty-ctrl-{{ item.id }}">
-              <button class="qty-btn decrease-qty"
-                      type="button"
-                      data-item-id="{{ item.id }}"
-                      {% if item.quantity <= 1 %}disabled{% endif %}
-                      aria-label="Decrease quantity">−</button>
-
-              <input class="qty-input qty-val-{{ item.id }}"
-                     type="text"
-                     value="{{ item.quantity }}"
-                     readonly
-                     aria-label="Quantity">
-
-              <button class="qty-btn increase-qty"
-                      type="button"
-                      data-item-id="{{ item.id }}"
-                      {% if item.quantity >= stock %}disabled{% endif %}
-                      aria-label="Increase quantity">+</button>
-            </div>
-          </div>
-
-          <!-- ── Unit price (desktop) ── -->
-          <div class="cart-desktop-price"
-               style="text-align:center; color:var(--muted); font-size:13px;">
-            QAR {{ item.unit_price }}
-            {% if item.lens_price and item.lens_price > 0 %}
-            <div style="font-size:11px;margin-top:3px;color:#aaa;">+QAR {{ item.lens_price }} lens</div>
+          <!-- TYPE BANNER -->
+          <div class="ci-type-banner
+            {% if item.product.product_type == 'eyeglasses' %}ci-type-banner--eyeglasses
+            {% elif item.product.product_type == 'sunglasses' %}ci-type-banner--sunglasses
+            {% elif item.product.product_type == 'contact_lenses' %}ci-type-banner--contact
+            {% elif item.product.product_type == 'reading_glasses' %}ci-type-banner--reading
+            {% else %}ci-type-banner--accessories{% endif %}">
+            {% if item.product.product_type == 'eyeglasses' %}
+              👓 Eyeglasses &nbsp;·&nbsp; Prescription Frame
+            {% elif item.product.product_type == 'sunglasses' %}
+              🕶️ Sunglasses
+            {% elif item.product.product_type == 'contact_lenses' %}
+              💧 Contact Lenses
+            {% elif item.product.product_type == 'reading_glasses' %}
+              🔍 Reading Glasses
+            {% elif item.product.product_type == 'accessories' %}
+              🧴 Accessory
+            {% else %}
+              {{ item.product.product_type|title }}
+            {% endif %}
+            {% if item.lens_option %}
+              &nbsp;·&nbsp; {{ item.lens_option.lens_brand.name }}
+              {% if item.lens_option.lens_type %} {{ item.lens_option.lens_type.name }}{% endif %}
             {% endif %}
           </div>
 
-          <!-- ── Item total ── -->
-          <div class="cart-item-total-cell">
-            <div class="cart-item-total item-total-{{ item.id }}"
-                 style="text-align:right;">
-              QAR {{ item.item_total }}
+          <!-- MAIN ROW -->
+          <div class="ci-main">
+
+            <!-- Product Info -->
+            <div class="ci-product">
+              <a href="{% url 'product_detail' item.product.slug %}" class="ci-img-wrap">
+                {% if item.product.images.first %}
+                  <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}" loading="lazy">
+                {% elif item.product.image %}
+                  <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" loading="lazy">
+                {% else %}
+                  <img src="{% static 'img/no-image.jpg' %}" alt="No image">
+                {% endif %}
+              </a>
+
+              <div class="ci-meta">
+                <a href="{% url 'product_detail' item.product.slug %}" class="ci-name">{{ item.product.name }}</a>
+                {% if item.product.brand %}
+                <div class="ci-brand">{{ item.product.brand.name }}</div>
+                {% endif %}
+                <div class="ci-unit-price">QAR {{ item.unit_price }} per unit</div>
+
+                <!-- Variant Badges -->
+                <div class="ci-badges">
+                  {% if item.variant %}
+                    {% if item.variant.color_name %}
+                    <span class="cbadge cbadge-frame">
+                      {% if item.variant.color_code %}
+                        <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:{{ item.variant.color_code }};border:1px solid rgba(0,0,0,0.15);flex-shrink:0;"></span>
+                      {% endif %}
+                      {{ item.variant.color_name }}
+                    </span>
+                    {% endif %}
+                    {% if item.variant.size %}<span class="cbadge cbadge-frame">{{ item.variant.size }}</span>{% endif %}
+                  {% endif %}
+
+                  {% if item.lens_price and item.lens_price > 0 %}
+                  <span class="cbadge cbadge-addon">+QAR {{ item.lens_price }} lens</span>
+                  {% endif %}
+
+                  {% if item.sunglass_lens_option %}
+                  <span class="cbadge cbadge-sunglass">🕶 {{ item.sunglass_lens_option }}{% if item.lens_color %} · {{ item.lens_color }}{% endif %}</span>
+                  {% endif %}
+
+                  {% if item.lens_addons.all %}
+                    {% for ao in item.lens_addons.all %}
+                    <span class="cbadge cbadge-addon">✦ {{ ao.addon.name }}</span>
+                    {% endfor %}
+                  {% endif %}
+
+                  {% if item.contact_lens_left_power or item.contact_lens_right_power %}
+                  <span class="cbadge cbadge-contact">L: {{ item.contact_lens_left_power|default:"Plano" }}</span>
+                  <span class="cbadge cbadge-contact">R: {{ item.contact_lens_right_power|default:"Plano" }}</span>
+                  {% endif %}
+
+                  {% if item.prescription_data.color_name %}
+                  <span class="cbadge cbadge-color">🎨 {{ item.prescription_data.color_name }}</span>
+                  {% endif %}
+                </div>
+
+                <!-- Stock warning -->
+                <div class="stock-warn" id="stock-warn-{{ item.id }}">⚠ Max stock reached</div>
+              </div>
+            </div>
+
+            <!-- Quantity -->
+            <div class="qty-cell" style="display:flex;justify-content:center;">
+              <div class="qty-control" id="qty-ctrl-{{ item.id }}">
+                <button class="qty-btn decrease-qty"
+                        type="button"
+                        data-item-id="{{ item.id }}"
+                        {% if item.quantity <= 1 %}disabled{% endif %}
+                        aria-label="Decrease">−</button>
+                <input class="qty-input qty-val-{{ item.id }}"
+                       type="text"
+                       value="{{ item.quantity }}"
+                       readonly
+                       aria-label="Quantity">
+                <button class="qty-btn increase-qty"
+                        type="button"
+                        data-item-id="{{ item.id }}"
+                        {% if item.quantity >= stock %}disabled{% endif %}
+                        aria-label="Increase">+</button>
+              </div>
+            </div>
+
+            <!-- Unit price column (desktop) -->
+            <div class="price-col price-cell">
+              <div>QAR {{ item.unit_price }}</div>
+              {% if item.lens_price and item.lens_price > 0 %}
+              <div class="lens-sub">+QAR {{ item.lens_price }} lens</div>
+              {% endif %}
+            </div>
+
+            <!-- Item total -->
+            <div class="total-cell" style="display:flex;justify-content:flex-end;align-items:center;">
+              <div class="ci-total item-total-{{ item.id }}">QAR {{ item.item_total }}</div>
             </div>
           </div>
+          <!-- /ci-main -->
 
-        </div><!-- /cart-item-row -->
+          <!-- ══ EXPANDED CONFIG SECTION ══ -->
+          {% if item.prescription_data or item.lens_addons.all or item.special_instructions or item.contact_lens_left_power or item.contact_lens_right_power or item.sunglass_lens_option %}
+          <div class="ci-config">
+            <div class="ci-config-inner">
+
+              <!-- Tab Labels -->
+              <div class="ci-config-tabs">
+                {% if item.prescription_data %}
+                <div class="ci-config-tab active filled">📋 Prescription</div>
+                {% endif %}
+                {% if item.lens_option %}
+                <div class="ci-config-tab filled">🔍 Lens Details</div>
+                {% endif %}
+                {% if item.sunglass_lens_option %}
+                <div class="ci-config-tab filled">🕶 Sunglass Lens</div>
+                {% endif %}
+                {% if item.contact_lens_left_power or item.contact_lens_right_power %}
+                <div class="ci-config-tab filled">💧 Power</div>
+                {% endif %}
+                {% if item.lens_addons.all %}
+                <div class="ci-config-tab filled">✦ Add-ons</div>
+                {% endif %}
+              </div>
+
+              <div class="ci-config-body">
+
+                <!-- PRESCRIPTION DATA -->
+                {% if item.prescription_data %}
+                  {% if item.prescription_data.right_sph or item.prescription_data.right_eye %}
+                  <div style="margin-bottom:10px;">
+                    <div class="rx-grid">
+                      <div class="rx-head"></div>
+                      <div class="rx-head">SPH</div>
+                      <div class="rx-head">CYL</div>
+                      <div class="rx-head">AXIS</div>
+                      <div class="rx-head">ADD</div>
+
+                      <!-- Flat format -->
+                      {% if item.prescription_data.right_sph %}
+                      <div class="rx-eye">OD (R)</div>
+                      <div class="rx-val">{{ item.prescription_data.right_sph|default:"—" }}</div>
+                      <div class="rx-val">{{ item.prescription_data.right_cyl|default:"—" }}</div>
+                      <div class="rx-val">{{ item.prescription_data.right_axis|default:"—" }}</div>
+                      <div class="rx-val">{{ item.prescription_data.right_add|default:"—" }}</div>
+                      {% endif %}
+
+                      {% if item.prescription_data.left_sph %}
+                      <div class="rx-eye">OS (L)</div>
+                      <div class="rx-val">{{ item.prescription_data.left_sph|default:"—" }}</div>
+                      <div class="rx-val">{{ item.prescription_data.left_cyl|default:"—" }}</div>
+                      <div class="rx-val">{{ item.prescription_data.left_axis|default:"—" }}</div>
+                      <div class="rx-val">{{ item.prescription_data.left_add|default:"—" }}</div>
+                      {% endif %}
+
+                      <!-- Nested format -->
+                      {% if item.prescription_data.right_eye %}
+                      <div class="rx-eye">OD (R)</div>
+                      <div class="rx-val">{{ item.prescription_data.right_eye.sph|default:"—" }}</div>
+                      <div class="rx-val">{{ item.prescription_data.right_eye.cyl|default:"—" }}</div>
+                      <div class="rx-val">{{ item.prescription_data.right_eye.axis|default:"—" }}</div>
+                      <div class="rx-val">{{ item.prescription_data.right_eye.add|default:"—" }}</div>
+                      {% endif %}
+
+                      {% if item.prescription_data.left_eye %}
+                      <div class="rx-eye">OS (L)</div>
+                      <div class="rx-val">{{ item.prescription_data.left_eye.sph|default:"—" }}</div>
+                      <div class="rx-val">{{ item.prescription_data.left_eye.cyl|default:"—" }}</div>
+                      <div class="rx-val">{{ item.prescription_data.left_eye.axis|default:"—" }}</div>
+                      <div class="rx-val">{{ item.prescription_data.left_eye.add|default:"—" }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  {% endif %}
+                {% endif %}
+
+                <!-- CONTACT LENS COLOR -->
+                {% if item.prescription_data.color_name and not item.prescription_data.right_sph %}
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+                  <span style="color:var(--muted);">Color:</span>
+                  <span class="cbadge cbadge-color">🎨 {{ item.prescription_data.color_name }}</span>
+                </div>
+                {% endif %}
+
+                <!-- CONTACT LENS POWER -->
+                {% if item.contact_lens_left_power or item.contact_lens_right_power %}
+                <div class="cl-power-display" style="{% if item.prescription_data %}margin-top:12px;{% endif %}">
+                  <div class="cl-power-box">
+                    <div class="cl-eye">Left Eye (OS)</div>
+                    <div class="cl-pwr">{{ item.contact_lens_left_power|default:"Plano" }}</div>
+                    <div class="cl-unit">diopters</div>
+                  </div>
+                  <div class="cl-power-box">
+                    <div class="cl-eye">Right Eye (OD)</div>
+                    <div class="cl-pwr">{{ item.contact_lens_right_power|default:"Plano" }}</div>
+                    <div class="cl-unit">diopters</div>
+                  </div>
+                </div>
+                {% endif %}
+
+                <!-- SUNGLASS LENS OPTION -->
+                {% if item.sunglass_lens_option %}
+                <div class="sg-lens-display">
+                  <div class="sg-lens-chip">
+                    <strong>Lens Type</strong>
+                    <span>{{ item.sunglass_lens_option }}</span>
+                  </div>
+                  {% if item.lens_color %}
+                  <div class="sg-lens-chip">
+                    <strong>Lens Color</strong>
+                    <span>{{ item.lens_color }}</span>
+                  </div>
+                  {% endif %}
+                  {% if item.lens_price and item.lens_price > 0 %}
+                  <div class="sg-lens-chip">
+                    <strong>Lens Price</strong>
+                    <span>QAR {{ item.lens_price }}</span>
+                  </div>
+                  {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- LENS OPTION DETAILS -->
+                {% if item.lens_option %}
+                <div class="sg-lens-display">
+                  <div class="sg-lens-chip">
+                    <strong>Brand</strong>
+                    <span>{{ item.lens_option.lens_brand.name }}</span>
+                  </div>
+                  {% if item.lens_option.lens_type %}
+                  <div class="sg-lens-chip">
+                    <strong>Type</strong>
+                    <span>{{ item.lens_option.lens_type.name }}</span>
+                  </div>
+                  {% endif %}
+                  <div class="sg-lens-chip">
+                    <strong>Index</strong>
+                    <span>{{ item.lens_option.index }}</span>
+                  </div>
+                  <div class="sg-lens-chip">
+                    <strong>Lens Price</strong>
+                    <span>QAR {{ item.lens_price }}</span>
+                  </div>
+                </div>
+                {% endif %}
+
+                <!-- ADD-ONS -->
+                {% if item.lens_addons.all %}
+                <div class="addon-list" style="margin-top:10px;">
+                  {% for ao in item.lens_addons.all %}
+                  <div class="addon-item">
+                    <div class="addon-item-name">✦ {{ ao.addon.name }}</div>
+                    <div class="addon-item-price">+QAR {{ ao.price }}</div>
+                  </div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- SPECIAL INSTRUCTIONS -->
+                {% if item.special_instructions %}
+                <div class="ci-note" style="margin-top:10px;">📝 {{ item.special_instructions }}</div>
+                {% endif %}
+
+              </div>
+            </div>
+          </div>
+          {% elif item.special_instructions %}
+          <div class="ci-config">
+            <div class="ci-note">📝 {{ item.special_instructions }}</div>
+          </div>
+          {% endif %}
+
+          <!-- CARD FOOTER -->
+          <div class="ci-footer">
+            <button class="ci-remove-btn"
+                    data-item-id="{{ item.id }}"
+                    aria-label="Remove {{ item.product.name }}">
+              ✕ Remove
+            </button>
+            {% if item.product.product_type in 'eyeglasses,sunglasses' %}
+            <a href="{% url 'product_detail' item.product.slug %}" class="ci-edit-lens">
+              ✏ Edit Configuration
+            </a>
+            {% endif %}
+          </div>
+
+        </div><!-- /ci-card -->
         {% endwith %}
         {% endfor %}
-      </div><!-- /cart-rows -->
+      </div>
+      <!-- /cart-rows -->
 
-      <!-- Continue shopping -->
-      <div style="margin-top:24px;">
-        <a href="{% url 'home' %}" class="btn-secondary"
-           style="display:inline-block;width:auto;padding:11px 24px;">
-          ← Continue Shopping
-        </a>
+      <!-- CONTINUE / NAVIGATION -->
+      <div class="cp-continue">
+        <a href="{% url 'home' %}" class="cp-continue-btn">← Continue Shopping</a>
       </div>
 
-      <!-- Trust strip -->
+      <!-- TRUST STRIP -->
       <div class="trust-strip">
-        <div class="trust-tile">
-          <div class="trust-tile-icon">🚚</div>
-          <div class="trust-tile-title">Free Shipping</div>
-          <div class="trust-tile-desc">Orders over QAR 200</div>
+        <div class="tt">
+          <div class="tt-icon">🚚</div>
+          <div class="tt-title">Free Delivery</div>
+          <div class="tt-desc">Orders over QAR 200</div>
         </div>
-        <div class="trust-tile">
-          <div class="trust-tile-icon">🔄</div>
-          <div class="trust-tile-title">Easy Returns</div>
-          <div class="trust-tile-desc">14-day policy</div>
+        <div class="tt">
+          <div class="tt-icon">🔄</div>
+          <div class="tt-title">Easy Returns</div>
+          <div class="tt-desc">14-day policy</div>
         </div>
-        <div class="trust-tile">
-          <div class="trust-tile-icon">🔒</div>
-          <div class="trust-tile-title">Secure Payment</div>
-          <div class="trust-tile-desc">Encrypted checkout</div>
+        <div class="tt">
+          <div class="tt-icon">🔒</div>
+          <div class="tt-title">Secure Checkout</div>
+          <div class="tt-desc">End-to-end encrypted</div>
         </div>
-        <div class="trust-tile">
-          <div class="trust-tile-icon">👁</div>
-          <div class="trust-tile-title">Free Eye Test</div>
-          <div class="trust-tile-desc">At any store</div>
+        <div class="tt">
+          <div class="tt-icon">👁</div>
+          <div class="tt-title">Free Eye Test</div>
+          <div class="tt-desc">At any of our stores</div>
         </div>
       </div>
 
     </div>
     <!-- /LEFT -->
 
-    <!-- ────────────────────────────
-         RIGHT — Order Summary
-    ──────────────────────────────── -->
-    <div class="cart-summary">
-      <div class="cart-summary-header">
+    <!-- ══════════════════════════════════
+         RIGHT — ORDER SUMMARY
+    ═════════════════════════════════════ -->
+    <div class="order-panel">
+      <div class="op-head">
         <h2>Order Summary</h2>
+        <p id="cart-head-label-side">{{ cart_items|length }} item{{ cart_items|length|pluralize }} in your cart</p>
       </div>
-      <div class="cart-summary-body">
+
+      <div class="op-body">
 
         <!-- Free shipping bar -->
-        <div class="free-ship-bar">
-          <div class="free-ship-text {% if shipping == 0 %}qualified{% endif %}"
-               id="free-ship-text">
+        <div class="fs-bar">
+          <div class="fs-text {% if shipping == 0 %}qualified{% endif %}" id="fs-text">
             {% if shipping == 0 %}
-            ✓ You qualify for FREE shipping!
+            ✓ Free shipping unlocked!
             {% else %}
-            🚚 Add QAR <span id="free-ship-remain">{{ free_shipping_remaining }}</span> more for FREE shipping
+            🚚 Add QAR <span id="fs-remain">{{ free_shipping_remaining }}</span> for free shipping
             {% endif %}
           </div>
-          {% if shipping > 0 %}
-          <div class="free-ship-track">
-            <div class="free-ship-fill"
-                 id="free-ship-fill"
-                 style="width:{{ shipping_progress|floatformat:0 }}%;"></div>
+          <div class="fs-track">
+            <div class="fs-fill" id="fs-fill"
+                 style="width:{% if shipping == 0 %}100{% else %}{{ shipping_progress|floatformat:0 }}{% endif %}%;"></div>
           </div>
-          {% else %}
-          <div class="free-ship-track">
-            <div class="free-ship-fill" id="free-ship-fill" style="width:100%;"></div>
-          </div>
-          {% endif %}
+        </div>
+
+        <!-- Promo code -->
+        <div class="promo-wrap">
+          <input type="text" class="promo-input" placeholder="Enter promo code" id="promo-input">
+          <button class="promo-btn" onclick="applyPromo()">Apply</button>
         </div>
 
         <!-- Subtotal -->
-        <div class="sum-row">
-          <span>Subtotal (<span id="sum-count">{{ cart_items|length }}</span> items)</span>
+        <div class="sr">
+          <span class="sr-label">Subtotal (<span id="sum-count">{{ cart_items|length }}</span> items)</span>
           <span id="sum-subtotal"><strong>QAR {{ subtotal }}</strong></span>
         </div>
 
         <!-- Shipping -->
-        <div class="sum-row" id="sum-shipping-row"
-             style="{% if shipping == 0 %}display:none;{% endif %}">
+        <div class="sr" id="sum-shipping-row" style="{% if shipping == 0 %}display:none;{% endif %}">
           <span>Shipping</span>
           <span id="sum-shipping">QAR {{ shipping }}</span>
         </div>
 
-        <!-- Free shipping applied -->
+        <!-- Free badge -->
         <div id="sum-free-badge"
              style="display:{% if shipping == 0 %}flex{% else %}none{% endif %};
-                    align-items:center;gap:6px;font-size:13px;
-                    color:var(--success);margin-bottom:12px;">
-          ✓ FREE Shipping applied
+                    align-items:center;gap:6px;font-size:12px;
+                    color:var(--success);margin-bottom:10px;font-weight:600;">
+          ✓ FREE Shipping
         </div>
 
         <!-- Tax -->
-        <div class="sum-row" style="font-size:12px;color:var(--muted);">
-          <span>Tax</span>
+        <div class="sr" style="font-size:11px;color:var(--muted);">
+          <span>VAT / Tax</span>
           <span>Calculated at checkout</span>
         </div>
 
-        <!-- Grand total -->
-        <div class="sum-row sum-row--total">
+        <div class="op-divider"></div>
+
+        <!-- Grand Total -->
+        <div class="sr sr--total">
           <span>Total</span>
           <span id="sum-total">QAR {{ total }}</span>
         </div>
 
-        <p class="sum-note">Taxes & shipping calculated at checkout</p>
+        <p class="sr-note">Inclusive of taxes where applicable</p>
 
-        <!-- Checkout -->
+        <!-- CTA -->
         <a href="{% url 'orders:checkout' %}"
            id="btn-checkout"
            class="btn-checkout {% if total == 0 %}disabled{% endif %}">
-          Proceed to Checkout →
+          <span>Proceed to Checkout</span>
+          <span>→</span>
         </a>
 
-        <a href="{% url 'home' %}" class="btn-secondary">Continue Shopping</a>
+        <a href="{% url 'home' %}" class="btn-shop-more">Continue Shopping</a>
+
+        <!-- Payment icons -->
+        <div class="pay-icons">
+          <div class="pay-icon">VISA</div>
+          <div class="pay-icon">MC</div>
+          <div class="pay-icon">AMEX</div>
+          <div class="pay-icon">MADA</div>
+          <div class="pay-icon">CASH</div>
+        </div>
 
         <!-- Benefits -->
-        <div class="cart-benefits">
-          <div class="benefit-row">
-            <div class="benefit-icon">🔒</div>
-            <span>Secure checkout — your data is safe</span>
+        <div class="op-benefits">
+          <div class="ben-row">
+            <div class="ben-icon">🔒</div>
+            <span>SSL encrypted checkout</span>
           </div>
-          <div class="benefit-row">
-            <div class="benefit-icon">🏷</div>
+          <div class="ben-row">
+            <div class="ben-icon">🏷</div>
             <span>1-year warranty on all frames</span>
           </div>
-          <div class="benefit-row">
-            <div class="benefit-icon">👁</div>
-            <span>Free eye test at any of our stores</span>
+          <div class="ben-row">
+            <div class="ben-icon">👁</div>
+            <span>Free eye test at our stores</span>
           </div>
-          <div class="benefit-row">
-            <div class="benefit-icon">📞</div>
-            <span>24/7 customer support available</span>
+          <div class="ben-row">
+            <div class="ben-icon">📞</div>
+            <span>24/7 customer support</span>
           </div>
         </div>
 
@@ -989,92 +1594,71 @@
     <!-- /RIGHT -->
 
   </div>
-  <!-- /cart-grid -->
+  <!-- /cp-grid -->
 
   {% else %}
-  <!-- ══════════════ EMPTY CART ══════════════ -->
-  <div class="cart-grid">
+  <!-- EMPTY CART -->
+  <div class="cp-grid">
     <div class="empty-cart">
-      <div class="empty-cart-icon">🛒</div>
+      <div class="empty-icon">🛒</div>
       <h2>Your cart is empty</h2>
-      <p>You haven't added anything yet. Start exploring!</p>
-      <div>
-        <a href="{% url 'catalog:eyeglasses_list' %}" class="btn-shop">Eyeglasses</a>
-        <a href="{% url 'catalog:sunglasses_list' %}" class="btn-shop" style="background:var(--gold);">Sunglasses</a>
-        <a href="{% url 'catalog:contact_lenses_list' %}" class="btn-shop" style="background:#1565c0;">Contact Lenses</a>
+      <p>You haven't added anything yet — explore our collections below</p>
+      <div class="empty-cats">
+        <a href="{% url 'catalog:eyeglasses_list' %}" class="btn-cat btn-cat--dark">👓 Eyeglasses</a>
+        <a href="{% url 'catalog:sunglasses_list' %}" class="btn-cat btn-cat--gold">🕶 Sunglasses</a>
+        <a href="{% url 'catalog:contact_lenses_list' %}" class="btn-cat btn-cat--blue">💧 Contact Lenses</a>
       </div>
     </div>
   </div>
   {% endif %}
 
 </div>
-<!-- /cart-page -->
 
-<!-- Toast notification -->
-<div class="cart-toast" id="cartToast"></div>
+<!-- TOAST -->
+<div class="cp-toast" id="cpToast"></div>
 
 <script>
-(function () {
+(function() {
 "use strict";
 
-/* ─────────────────────────────────────
-   CONFIG
-───────────────────────────────────── */
 const FREE_SHIP_THRESHOLD = 200;
 
-/* ─────────────────────────────────────
-   CSRF
-───────────────────────────────────── */
+/* CSRF */
 function csrf() {
-  const match = document.cookie.match(/csrftoken=([^;]+)/);
-  return match ? decodeURIComponent(match[1]) : "";
+  const m = document.cookie.match(/csrftoken=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : "";
 }
 
-/* ─────────────────────────────────────
-   TOAST
-───────────────────────────────────── */
+/* TOAST */
 let _tt;
 function toast(msg, type) {
-  const el = document.getElementById("cartToast");
+  const el = document.getElementById("cpToast");
   if (!el) return;
   el.textContent = msg;
-  el.className = "cart-toast show" +
+  el.className = "cp-toast show" +
     (type === "ok" ? " t-ok" : type === "err" ? " t-err" : type === "warn" ? " t-warn" : "");
   clearTimeout(_tt);
-  _tt = setTimeout(() => el.classList.remove("show"), 3600);
+  _tt = setTimeout(() => el.classList.remove("show"), 3800);
 }
 
-/* ─────────────────────────────────────
-   BUILD the correct cart URL
-   Handles /ar/ or any language prefix
-   by always stripping prefix and using
-   the raw /cart/ path.
-───────────────────────────────────── */
-function cartUrl(path) {
-  /*
-    path examples:
-      /cart/update/19/increase/
-      /cart/remove/19/
-    We want to always use the base path,
-    ignoring any language prefix in window.location.
-  */
-  return path;
+/* PROMO */
+function applyPromo() {
+  const val = (document.getElementById("promo-input") || {}).value || "";
+  if (!val.trim()) { toast("Enter a promo code first.", "warn"); return; }
+  toast("Promo codes coming soon!", "warn");
 }
+window.applyPromo = applyPromo;
 
-/* ─────────────────────────────────────
-   UPDATE SUMMARY PANEL
-───────────────────────────────────── */
+/* UPDATE SUMMARY */
 function updateSummary(data) {
   const sub  = parseFloat(data.subtotal);
   const ship = parseFloat(data.shipping);
   const tot  = parseFloat(data.cart_total);
   const cnt  = parseInt(data.cart_count);
 
-  /* Subtotal */
   const subEl = document.getElementById("sum-subtotal");
   if (subEl) subEl.innerHTML = "<strong>QAR " + sub.toFixed(2) + "</strong>";
 
-  /* Shipping */
   const shipRow   = document.getElementById("sum-shipping-row");
   const shipEl    = document.getElementById("sum-shipping");
   const freeBadge = document.getElementById("sum-free-badge");
@@ -1082,119 +1666,88 @@ function updateSummary(data) {
   if (freeBadge) freeBadge.style.display = ship === 0 ? "flex" : "none";
   if (shipEl)    shipEl.textContent      = "QAR " + ship.toFixed(2);
 
-  /* Total */
   const totEl = document.getElementById("sum-total");
   if (totEl) totEl.textContent = "QAR " + tot.toFixed(2);
 
-  /* Count */
   const cntEl = document.getElementById("sum-count");
   if (cntEl) cntEl.textContent = cnt;
 
-  /* Heading label */
   const headEl = document.getElementById("cart-head-label");
-  if (headEl) {
-    headEl.textContent = cnt > 0
-      ? cnt + " item" + (cnt !== 1 ? "s" : "") + " in your cart"
-      : "";
-  }
+  if (headEl) headEl.textContent = cnt + " item" + (cnt !== 1 ? "s" : "") + " · Review your selection below";
 
-  /* Checkout button state */
+  const sideEl = document.getElementById("cart-head-label-side");
+  if (sideEl) sideEl.textContent = cnt + " item" + (cnt !== 1 ? "s" : "") + " in your cart";
+
   const btn = document.getElementById("btn-checkout");
-  if (btn) {
-    if (tot <= 0) btn.classList.add("disabled");
-    else          btn.classList.remove("disabled");
-  }
+  if (btn) { if (tot <= 0) btn.classList.add("disabled"); else btn.classList.remove("disabled"); }
 
-  /* Free shipping bar */
-  updateFreeShipBar(sub);
+  updateFsBar(sub);
 
-  /* Header cart count badges (multiple possible selectors) */
-  document.querySelectorAll(
-    ".header-v24__cart-count, #cart-count, #cart-items-count, .cart-badge, [data-cart-count]"
-  ).forEach(el => {
+  document.querySelectorAll(".header-v24__cart-count, #cart-count, #cart-items-count, .cart-badge, [data-cart-count]").forEach(el => {
     el.textContent = cnt;
     el.style.transform = "scale(1.35)";
-    setTimeout(() => (el.style.transform = "scale(1)"), 300);
+    setTimeout(() => (el.style.transform = ""), 300);
   });
 }
 
-function updateFreeShipBar(sub) {
-  const textEl = document.getElementById("free-ship-text");
-  const fillEl = document.getElementById("free-ship-fill");
-
+function updateFsBar(sub) {
+  const textEl = document.getElementById("fs-text");
+  const fillEl = document.getElementById("fs-fill");
   if (!textEl) return;
-
   if (sub >= FREE_SHIP_THRESHOLD) {
-    textEl.className = "free-ship-text qualified";
-    textEl.innerHTML = "✓ You qualify for FREE shipping!";
+    textEl.className = "fs-text qualified";
+    textEl.innerHTML = "✓ Free shipping unlocked!";
     if (fillEl) fillEl.style.width = "100%";
   } else {
-    const rem  = (FREE_SHIP_THRESHOLD - sub).toFixed(2);
-    const pct  = Math.min(100, Math.round(sub / FREE_SHIP_THRESHOLD * 100));
-    textEl.className = "free-ship-text";
-    textEl.innerHTML =
-      '🚚 Add QAR <span id="free-ship-remain">' + rem + '</span> more for FREE shipping';
+    const rem = (FREE_SHIP_THRESHOLD - sub).toFixed(2);
+    const pct = Math.min(100, Math.round(sub / FREE_SHIP_THRESHOLD * 100));
+    textEl.className = "fs-text";
+    textEl.innerHTML = '🚚 Add QAR <span id="fs-remain">' + rem + '</span> for free shipping';
     if (fillEl) fillEl.style.width = pct + "%";
   }
 }
 
-/* ─────────────────────────────────────
-   UPDATE ITEM QUANTITY + TOTAL
-───────────────────────────────────── */
+/* APPLY ITEM UPDATE */
 function applyItemUpdate(itemId, data) {
-  const qty    = parseInt(data.quantity);
-  const stock  = getStock(itemId);
+  const qty   = parseInt(data.quantity);
+  const stock = getStock(itemId);
 
-  /* All quantity inputs for this item */
-  document.querySelectorAll(".qty-val-" + itemId).forEach(el => {
-    el.value = qty;
-  });
+  document.querySelectorAll(".qty-val-" + itemId).forEach(el => { el.value = qty; });
 
-  /* Item total */
   const totEl = document.querySelector(".item-total-" + itemId);
   if (totEl) {
     totEl.textContent = "QAR " + parseFloat(data.item_total).toFixed(2);
     totEl.classList.add("flash");
-    setTimeout(() => totEl.classList.remove("flash"), 500);
+    setTimeout(() => totEl.classList.remove("flash"), 550);
   }
 
-  /* Button states based on new quantity */
-  syncButtons(itemId, qty, stock);
+  syncBtns(itemId, qty, stock);
 
-  /* Stock warning */
   const warn = document.getElementById("stock-warn-" + itemId);
-  if (warn) {
-    if (qty >= stock) warn.classList.add("visible");
-    else              warn.classList.remove("visible");
-  }
+  if (warn) { qty >= stock ? warn.classList.add("visible") : warn.classList.remove("visible"); }
 
   updateSummary(data);
 }
 
-function getStock(itemId) {
-  const row = document.getElementById("cart-row-" + itemId);
-  if (!row) return 9999;
-  return parseInt(row.dataset.stock) || 9999;
+function getStock(id) {
+  const row = document.getElementById("cart-row-" + id);
+  return row ? (parseInt(row.dataset.stock) || 9999) : 9999;
 }
 
-function syncButtons(itemId, qty, stock) {
-  const decBtn = document.querySelector(`.decrease-qty[data-item-id="${itemId}"]`);
-  const incBtn = document.querySelector(`.increase-qty[data-item-id="${itemId}"]`);
-
-  if (decBtn) {
-    if (qty <= 1) { decBtn.setAttribute("disabled", ""); decBtn.classList.add("at-limit"); }
-    else          { decBtn.removeAttribute("disabled"); decBtn.classList.remove("at-limit"); }
+function syncBtns(id, qty, stock) {
+  const dec = document.querySelector(`.decrease-qty[data-item-id="${id}"]`);
+  const inc = document.querySelector(`.increase-qty[data-item-id="${id}"]`);
+  if (dec) {
+    if (qty <= 1) { dec.setAttribute("disabled",""); dec.classList.add("at-limit"); }
+    else          { dec.removeAttribute("disabled"); dec.classList.remove("at-limit"); }
   }
-
-  if (incBtn) {
-    if (qty >= stock) { incBtn.setAttribute("disabled", ""); incBtn.classList.add("at-limit"); }
-    else              { incBtn.removeAttribute("disabled"); incBtn.classList.remove("at-limit"); }
+  if (inc) {
+    if (qty >= stock) { inc.setAttribute("disabled",""); inc.classList.add("at-limit"); }
+    else              { inc.removeAttribute("disabled"); inc.classList.remove("at-limit"); }
   }
 }
 
-/* ─────────────────────────────────────
-   REMOVE ROW
-───────────────────────────────────── */
+/* REMOVE ROW */
 function removeRow(itemId, data) {
   const row = document.getElementById("cart-row-" + itemId);
   if (row) {
@@ -1202,9 +1755,7 @@ function removeRow(itemId, data) {
     setTimeout(() => {
       row.remove();
       updateSummary(data);
-      if (parseInt(data.cart_count) === 0) {
-        setTimeout(() => location.reload(), 400);
-      }
+      if (parseInt(data.cart_count) === 0) setTimeout(() => location.reload(), 400);
     }, 370);
   } else {
     updateSummary(data);
@@ -1212,170 +1763,107 @@ function removeRow(itemId, data) {
   }
 }
 
-/* ─────────────────────────────────────
-   AJAX FETCH HELPER
-   Always posts to /cart/… (no language
-   prefix) to avoid the 405 on /ar/cart/
-───────────────────────────────────── */
-function cartFetch(url, method, onSuccess, onFail, finallyFn) {
-  /*
-    The /ar/ prefix issue: Django's i18n URL routing makes
-    fetch() POST go to /ar/cart/remove/ which returns 405
-    because the language-prefixed URL may not accept POST.
-    Solution: strip any language prefix so we always hit
-    /cart/remove/ directly.
-  */
-  const cleanUrl = url.replace(/^\/[a-z]{2}(\/cart\/)/, "/cart/");
-
-  fetch(cleanUrl, {
-    method: method,
-    headers: {
-      "X-Requested-With": "XMLHttpRequest",
-      "X-CSRFToken": csrf()
-    }
+/* FETCH HELPER */
+function cartFetch(url, method, onOk, onFail, onFinal) {
+  const clean = url.replace(/^\/[a-z]{2}(\/cart\/)/, "/cart/");
+  fetch(clean, {
+    method,
+    headers: { "X-Requested-With": "XMLHttpRequest", "X-CSRFToken": csrf() }
   })
   .then(r => {
     if (!r.ok && r.status === 405) {
-      /* Fallback: try without stripping in case URL was already clean */
-      return fetch(url, {
-        method: method,
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          "X-CSRFToken": csrf()
-        }
-      });
+      return fetch(url, { method, headers: { "X-Requested-With": "XMLHttpRequest", "X-CSRFToken": csrf() }});
     }
     return r;
   })
   .then(r => r.json())
-  .then(data => { if (data.success) onSuccess(data); else onFail(data); })
-  .catch(() => toast("Network error. Please try again.", "err"))
-  .finally(finallyFn || (() => {}));
+  .then(d => { d.success ? onOk(d) : onFail(d); })
+  .catch(() => toast("Network error. Try again.", "err"))
+  .finally(onFinal || (() => {}));
 }
 
-/* ─────────────────────────────────────
-   EVENT DELEGATION
-───────────────────────────────────── */
-document.addEventListener("click", function (e) {
+/* DELEGATION */
+document.addEventListener("click", function(e) {
 
-  /* ── INCREASE ── */
-  const incBtn = e.target.closest(".increase-qty");
-  if (incBtn && !incBtn.hasAttribute("disabled")) {
+  /* INCREASE */
+  const inc = e.target.closest(".increase-qty");
+  if (inc && !inc.hasAttribute("disabled")) {
     e.preventDefault();
-    const id    = incBtn.dataset.itemId;
+    const id = inc.dataset.itemId;
     const stock = getStock(id);
-    const curQty = parseInt(document.querySelector(".qty-val-" + id)?.value || 1);
-
-    /* Client-side stock check before even calling server */
-    if (curQty >= stock) {
-      toast("Maximum stock reached (" + stock + " available)", "warn");
-      incBtn.setAttribute("disabled", "");
-      incBtn.classList.add("at-limit");
-      const warn = document.getElementById("stock-warn-" + id);
-      if (warn) warn.classList.add("visible");
+    const cur = parseInt(document.querySelector(".qty-val-" + id)?.value || 1);
+    if (cur >= stock) {
+      toast("Max stock reached (" + stock + " available)", "warn");
+      inc.setAttribute("disabled",""); inc.classList.add("at-limit");
+      const w = document.getElementById("stock-warn-" + id);
+      if (w) w.classList.add("visible");
       return;
     }
-
     const ctrl = document.getElementById("qty-ctrl-" + id);
     if (ctrl) ctrl.classList.add("loading");
-
     cartFetch(
-      "/cart/update/" + id + "/increase/",
-      "GET",
-      (data) => applyItemUpdate(id, data),
-      (data) => {
-        if (data.limit_reached) {
-          toast("Only " + data.quantity + " in stock", "warn");
-          syncButtons(id, data.quantity, stock);
-          const warn = document.getElementById("stock-warn-" + id);
-          if (warn) warn.classList.add("visible");
-        } else {
-          toast(data.message || "Could not update quantity", "err");
-        }
+      "/cart/update/" + id + "/increase/", "GET",
+      d => applyItemUpdate(id, d),
+      d => {
+        if (d.limit_reached) { toast("Only " + d.quantity + " in stock", "warn"); syncBtns(id, d.quantity, stock); }
+        else toast(d.message || "Could not update", "err");
       },
       () => { if (ctrl) ctrl.classList.remove("loading"); }
     );
     return;
   }
 
-  /* ── DECREASE ── */
-  const decBtn = e.target.closest(".decrease-qty");
-  if (decBtn && !decBtn.hasAttribute("disabled")) {
+  /* DECREASE */
+  const dec = e.target.closest(".decrease-qty");
+  if (dec && !dec.hasAttribute("disabled")) {
     e.preventDefault();
-    const id     = decBtn.dataset.itemId;
-    const curQty = parseInt(document.querySelector(".qty-val-" + id)?.value || 1);
-
-    if (curQty <= 1) {
-      toast("Minimum quantity is 1. Use Remove to delete.", "warn");
-      decBtn.setAttribute("disabled", "");
-      return;
-    }
-
+    const id = dec.dataset.itemId;
+    const cur = parseInt(document.querySelector(".qty-val-" + id)?.value || 1);
+    if (cur <= 1) { toast("Minimum is 1. Use Remove to delete.", "warn"); dec.setAttribute("disabled",""); return; }
     const ctrl = document.getElementById("qty-ctrl-" + id);
     if (ctrl) ctrl.classList.add("loading");
-
     cartFetch(
-      "/cart/update/" + id + "/decrease/",
-      "GET",
-      (data) => applyItemUpdate(id, data),
-      (data) => {
-        if (data.block) toast("Minimum quantity is 1.", "warn");
-        else toast(data.message || "Could not update", "err");
-      },
+      "/cart/update/" + id + "/decrease/", "GET",
+      d => applyItemUpdate(id, d),
+      d => toast(d.message || "Could not update", "err"),
       () => { if (ctrl) ctrl.classList.remove("loading"); }
     );
     return;
   }
 
-  /* ── REMOVE ── */
-  const removeBtn = e.target.closest(".cart-remove-btn");
-  if (removeBtn) {
+  /* REMOVE */
+  const rm = e.target.closest(".ci-remove-btn");
+  if (rm) {
     e.preventDefault();
     if (!confirm("Remove this item from your cart?")) return;
-
-    const id = removeBtn.dataset.itemId;
-    removeBtn.disabled = true;
-    removeBtn.textContent = "Removing…";
-
+    const id = rm.dataset.itemId;
+    rm.disabled = true;
+    rm.textContent = "Removing…";
     cartFetch(
-      "/cart/remove/" + id + "/",
-      "POST",
-      (data) => {
-        toast(data.message || "Item removed", "ok");
-        removeRow(id, data);
-      },
-      (data) => {
-        toast(data.message || "Could not remove item", "err");
-        removeBtn.disabled = false;
-        removeBtn.innerHTML = "🗑 Remove";
-      }
+      "/cart/remove/" + id + "/", "POST",
+      d => { toast(d.message || "Item removed", "ok"); removeRow(id, d); },
+      d => { toast(d.message || "Could not remove", "err"); rm.disabled = false; rm.innerHTML = "✕ Remove"; }
     );
     return;
   }
-
 });
 
-/* ─────────────────────────────────────
-   INIT — sync button states on load
-───────────────────────────────────── */
-document.addEventListener("DOMContentLoaded", function () {
-  document.querySelectorAll(".cart-item-row").forEach(function (row) {
-    const id    = row.dataset.itemId;
-    const stock = parseInt(row.dataset.stock) || 9999;
-    const qtyEl = row.querySelector(".qty-input");
+/* INIT */
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelectorAll(".ci-card").forEach(function(card) {
+    const id = card.dataset.itemId;
+    const stock = parseInt(card.dataset.stock) || 9999;
+    const qtyEl = card.querySelector(".qty-input");
     if (!qtyEl || !id) return;
     const qty = parseInt(qtyEl.value) || 1;
-    syncButtons(id, qty, stock);
-
-    /* Show stock warning immediately if already at limit */
+    syncBtns(id, qty, stock);
     if (qty >= stock) {
-      const warn = document.getElementById("stock-warn-" + id);
-      if (warn) warn.classList.add("visible");
+      const w = document.getElementById("stock-warn-" + id);
+      if (w) w.classList.add("visible");
     }
   });
 });
 
 })();
 </script>
-
 {% endblock %}
