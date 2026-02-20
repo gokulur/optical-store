@@ -144,9 +144,14 @@
                                                             <span>{% if product.is_in_stock %}Add to Cart{% else %}Out of Stock{% endif %}</span>
                                                         </button>
                                                     </form>
-                                                    <button class="aa-buy-btn" data-product-id="{{ product.id }}" {% if not product.is_in_stock %}disabled{% endif %}>
-                                                        Buy Now →
-                                                    </button>
+                                                   <button class="aa-buy-btn"
+        data-product-id="{{ product.id }}"
+        data-buy-now-url="{% url 'orders:buy_now' product.id %}"
+        data-buy-now-checkout-url="{% url 'orders:buy_now_checkout' %}"
+        onclick="handleBuyNow(this)"
+        {% if not product.is_in_stock %}disabled{% endif %}>
+  Buy Now →
+</button>
                                                 </div>
                                             </xo-animate>
                                         </xo-product>
@@ -372,5 +377,50 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(() => { btn.textContent = orig; btn.disabled = false; aaToast('Error. Try again.', 'err'); });
     });
 });
+</script>
+ 
+
+
+
+
+ 
+
+<script>
+ 
+function handleBuyNow(btn) {
+  var pid         = btn.dataset.productId;
+  var buyNowUrl   = btn.dataset.buyNowUrl;
+  var checkoutUrl = btn.dataset.buyNowCheckoutUrl || '/orders/buy-now/checkout/';
+  if (!pid || !buyNowUrl) return;
+
+  var orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.textContent = '⏳ Please wait…';
+
+  function getCsrf() {
+    var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+
+  fetch(buyNowUrl, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': getCsrf(),
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: 'product_id=' + encodeURIComponent(pid) + '&quantity=1'
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    window.location.href = data.redirect || checkoutUrl;
+  })
+  .catch(function() {
+    btn.innerHTML = orig;
+    btn.disabled = false;
+    aaToast('Error. Try again.', 'err');
+  });
+}
 </script>
 {% endblock %}
