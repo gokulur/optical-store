@@ -121,14 +121,14 @@
         </a>
       </div>
 
-      <!-- Row 2: Buy Now — uses session-based buy-now flow (single product checkout) -->
+      <!-- Row 2: Buy Now — session-based single-product checkout -->
       {% if product.is_active and product.stock_quantity != 0 %}
       <button
         class="aa-pcard__buy-btn"
         data-product-id="{{ product.id }}"
         data-buy-now-url="{% url 'orders:buy_now' product.id %}"
         data-buy-now-checkout-url="{% url 'orders:buy_now_checkout' %}"
-        onclick="handleBuyNow(this)"
+        onclick="pCardBuyNow(this)"
         aria-label="Buy now — {{ product.name }}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round">
@@ -150,4 +150,59 @@
   <!-- /body -->
 
 </div>
+
 {% endwith %}
+
+
+{# ── pCardBuyNow — defined once via `if typeof` guard so safe to repeat   #}
+{# TIP: Move this <script> block to base.html to avoid any duplication.    #}
+<script>
+if (typeof pCardBuyNow === 'undefined') {
+  window.pCardBuyNow = function(btn) {
+    var pid         = btn.dataset.productId;
+    var buyNowUrl   = btn.dataset.buyNowUrl;
+    var checkoutUrl = btn.dataset.buyNowCheckoutUrl || '/orders/buy-now/checkout/';
+    if (!pid || !buyNowUrl) return;
+
+    /* loading state */
+    var orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<svg style="width:14px;height:14px;animation:pcard-spin .7s linear infinite;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>&nbsp;Wait…';
+
+    function _csrf() {
+      var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+      return m ? decodeURIComponent(m[1]) : '';
+    }
+
+    fetch(buyNowUrl, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': _csrf(),
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'product_id=' + encodeURIComponent(pid) + '&quantity=1'
+    })
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      /* orders:buy_now returns { "redirect": "/orders/buy-now/checkout/" } */
+      window.location.href = data.redirect || checkoutUrl;
+    })
+    .catch(function() {
+      btn.innerHTML = orig;
+      btn.disabled  = false;
+      /* use whichever toast function exists on this page */
+      if      (typeof showToast === 'function') showToast('Network error. Try again.', 'err');
+      else if (typeof aaToast  === 'function') aaToast('Network error. Try again.', 'err');
+      else alert('Network error. Please try again.');
+    });
+  };
+}
+</script>
+<style>
+@keyframes pcard-spin { to { transform: rotate(360deg); } }
+</style>
