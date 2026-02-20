@@ -517,7 +517,7 @@ def paypal_execute(request, order_number):
 @login_required
 def order_confirmation(request, order_number):
     order = get_object_or_404(Order, order_number=order_number, customer=request.user)
-    return render(request, 'orders/order_confirmation.html', {'order': order})
+    return render(request, 'order_confirmation.html', {'order': order})
 
 
 @login_required
