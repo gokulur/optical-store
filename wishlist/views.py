@@ -63,10 +63,14 @@ def wishlist_view(request):
  
 @require_POST
 def toggle_wishlist(request, product_id):
-    """
-    Add the product if it isn't in the wishlist; remove it if it is.
-    Returns JSON for AJAX calls and redirects for plain-HTML forms.
-    """
+    if not request.user.is_authenticated:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'error': 'login_required',
+                'message': 'Please log in to save items to your wishlist.',
+            }, status=401)
+        return redirect(f'/accounts/login/?next=/wishlist/toggle/{product_id}/')
+    
     product  = get_object_or_404(Product, id=product_id, is_active=True)
     wishlist = get_or_create_wishlist(request.user)
 
