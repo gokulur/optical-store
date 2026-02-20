@@ -7,7 +7,7 @@
 {% block extra_styles %}
 /* ============================================
    PRODUCT CARD — BEAUTIFUL REDESIGN
-   Heart wishlist + Cart button + Hover effects
+   Heart wishlist + Cart + Buy Now buttons
    ============================================ */
 
 /* ── Shared product card shell ── */
@@ -100,27 +100,17 @@
   stroke-width: 2;
   transition: stroke .2s, fill .2s, transform .25s cubic-bezier(.34,1.56,.64,1);
 }
-.aa-pcard__heart:hover svg {
-  stroke: #e03030;
-}
-.aa-pcard__heart.wishlisted svg {
-  stroke: #e03030;
-  fill: #e03030;
-}
-.aa-pcard__heart.wishlisted:hover svg {
-  fill: #ff5555;
-  stroke: #ff5555;
-}
-/* Heart burst animation on toggle */
+.aa-pcard__heart:hover svg { stroke: #e03030; }
+.aa-pcard__heart.wishlisted svg { stroke: #e03030; fill: #e03030; }
+.aa-pcard__heart.wishlisted:hover svg { fill: #ff5555; stroke: #ff5555; }
+
 @keyframes heartBurst {
   0%   { transform: scale(1); }
   30%  { transform: scale(1.5); }
   60%  { transform: scale(0.9); }
   100% { transform: scale(1); }
 }
-.aa-pcard__heart.burst svg {
-  animation: heartBurst .4s cubic-bezier(.34,1.56,.64,1);
-}
+.aa-pcard__heart.burst svg { animation: heartBurst .4s cubic-bezier(.34,1.56,.64,1); }
 
 /* ── Card body ── */
 .aa-pcard__body {
@@ -194,11 +184,18 @@
   box-shadow: 0 0 0 2px var(--aa-accent);
 }
 
-/* ── Action bar (Cart + View) ── */
+/* ── Action bar ── */
 .aa-pcard__actions {
   display: flex;
+  flex-direction: column;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 10px;
+}
+
+/* Top row: Cart + View */
+.aa-pcard__actions-top {
+  display: flex;
+  gap: 8px;
 }
 
 /* Cart button — primary */
@@ -221,31 +218,13 @@
   position: relative;
   overflow: hidden;
 }
-.aa-pcard__cart-btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0);
-  transition: background .2s;
-}
 .aa-pcard__cart-btn:hover {
   background: var(--aa-accent-hover);
   border-color: var(--aa-accent-hover);
   transform: translateY(-1px);
 }
-.aa-pcard__cart-btn:hover::after {
-  background: rgba(255,255,255,.08);
-}
 .aa-pcard__cart-btn:active { transform: scale(.97); }
-.aa-pcard__cart-btn svg {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
-.aa-pcard__cart-btn.loading {
-  pointer-events: none;
-  opacity: .75;
-}
+.aa-pcard__cart-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
 
 /* View button — outline circle */
 .aa-pcard__view-btn {
@@ -260,15 +239,51 @@
   color: var(--aa-mid);
   transition: border-color .2s, color .2s, background .2s;
   flex-shrink: 0;
+  text-decoration: none;
 }
 .aa-pcard__view-btn:hover {
   border-color: var(--aa-accent);
   color: var(--aa-accent);
   background: rgba(26,111,168,.06);
 }
-.aa-pcard__view-btn svg {
-  width: 17px;
-  height: 17px;
+.aa-pcard__view-btn svg { width: 17px; height: 17px; }
+
+/* Buy Now button — secondary full width */
+.aa-pcard__buy-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  border-radius: 50px;
+  background: transparent;
+  color: var(--aa-dark, #1a2a3a);
+  border: 2px solid #d0d8e0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: .03em;
+  cursor: pointer;
+  transition: all .2s;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+.aa-pcard__buy-btn:hover {
+  background: #1a2a3a;
+  color: #fff;
+  border-color: #1a2a3a;
+  transform: translateY(-1px);
+}
+.aa-pcard__buy-btn:active { transform: scale(.97); }
+.aa-pcard__buy-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* Disabled state */
+.aa-pcard__cart-btn.soldout,
+.aa-pcard__buy-btn.soldout {
+  opacity: .45;
+  pointer-events: none;
+  cursor: not-allowed;
 }
 
 /* Ripple on cart click */
@@ -284,6 +299,12 @@
   background: rgba(255,255,255,.5);
   animation: cartRipple .55s ease-out forwards;
   pointer-events: none;
+}
+
+/* ── Success flash on cart add ── */
+.aa-pcard__cart-btn.added {
+  background: #2a8a3a !important;
+  border-color: #2a8a3a !important;
 }
 
 /* ============================================
@@ -381,8 +402,6 @@
   cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .3s;text-decoration:none;
 }
 .promo-watch-btn:hover { background:rgba(255,255,255,.3); }
-
-/* Prescription product grid uses aa-pcard */
 .prescription-product-grid {
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
@@ -513,6 +532,36 @@
 .brands-carousel-nav svg { color:#2c2c2c; }
 
 /* ============================================
+   TOAST NOTIFICATION
+   ============================================ */
+.aa-toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 99999;
+  background: #1a2a3a;
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  box-shadow: 0 8px 32px rgba(0,0,0,.25);
+  transform: translateY(70px);
+  opacity: 0;
+  transition: all .32s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+  max-width: 300px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.aa-toast.show { transform: translateY(0); opacity: 1; }
+.aa-toast.t-ok   { background: #2a6b2e; }
+.aa-toast.t-err  { background: #b02020; }
+.aa-toast.t-info { background: #1a4fa0; }
+.aa-toast.t-wish { background: #c0395a; }
+
+/* ============================================
    RESPONSIVE
    ============================================ */
 @media (max-width:1200px) {
@@ -598,9 +647,6 @@
                         <span class="xo-btn__content">
                           <span class="xo-btn__text" data-text="{{ slide.cta_text|default:'Shop Now' }}">{{ slide.cta_text|default:"Shop Now" }}</span>
                         </span>
-                        <span class="xo-btn__loading">
-                          <div class="xo-loader-3" style="--size:8;--color:currentColor;--duration:1000;"><div></div></div>
-                        </span>
                       </a>
                     </xo-animate>
                     {% endif %}
@@ -616,11 +662,6 @@
                           </xo-carousel-bullet>
                           {% endfor %}
                         </xo-carousel-pagination>
-                        <xo-carousel-pagination-bullet-active
-                          xo-carousel-bullet-selector=".carousel-pagination-style3__pagination xo-carousel-bullet"
-                          xo-duration="100"
-                          style="--xo-duration:100ms;opacity:1;height:8px;left:0px;width:8px;">
-                        </xo-carousel-pagination-bullet-active>
                       </div>
                     </div>
                     {% endif %}
@@ -633,15 +674,9 @@
                   <div class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--left">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                   </div>
-                  <div class="carousel-navigation-style3__icon-after carousel-navigation-style3__icon-after--left">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                  </div>
                 </xo-carousel-prev>
                 <xo-carousel-next class="carousel-navigation-style3" aria-label="Slide right">
                   <div class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--right">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                  </div>
-                  <div class="carousel-navigation-style3__icon-after carousel-navigation-style3__icon-after--right">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                   </div>
                 </xo-carousel-next>
@@ -690,86 +725,7 @@
 
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px;">
         {% for product in featured_products %}
-        <div class="aa-pcard">
-
-          <!-- Image -->
-          <div class="aa-pcard__img-wrap">
-            <a href="{{ product.get_absolute_url }}">
-              {% with first_image=product.images.first %}
-              {% if first_image %}
-                <img src="{{ first_image.image.url }}" alt="{{ product.name }}" loading="lazy">
-              {% elif product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
-              {% else %}
-                <img src="{% static 'img/no-image.jpg' %}" alt="No Image" loading="lazy">
-              {% endif %}
-              {% endwith %}
-            </a>
-          </div>
-
-          <!-- Badge -->
-          <div class="aa-pcard__badge-wrap">
-            {% if not product.is_active or product.stock_quantity == 0 %}
-              <span class="aa-pcard__badge aa-pcard__badge--soldout">Sold Out</span>
-            {% elif product.compare_at_price and product.compare_at_price > product.base_price %}
-              <span class="aa-pcard__badge aa-pcard__badge--sale">
-                -{% widthratio product.base_price product.compare_at_price 100 %}%
-              </span>
-            {% else %}
-              <span class="aa-pcard__badge aa-pcard__badge--new">Featured</span>
-            {% endif %}
-          </div>
-
-          <!-- Heart Wishlist -->
-          <button class="aa-pcard__heart wishlist-btn{% if request.user.is_authenticated and product in request.user.wishlist.products.all %} wishlisted{% endif %}"
-                  data-product-id="{{ product.id }}"
-                  aria-label="Add to wishlist">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-          </button>
-
-          <!-- Body -->
-          <div class="aa-pcard__body">
-            {% if product.brand %}
-            <div class="aa-pcard__brand">{{ product.brand.name }}</div>
-            {% endif %}
-            <h3 class="aa-pcard__name">
-              <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
-            </h3>
-
-            <div class="aa-pcard__price-row">
-              <span class="aa-pcard__price">₹{{ product.base_price }}</span>
-              {% if product.compare_at_price and product.compare_at_price > product.base_price %}
-              <span class="aa-pcard__price-old">₹{{ product.compare_at_price }}</span>
-              {% endif %}
-            </div>
-
-            <!-- Actions -->
-            <div class="aa-pcard__actions">
-              <form method="POST" action=" " class="add-to-cart-form" style="flex:1;display:flex;">
-                {% csrf_token %}
-                <input type="hidden" name="product_id" value="{{ product.id }}">
-                <input type="hidden" name="quantity" value="1">
-                <button type="submit" class="aa-pcard__cart-btn" data-product-id="{{ product.id }}">
-                  <!-- Cart bag icon -->
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
-                    <path d="M16 10a4 4 0 01-8 0"/>
-                  </svg>
-                  Add to Cart
-                </button>
-              </form>
-              <a href="{{ product.get_absolute_url }}" class="aa-pcard__view-btn" aria-label="View product">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-              </a>
-            </div>
-          </div>
-
-        </div>
+        {% include 'partials/_product_card.html' with product=product %}
         {% endfor %}
       </div>
     </xo-container>
@@ -833,56 +789,7 @@
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px;">
         {% for product in new_arrivals %}
-        <div class="aa-pcard">
-          <div class="aa-pcard__img-wrap">
-            <a href="{{ product.get_absolute_url }}">
-              {% with first_image=product.images.first %}
-              {% if first_image %}<img src="{{ first_image.image.url }}" alt="{{ product.name }}" loading="lazy">
-              {% elif product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
-              {% else %}<img src="{% static 'img/no-image.jpg' %}" alt="No Image" loading="lazy">{% endif %}
-              {% endwith %}
-            </a>
-          </div>
-          <div class="aa-pcard__badge-wrap">
-            {% if not product.is_active or product.stock_quantity == 0 %}
-              <span class="aa-pcard__badge aa-pcard__badge--soldout">Sold Out</span>
-            {% else %}
-              <span class="aa-pcard__badge aa-pcard__badge--new">New</span>
-            {% endif %}
-          </div>
-          <button class="aa-pcard__heart wishlist-btn{% if request.user.is_authenticated and product in request.user.wishlist.products.all %} wishlisted{% endif %}"
-                  data-product-id="{{ product.id }}" aria-label="Add to wishlist">
-            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </button>
-          <div class="aa-pcard__body">
-            {% if product.brand %}<div class="aa-pcard__brand">{{ product.brand.name }}</div>{% endif %}
-            <h3 class="aa-pcard__name"><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h3>
-            <div class="aa-pcard__price-row">
-              <span class="aa-pcard__price">₹{{ product.base_price }}</span>
-              {% if product.compare_at_price and product.compare_at_price > product.base_price %}
-              <span class="aa-pcard__price-old">₹{{ product.compare_at_price }}</span>
-              {% endif %}
-            </div>
-            <div class="aa-pcard__actions">
-              <form method="POST" action=" " class="add-to-cart-form" style="flex:1;display:flex;">
-                {% csrf_token %}
-                <input type="hidden" name="product_id" value="{{ product.id }}">
-                <input type="hidden" name="quantity" value="1">
-                <button type="submit" class="aa-pcard__cart-btn">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
-                  </svg>
-                  Add to Cart
-                </button>
-              </form>
-              <a href="{{ product.get_absolute_url }}" class="aa-pcard__view-btn" aria-label="View">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                </svg>
-              </a>
-            </div>
-          </div>
-        </div>
+        {% include 'partials/_product_card.html' with product=product badge="new" %}
         {% endfor %}
       </div>
     </xo-container>
@@ -911,7 +818,6 @@
           </div>
         </div>
         <div class="prescription-products-container">
-          <!-- Promo card -->
           <div class="promo-card">
             <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400&h=600&fit=crop" alt="Book Free Eye Test" class="promo-image" loading="lazy">
             <div class="promo-badge">BOOK A FREE EYE TEST</div>
@@ -923,67 +829,10 @@
             </div>
           </div>
 
-          <!-- Product grid using new aa-pcard -->
           <div class="prescription-product-grid">
             {% for product in eyeglasses_preview %}
-            <div class="aa-pcard">
-              <div class="aa-pcard__img-wrap">
-                <a href="{{ product.get_absolute_url }}">
-                  {% with first_image=product.images.first %}
-                  {% if first_image %}<img src="{{ first_image.image.url }}" alt="{{ product.name }}" loading="lazy">
-                  {% else %}<img src="{% static 'img/no-image.jpg' %}" alt="{{ product.name }}" loading="lazy">{% endif %}
-                  {% endwith %}
-                </a>
-              </div>
-              <div class="aa-pcard__badge-wrap">
-                {% if product.compare_at_price %}<span class="aa-pcard__badge aa-pcard__badge--sale">Sale</span>
-                {% else %}<span class="aa-pcard__badge aa-pcard__badge--new">Online Exclusive</span>{% endif %}
-              </div>
-              <button class="aa-pcard__heart wishlist-btn" data-product-id="{{ product.id }}" aria-label="Add to wishlist">
-                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              </button>
-              <div class="aa-pcard__body">
-                {% if product.brand %}<div class="aa-pcard__brand">{{ product.brand.name }}</div>{% endif %}
-                <h3 class="aa-pcard__name"><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h3>
-
-                {% with variants=product.variants.all %}
-                {% if variants %}
-                <div class="aa-pcard__colors">
-                  {% for v in variants|slice:":4" %}
-                  {% if v.color_code %}<div class="aa-pcard__color-dot {% if forloop.first %}active{% endif %}" style="background:{{ v.color_code }};" title="{{ v.color_name }}"></div>{% endif %}
-                  {% endfor %}
-                </div>
-                {% endif %}
-                {% endwith %}
-
-                <div class="aa-pcard__price-row">
-                  <span class="aa-pcard__price">₹{{ product.base_price }}</span>
-                  {% if product.compare_at_price and product.compare_at_price > product.base_price %}
-                  <span class="aa-pcard__price-old">₹{{ product.compare_at_price }}</span>
-                  {% endif %}
-                </div>
-                <div class="aa-pcard__actions">
-                  <form method="POST" action=" " class="add-to-cart-form" style="flex:1;display:flex;">
-                    {% csrf_token %}
-                    <input type="hidden" name="product_id" value="{{ product.id }}">
-                    <input type="hidden" name="quantity" value="1">
-                    <button type="submit" class="aa-pcard__cart-btn">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
-                      </svg>
-                      Add
-                    </button>
-                  </form>
-                  <a href="{{ product.get_absolute_url }}" class="aa-pcard__view-btn" aria-label="View">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </div>
+            {% include 'partials/_product_card.html' with product=product %}
             {% empty %}
-            <!-- Fallback static cards -->
             {% for n in "123"|make_list %}
             <div class="aa-pcard">
               <div class="aa-pcard__img-wrap">
@@ -1009,11 +858,18 @@
                   <span class="aa-pcard__discount">-30%</span>
                 </div>
                 <div class="aa-pcard__actions">
-                  <a href="{% url 'catalog:eyeglasses_list' %}" class="aa-pcard__cart-btn" style="text-decoration:none;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
-                    </svg>
-                    Add to Cart
+                  <div class="aa-pcard__actions-top">
+                    <a href="{% url 'catalog:eyeglasses_list' %}" class="aa-pcard__cart-btn" style="text-decoration:none;">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                      Add to Cart
+                    </a>
+                    <a href="{% url 'catalog:eyeglasses_list' %}" class="aa-pcard__view-btn" aria-label="View">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </a>
+                  </div>
+                  <a href="{% url 'catalog:eyeglasses_list' %}" class="aa-pcard__buy-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    Buy Now
                   </a>
                 </div>
               </div>
@@ -1105,8 +961,6 @@
             <div class="brand-carousel-item"><a href="{% url 'catalog:brand_list' %}" class="brand-carousel-link"><div class="brand-carousel-logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ray-Ban_logo.svg/2560px-Ray-Ban_logo.svg.png" alt="Ray-Ban" class="brand-carousel-logo" loading="lazy"></div></a></div>
             <div class="brand-carousel-item"><a href="{% url 'catalog:brand_list' %}" class="brand-carousel-link"><div class="brand-carousel-logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Gucci_Logo.svg/2560px-Gucci_Logo.svg.png" alt="Gucci" class="brand-carousel-logo" loading="lazy"></div></a></div>
             <div class="brand-carousel-item"><a href="{% url 'catalog:brand_list' %}" class="brand-carousel-link"><div class="brand-carousel-logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Prada_logo.svg/2560px-Prada_logo.svg.png" alt="Prada" class="brand-carousel-logo" loading="lazy"></div></a></div>
-            <div class="brand-carousel-item"><a href="{% url 'catalog:brand_list' %}" class="brand-carousel-link"><div class="brand-carousel-logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Oakley_logo.svg/2560px-Oakley_logo.svg.png" alt="Oakley" class="brand-carousel-logo" loading="lazy"></div></a></div>
-            <div class="brand-carousel-item"><a href="{% url 'catalog:brand_list' %}" class="brand-carousel-link"><div class="brand-carousel-logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ray-Ban_logo.svg/2560px-Ray-Ban_logo.svg.png" alt="Ray-Ban" class="brand-carousel-logo" loading="lazy"></div></a></div>
             {% endfor %}
           </div>
         </div>
@@ -1151,53 +1005,7 @@
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px;">
         {% for product in featured_products %}
-        <div class="aa-pcard">
-          <div class="aa-pcard__img-wrap">
-            <a href="{{ product.get_absolute_url }}">
-              {% with first_image=product.images.first %}
-              {% if first_image %}<img src="{{ first_image.image.url }}" alt="{{ product.name }}" loading="lazy">
-              {% elif product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
-              {% else %}<img src="{% static 'img/no-image.jpg' %}" alt="No Image" loading="lazy">{% endif %}
-              {% endwith %}
-            </a>
-          </div>
-          <div class="aa-pcard__badge-wrap">
-            {% if not product.is_active or product.stock_quantity == 0 %}<span class="aa-pcard__badge aa-pcard__badge--soldout">Sold Out</span>
-            {% elif product.compare_at_price and product.compare_at_price > product.base_price %}<span class="aa-pcard__badge aa-pcard__badge--sale">Sale</span>
-            {% else %}<span class="aa-pcard__badge aa-pcard__badge--new">Featured</span>{% endif %}
-          </div>
-          <button class="aa-pcard__heart wishlist-btn{% if request.user.is_authenticated and product in request.user.wishlist.products.all %} wishlisted{% endif %}"
-                  data-product-id="{{ product.id }}" aria-label="Add to wishlist">
-            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </button>
-          <div class="aa-pcard__body">
-            {% if product.brand %}<div class="aa-pcard__brand">{{ product.brand.name }}</div>{% endif %}
-            <h3 class="aa-pcard__name"><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h3>
-            <div class="aa-pcard__price-row">
-              <span class="aa-pcard__price">₹{{ product.base_price }}</span>
-              {% if product.compare_at_price and product.compare_at_price > product.base_price %}
-              <span class="aa-pcard__price-old">₹{{ product.compare_at_price }}</span>{% endif %}
-            </div>
-            <div class="aa-pcard__actions">
-              <form method="POST" action=" " class="add-to-cart-form" style="flex:1;display:flex;">
-                {% csrf_token %}
-                <input type="hidden" name="product_id" value="{{ product.id }}">
-                <input type="hidden" name="quantity" value="1">
-                <button type="submit" class="aa-pcard__cart-btn">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
-                  </svg>
-                  Add to Cart
-                </button>
-              </form>
-              <a href="{{ product.get_absolute_url }}" class="aa-pcard__view-btn" aria-label="View">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                </svg>
-              </a>
-            </div>
-          </div>
-        </div>
+        {% include 'partials/_product_card.html' with product=product %}
         {% endfor %}
       </div>
     </xo-container>
@@ -1239,91 +1047,227 @@
 
 {% include 'widget.html' %}
 
+<!-- ── Global Toast ── -->
+<div class="aa-toast" id="aaToast"></div>
+
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+  'use strict';
 
-  // ── Heart Wishlist Buttons ────────────────────────────────────
-  document.querySelectorAll('.aa-pcard__heart').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
+  /* ── CSRF ─────────────────────────────────────────── */
+  function getCsrf() {
+    var m = document.cookie.match(/csrftoken=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
+  }
 
-      var pid = this.dataset.productId;
-      if (!pid) {
-        // No product ID (fallback static card): just toggle UI
-        this.classList.toggle('wishlisted');
-        triggerHeartBurst(this);
-        return;
-      }
+  /* ── Toast ────────────────────────────────────────── */
+  var _toastTimer;
+  function showToast(msg, type) {
+    var el = document.getElementById('aaToast');
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'aa-toast show' +
+      (type === 'ok'   ? ' t-ok'   :
+       type === 'err'  ? ' t-err'  :
+       type === 'wish' ? ' t-wish' :
+       type === 'info' ? ' t-info' : '');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(function () { el.classList.remove('show'); }, 3500);
+  }
+  window.showToast = showToast;
 
-      var self = this;
-      var isWishlisted = self.classList.contains('wishlisted');
-
-      // Optimistic UI update
-      self.classList.toggle('wishlisted');
-      triggerHeartBurst(self);
-
-      fetch('/wishlist/toggle/' + pid + '/', {
-        method: 'POST',
-        headers: { 'X-CSRFToken': window.csrftoken || getCsrfToken() }
-      })
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        if (data.wishlist_count !== undefined) {
-          window.updateWishlistCount && window.updateWishlistCount(data.wishlist_count);
-        }
-        window.showToast && window.showToast(
-          data.added ? '❤️ Added to wishlist!' : 'Removed from wishlist.',
-          data.added ? 'success' : 'info'
-        );
-      })
-      .catch(function() {
-        // Revert on error
-        self.classList.toggle('wishlisted');
-      });
+  /* ── Update header badge counts ─────────────────── */
+  function updateCartBadge(count) {
+    document.querySelectorAll(
+      '.header-v24__cart-count, #cart-count, #cart-items-count, .cart-badge, [data-cart-count]'
+    ).forEach(function (el) {
+      el.textContent = count;
+      el.style.transform = 'scale(1.4)';
+      setTimeout(function () { el.style.transform = ''; }, 300);
     });
-  });
+    if (window.updateCartCount) window.updateCartCount(count);
+  }
 
+  function updateWishlistBadge(count) {
+    document.querySelectorAll(
+      '.wishlist-count, #wishlist-count, [data-wishlist-count]'
+    ).forEach(function (el) {
+      el.textContent = count;
+      el.style.transform = 'scale(1.4)';
+      setTimeout(function () { el.style.transform = ''; }, 300);
+    });
+    if (window.updateWishlistCount) window.updateWishlistCount(count);
+  }
+
+  /* ── Heart burst animation ────────────────────────── */
   function triggerHeartBurst(btn) {
     btn.classList.add('burst');
-    setTimeout(function() { btn.classList.remove('burst'); }, 450);
+    setTimeout(function () { btn.classList.remove('burst'); }, 450);
   }
 
-  function getCsrfToken() {
-    var match = document.cookie.match(/csrftoken=([^;]+)/);
-    return match ? match[1] : '';
+  /* ── Ripple on button click ───────────────────────── */
+  function addRipple(btn, e) {
+    var ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    var rect = btn.getBoundingClientRect();
+    ripple.style.left = (e.clientX - rect.left - 10) + 'px';
+    ripple.style.top  = (e.clientY - rect.top  - 10) + 'px';
+    btn.appendChild(ripple);
+    setTimeout(function () { ripple.remove(); }, 600);
   }
 
-  // ── Cart button ripple effect ─────────────────────────────────
-  document.querySelectorAll('.aa-pcard__cart-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      var ripple = document.createElement('span');
-      ripple.className = 'ripple';
-      var rect = btn.getBoundingClientRect();
-      ripple.style.left = (e.clientX - rect.left - 10) + 'px';
-      ripple.style.top  = (e.clientY - rect.top - 10) + 'px';
-      btn.appendChild(ripple);
-      setTimeout(function() { ripple.remove(); }, 600);
-    });
-  });
+  /* ── WISHLIST TOGGLE ──────────────────────────────── */
+  document.addEventListener('click', function (e) {
+    var heartBtn = e.target.closest('.aa-pcard__heart');
+    if (!heartBtn) return;
+    e.preventDefault();
+    e.stopPropagation();
 
-  // ── Color swatch selector ─────────────────────────────────────
-  document.querySelectorAll('.aa-pcard__color-dot').forEach(function(dot) {
-    dot.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      var parent = this.closest('.aa-pcard__colors');
-      if (parent) {
-        parent.querySelectorAll('.aa-pcard__color-dot').forEach(function(d) { d.classList.remove('active'); });
+    var pid = heartBtn.dataset.productId;
+    if (!pid) {
+      // Static/fallback card — just toggle UI
+      heartBtn.classList.toggle('wishlisted');
+      triggerHeartBurst(heartBtn);
+      return;
+    }
+
+    // Optimistic update
+    var wasWishlisted = heartBtn.classList.contains('wishlisted');
+    heartBtn.classList.toggle('wishlisted');
+    triggerHeartBurst(heartBtn);
+
+    fetch('/wishlist/toggle/' + pid + '/', {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': getCsrf()
       }
-      this.classList.add('active');
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      updateWishlistBadge(data.wishlist_count);
+      showToast(
+        data.added ? '❤️ Added to wishlist!' : '💔 Removed from wishlist.',
+        data.added ? 'wish' : 'info'
+      );
+      // Sync all heart buttons for same product
+      document.querySelectorAll('.aa-pcard__heart[data-product-id="' + pid + '"]')
+        .forEach(function (btn) {
+          data.added ? btn.classList.add('wishlisted') : btn.classList.remove('wishlisted');
+        });
+    })
+    .catch(function () {
+      // Revert optimistic update
+      wasWishlisted ? heartBtn.classList.add('wishlisted') : heartBtn.classList.remove('wishlisted');
+      showToast('Could not update wishlist. Please log in.', 'err');
     });
   });
 
-  // ── Brands Carousel ───────────────────────────────────────────
+  /* ── ADD TO CART ──────────────────────────────────── */
+  document.addEventListener('submit', function (e) {
+    var form = e.target.closest('.add-to-cart-form');
+    if (!form) return;
+    e.preventDefault();
+
+    var submitBtn = form.querySelector('.aa-pcard__cart-btn');
+    if (!submitBtn || submitBtn.classList.contains('soldout')) return;
+
+    // Ripple
+    addRipple(submitBtn, e);
+
+    var pid = form.querySelector('input[name="product_id"]').value;
+    var qty = form.querySelector('input[name="quantity"]').value || 1;
+
+    submitBtn.disabled = true;
+    var originalHTML = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<svg style="width:16px;height:16px;animation:spin .6s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>';
+
+    fetch("{% url 'cart:add_to_cart' %}", {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': getCsrf(),
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'product_id=' + pid + '&quantity=' + qty
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.success) {
+        updateCartBadge(data.cart_count);
+        showToast('🛒 Added to cart!', 'ok');
+        submitBtn.classList.add('added');
+        submitBtn.innerHTML = '✓ Added';
+        setTimeout(function () {
+          submitBtn.classList.remove('added');
+          submitBtn.innerHTML = originalHTML;
+          submitBtn.disabled = false;
+        }, 1800);
+      } else {
+        showToast(data.message || 'Could not add to cart.', 'err');
+        submitBtn.innerHTML = originalHTML;
+        submitBtn.disabled = false;
+      }
+    })
+    .catch(function () {
+      showToast('Network error. Please try again.', 'err');
+      submitBtn.innerHTML = originalHTML;
+      submitBtn.disabled = false;
+    });
+  });
+
+  /* ── BUY NOW (direct checkout redirect) ─────────── */
+  document.addEventListener('click', function (e) {
+    var buyBtn = e.target.closest('.aa-pcard__buy-btn[data-product-id]');
+    if (!buyBtn) return;
+    e.preventDefault();
+
+    var pid = buyBtn.dataset.productId;
+    var originalHTML = buyBtn.innerHTML;
+    buyBtn.innerHTML = '⏳ Please wait…';
+    buyBtn.style.pointerEvents = 'none';
+
+    fetch("{% url 'cart:add_to_cart' %}", {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': getCsrf(),
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'product_id=' + pid + '&quantity=1'
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.success) {
+        window.location.href = "{% url 'orders:checkout' %}";
+      } else {
+        showToast(data.message || 'Could not process.', 'err');
+        buyBtn.innerHTML = originalHTML;
+        buyBtn.style.pointerEvents = '';
+      }
+    })
+    .catch(function () {
+      showToast('Network error. Please try again.', 'err');
+      buyBtn.innerHTML = originalHTML;
+      buyBtn.style.pointerEvents = '';
+    });
+  });
+
+  /* ── Color swatch selector ───────────────────────── */
+  document.addEventListener('click', function (e) {
+    var dot = e.target.closest('.aa-pcard__color-dot');
+    if (!dot) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var parent = dot.closest('.aa-pcard__colors');
+    if (parent) parent.querySelectorAll('.aa-pcard__color-dot').forEach(function (d) { d.classList.remove('active'); });
+    dot.classList.add('active');
+  });
+
+  /* ── Brands Carousel ─────────────────────────────── */
   var track   = document.querySelector('.our-brands-carousel-track');
   var prevBtn = document.querySelector('.brands-carousel-prev');
   var nextBtn = document.querySelector('.brands-carousel-next');
@@ -1347,8 +1291,8 @@ document.addEventListener('DOMContentLoaded', function() {
       slide();
     }
 
-    nextBtn.addEventListener('click', function() { scrollNext(); resetAuto(); });
-    prevBtn.addEventListener('click', function() { scrollPrev(); resetAuto(); });
+    nextBtn.addEventListener('click', function () { scrollNext(); resetAuto(); });
+    prevBtn.addEventListener('click', function () { scrollPrev(); resetAuto(); });
 
     function startAuto() { autoTimer = setInterval(scrollNext, 3000); }
     function stopAuto()  { clearInterval(autoTimer); }
@@ -1358,36 +1302,23 @@ document.addEventListener('DOMContentLoaded', function() {
     track.addEventListener('mouseenter', stopAuto);
     track.addEventListener('mouseleave', startAuto);
 
-    var resizeTimer;
-    window.addEventListener('resize', function() {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(function() { currentPos = 0; slide(); }, 250);
+    window.addEventListener('resize', function () {
+      currentPos = 0; slide();
     });
   }
 
-  // ── Smooth scroll ─────────────────────────────────────────────
-  document.querySelectorAll('a[href^="#"]').forEach(function(a) {
-    a.addEventListener('click', function(e) {
-      var href = this.getAttribute('href');
-      if (href === '#' || !href || href.length < 2) return;
-      e.preventDefault();
-      var target = document.querySelector(href);
-      if (target) window.scrollTo({ top: target.getBoundingClientRect().top + window.pageYOffset - 80, behavior: 'smooth' });
-    });
-  });
-
-  // ── Scroll reveal for aa-pcard ────────────────────────────────
+  /* ── Scroll reveal ───────────────────────────────── */
   if ('IntersectionObserver' in window) {
     var cards = document.querySelectorAll('.aa-pcard');
-    cards.forEach(function(c) {
+    cards.forEach(function (c) {
       c.style.opacity = '0';
       c.style.transform = 'translateY(24px)';
       c.style.transition = 'opacity .5s ease, transform .5s ease';
     });
-    var io = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry, i) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
         if (entry.isIntersecting) {
-          setTimeout(function() {
+          setTimeout(function () {
             entry.target.style.opacity = '1';
             entry.target.style.transform = 'translateY(0)';
           }, 60);
@@ -1395,9 +1326,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
     }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-    cards.forEach(function(c) { io.observe(c); });
+    cards.forEach(function (c) { io.observe(c); });
   }
-
 });
 </script>
+
+<style>
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
 {% endblock %}

@@ -1,0 +1,151 @@
+{# partials/_product_card.html — reusable aa-pcard with Add to Cart, Buy Now, Wishlist #}
+{% load static %}
+
+{% with is_sold_out=False %}
+
+<div class="aa-pcard">
+
+  <!-- ── Image ── -->
+  <div class="aa-pcard__img-wrap">
+    <a href="{{ product.get_absolute_url }}">
+      {% with first_image=product.images.first %}
+        {% if first_image %}
+          <img src="{{ first_image.image.url }}" alt="{{ product.name }}" loading="lazy">
+        {% elif product.image %}
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+        {% else %}
+          <img src="{% static 'img/no-image.jpg' %}" alt="No Image" loading="lazy">
+        {% endif %}
+      {% endwith %}
+    </a>
+  </div>
+
+  <!-- ── Badge ── -->
+  <div class="aa-pcard__badge-wrap">
+    {% if not product.is_active or product.stock_quantity == 0 %}
+      <span class="aa-pcard__badge aa-pcard__badge--soldout">Sold Out</span>
+    {% elif badge == "new" %}
+      <span class="aa-pcard__badge aa-pcard__badge--new">New</span>
+    {% elif product.compare_at_price and product.compare_at_price > product.base_price %}
+      <span class="aa-pcard__badge aa-pcard__badge--sale">
+        -{% widthratio product.base_price product.compare_at_price 100 %}%
+      </span>
+    {% else %}
+      <span class="aa-pcard__badge aa-pcard__badge--new">Featured</span>
+    {% endif %}
+  </div>
+
+  <!-- ── Heart Wishlist ── -->
+  <button
+    class="aa-pcard__heart wishlist-btn{% if request.user.is_authenticated and product in request.user.wishlist.products.all %} wishlisted{% endif %}"
+    data-product-id="{{ product.id }}"
+    aria-label="{% if request.user.is_authenticated and product in request.user.wishlist.products.all %}Remove from wishlist{% else %}Add to wishlist{% endif %}"
+    title="Wishlist">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  </button>
+
+  <!-- ── Body ── -->
+  <div class="aa-pcard__body">
+
+    {% if product.brand %}
+    <div class="aa-pcard__brand">{{ product.brand.name }}</div>
+    {% endif %}
+
+    <h3 class="aa-pcard__name">
+      <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+    </h3>
+
+    <!-- Color variants -->
+    {% with variants=product.variants.all %}
+    {% if variants %}
+    <div class="aa-pcard__colors">
+      {% for v in variants|slice:":5" %}
+        {% if v.color_code %}
+        <div class="aa-pcard__color-dot {% if forloop.first %}active{% endif %}"
+             style="background:{{ v.color_code }};"
+             title="{{ v.color_name }}">
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Price -->
+    <div class="aa-pcard__price-row">
+      <span class="aa-pcard__price">₹{{ product.base_price }}</span>
+      {% if product.compare_at_price and product.compare_at_price > product.base_price %}
+      <span class="aa-pcard__price-old">₹{{ product.compare_at_price }}</span>
+      <span class="aa-pcard__discount">
+        -{% widthratio product.base_price product.compare_at_price 100 %}%
+      </span>
+      {% endif %}
+    </div>
+
+    <!-- Actions -->
+    <div class="aa-pcard__actions">
+
+      <!-- Row 1: Add to Cart + Quick View -->
+      <div class="aa-pcard__actions-top">
+
+        {% if product.is_active and product.stock_quantity != 0 %}
+        <form method="POST" action="{% url 'cart:add_to_cart' %}" class="add-to-cart-form" style="flex:1;display:flex;">
+          {% csrf_token %}
+          <input type="hidden" name="product_id" value="{{ product.id }}">
+          <input type="hidden" name="quantity" value="1">
+          <button type="submit" class="aa-pcard__cart-btn" data-product-id="{{ product.id }}" aria-label="Add to cart">
+            <!-- Cart icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 01-8 0"/>
+            </svg>
+            Add to Cart
+          </button>
+        </form>
+        {% else %}
+        <button class="aa-pcard__cart-btn soldout" disabled aria-disabled="true" style="flex:1;">
+          Out of Stock
+        </button>
+        {% endif %}
+
+        <!-- Quick view / detail link -->
+        <a href="{{ product.get_absolute_url }}" class="aa-pcard__view-btn" aria-label="View product details" title="Quick view">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Row 2: Buy Now -->
+      {% if product.is_active and product.stock_quantity != 0 %}
+      <button
+        class="aa-pcard__buy-btn"
+        data-product-id="{{ product.id }}"
+        aria-label="Buy now — {{ product.name }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+        Buy Now
+      </button>
+      {% else %}
+      <a href="{{ product.get_absolute_url }}" class="aa-pcard__buy-btn soldout"
+         style="opacity:.45;pointer-events:none;">
+        Unavailable
+      </a>
+      {% endif %}
+
+    </div>
+    <!-- /actions -->
+
+  </div>
+  <!-- /body -->
+
+</div>
+{% endwith %}
