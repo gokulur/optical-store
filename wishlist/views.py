@@ -28,7 +28,7 @@ def get_or_create_wishlist(user):
 # WISHLIST PAGE
 # ─────────────────────────────────────────────
 
-@login_required
+ 
 def wishlist_view(request):
     """Full wishlist page."""
     wishlist = get_or_create_wishlist(request.user)
@@ -60,7 +60,7 @@ def wishlist_view(request):
 # TOGGLE (add / remove) — used by every heart button
 # ─────────────────────────────────────────────
 
-@login_required
+ 
 @require_POST
 def toggle_wishlist(request, product_id):
     """
@@ -101,7 +101,7 @@ def toggle_wishlist(request, product_id):
 # LEGACY /wishlist/toggle/  (no product_id in URL)
 # ─────────────────────────────────────────────
 
-@login_required
+ 
 @require_POST
 def toggle_wishlist_post(request):
     """
@@ -125,7 +125,7 @@ def toggle_wishlist_post(request):
 # REMOVE single item (GET or POST, no toggle)
 # ─────────────────────────────────────────────
 
-@login_required
+ 
 def remove_from_wishlist(request, product_id):
     """Hard remove — always removes regardless of current state."""
     product  = get_object_or_404(Product, id=product_id)
@@ -147,7 +147,7 @@ def remove_from_wishlist(request, product_id):
 # CLEAR entire wishlist
 # ─────────────────────────────────────────────
 
-@login_required
+ 
 @require_POST
 def clear_wishlist(request):
     """Remove every item from the wishlist in one shot."""
@@ -165,7 +165,7 @@ def clear_wishlist(request):
 # MOVE TO CART
 # ─────────────────────────────────────────────
 
-@login_required
+ 
 @require_POST
 def move_to_cart(request, product_id):
     """
@@ -211,7 +211,7 @@ def move_to_cart(request, product_id):
 # MOVE ALL TO CART
 # ─────────────────────────────────────────────
 
-@login_required
+ 
 @require_POST
 def move_all_to_cart(request):
     """Move every wishlist item to the cart at once."""
@@ -254,7 +254,7 @@ def move_all_to_cart(request):
 # WISHLIST COUNT (AJAX helper)
 # ─────────────────────────────────────────────
 
-@login_required
+ 
 def wishlist_count(request):
     """Quick endpoint to refresh the badge count in the header."""
     wishlist = get_or_create_wishlist(request.user)
