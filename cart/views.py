@@ -667,3 +667,15 @@ def get_cart_summary(request):
         'subtotal': str(subtotal),
         'count':    total_qty,
     })
+
+
+def buy_now(request, product_id):
+    """Store buy-now product in session, redirect to checkout."""
+    if request.method == 'POST':
+        quantity = int(request.POST.get('quantity', 1))
+        request.session['buy_now'] = {
+            'product_id': product_id,
+            'quantity': quantity
+        }
+        return JsonResponse({'redirect': '/orders/checkout/?buy_now=1'})
+    return redirect('orders:checkout')

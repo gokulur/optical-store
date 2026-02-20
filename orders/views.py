@@ -69,19 +69,55 @@ def _calc_totals(cart_items):
 
 @login_required
 def checkout(request):
-    cart       = get_or_create_cart(request)
-    cart_items = cart.items.select_related('product','variant','lens_option').prefetch_related('lens_addons')
+    buy_now_data = request.session.get('buy_now') if request.GET.get('buy_now') else None
+
+    if buy_now_data:
+        from catalog.models import Product as CatalogProduct
+        try:
+            product = CatalogProduct.objects.get(id=buy_now_data['product_id'], is_active=True)
+            qty = buy_now_data['quantity']
+            
+            class _BuyNowItem:
+                def __init__(self, p, q):
+                    self.product = p
+                    self.quantity = q
+                    self.unit_price = p.base_price
+                    self.lens_price = Decimal('0.00')
+                    def _empty(): return []
+                    class _LensAddons:
+                        def all(self): return []
+                    self.lens_addons = _LensAddons()
+
+            cart_items = [_BuyNowItem(product, qty)]
+            sub = product.base_price * qty
+            tax = Decimal('0.00')
+            ship = Decimal('0.00') if sub >= Decimal('200.00') else Decimal('20.00')
+            total = sub + tax + ship
+            addrs = request.user.addresses.all()
+            return render(request, 'checkout.html', {
+                'cart_items': cart_items,
+                'shipping_addresses': addrs,
+                'default_shipping': addrs.filter(is_default_shipping=True).first(),
+                'default_billing': addrs.filter(is_default_billing=True).first(),
+                'subtotal': sub, 'tax': tax, 'shipping': ship, 'total': total,
+                'is_buy_now': True,
+            })
+        except Exception:
+            pass  # fall through to normal cart
+
+    cart = get_or_create_cart(request)
+    cart_items = cart.items.select_related('product', 'variant', 'lens_option').prefetch_related('lens_addons')
     if not cart_items.exists():
         messages.warning(request, 'Your cart is empty.')
         return redirect('cart:cart_view')
 
-    addrs          = request.user.addresses.all()
+    addrs = request.user.addresses.all()
     sub, tax, ship, total = _calc_totals(cart_items)
     return render(request, 'checkout.html', {
         'cart': cart, 'cart_items': cart_items,
         'shipping_addresses': addrs,
-        'default_shipping':   addrs.filter(is_default_shipping=True).first(),
-        'default_billing':    addrs.filter(is_default_billing=True).first(),
+        'default_shipping': addrs.filter(is_default_shipping=True).first(),
+        'default_billing': addrs.filter(is_default_billing=True).first(),
         'subtotal': sub, 'tax': tax, 'shipping': ship, 'total': total,
     })
 

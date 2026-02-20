@@ -22,4 +22,6 @@ urlpatterns = [
     # AJAX Endpoints
     path('api/count/', views.get_cart_count, name='get_cart_count'),
     path('api/summary/', views.get_cart_summary, name='get_cart_summary'),
+
+    path('buy-now/<int:product_id>/', views.buy_now, name='buy_now'),
 ]
