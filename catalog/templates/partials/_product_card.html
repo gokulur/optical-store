@@ -96,7 +96,6 @@
           <input type="hidden" name="product_id" value="{{ product.id }}">
           <input type="hidden" name="quantity" value="1">
           <button type="submit" class="aa-pcard__cart-btn" data-product-id="{{ product.id }}" aria-label="Add to cart">
-            <!-- Cart icon -->
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                  stroke-linecap="round" stroke-linejoin="round">
               <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
@@ -122,11 +121,14 @@
         </a>
       </div>
 
-      <!-- Row 2: Buy Now -->
+      <!-- Row 2: Buy Now — uses session-based buy-now flow (single product checkout) -->
       {% if product.is_active and product.stock_quantity != 0 %}
       <button
         class="aa-pcard__buy-btn"
         data-product-id="{{ product.id }}"
+        data-buy-now-url="{% url 'orders:buy_now' product.id %}"
+        data-buy-now-checkout-url="{% url 'orders:buy_now_checkout' %}"
+        onclick="handleBuyNow(this)"
         aria-label="Buy now — {{ product.name }}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round">
@@ -135,10 +137,10 @@
         Buy Now
       </button>
       {% else %}
-      <a href="{{ product.get_absolute_url }}" class="aa-pcard__buy-btn soldout"
-         style="opacity:.45;pointer-events:none;">
+      <span class="aa-pcard__buy-btn soldout"
+         style="opacity:.45;pointer-events:none;display:flex;align-items:center;justify-content:center;gap:8px;">
         Unavailable
-      </a>
+      </span>
       {% endif %}
 
     </div>

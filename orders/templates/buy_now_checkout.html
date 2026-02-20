@@ -1,0 +1,709 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Checkout — Secure Order{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+:root {
+  --ink:#0f0f0f;--ink2:#3a3a3a;--muted:#7a7a7a;--ghost:#b8b8b8;--line:#e6e6e6;
+  --surface:#f5f4f0;--white:#ffffff;--accent:#1a1a1a;--green:#1a7a4a;
+  --green-bg:#edf6f1;--green-bd:#b5ddc8;--error:#c0392b;
+  --r:10px;--r-sm:6px;--shadow:0 2px 12px rgba(0,0,0,.07);--shadow-lg:0 8px 40px rgba(0,0,0,.12);
+  --font:'DM Sans',sans-serif;--serif:'DM Serif Display',serif;
+  --transition:all .2s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--surface);font-family:var(--font);color:var(--ink)}
+
+.ck-wrap{min-height:100vh;padding:40px 20px 80px}
+.ck-inner{max-width:1180px;margin:0 auto}
+
+.ck-hero{text-align:center;margin-bottom:44px}
+.ck-hero-eyebrow{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.ck-hero h1{font-family:var(--serif);font-size:clamp(28px,4vw,42px);font-weight:400;color:var(--ink);line-height:1.1}
+
+.ck-progress{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:48px}
+.ck-step{display:flex;align-items:center;gap:10px;padding:12px 24px;border-radius:40px;font-size:13px;font-weight:600;color:var(--ghost);letter-spacing:.3px}
+.ck-step.done{color:var(--green)}.ck-step.active{background:var(--ink);color:var(--white)}
+.ck-step-num{width:26px;height:26px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.ck-step.done .ck-step-num{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.ck-step.active .ck-step-num{background:var(--white);color:var(--ink)}
+.ck-divider-line{width:60px;height:1px;background:var(--line)}
+
+.ck-grid{display:grid;grid-template-columns:1fr 400px;gap:28px;align-items:start}
+
+.ck-card{background:var(--white);border-radius:var(--r);border:1px solid var(--line);padding:36px;box-shadow:var(--shadow)}
+.ck-card+.ck-card{margin-top:20px}
+
+.ck-section-head{display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.ck-section-badge{width:32px;height:32px;border-radius:50%;background:var(--ink);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.ck-section-info h2{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.ck-section-info p{font-size:13px;color:var(--muted)}
+
+.ck-field{margin-bottom:20px}
+.ck-label{display:block;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink2);margin-bottom:8px}
+.ck-input{width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:14px;font-family:var(--font);color:var(--ink);background:var(--white);transition:var(--transition);outline:none}
+.ck-input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(15,15,15,.08)}
+.ck-input::placeholder{color:var(--ghost)}
+textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
+.ck-field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+.ck-alert{padding:12px 16px;border-radius:var(--r-sm);margin-bottom:20px;font-size:14px;display:flex;align-items:flex-start;gap:10px}
+.ck-alert-error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+.ck-alert-success{background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green)}
+
+.addr-cards{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.addr-card-wrap{position:relative}
+.addr-card-wrap input[type=radio]{position:absolute;opacity:0;width:0;height:0}
+.addr-card-label{display:block;padding:16px 20px 16px 48px;border:1.5px solid var(--line);border-radius:var(--r-sm);cursor:pointer;transition:var(--transition);position:relative}
+.addr-card-label::before{content:'';position:absolute;left:18px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;border:2px solid var(--line);transition:var(--transition)}
+.addr-card-wrap input:checked+.addr-card-label{border-color:var(--ink);background:#fafafa}
+.addr-card-wrap input:checked+.addr-card-label::before{border-color:var(--ink);background:var(--ink);box-shadow:inset 0 0 0 4px var(--white)}
+.addr-name{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.addr-line{font-size:13px;color:var(--muted);line-height:1.5}
+.addr-badge{display:inline-block;margin-top:6px;padding:2px 8px;background:var(--green-bg);color:var(--green);border-radius:20px;font-size:11px;font-weight:600}
+.add-addr-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border:1.5px dashed var(--line);border-radius:var(--r-sm);font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;transition:var(--transition);margin-top:4px}
+.add-addr-btn:hover{border-color:var(--ink);color:var(--ink)}
+
+.map-pick-btn{width:100%;padding:15px;border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--surface);display:flex;align-items:center;justify-content:center;gap:12px;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;transition:var(--transition);margin-bottom:20px}
+.map-pick-btn:hover{border-color:var(--ink);background:var(--white)}
+.loc-confirmed{display:none;padding:14px 16px;background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:var(--r-sm);margin-bottom:20px}
+.loc-confirmed.show{display:flex;align-items:flex-start;gap:12px}
+.loc-confirmed-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.loc-confirmed-addr{font-size:13px;color:var(--ink);line-height:1.5;font-weight:500}
+.loc-confirmed-coords{font-size:11px;color:var(--muted);margin-top:3px;font-family:monospace}
+.loc-change-btn{background:none;border:none;font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0;margin-top:6px;font-family:var(--font)}
+
+.ck-toggle-row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surface);border-radius:var(--r-sm);margin-bottom:20px;cursor:pointer}
+.ck-toggle-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--ink);cursor:pointer;flex-shrink:0}
+.ck-toggle-label{font-size:14px;font-weight:500;color:var(--ink);cursor:pointer;user-select:none}
+
+.pay-opts{display:flex;flex-direction:column;gap:10px}
+.pay-opt-wrap{position:relative}
+.pay-opt-wrap input[type=radio]{position:absolute;opacity:0;width:0;height:0}
+.pay-opt-label{display:flex;align-items:center;gap:16px;padding:16px 20px;border:1.5px solid var(--line);border-radius:var(--r-sm);cursor:pointer;transition:var(--transition)}
+.pay-opt-label:hover{border-color:var(--ghost)}
+.pay-opt-wrap input:checked+.pay-opt-label{border-color:var(--ink);background:#fafafa}
+.pay-radio-circle{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;transition:var(--transition);position:relative}
+.pay-opt-wrap input:checked+.pay-opt-label .pay-radio-circle{border-color:var(--ink);background:var(--ink)}
+.pay-opt-wrap input:checked+.pay-opt-label .pay-radio-circle::after{content:'';position:absolute;width:6px;height:6px;background:var(--white);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
+.pay-opt-icon{font-size:22px}
+.pay-opt-info strong{display:block;font-size:14px;font-weight:700;color:var(--ink)}
+.pay-opt-info span{font-size:12px;color:var(--muted)}
+.pay-opt-tag{margin-left:auto;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:var(--green-bg);color:var(--green)}
+.sadad-info{margin-top:12px;padding:14px 16px;background:#f0faf5;border-radius:var(--r-sm);border:1px solid var(--green-bd);font-size:13px;color:var(--green);display:none}
+.sadad-info.show{display:block}
+.sadad-methods{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.sadad-method-pill{padding:4px 12px;border:1px solid var(--green-bd);border-radius:20px;font-size:11px;font-weight:600;color:var(--green);background:var(--white)}
+
+.ck-summary{background:var(--white);border-radius:var(--r);border:1px solid var(--line);padding:28px;position:sticky;top:24px;box-shadow:var(--shadow)}
+.ck-summary-title{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ink);margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.ck-item{display:flex;gap:14px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.ck-item:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.ck-item-img{width:68px;height:68px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--line);flex-shrink:0;background:var(--surface)}
+.ck-item-img-placeholder{width:68px;height:68px;background:var(--surface);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.ck-item-body{flex:1;min-width:0}
+.ck-item-name{font-size:13px;font-weight:700;color:var(--ink);line-height:1.4;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ck-item-sub{font-size:12px;color:var(--muted)}
+.ck-item-price{font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;margin-left:auto;padding-left:8px}
+.ck-totals{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.ck-tot-row{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);padding:5px 0}
+.ck-tot-row span:last-child{font-weight:600;color:var(--ink)}
+.ck-tot-final{display:flex;justify-content:space-between;margin-top:12px;padding-top:14px;border-top:2px solid var(--ink)}
+.ck-tot-final span{font-size:18px;font-weight:700;color:var(--ink)}
+
+.ck-place-btn{width:100%;margin-top:20px;padding:17px;background:var(--ink);color:var(--white);border:none;border-radius:var(--r-sm);font-size:15px;font-weight:700;letter-spacing:.5px;cursor:pointer;font-family:var(--font);transition:var(--transition);position:relative;overflow:hidden}
+.ck-place-btn:hover:not(:disabled){background:#000;transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.ck-place-btn:disabled{opacity:.7;cursor:not-allowed}
+.ck-place-btn .btn-text{transition:opacity .2s}
+.ck-place-btn.loading .btn-text{opacity:0}
+.ck-place-btn .btn-spinner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-top-color:var(--white);border-radius:50%;animation:spin .8s linear infinite;display:none}
+.ck-place-btn.loading .btn-spinner{display:block}
+.ck-secure{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;font-size:12px;color:var(--muted)}
+
+/* Buy-now badge */
+.bn-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--green-bg);border:1px solid var(--green-bd);border-radius:20px;font-size:11px;font-weight:700;color:var(--green);margin-bottom:18px;letter-spacing:.4px}
+
+/* MAP MODAL */
+.map-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.map-overlay.open{display:flex}
+.map-modal{width:min(96vw,980px);height:min(90vh,700px);background:var(--white);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);animation:modalIn .3s cubic-bezier(.4,0,.2,1)}
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
+.map-head{padding:18px 24px;background:var(--ink);color:var(--white);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.map-head h3{font-size:17px;font-weight:700}
+.map-close{background:none;border:none;color:var(--white);cursor:pointer;padding:6px;border-radius:6px}
+.map-search-bar{padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;gap:10px;flex-shrink:0}
+.map-search-wrap{flex:1;position:relative}
+.map-search-input{width:100%;padding:11px 14px 11px 38px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:14px;font-family:var(--font);outline:none}
+.map-search-input:focus{border-color:var(--ink)}
+.map-search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.map-loc-btn{padding:11px 16px;background:var(--ink);color:var(--white);border:none;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:var(--font);white-space:nowrap}
+.map-body{flex:1;position:relative}
+#deliveryMap{width:100%;height:100%}
+.map-footer{padding:16px 20px;background:var(--white);border-top:1px solid var(--line);display:flex;align-items:center;gap:16px;flex-shrink:0}
+.map-foot-info{flex:1}
+.map-foot-label{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.map-foot-addr{font-size:14px;color:var(--ink);font-weight:500;line-height:1.4}
+.map-foot-coords{font-size:11px;color:var(--muted);font-family:monospace;margin-top:2px}
+.map-confirm-btn{padding:13px 28px;background:var(--green);color:var(--white);border:none;border-radius:var(--r-sm);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.map-confirm-btn:disabled{background:var(--line);color:var(--ghost);cursor:not-allowed}
+.map-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.95);padding:16px 24px;border-radius:var(--r-sm);display:none;align-items:center;gap:10px;font-size:14px;box-shadow:var(--shadow)}
+.map-loading.on{display:flex}
+.map-spinner-sm{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:900px){.ck-grid{grid-template-columns:1fr}.ck-summary{position:static}}
+@media(max-width:600px){.ck-wrap{padding:20px 12px 60px}.ck-card{padding:22px}.ck-hero h1{font-size:26px}.ck-field-row{grid-template-columns:1fr}.map-search-bar{flex-direction:column}.map-footer{flex-direction:column;align-items:stretch}.map-confirm-btn{width:100%}.ck-progress{gap:4px}.ck-step{padding:10px 14px;font-size:12px}.ck-divider-line{width:24px}}
+</style>
+
+<div class="ck-wrap">
+<div class="ck-inner">
+
+  <div class="ck-hero">
+    <div class="ck-hero-eyebrow">Quick Purchase</div>
+    <h1>Secure Checkout</h1>
+  </div>
+
+  <div class="ck-progress">
+    <div class="ck-step done"><div class="ck-step-num">✓</div><span>Cart</span></div>
+    <div class="ck-divider-line"></div>
+    <div class="ck-step active"><div class="ck-step-num">2</div><span>Checkout</span></div>
+    <div class="ck-divider-line"></div>
+    <div class="ck-step"><div class="ck-step-num">3</div><span>Confirmation</span></div>
+  </div>
+
+  {% if messages %}
+  <div style="margin-bottom:24px">
+    {% for message in messages %}
+    <div class="ck-alert {% if message.tags == 'error' %}ck-alert-error{% else %}ck-alert-success{% endif %}">
+      <span>{% if message.tags == 'error' %}⚠️{% else %}✅{% endif %}</span>
+      <span>{{ message }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="ck-grid">
+    <div>
+
+      <!-- ── FORM posts to place_buy_now_order ── -->
+      <form id="checkoutForm" method="POST" action="{% url 'orders:place_buy_now_order' %}">
+        {% csrf_token %}
+
+        <!-- SECTION 1: SHIPPING ADDRESS -->
+        <div class="ck-card">
+          <div class="ck-section-head">
+            <div class="ck-section-badge">1</div>
+            <div class="ck-section-info">
+              <h2>Shipping Address</h2>
+              <p>Where should we deliver your order?</p>
+            </div>
+          </div>
+
+          {% if shipping_addresses %}
+            <div class="addr-cards">
+              {% for address in shipping_addresses %}
+              <div class="addr-card-wrap">
+                <input type="radio" name="shipping_address_id"
+                       id="addr_{{ address.id }}"
+                       value="{{ address.id }}"
+                       {% if address == default_shipping %}checked{% elif forloop.first and not default_shipping %}checked{% endif %}>
+                <label class="addr-card-label" for="addr_{{ address.id }}">
+                  <div class="addr-name">{{ address.full_name }}</div>
+                  <div class="addr-line">
+                    {{ address.address_line1 }}{% if address.address_line2 %}, {{ address.address_line2 }}{% endif %}<br>
+                    {{ address.city }}{% if address.state %}, {{ address.state }}{% endif %}{% if address.postal_code %} {{ address.postal_code }}{% endif %}<br>
+                    {{ address.country }}{% if address.phone %} &middot; {{ address.phone }}{% endif %}
+                  </div>
+                  {% if address == default_shipping %}<span class="addr-badge">Default</span>{% endif %}
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+            <a href="/users/address/create/?next={{ request.path }}" class="add-addr-btn">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Add new address
+            </a>
+
+          {% else %}
+            <button type="button" class="map-pick-btn" onclick="openMap()">
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0L6.343 16.657a8 8 0 1111.314 0z"/>
+                <circle cx="12" cy="11" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              </svg>
+              Pin your delivery location on map
+            </button>
+
+            <div id="locConfirmed" class="loc-confirmed">
+              <span class="loc-confirmed-icon">📍</span>
+              <div>
+                <div class="loc-confirmed-addr" id="locAddr">—</div>
+                <div class="loc-confirmed-coords" id="locCoords"></div>
+                <button type="button" class="loc-change-btn" onclick="openMap()">Change location</button>
+              </div>
+            </div>
+
+            <input type="hidden" id="delivery_latitude"  name="delivery_latitude">
+            <input type="hidden" id="delivery_longitude" name="delivery_longitude">
+
+            <div class="ck-field-row">
+              <div class="ck-field">
+                <label class="ck-label" for="full_name">Full Name <span style="color:var(--error)">*</span></label>
+                <input class="ck-input" type="text" id="full_name" name="full_name"
+                       value="{{ user.get_full_name }}" placeholder="John Doe" autocomplete="name">
+              </div>
+              <div class="ck-field">
+                <label class="ck-label" for="phone">Phone Number <span style="color:var(--error)">*</span></label>
+                <input class="ck-input" type="tel" id="phone" name="phone"
+                       placeholder="+974 5555 1234" autocomplete="tel">
+              </div>
+            </div>
+
+            <div class="ck-field">
+              <label class="ck-label" for="address_line1">Street Address <span style="color:var(--error)">*</span></label>
+              <input class="ck-input" type="text" id="address_line1" name="address_line1"
+                     placeholder="Building, Street, Area" autocomplete="street-address">
+            </div>
+
+            <div class="ck-field-row">
+              <div class="ck-field">
+                <label class="ck-label" for="city">City <span style="color:var(--error)">*</span></label>
+                <input class="ck-input" type="text" id="city" name="city" placeholder="Doha" autocomplete="address-level2">
+              </div>
+              <div class="ck-field">
+                <label class="ck-label" for="postal_code">Postal Code</label>
+                <input class="ck-input" type="text" id="postal_code" name="postal_code" placeholder="00974" autocomplete="postal-code">
+              </div>
+            </div>
+
+            <div class="ck-field-row">
+              <div class="ck-field">
+                <label class="ck-label" for="state">State / Zone</label>
+                <input class="ck-input" type="text" id="state" name="state" placeholder="e.g. Al Wakra">
+              </div>
+              <div class="ck-field">
+                <label class="ck-label" for="country">Country <span style="color:var(--error)">*</span></label>
+                <input class="ck-input" type="text" id="country" name="country" value="Qatar" autocomplete="country-name">
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- SECTION 2: BILLING -->
+        <div class="ck-card">
+          <div class="ck-section-head">
+            <div class="ck-section-badge">2</div>
+            <div class="ck-section-info">
+              <h2>Billing Address</h2>
+              <p>For payment verification</p>
+            </div>
+          </div>
+
+          <label class="ck-toggle-row" for="sameAsBilling">
+            <input type="checkbox" id="sameAsBilling" name="same_as_shipping" checked onchange="toggleBilling()">
+            <span class="ck-toggle-label">Same as shipping address</span>
+          </label>
+
+          <div id="billingSection" style="display:none">
+            {% if shipping_addresses %}
+              <div class="addr-cards">
+                {% for address in shipping_addresses %}
+                <div class="addr-card-wrap">
+                  <input type="radio" name="billing_address_id" id="baddr_{{ address.id }}" value="{{ address.id }}"
+                         {% if address == default_billing %}checked{% elif forloop.first and not default_billing %}checked{% endif %}>
+                  <label class="addr-card-label" for="baddr_{{ address.id }}">
+                    <div class="addr-name">{{ address.full_name }}</div>
+                    <div class="addr-line">{{ address.address_line1 }}, {{ address.city }}</div>
+                  </label>
+                </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="ck-field-row">
+                <div class="ck-field">
+                  <label class="ck-label">Street Address</label>
+                  <input class="ck-input" type="text" name="billing_address_line1" placeholder="123 Main Street">
+                </div>
+                <div class="ck-field">
+                  <label class="ck-label">City</label>
+                  <input class="ck-input" type="text" name="billing_city" placeholder="Doha">
+                </div>
+              </div>
+              <div class="ck-field">
+                <label class="ck-label">Country</label>
+                <input class="ck-input" type="text" name="billing_country" value="Qatar">
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- SECTION 3: PAYMENT -->
+        <div class="ck-card">
+          <div class="ck-section-head">
+            <div class="ck-section-badge">3</div>
+            <div class="ck-section-info">
+              <h2>Payment Method</h2>
+              <p>All transactions are encrypted and secure</p>
+            </div>
+          </div>
+
+          <div class="pay-opts">
+
+            <div class="pay-opt-wrap">
+              <input type="radio" name="payment_method" id="pm_cod" value="cash_on_delivery" checked onchange="onPaymentChange()">
+              <label class="pay-opt-label" for="pm_cod">
+                <div class="pay-radio-circle"></div>
+                <div class="pay-opt-icon">💵</div>
+                <div class="pay-opt-info">
+                  <strong>Cash on Delivery</strong>
+                  <span>Pay when your order arrives</span>
+                </div>
+                <span class="pay-opt-tag">Popular</span>
+              </label>
+            </div>
+
+            <div class="pay-opt-wrap">
+              <input type="radio" name="payment_method" id="pm_sadad" value="sadad" onchange="onPaymentChange()">
+              <label class="pay-opt-label" for="pm_sadad">
+                <div class="pay-radio-circle"></div>
+                <div class="pay-opt-icon">💚</div>
+                <div class="pay-opt-info">
+                  <strong>Sadad</strong>
+                  <span>Credit/Debit, QPay, Sadad Balance</span>
+                </div>
+              </label>
+            </div>
+
+            <div class="sadad-info" id="sadadInfo">
+              You'll be redirected to <strong>Sadad's secure checkout</strong> to complete payment.
+              <div class="sadad-methods">
+                <span class="sadad-method-pill">💳 Visa/MC</span>
+                <span class="sadad-method-pill">📱 QPay</span>
+                <span class="sadad-method-pill">💚 Sadad Balance</span>
+                <span class="sadad-method-pill">🏦 NAPS</span>
+              </div>
+            </div>
+
+            <div class="pay-opt-wrap">
+              <input type="radio" name="payment_method" id="pm_stripe" value="stripe" onchange="onPaymentChange()">
+              <label class="pay-opt-label" for="pm_stripe">
+                <div class="pay-radio-circle"></div>
+                <div class="pay-opt-icon">💳</div>
+                <div class="pay-opt-info">
+                  <strong>Credit / Debit Card</strong>
+                  <span>Visa, Mastercard — powered by Stripe</span>
+                </div>
+              </label>
+            </div>
+
+            <div class="pay-opt-wrap">
+              <input type="radio" name="payment_method" id="pm_razorpay" value="razorpay" onchange="onPaymentChange()">
+              <label class="pay-opt-label" for="pm_razorpay">
+                <div class="pay-radio-circle"></div>
+                <div class="pay-opt-icon">🏦</div>
+                <div class="pay-opt-info">
+                  <strong>Razorpay</strong>
+                  <span>UPI, NetBanking, Cards, Wallets</span>
+                </div>
+              </label>
+            </div>
+
+            <div class="pay-opt-wrap">
+              <input type="radio" name="payment_method" id="pm_paypal" value="paypal" onchange="onPaymentChange()">
+              <label class="pay-opt-label" for="pm_paypal">
+                <div class="pay-radio-circle"></div>
+                <div class="pay-opt-icon">🌐</div>
+                <div class="pay-opt-info">
+                  <strong>PayPal</strong>
+                  <span>Pay with PayPal balance or linked card</span>
+                </div>
+              </label>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SECTION 4: NOTES -->
+        <div class="ck-card">
+          <div class="ck-section-head">
+            <div class="ck-section-badge">4</div>
+            <div class="ck-section-info">
+              <h2>Order Notes</h2>
+              <p>Special instructions (optional)</p>
+            </div>
+          </div>
+          <textarea class="ck-input" name="customer_notes" rows="3"
+                    placeholder="E.g. Please leave at the door, ring twice…"></textarea>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- RIGHT: ORDER SUMMARY -->
+    <div>
+      <div class="ck-summary">
+        <div class="ck-summary-title">Your Order</div>
+
+        <div class="bn-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Buy Now &mdash; 1 item
+        </div>
+
+        <!-- Single product — identical markup to cart items in checkout.html -->
+        <div class="ck-item">
+          {% if product.images.first %}
+            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="ck-item-img">
+          {% elif product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="ck-item-img">
+          {% else %}
+            <div class="ck-item-img-placeholder">👓</div>
+          {% endif %}
+          <div class="ck-item-body">
+            <div class="ck-item-name">
+              {% if product.brand %}{{ product.brand.name }} &mdash; {% endif %}{{ product.name }}
+            </div>
+            <div class="ck-item-sub">
+              Qty {{ quantity }}
+              {% if product.get_gender_display %} &middot; {{ product.get_gender_display }}{% endif %}
+              &middot; QAR {{ unit_price }}
+            </div>
+          </div>
+          <div class="ck-item-price">QAR {{ unit_price }}</div>
+        </div>
+
+        <div class="ck-totals">
+          <div class="ck-tot-row"><span>Subtotal</span><span>QAR {{ subtotal }}</span></div>
+          <div class="ck-tot-row">
+            <span>Shipping</span>
+            <span>{% if shipping == 0 %}<span style="color:var(--green);font-weight:700">FREE</span>{% else %}QAR {{ shipping }}{% endif %}</span>
+          </div>
+          <div class="ck-tot-row"><span>Tax</span><span>QAR {{ tax }}</span></div>
+        </div>
+
+        <div class="ck-tot-final">
+          <span>Total</span>
+          <span>QAR {{ total }}</span>
+        </div>
+
+        <button type="submit" form="checkoutForm" class="ck-place-btn" id="placeOrderBtn">
+          <span class="btn-text">Place Order →</span>
+          <div class="btn-spinner"></div>
+        </button>
+
+        <div class="ck-secure">
+          <svg width="12" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+          256-bit SSL encrypted &bull; Secure checkout
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- MAP MODAL — identical to checkout.html -->
+<div id="mapOverlay" class="map-overlay">
+  <div class="map-modal">
+    <div class="map-head">
+      <h3>📍 Pin Delivery Location</h3>
+      <button class="map-close" onclick="closeMap()" type="button">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="map-search-bar">
+      <div class="map-search-wrap">
+        <span class="map-search-ico">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </span>
+        <input type="text" id="mapSearch" class="map-search-input" placeholder="Search city, area, or landmark…">
+      </div>
+      <button type="button" class="map-loc-btn" onclick="useMyLocation()">
+        📍 My Location
+      </button>
+    </div>
+    <div class="map-body">
+      <div id="deliveryMap"></div>
+      <div id="mapLoadingOverlay" class="map-loading">
+        <div class="map-spinner-sm"></div>
+        <span>Locating…</span>
+      </div>
+    </div>
+    <div class="map-footer">
+      <div class="map-foot-info">
+        <div class="map-foot-label">Selected Location</div>
+        <div class="map-foot-addr" id="mapFootAddr">Click anywhere on the map to drop a pin</div>
+        <div class="map-foot-coords" id="mapFootCoords"></div>
+      </div>
+      <button type="button" class="map-confirm-btn" id="mapConfirmBtn" onclick="confirmLocation()" disabled>
+        Confirm Location
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ═══════════════════════════════════════════════
+   MAP — identical to checkout.html
+═══════════════════════════════════════════════ */
+var map=null,marker=null,accuracyRing=null;
+var selLat=null,selLng=null,selAddr='';
+
+var pin=L.divIcon({
+  className:'',
+  html:'<div style="width:36px;height:36px;background:#0f0f0f;border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 4px 14px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;"><div style="width:10px;height:10px;background:#fff;border-radius:50%;transform:rotate(45deg)"></div></div>',
+  iconSize:[36,36],iconAnchor:[18,36]
+});
+
+function openMap(){document.getElementById('mapOverlay').classList.add('open');document.body.style.overflow='hidden';setTimeout(initMap,280);}
+function closeMap(){document.getElementById('mapOverlay').classList.remove('open');document.body.style.overflow='';}
+function initMap(){
+  if(map){map.remove();map=null;}
+  map=L.map('deliveryMap',{center:[25.2854,51.5310],zoom:12,maxZoom:19});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(map);
+  map.on('click',function(e){placeMarker(e.latlng.lat,e.latlng.lng);});
+}
+function placeMarker(lat,lng){
+  if(marker)map.removeLayer(marker);
+  if(accuracyRing)map.removeLayer(accuracyRing);
+  marker=L.marker([lat,lng],{icon:pin}).addTo(map);
+  selLat=lat;selLng=lng;
+  document.getElementById('mapConfirmBtn').disabled=false;
+  reverseGeocode(lat,lng);
+}
+function reverseGeocode(lat,lng){
+  document.getElementById('mapFootAddr').textContent='Looking up address…';
+  document.getElementById('mapFootCoords').textContent=lat.toFixed(6)+', '+lng.toFixed(6);
+  fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lng+'&zoom=18&addressdetails=1')
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var a=d.address||{};
+      var parts=[];
+      if(a.house_number)parts.push(a.house_number);
+      if(a.road)parts.push(a.road);
+      if(a.neighbourhood||a.suburb)parts.push(a.neighbourhood||a.suburb);
+      if(a.city||a.town||a.village)parts.push(a.city||a.town||a.village);
+      if(a.state)parts.push(a.state);
+      if(a.country)parts.push(a.country);
+      selAddr=parts.length?parts.join(', '):(d.display_name||lat.toFixed(5)+', '+lng.toFixed(5));
+      document.getElementById('mapFootAddr').textContent=selAddr;
+      var city=a.city||a.town||a.village||'';
+      var street=[a.house_number,a.road,a.neighbourhood].filter(Boolean).join(', ');
+      var el;
+      el=document.getElementById('address_line1');if(el&&street)el.value=street;
+      el=document.getElementById('city');if(el&&city)el.value=city;
+      el=document.getElementById('postal_code');if(el&&a.postcode)el.value=a.postcode;
+    })
+    .catch(function(){selAddr=lat.toFixed(5)+', '+lng.toFixed(5);document.getElementById('mapFootAddr').textContent=selAddr;});
+}
+function searchLocation(){
+  var q=document.getElementById('mapSearch').value.trim();if(!q)return;
+  showMapLoader(true);
+  fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(q)+'&limit=1')
+    .then(function(r){return r.json();})
+    .then(function(d){if(d.length){var lat=parseFloat(d[0].lat),lng=parseFloat(d[0].lon);map.setView([lat,lng],17);placeMarker(lat,lng);}else alert('Location not found. Try different terms.');})
+    .catch(function(){alert('Search failed.');})
+    .finally(function(){showMapLoader(false);});
+}
+function useMyLocation(){
+  if(!navigator.geolocation){alert('Geolocation not supported.');return;}
+  showMapLoader(true);
+  navigator.geolocation.getCurrentPosition(
+    function(pos){
+      var lat=pos.coords.latitude,lng=pos.coords.longitude,acc=pos.coords.accuracy;
+      map.setView([lat,lng],17);placeMarker(lat,lng);
+      if(accuracyRing)map.removeLayer(accuracyRing);
+      accuracyRing=L.circle([lat,lng],{radius:acc,color:'#1a7a4a',fillColor:'#1a7a4a',fillOpacity:.12,weight:1.5}).addTo(map);
+      showMapLoader(false);
+    },
+    function(){alert('Could not get your location.');showMapLoader(false);},
+    {enableHighAccuracy:true,timeout:12000,maximumAge:0}
+  );
+}
+function showMapLoader(on){document.getElementById('mapLoadingOverlay').classList.toggle('on',on);}
+function confirmLocation(){
+  if(!selLat||!selLng){alert('Please select a location first.');return;}
+  document.getElementById('delivery_latitude').value=selLat;
+  document.getElementById('delivery_longitude').value=selLng;
+  document.getElementById('locAddr').textContent=selAddr;
+  document.getElementById('locCoords').textContent='Lat '+selLat.toFixed(6)+' · Lng '+selLng.toFixed(6);
+  document.getElementById('locConfirmed').classList.add('show');
+  closeMap();
+}
+document.getElementById('mapSearch').addEventListener('keypress',function(e){if(e.key==='Enter'){e.preventDefault();searchLocation();}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.getElementById('mapOverlay').classList.contains('open'))closeMap();});
+document.getElementById('mapOverlay').addEventListener('click',function(e){if(e.target===this)closeMap();});
+
+/* ═══════════════════════════════════════════════
+   PAYMENT TOGGLE — identical to checkout.html
+═══════════════════════════════════════════════ */
+function onPaymentChange(){
+  var pm=document.querySelector('input[name=payment_method]:checked');
+  var val=pm?pm.value:'';
+  document.getElementById('sadadInfo').classList.toggle('show',val==='sadad');
+}
+
+/* ═══════════════════════════════════════════════
+   BILLING TOGGLE — identical to checkout.html
+═══════════════════════════════════════════════ */
+function toggleBilling(){
+  var checked=document.getElementById('sameAsBilling').checked;
+  document.getElementById('billingSection').style.display=checked?'none':'block';
+}
+
+/* ═══════════════════════════════════════════════
+   FORM SUBMIT — identical validation to checkout.html
+═══════════════════════════════════════════════ */
+document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+  var btn = document.getElementById('placeOrderBtn');
+
+  var pm = document.querySelector('input[name=payment_method]:checked');
+  if (!pm) {
+    e.preventDefault();
+    alert('Please select a payment method.');
+    return;
+  }
+
+  var hasSavedAddr = document.querySelector('input[name="shipping_address_id"]');
+  if (!hasSavedAddr) {
+    var fullName = (document.getElementById('full_name')||{}).value||'';
+    var addr1    = (document.getElementById('address_line1')||{}).value||'';
+    var city     = (document.getElementById('city')||{}).value||'';
+
+    if (!fullName.trim()) {
+      e.preventDefault();
+      alert('Please enter your full name.');
+      document.getElementById('full_name').focus();
+      return;
+    }
+    if (!addr1.trim()) {
+      e.preventDefault();
+      alert('Please enter your street address.');
+      document.getElementById('address_line1').focus();
+      return;
+    }
+    if (!city.trim()) {
+      e.preventDefault();
+      alert('Please enter your city.');
+      document.getElementById('city').focus();
+      return;
+    }
+  }
+
+  btn.classList.add('loading');
+  btn.disabled = true;
+  setTimeout(function(){btn.classList.remove('loading');btn.disabled=false;}, 30000);
+});
+</script>
+{% endblock %}
