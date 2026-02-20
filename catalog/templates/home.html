@@ -841,9 +841,13 @@
                 </a>
               </div>
               <div class="aa-pcard__badge-wrap"><span class="aa-pcard__badge aa-pcard__badge--new">Online Exclusive</span></div>
-              <button class="aa-pcard__heart" aria-label="Add to wishlist">
-                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              </button>
+              <button class="aa-pcard__heart" 
+        data-product-id="{{ product.id }}"
+        aria-label="Add to wishlist">
+  <svg viewBox="0 0 24 24">
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+  </svg>
+</button>
               <div class="aa-pcard__body">
                 <div class="aa-pcard__brand">Al Ameen</div>
                 <h3 class="aa-pcard__name"><a href="{% url 'catalog:eyeglasses_list' %}">Designer Frame {{ n }}</a></h3>
@@ -1119,7 +1123,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(function () { ripple.remove(); }, 600);
   }
 
-  /* ── WISHLIST TOGGLE ──────────────────────────────── */
+/* ── WISHLIST TOGGLE ──────────────────────────────── */
   document.addEventListener('click', function (e) {
     var heartBtn = e.target.closest('.aa-pcard__heart');
     if (!heartBtn) return;
@@ -1146,24 +1150,48 @@ document.addEventListener('DOMContentLoaded', function () {
         'X-CSRFToken': getCsrf()
       }
     })
-    .then(function (r) { return r.json(); })
+.then(function (r) {
+  if (r.status === 401) {
+    wasWishlisted
+      ? heartBtn.classList.add('wishlisted')
+      : heartBtn.classList.remove('wishlisted');
+    showToast('💛 Please log in to save items to your wishlist.', 'info');
+    return null;
+  }
+  // Guard against non-JSON responses (Django HTML error pages)
+  var contentType = r.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    console.error('Non-JSON response from server:', r.status, r.url);
+    wasWishlisted
+      ? heartBtn.classList.add('wishlisted')
+      : heartBtn.classList.remove('wishlisted');
+    showToast('Server error. Please try again.', 'err');
+    return null;
+  }
+  return r.json();
+})
     .then(function (data) {
+      if (!data) return;
       updateWishlistBadge(data.wishlist_count);
       showToast(
         data.added ? '❤️ Added to wishlist!' : '💔 Removed from wishlist.',
         data.added ? 'wish' : 'info'
       );
-      // Sync all heart buttons for same product
+      // Sync all heart buttons for the same product on the page
       document.querySelectorAll('.aa-pcard__heart[data-product-id="' + pid + '"]')
         .forEach(function (btn) {
-          data.added ? btn.classList.add('wishlisted') : btn.classList.remove('wishlisted');
+          data.added
+            ? btn.classList.add('wishlisted')
+            : btn.classList.remove('wishlisted');
         });
     })
-    .catch(function () {
-      // Revert optimistic update
-      wasWishlisted ? heartBtn.classList.add('wishlisted') : heartBtn.classList.remove('wishlisted');
-      showToast('Could not update wishlist. Please log in.', 'err');
-    });
+.catch(function (err) {
+  console.error('Wishlist fetch error:', err);
+  wasWishlisted
+    ? heartBtn.classList.add('wishlisted')
+    : heartBtn.classList.remove('wishlisted');
+  showToast('Something went wrong. Please try again.', 'err');
+});
   });
 
   /* ── ADD TO CART ──────────────────────────────────── */

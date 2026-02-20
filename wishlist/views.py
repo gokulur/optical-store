@@ -1,14 +1,8 @@
-from django.shortcuts import render
-
-# Create your views here.
-# wishlist/views.py
-
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
 
 from .models import Wishlist, WishlistItem
 from catalog.models import Product
@@ -28,7 +22,7 @@ def get_or_create_wishlist(user):
 # WISHLIST PAGE
 # ─────────────────────────────────────────────
 
- 
+@login_required
 def wishlist_view(request):
     """Full wishlist page."""
     wishlist = get_or_create_wishlist(request.user)
@@ -36,10 +30,8 @@ def wishlist_view(request):
         'product', 'product__brand', 'product__category'
     ).prefetch_related('product__images', 'product__variants')
 
-    # IDs already in wishlist (used to highlight hearts in suggested section)
     wishlist_ids = set(wishlist.items.values_list('product_id', flat=True))
 
-    # Suggested products: active products NOT already in wishlist
     suggested_products = Product.objects.filter(
         is_active=True, is_featured=True
     ).exclude(
@@ -60,9 +52,12 @@ def wishlist_view(request):
 # TOGGLE (add / remove) — used by every heart button
 # ─────────────────────────────────────────────
 
- 
 @require_POST
 def toggle_wishlist(request, product_id):
+    """
+    Add the product if not in wishlist, remove if it is.
+    Returns 401 JSON for unauthenticated AJAX requests.
+    """
     if not request.user.is_authenticated:
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({
@@ -70,7 +65,7 @@ def toggle_wishlist(request, product_id):
                 'message': 'Please log in to save items to your wishlist.',
             }, status=401)
         return redirect(f'/accounts/login/?next=/wishlist/toggle/{product_id}/')
-    
+
     product  = get_object_or_404(Product, id=product_id, is_active=True)
     wishlist = get_or_create_wishlist(request.user)
 
@@ -87,7 +82,6 @@ def toggle_wishlist(request, product_id):
 
     wishlist_count = wishlist.count
 
-    # AJAX response
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({
             'added':          added,
@@ -96,7 +90,6 @@ def toggle_wishlist(request, product_id):
             'product_id':     product_id,
         })
 
-    # Plain-form fallback
     messages.success(request, message)
     return redirect(request.META.get('HTTP_REFERER', 'wishlist:wishlist'))
 
@@ -105,12 +98,11 @@ def toggle_wishlist(request, product_id):
 # LEGACY /wishlist/toggle/  (no product_id in URL)
 # ─────────────────────────────────────────────
 
- 
 @require_POST
 def toggle_wishlist_post(request):
     """
     POST body: { product_id: <id> }
-    Kept for backward-compat with the base.html AJAX call pattern.
+    Kept for backward-compat with base.html AJAX call pattern.
     """
     import json
     try:
@@ -122,6 +114,14 @@ def toggle_wishlist_post(request):
     if not product_id:
         return JsonResponse({'error': 'product_id required'}, status=400)
 
+    if not request.user.is_authenticated:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'error': 'login_required',
+                'message': 'Please log in to save items to your wishlist.',
+            }, status=401)
+        return redirect(f'/accounts/login/?next=/wishlist/')
+
     return toggle_wishlist(request, product_id)
 
 
@@ -129,9 +129,13 @@ def toggle_wishlist_post(request):
 # REMOVE single item (GET or POST, no toggle)
 # ─────────────────────────────────────────────
 
- 
 def remove_from_wishlist(request, product_id):
     """Hard remove — always removes regardless of current state."""
+    if not request.user.is_authenticated:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'error': 'login_required'}, status=401)
+        return redirect('/accounts/login/')
+
     product  = get_object_or_404(Product, id=product_id)
     wishlist = get_or_create_wishlist(request.user)
     WishlistItem.objects.filter(wishlist=wishlist, product=product).delete()
@@ -151,10 +155,14 @@ def remove_from_wishlist(request, product_id):
 # CLEAR entire wishlist
 # ─────────────────────────────────────────────
 
- 
 @require_POST
 def clear_wishlist(request):
     """Remove every item from the wishlist in one shot."""
+    if not request.user.is_authenticated:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'error': 'login_required'}, status=401)
+        return redirect('/accounts/login/')
+
     wishlist = get_or_create_wishlist(request.user)
     deleted, _ = wishlist.items.all().delete()
 
@@ -169,13 +177,14 @@ def clear_wishlist(request):
 # MOVE TO CART
 # ─────────────────────────────────────────────
 
- 
 @require_POST
 def move_to_cart(request, product_id):
-    """
-    Add the product to the cart then remove it from the wishlist.
-    Relies on the cart app's get_or_create_cart helper.
-    """
+    """Add the product to the cart then remove it from the wishlist."""
+    if not request.user.is_authenticated:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'error': 'login_required'}, status=401)
+        return redirect('/accounts/login/')
+
     from cart.views import get_or_create_cart as get_cart
     from cart.models import CartItem
 
@@ -183,7 +192,6 @@ def move_to_cart(request, product_id):
     wishlist = get_or_create_wishlist(request.user)
     cart     = get_cart(request)
 
-    # Add to cart (quantity 1, or increment if already there)
     cart_item, created = CartItem.objects.get_or_create(
         cart=cart,
         product=product,
@@ -193,7 +201,6 @@ def move_to_cart(request, product_id):
         cart_item.quantity += 1
         cart_item.save()
 
-    # Remove from wishlist
     WishlistItem.objects.filter(wishlist=wishlist, product=product).delete()
 
     cart_count     = cart.items.count()
@@ -215,10 +222,14 @@ def move_to_cart(request, product_id):
 # MOVE ALL TO CART
 # ─────────────────────────────────────────────
 
- 
 @require_POST
 def move_all_to_cart(request):
     """Move every wishlist item to the cart at once."""
+    if not request.user.is_authenticated:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'error': 'login_required'}, status=401)
+        return redirect('/accounts/login/')
+
     from cart.views import get_or_create_cart as get_cart
     from cart.models import CartItem
 
@@ -258,8 +269,9 @@ def move_all_to_cart(request):
 # WISHLIST COUNT (AJAX helper)
 # ─────────────────────────────────────────────
 
- 
 def wishlist_count(request):
     """Quick endpoint to refresh the badge count in the header."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'wishlist_count': 0})
     wishlist = get_or_create_wishlist(request.user)
     return JsonResponse({'wishlist_count': wishlist.count})
