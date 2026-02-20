@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Eyeglasses - Optical Store{% endblock %}
+{% block title %}Sunglasses - Optical Store{% endblock %}
 
 {% block content %}
 <main class="content-for-layout focus-none" id="xo-main-content" role="main" tabindex="-1">
@@ -8,30 +8,24 @@
     <!-- Collection Title Section -->
     <div class="shopify-section" id="shopify-section-collection-title">
         <section class="xo-section color-inverse" style="--bg-color: #f3f3f3; --margin: 0; --pt: 110; --pb: 110; --pt-mobile: 50px; --pb-mobile: 50px;">
-            <xo-animate class="xo-section-bg" style="--img-desktop: url({% static 'images/eyeglasses-banner.jpg' %}); --img-mobile: url({% static 'images/eyeglasses-banner.jpg' %});" xo-disabled="" xo-duration="1000">
+            <xo-animate class="xo-section-bg" style="--img-desktop: url({% static 'images/sunglasses-banner.jpg' %}); --img-mobile: url({% static 'images/sunglasses-banner.jpg' %});" xo-disabled="" xo-duration="1000">
                 <xo-parallax class="xo-section-bg-image__item" xo-lerp-ease="0.4">
                     <xo-parallax-scroll class="xo-section-bg-image__url xo-background-lazyload" xo-keyframes="{'0%': { backgroundPositionY: '200px' },'100%': { backgroundPositionY: '-200px' },}"></xo-parallax-scroll>
                 </xo-parallax>
             </xo-animate>
-            
             <div class="collection-title">
                 <xo-animate xo-cascade="">
-                    <h2 class="collection-title__title">Eyeglasses</h2>
+                    <h2 class="collection-title__title">Sunglasses</h2>
                 </xo-animate>
-                
                 <xo-animate xo-cascade="">
                     <nav aria-label="breadcrumb" class="breadcrumb" role="navigation" style="--display-mobile:block">
                         <ol class="breadcrumb__list" style="--justify:center">
                             <li class="breadcrumb__item">
                                 <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
-                                <span class="breadcrumb__separator">
-                                    <svg height="8" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="currentColor"></path>
-                                    </svg>
-                                </span>
+                                <span class="breadcrumb__separator"><svg height="8" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="currentColor"></path></svg></span>
                             </li>
                             <li class="breadcrumb__item breadcrumb__item--current" style="--display:block">
-                                <a aria-current="page" class="breadcrumb__link breadcrumb--current" href="#" style="--display:block">Eyeglasses</a>
+                                <a aria-current="page" class="breadcrumb__link breadcrumb--current" href="#" style="--display:block">Sunglasses</a>
                             </li>
                         </ol>
                     </nav>
@@ -44,381 +38,129 @@
     <section class="shopify-section section-collection-products" id="shopify-section-main-collection">
         <div class="xo-section color-background-1" style="--margin: 0; --pt: 50; --pb: 50; z-index: 99">
             <xo-filters-top></xo-filters-top>
-            
             <xo-filters xo-money-format="QAR 1.00" xo-section-id="main-collection">
                 <xo-container class="xo-container--box">
-                    
-                    <!-- Filters Refine Bar -->
                     <xo-filters-refine class="xo-filters-refine">
                         <xo-filters-clear xo-clear-all="" id="clear-all-btn" style="cursor: pointer;">Clear all</xo-filters-clear>
                         <xo-filters-refine-clear-icon aria-label="Close">
-                            <svg aria-hidden="true" fill="none" focusable="false" viewbox="0 0 12 13" width="20" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M8.48627 9.32917L2.82849 3.67098" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path>
-                                <path d="M2.88539 9.38504L8.42932 3.61524" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path>
-                            </svg>
+                            <svg aria-hidden="true" fill="none" focusable="false" viewbox="0 0 12 13" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M8.48627 9.32917L2.82849 3.67098" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path><path d="M2.88539 9.38504L8.42932 3.61524" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                         </xo-filters-refine-clear-icon>
                     </xo-filters-refine>
-                    
                     <xo-grid>
-                        <!-- SIDEBAR FILTERS -->
+                        <!-- SIDEBAR -->
                         <div aria-labelledby="verticalTitle" class="main-collection-style1__sidebar" style="--xs: 12; --sm: 12; --md: 4; --lg: 3; overflow:hidden">
-                            
-                            <!-- Gender/Category Filter -->
                             <div class="collection-sidebar__header">
                                 <h2 class="collection-sidebar__title" id="verticalTitle">GENDER</h2>
                             </div>
                             <div class="collection-sidebar__menu">
-                                <label class="field-checkbox-text" style="width: 100%; cursor: pointer; display: block;">
-                                    <input class="field-checkbox-text__input gender-filter-checkbox" name="gender" type="checkbox" value="all" {% if selected_gender == 'all' or not selected_gender %}checked{% endif %} />
-                                    <div class="field-checkbox-text__item" style="width: 100%; display: flex; align-items: center;">
-                                        <span class="collection-sidebar__icon">
-                                            <svg height="11" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="rgba(var(--color-foreground))"></path>
-                                            </svg>
-                                        </span>
-                                        <span class="field-checkbox-text__content">All</span>
-                                    </div>
-                                </label>
-                                <label class="field-checkbox-text" style="width: 100%; cursor: pointer; display: block;">
-                                    <input class="field-checkbox-text__input gender-filter-checkbox" name="gender" type="checkbox" value="men" {% if selected_gender == 'men' %}checked{% endif %} />
-                                    <div class="field-checkbox-text__item" style="width: 100%; display: flex; align-items: center;">
-                                        <span class="collection-sidebar__icon">
-                                            <svg height="11" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="rgba(var(--color-foreground))"></path>
-                                            </svg>
-                                        </span>
-                                        <span class="field-checkbox-text__content">For Him</span>
-                                    </div>
-                                </label>
-                                <label class="field-checkbox-text" style="width: 100%; cursor: pointer; display: block;">
-                                    <input class="field-checkbox-text__input gender-filter-checkbox" name="gender" type="checkbox" value="women" {% if selected_gender == 'women' %}checked{% endif %} />
-                                    <div class="field-checkbox-text__item" style="width: 100%; display: flex; align-items: center;">
-                                        <span class="collection-sidebar__icon">
-                                            <svg height="11" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="rgba(var(--color-foreground))"></path>
-                                            </svg>
-                                        </span>
-                                        <span class="field-checkbox-text__content">For Her</span>
-                                    </div>
-                                </label>
-                                <label class="field-checkbox-text" style="width: 100%; cursor: pointer; display: block;">
-                                    <input class="field-checkbox-text__input gender-filter-checkbox" name="gender" type="checkbox" value="kids" {% if selected_gender == 'kids' %}checked{% endif %} />
-                                    <div class="field-checkbox-text__item" style="width: 100%; display: flex; align-items: center;">
-                                        <span class="collection-sidebar__icon">
-                                            <svg height="11" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="rgba(var(--color-foreground))"></path>
-                                            </svg>
-                                        </span>
-                                        <span class="field-checkbox-text__content">For Kids</span>
-                                    </div>
-                                </label>
+                                <label class="field-checkbox-text" style="width: 100%; cursor: pointer; display: block;"><input class="field-checkbox-text__input gender-filter-checkbox" name="gender" type="checkbox" value="all" {% if selected_gender == 'all' or not selected_gender %}checked{% endif %} /><div class="field-checkbox-text__item" style="width: 100%; display: flex; align-items: center;"><span class="collection-sidebar__icon"><svg height="11" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="rgba(var(--color-foreground))"></path></svg></span><span class="field-checkbox-text__content">All</span></div></label>
+                                <label class="field-checkbox-text" style="width: 100%; cursor: pointer; display: block;"><input class="field-checkbox-text__input gender-filter-checkbox" name="gender" type="checkbox" value="men" {% if selected_gender == 'men' %}checked{% endif %} /><div class="field-checkbox-text__item" style="width: 100%; display: flex; align-items: center;"><span class="collection-sidebar__icon"><svg height="11" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="rgba(var(--color-foreground))"></path></svg></span><span class="field-checkbox-text__content">For Him</span></div></label>
+                                <label class="field-checkbox-text" style="width: 100%; cursor: pointer; display: block;"><input class="field-checkbox-text__input gender-filter-checkbox" name="gender" type="checkbox" value="women" {% if selected_gender == 'women' %}checked{% endif %} /><div class="field-checkbox-text__item" style="width: 100%; display: flex; align-items: center;"><span class="collection-sidebar__icon"><svg height="11" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="rgba(var(--color-foreground))"></path></svg></span><span class="field-checkbox-text__content">For Her</span></div></label>
+                                <label class="field-checkbox-text" style="width: 100%; cursor: pointer; display: block;"><input class="field-checkbox-text__input gender-filter-checkbox" name="gender" type="checkbox" value="kids" {% if selected_gender == 'kids' %}checked{% endif %} /><div class="field-checkbox-text__item" style="width: 100%; display: flex; align-items: center;"><span class="collection-sidebar__icon"><svg height="11" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="rgba(var(--color-foreground))"></path></svg></span><span class="field-checkbox-text__content">For Kids</span></div></label>
                             </div>
-
-                            <!-- Brands Filter -->
-                            <div class="fieldset-block__header">
-                                <h2 class="fieldset-block__title">BRANDS</h2>
-                            </div>
+                            <div class="fieldset-block__header"><h2 class="fieldset-block__title">BRANDS</h2></div>
                             <div class="fieldset-block__content fieldset-block__content--column">
                                 {% for brand in brands %}
-                                <xo-filters-field>
-                                    <label class="field-checkbox-text">
-                                        <input class="field-checkbox-text__input brand-filter-checkbox" name="brand" type="checkbox" value="{{ brand.slug }}" {% if brand.slug in selected_brands %}checked{% endif %} />
-                                        <div class="field-checkbox-text__item" style="width: 100%; display: flex; align-items: center;">
-                                            <span class="field-checkbox-text__icon">
-                                                <svg height="12" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="rgba(var(--color-foreground))"></path>
-                                                </svg>
-                                            </span>
-                                            <span class="field-checkbox-text__content">{{ brand.name }}</span>
-                                        </div>
-                                    </label>
-                                </xo-filters-field>
+                                <xo-filters-field><label class="field-checkbox-text"><input class="field-checkbox-text__input brand-filter-checkbox" name="brand" type="checkbox" value="{{ brand.slug }}" {% if brand.slug in selected_brands %}checked{% endif %} /><div class="field-checkbox-text__item" style="width: 100%; display: flex; align-items: center;"><span class="field-checkbox-text__icon"><svg height="12" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z" fill="rgba(var(--color-foreground))"></path></svg></span><span class="field-checkbox-text__content">{{ brand.name }}</span></div></label></xo-filters-field>
                                 {% endfor %}
                             </div>
-
-                            <!-- Price Filter -->
-                            <div class="fieldset-block__header">
-                                <h2 class="fieldset-block__title">PRICE</h2>
-                            </div>
+                            <div class="fieldset-block__header"><h2 class="fieldset-block__title">PRICE</h2></div>
                             <div class="fieldset-block__content">
                                 <xo-filters-field style="width:100%; padding: 0 0.1rem">
                                     <div class="xo-field-price">
-                                        <!-- Price Range Slider -->
-                                        <div class="price-range-wrapper">
-                                            <div class="price-slider-container">
-                                                <input type="range" class="price-slider price-slider--min" min="{{ price_range.min_price|default:0 }}" max="{{ price_range.max_price|default:5000 }}" value=" " step="10">
-                                                <input type="range" class="price-slider price-slider--max" min="{{ price_range.min_price|default:0 }}" max="{{ price_range.max_price|default:5000 }}" value=" " step="10">
-                                                <div class="price-slider-track"></div>
-                                                <div class="price-slider-fill"></div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Price Display -->
-                                        <div class="xo-field-price__input-group">
-                                            <div class="xo-field-price__label">Price:</div>
-                                            <span class="price-display price-display--min">QAR <span id="price-min-display"> cccc</span></span>
-                                            <span>-</span>
-                                            <span class="price-display price-display--max">QAR <span id="price-max-display"> sss</span></span>
-                                        </div>
+                                        <div class="price-range-wrapper"><div class="price-slider-container"><input type="range" class="price-slider price-slider--min" min="{{ price_range.min_price|default:0 }}" max="{{ price_range.max_price|default:5000 }}" value="{{ price_range.min_price|default:0 }}" step="10"><input type="range" class="price-slider price-slider--max" min="{{ price_range.min_price|default:0 }}" max="{{ price_range.max_price|default:5000 }}" value="{{ price_range.max_price|default:5000 }}" step="10"><div class="price-slider-track"></div><div class="price-slider-fill"></div></div></div>
+                                        <div class="xo-field-price__input-group"><div class="xo-field-price__label">Price:</div><span class="price-display">QAR <span id="price-min-display">0</span></span><span>-</span><span class="price-display">QAR <span id="price-max-display">5000</span></span></div>
                                     </div>
                                 </xo-filters-field>
                             </div>
-
-                            <!-- Frame Shape Filter -->
-                            <div class="fieldset-block__header">
-                                <h2 class="fieldset-block__title">FRAME SHAPE</h2>
-                            </div>
+                            <div class="fieldset-block__header"><h2 class="fieldset-block__title">FRAME MATERIAL</h2></div>
                             <div class="fieldset-block__content fieldset-block__content--column">
-                                <xo-filters-field>
-                                    <label class="field-checkbox-text">
-                                        <input class="field-checkbox-text__input shape-filter-checkbox" name="shape" type="checkbox" value="rectangle" {% if 'rectangle' in selected_shapes %}checked{% endif %} />
-                                        <div class="field-checkbox-text__item">
-                                            <span class="field-checkbox-text__content">Rectangle</span>
-                                        </div>
-                                    </label>
-                                </xo-filters-field>
-                                <xo-filters-field>
-                                    <label class="field-checkbox-text">
-                                        <input class="field-checkbox-text__input shape-filter-checkbox" name="shape" type="checkbox" value="round" {% if 'round' in selected_shapes %}checked{% endif %} />
-                                        <div class="field-checkbox-text__item">
-                                            <span class="field-checkbox-text__content">Round</span>
-                                        </div>
-                                    </label>
-                                </xo-filters-field>
-                                <xo-filters-field>
-                                    <label class="field-checkbox-text">
-                                        <input class="field-checkbox-text__input shape-filter-checkbox" name="shape" type="checkbox" value="square" {% if 'square' in selected_shapes %}checked{% endif %} />
-                                        <div class="field-checkbox-text__item">
-                                            <span class="field-checkbox-text__content">Square</span>
-                                        </div>
-                                    </label>
-                                </xo-filters-field>
-                                <xo-filters-field>
-                                    <label class="field-checkbox-text">
-                                        <input class="field-checkbox-text__input shape-filter-checkbox" name="shape" type="checkbox" value="aviator" {% if 'aviator' in selected_shapes %}checked{% endif %} />
-                                        <div class="field-checkbox-text__item">
-                                            <span class="field-checkbox-text__content">Aviator</span>
-                                        </div>
-                                    </label>
-                                </xo-filters-field>
-                                <xo-filters-field>
-                                    <label class="field-checkbox-text">
-                                        <input class="field-checkbox-text__input shape-filter-checkbox" name="shape" type="checkbox" value="cat-eye" {% if 'cat-eye' in selected_shapes %}checked{% endif %} />
-                                        <div class="field-checkbox-text__item">
-                                            <span class="field-checkbox-text__content">Cat Eye</span>
-                                        </div>
-                                    </label>
-                                </xo-filters-field>
-                                <xo-filters-field>
-                                    <label class="field-checkbox-text">
-                                        <input class="field-checkbox-text__input shape-filter-checkbox" name="shape" type="checkbox" value="wayfarer" {% if 'wayfarer' in selected_shapes %}checked{% endif %} />
-                                        <div class="field-checkbox-text__item">
-                                            <span class="field-checkbox-text__content">Wayfarer</span>
-                                        </div>
-                                    </label>
-                                </xo-filters-field>
+                                <xo-filters-field><label class="field-checkbox-text"><input class="field-checkbox-text__input material-filter-checkbox" name="material" type="checkbox" value="metal" {% if 'metal' in selected_materials %}checked{% endif %} /><div class="field-checkbox-text__item"><span class="field-checkbox-text__content">Metal</span></div></label></xo-filters-field>
+                                <xo-filters-field><label class="field-checkbox-text"><input class="field-checkbox-text__input material-filter-checkbox" name="material" type="checkbox" value="plastic" {% if 'plastic' in selected_materials %}checked{% endif %} /><div class="field-checkbox-text__item"><span class="field-checkbox-text__content">Plastic</span></div></label></xo-filters-field>
+                                <xo-filters-field><label class="field-checkbox-text"><input class="field-checkbox-text__input material-filter-checkbox" name="material" type="checkbox" value="acetate" {% if 'acetate' in selected_materials %}checked{% endif %} /><div class="field-checkbox-text__item"><span class="field-checkbox-text__content">Acetate</span></div></label></xo-filters-field>
+                                <xo-filters-field><label class="field-checkbox-text"><input class="field-checkbox-text__input material-filter-checkbox" name="material" type="checkbox" value="titanium" {% if 'titanium' in selected_materials %}checked{% endif %} /><div class="field-checkbox-text__item"><span class="field-checkbox-text__content">Titanium</span></div></label></xo-filters-field>
                             </div>
-
-                            <!-- Frame Material Filter -->
-                            <div class="fieldset-block__header">
-                                <h2 class="fieldset-block__title">FRAME MATERIAL</h2>
-                            </div>
+                            <div class="fieldset-block__header"><h2 class="fieldset-block__title">COLOR</h2></div>
                             <div class="fieldset-block__content fieldset-block__content--column">
-                                <xo-filters-field>
-                                    <label class="field-checkbox-text">
-                                        <input class="field-checkbox-text__input material-filter-checkbox" name="material" type="checkbox" value="metal" {% if 'metal' in selected_materials %}checked{% endif %} />
-                                        <div class="field-checkbox-text__item">
-                                            <span class="field-checkbox-text__content">Metal</span>
-                                        </div>
-                                    </label>
-                                </xo-filters-field>
-                                <xo-filters-field>
-                                    <label class="field-checkbox-text">
-                                        <input class="field-checkbox-text__input material-filter-checkbox" name="material" type="checkbox" value="plastic" {% if 'plastic' in selected_materials %}checked{% endif %} />
-                                        <div class="field-checkbox-text__item">
-                                            <span class="field-checkbox-text__content">Plastic</span>
-                                        </div>
-                                    </label>
-                                </xo-filters-field>
-                                <xo-filters-field>
-                                    <label class="field-checkbox-text">
-                                        <input class="field-checkbox-text__input material-filter-checkbox" name="material" type="checkbox" value="acetate" {% if 'acetate' in selected_materials %}checked{% endif %} />
-                                        <div class="field-checkbox-text__item">
-                                            <span class="field-checkbox-text__content">Acetate</span>
-                                        </div>
-                                    </label>
-                                </xo-filters-field>
-                                <xo-filters-field>
-                                    <label class="field-checkbox-text">
-                                        <input class="field-checkbox-text__input material-filter-checkbox" name="material" type="checkbox" value="titanium" {% if 'titanium' in selected_materials %}checked{% endif %} />
-                                        <div class="field-checkbox-text__item">
-                                            <span class="field-checkbox-text__content">Titanium</span>
-                                        </div>
-                                    </label>
-                                </xo-filters-field>
-                                <xo-filters-field>
-                                    <label class="field-checkbox-text">
-                                        <input class="field-checkbox-text__input material-filter-checkbox" name="material" type="checkbox" value="wood" {% if 'wood' in selected_materials %}checked{% endif %} />
-                                        <div class="field-checkbox-text__item">
-                                            <span class="field-checkbox-text__content">Wood</span>
-                                        </div>
-                                    </label>
-                                </xo-filters-field>
+                                <xo-filters-field><label class="field-checkbox-text"><input class="field-checkbox-text__input color-filter-checkbox" name="color" type="checkbox" value="black" {% if 'black' in selected_colors %}checked{% endif %} /><div class="field-checkbox-text__item"><span class="field-checkbox-text__content">Black</span></div></label></xo-filters-field>
+                                <xo-filters-field><label class="field-checkbox-text"><input class="field-checkbox-text__input color-filter-checkbox" name="color" type="checkbox" value="brown" {% if 'brown' in selected_colors %}checked{% endif %} /><div class="field-checkbox-text__item"><span class="field-checkbox-text__content">Brown</span></div></label></xo-filters-field>
+                                <xo-filters-field><label class="field-checkbox-text"><input class="field-checkbox-text__input color-filter-checkbox" name="color" type="checkbox" value="gold" {% if 'gold' in selected_colors %}checked{% endif %} /><div class="field-checkbox-text__item"><span class="field-checkbox-text__content">Gold</span></div></label></xo-filters-field>
+                                <xo-filters-field><label class="field-checkbox-text"><input class="field-checkbox-text__input color-filter-checkbox" name="color" type="checkbox" value="silver" {% if 'silver' in selected_colors %}checked{% endif %} /><div class="field-checkbox-text__item"><span class="field-checkbox-text__content">Silver</span></div></label></xo-filters-field>
+                                <xo-filters-field><label class="field-checkbox-text"><input class="field-checkbox-text__input color-filter-checkbox" name="color" type="checkbox" value="tortoise" {% if 'tortoise' in selected_colors %}checked{% endif %} /><div class="field-checkbox-text__item"><span class="field-checkbox-text__content">Tortoise</span></div></label></xo-filters-field>
                             </div>
                         </div>
 
                         <!-- PRODUCTS AREA -->
                         <div style="--xs: 12; --sm: 12; --md: 8; --lg: 9; --order-md: 0">
-                            
-                            <!-- Toolbar -->
                             <div class="main-collection-style1__header">
-                                <!-- Mobile Filter Trigger -->
                                 <xo-modal-trigger class="main-collection-mobile__trigger" xo-name="collection-modal-mobile">
-                                    <svg style="enable-background:new 0 0 320.42 225;" viewbox="0 0 320.42 225" width="18">
-                                        <path d="M303.92,33H16.5C7.39,33,0,25.61,0,16.5v0C0,7.39,7.39,0,16.5,0h287.42c9.11,0,16.5,7.39,16.5,16.5v0 C320.42,25.61,313.04,33,303.92,33z" fill="currentColor"></path>
-                                        <path d="M256.55,129H63.87c-9.11,0-16.5-7.39-16.5-16.5v0c0-9.11,7.39-16.5,16.5-16.5h192.68c9.11,0,16.5,7.39,16.5,16.5v0 C273.05,121.61,265.66,129,256.55,129z" fill="currentColor"></path>
-                                        <path d="M208.05,225h-95.67c-9.11,0-16.5-7.39-16.5-16.5v0c0-9.11,7.39-16.5,16.5-16.5h95.67c9.11,0,16.5,7.39,16.5,16.5v0 C224.55,217.61,217.16,225,208.05,225z" fill="currentColor"></path>
-                                    </svg>
+                                    <svg style="enable-background:new 0 0 320.42 225;" viewbox="0 0 320.42 225" width="18"><path d="M303.92,33H16.5C7.39,33,0,25.61,0,16.5v0C0,7.39,7.39,0,16.5,0h287.42c9.11,0,16.5,7.39,16.5,16.5v0 C320.42,25.61,313.04,33,303.92,33z" fill="currentColor"></path><path d="M256.55,129H63.87c-9.11,0-16.5-7.39-16.5-16.5v0c0-9.11,7.39-16.5,16.5-16.5h192.68c9.11,0,16.5,7.39,16.5,16.5v0 C273.05,121.61,265.66,129,256.55,129z" fill="currentColor"></path><path d="M208.05,225h-95.67c-9.11,0-16.5-7.39-16.5-16.5v0c0-9.11,7.39-16.5,16.5-16.5h95.67c9.11,0,16.5,7.39,16.5,16.5v0 C224.55,217.61,217.16,225,208.05,225z" fill="currentColor"></path></svg>
                                     <div class="main-collection-mobile__trigger-text">Filter</div>
                                 </xo-modal-trigger>
-
-                                <!-- Sort Dropdown -->
-                                <div class="xo-facets">
-                                    <div class="xo-facets__item">
-                                        <div class="xo-field-select-custom-filter">
-                                            <xo-popover-trigger class="xo-field-select-custom-filter__trigger" xo-name="filter-select-sort">
-                                                <xo-filters-sort-by-selected class="xo-field-select-custom-filter__name">
-                                                    {% if request.GET.sort == 'base_price' %}Price: Low to High
-                                                    {% elif request.GET.sort == '-base_price' %}Price: High to Low
-                                                    {% elif request.GET.sort == 'name' %}Name: A-Z
-                                                    {% elif request.GET.sort == '-name' %}Name: Z-A
-                                                    {% else %}Newest{% endif %}
-                                                </xo-filters-sort-by-selected>
-                                                <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 22" width="20">
-                                                    <polyline points="6 9 12 15 18 9"></polyline>
-                                                </svg>
-                                            </xo-popover-trigger>
-                                            
-                                            <xo-popover class="xo-field-select-custom-filter__popover xo-scrollbar" xo-name="filter-select-sort" xo-placement="bottom-right">
-                                                <xo-filters-field><label class="xo-field-select-custom-filter__check"><input {% if not request.GET.sort or request.GET.sort == '-created_at' %}checked{% endif %} class="xo-field-select-custom-filter__input sort-radio" name="sort_by" type="radio" value="-created_at" /><span class="xo-field-select-custom-filter__label">Newest</span></label></xo-filters-field>
-                                                <xo-filters-field><label class="xo-field-select-custom-filter__check"><input {% if request.GET.sort == 'base_price' %}checked{% endif %} class="xo-field-select-custom-filter__input sort-radio" name="sort_by" type="radio" value="base_price" /><span class="xo-field-select-custom-filter__label">Price: Low to High</span></label></xo-filters-field>
-                                                <xo-filters-field><label class="xo-field-select-custom-filter__check"><input {% if request.GET.sort == '-base_price' %}checked{% endif %} class="xo-field-select-custom-filter__input sort-radio" name="sort_by" type="radio" value="-base_price" /><span class="xo-field-select-custom-filter__label">Price: High to Low</span></label></xo-filters-field>
-                                                <xo-filters-field><label class="xo-field-select-custom-filter__check"><input {% if request.GET.sort == 'name' %}checked{% endif %} class="xo-field-select-custom-filter__input sort-radio" name="sort_by" type="radio" value="name" /><span class="xo-field-select-custom-filter__label">Name: A-Z</span></label></xo-filters-field>
-                                                <xo-filters-field><label class="xo-field-select-custom-filter__check"><input {% if request.GET.sort == '-name' %}checked{% endif %} class="xo-field-select-custom-filter__input sort-radio" name="sort_by" type="radio" value="-name" /><span class="xo-field-select-custom-filter__label">Name: Z-A</span></label></xo-filters-field>
-                                            </xo-popover>
-                                        </div>
-                                    </div>
-                                </div>
+                                <div class="xo-facets"><div class="xo-facets__item"><div class="xo-field-select-custom-filter"><xo-popover-trigger class="xo-field-select-custom-filter__trigger" xo-name="filter-select-sort"><xo-filters-sort-by-selected class="xo-field-select-custom-filter__name">{% if request.GET.sort == 'base_price' %}Price: Low to High{% elif request.GET.sort == '-base_price' %}Price: High to Low{% elif request.GET.sort == 'name' %}Name: A-Z{% elif request.GET.sort == '-name' %}Name: Z-A{% else %}Newest{% endif %}</xo-filters-sort-by-selected><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 22" width="20"><polyline points="6 9 12 15 18 9"></polyline></svg></xo-popover-trigger><xo-popover class="xo-field-select-custom-filter__popover xo-scrollbar" xo-name="filter-select-sort" xo-placement="bottom-right"><xo-filters-field><label class="xo-field-select-custom-filter__check"><input {% if not request.GET.sort or request.GET.sort == '-created_at' %}checked{% endif %} class="xo-field-select-custom-filter__input sort-radio" name="sort_by" type="radio" value="-created_at" /><span class="xo-field-select-custom-filter__label">Newest</span></label></xo-filters-field><xo-filters-field><label class="xo-field-select-custom-filter__check"><input {% if request.GET.sort == 'base_price' %}checked{% endif %} class="xo-field-select-custom-filter__input sort-radio" name="sort_by" type="radio" value="base_price" /><span class="xo-field-select-custom-filter__label">Price: Low to High</span></label></xo-filters-field><xo-filters-field><label class="xo-field-select-custom-filter__check"><input {% if request.GET.sort == '-base_price' %}checked{% endif %} class="xo-field-select-custom-filter__input sort-radio" name="sort_by" type="radio" value="-base_price" /><span class="xo-field-select-custom-filter__label">Price: High to Low</span></label></xo-filters-field><xo-filters-field><label class="xo-field-select-custom-filter__check"><input {% if request.GET.sort == 'name' %}checked{% endif %} class="xo-field-select-custom-filter__input sort-radio" name="sort_by" type="radio" value="name" /><span class="xo-field-select-custom-filter__label">Name: A-Z</span></label></xo-filters-field><xo-filters-field><label class="xo-field-select-custom-filter__check"><input {% if request.GET.sort == '-name' %}checked{% endif %} class="xo-field-select-custom-filter__input sort-radio" name="sort_by" type="radio" value="-name" /><span class="xo-field-select-custom-filter__label">Name: Z-A</span></label></xo-filters-field></xo-popover></div></div></div>
                             </div>
-
-                            <!-- Loading Indicator -->
-                            <div id="loading-indicator" style="display: none; text-align: center; padding: 40px;">
-                                <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #000; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                            </div>
-
-                            <!-- Products Grid -->
+                            <div id="loading-indicator" style="display: none; text-align: center; padding: 40px;"><div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #000; border-radius: 50%; animation: spin 1s linear infinite;"></div></div>
                             <xo-filters-content id="products-container">
                                 <div>
                                     <xo-grid class="filters-content__grid" style="--xs: 2; --sm: 2; --md: 2; --lg: 3">
                                         {% for product in products %}
                                         <xo-product xo-product-id="{{ product.id }}" xo-section-id="main-collection">
-                                            <xo-animate class="xo-product-card xo-product-card--style9 color-background-1" xo-cascade="">
-                                                <div class="xo-product-card__header xo-product-card__header--style9">
-                                                    <a href="{% url 'catalog:eyeglass_detail' product.slug %}">
+                                            <xo-animate class="xo-product-card xo-product-card--style9 color-background-1 aa-pcard" xo-cascade="">
+                                                <div class="xo-product-card__header xo-product-card__header--style9" style="position:relative;">
+                                                    <!-- Wishlist Heart -->
+                                                    <button class="aa-heart" data-product-id="{{ product.id }}" aria-label="Add to wishlist" {% if request.user.is_authenticated and product in wishlisted_ids %}data-wishlisted="true"{% endif %}>
+                                                        <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke="currentColor" stroke-width="1.8"/></svg>
+                                                    </button>
+                                                    <a href="{% url 'catalog:sunglass_detail' product.slug %}">
                                                         <xo-product-media xo-type="auto">
                                                             <div class="xo-product-image">
                                                                 <div class="xo-image" style="--xo-ratio-percent: 1/1;">
-                                                                    {% if product.images.all %}
-                                                                    {% with first_image=product.images.first %}
-                                                                    {% if first_image %}
-                                                                    <img alt="{{ product.name }}" src="{{ first_image.image.url }}" width="1000" height="1000" loading="lazy" />
-                                                                    {% endif %}
-                                                                    {% endwith %}
-                                                                    {% elif product.image %}
-                                                                     <img alt="{{ product.name }}" src="{{ product.image.url }}"
-                                                                        width="1000" height="1000" loading="lazy" />
-                                                                    {% else %}
-                                                                    <img alt="No Image" src="/static/img/no-image.jpg" width="1000"
-                                                                        height="1000" loading="lazy" />
-                                                                    {% endif %}
+                                                                    {% if product.images.all %}{% with first_image=product.images.first %}{% if first_image %}<img alt="{{ product.name }}" src="{{ first_image.image.url }}" width="1000" height="1000" loading="lazy" />{% endif %}{% endwith %}{% elif product.image %}<img alt="{{ product.name }}" src="{{ product.image.url }}" width="1000" height="1000" loading="lazy" />{% else %}<img alt="No Image" src="{% static 'images/no-image.jpg' %}" width="1000" height="1000" loading="lazy" />{% endif %}
                                                                 </div>
                                                             </div>
                                                         </xo-product-media>
                                                     </a>
-                                                    
-                                                    {% if product.compare_at_price %}
-                                                    <div class="xo-product-card__badge">
-                                                        <div class="xo-badge-sale">Sale</div>
-                                                    </div>
-                                                    {% endif %}
+                                                    {% if product.is_featured %}<div class="xo-product-card__badge"><div class="xo-badge-sale">Featured</div></div>{% elif product.compare_at_price %}<div class="xo-product-card__badge"><div class="xo-badge-sale">Sale</div></div>{% endif %}
                                                 </div>
-                                                
                                                 <div class="xo-product-card__information">
-                                                    {% if product.brand %}
-                                                    <div style="font-size: 12px; color: #999; text-transform: uppercase; margin-bottom: 5px;">{{ product.brand.name }}</div>
-                                                    {% endif %}
-                                                    
-                                                    <h2 class="xo-product-card__title">
-                                                        <a href="{% url 'catalog:eyeglass_detail' product.slug %}">{{ product.name }}</a>
-                                                    </h2>
-                                                    
+                                                    {% if product.brand %}<div style="font-size: 12px; color: #999; text-transform: uppercase; margin-bottom: 5px;">{{ product.brand.name }}</div>{% endif %}
+                                                    <h2 class="xo-product-card__title"><a href="{% url 'catalog:sunglass_detail' product.slug %}">{{ product.name }}</a></h2>
                                                     <div style="font-size: 12px; color: #666; margin: 5px 0;">{{ product.get_gender_display }}</div>
-                                                    
                                                     <div class="xo-product-card__price">
-                                                        <div class="xo-price">
-                                                            <div class="xo-price__container">
-                                                                <div class="xo-price__sale">
-                                                                    <span class="xo-price__item xo-price__item--accent">QAR {{ product.base_price }}</span>
-                                                                    {% if product.compare_at_price %}
-                                                                    <span class="xo-price__item xo-price__item--regular" style="text-decoration: line-through; margin-left: 8px; color: #999;">QAR {{ product.compare_at_price }}</span>
-                                                                    {% endif %}
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        <div class="xo-price"><div class="xo-price__container"><div class="xo-price__sale">
+                                                            <span class="xo-price__item xo-price__item--accent">QAR {{ product.base_price }}</span>
+                                                            {% if product.compare_at_price %}<span class="xo-price__item xo-price__item--regular" style="text-decoration: line-through; margin-left: 8px; color: #999;">QAR {{ product.compare_at_price }}</span>{% endif %}
+                                                        </div></div></div>
                                                     </div>
+                                                </div>
+                                                <!-- CARD ACTION BUTTONS -->
+                                                <div class="aa-card-actions">
+                                                    <form class="aa-cart-form" data-product-id="{{ product.id }}" onsubmit="return false;">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                                        <input type="hidden" name="quantity" value="1">
+                                                        <button type="submit" class="aa-cart-btn" {% if not product.is_in_stock %}disabled{% endif %}>
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                                                            <span>{% if product.is_in_stock %}Add to Cart{% else %}Out of Stock{% endif %}</span>
+                                                        </button>
+                                                    </form>
+                                                    <button class="aa-buy-btn" data-product-id="{{ product.id }}" {% if not product.is_in_stock %}disabled{% endif %}>
+                                                        Buy Now →
+                                                    </button>
                                                 </div>
                                             </xo-animate>
                                         </xo-product>
                                         {% empty %}
-                                        <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
-                                            <h3>No products found</h3>
-                                            <p>Try adjusting your filters</p>
-                                        </div>
+                                        <div style="grid-column: 1/-1; text-align: center; padding: 3rem;"><h3>No products found</h3><p>Try adjusting your filters</p></div>
                                         {% endfor %}
                                     </xo-grid>
-
-                                    <!-- Pagination -->
                                     {% if page_obj.has_other_pages %}
                                     <xo-filters-paginate>
                                         <nav aria-label="Pagination" class="xo-pagination">
                                             <ul class="xo-pagination__list" role="list">
-                                                {% if page_obj.has_previous %}
-                                                <li>
-                                                    <a aria-label="Previous page" class="xo-pagination__page xo-pagination__page--prev pagination-link" href="#" data-page="{{ page_obj.previous_page_number }}">
-                                                        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="20">
-                                                            <polyline points="15 18 9 12 15 6"></polyline>
-                                                        </svg>
-                                                    </a>
-                                                </li>
-                                                {% endif %}
-                                                
-                                                {% for page in page_obj.paginator.page_range %}
-                                                {% if page == page_obj.number %}
-                                                <li><span aria-current="page" class="xo-pagination__page xo-pagination__page--current">{{ page }}</span></li>
-                                                {% else %}
-                                                <li><a class="xo-pagination__page pagination-link" href="#" data-page="{{ page }}">{{ page }}</a></li>
-                                                {% endif %}
-                                                {% endfor %}
-                                                
-                                                {% if page_obj.has_next %}
-                                                <li>
-                                                    <a aria-label="Next page" class="xo-pagination__page xo-pagination__page--next pagination-link" href="#" data-page="{{ page_obj.next_page_number }}">
-                                                        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="20">
-                                                            <polyline points="9 18 15 12 9 6"></polyline>
-                                                        </svg>
-                                                    </a>
-                                                </li>
-                                                {% endif %}
+                                                {% if page_obj.has_previous %}<li><a aria-label="Previous page" class="xo-pagination__page xo-pagination__page--prev pagination-link" href="#" data-page="{{ page_obj.previous_page_number }}"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="20"><polyline points="15 18 9 12 15 6"></polyline></svg></a></li>{% endif %}
+                                                {% for page in page_obj.paginator.page_range %}{% if page == page_obj.number %}<li><span aria-current="page" class="xo-pagination__page xo-pagination__page--current">{{ page }}</span></li>{% else %}<li><a class="xo-pagination__page pagination-link" href="#" data-page="{{ page }}">{{ page }}</a></li>{% endif %}{% endfor %}
+                                                {% if page_obj.has_next %}<li><a aria-label="Next page" class="xo-pagination__page xo-pagination__page--next pagination-link" href="#" data-page="{{ page_obj.next_page_number }}"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="20"><polyline points="9 18 15 12 9 6"></polyline></svg></a></li>{% endif %}
                                             </ul>
                                         </nav>
                                     </xo-filters-paginate>
@@ -433,302 +175,202 @@
     </section>
 </main>
 
+<!-- Toast notification -->
+<div id="aa-toast" class="aa-toast"></div>
+
 <style>
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
+/* Price Range */
+.price-range-wrapper{width:100%;padding:20px 0}.price-slider-container{position:relative;width:100%;height:6px;margin-bottom:20px}.price-slider-track{position:absolute;width:100%;height:6px;background:#e0e0e0;border-radius:3px;top:0;left:0}.price-slider-fill{position:absolute;height:6px;background:linear-gradient(90deg,#000,#333);border-radius:3px;top:0}.price-slider{position:absolute;width:100%;height:6px;top:0;left:0;margin:0;padding:0;pointer-events:none;-webkit-appearance:none;appearance:none;background:transparent;z-index:5}.price-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#000;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer;pointer-events:all;transition:all .2s}.price-slider::-webkit-slider-thumb:hover{width:24px;height:24px}.price-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#000;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer;pointer-events:all}.xo-field-price__input-group{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:10px 0}.xo-field-price__label{font-weight:600;color:#333}.price-display{font-weight:600;color:#000;font-size:14px}
 
-/* Price Range Styling */
-.price-range-wrapper {
-    width: 100%;
-    padding: 20px 0;
-}
+/* ── Product Card Buttons ── */
+.aa-pcard { overflow: visible !important; }
+.xo-product-card__header--style9 { position: relative; }
 
-.price-slider-container {
-    position: relative;
-    width: 100%;
-    height: 6px;
-    margin-bottom: 20px;
+/* Wishlist heart */
+.aa-heart {
+    position: absolute; top: 10px; right: 10px; z-index: 4;
+    width: 36px; height: 36px; border-radius: 50%;
+    border: none; background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #999; box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    transition: all .25s;
 }
+.aa-heart:hover { background: #fff0f0; color: #e44; transform: scale(1.12); }
+.aa-heart.wishlisted { color: #e33; }
+.aa-heart.wishlisted svg path { fill: #e33; stroke: #e33; }
+@keyframes heartBurst { 0%{transform:scale(1)} 40%{transform:scale(1.5)} 70%{transform:scale(.9)} 100%{transform:scale(1)} }
+.aa-heart.burst { animation: heartBurst .4s ease; }
 
-.price-slider-track {
-    position: absolute;
-    width: 100%;
-    height: 6px;
-    background: #e0e0e0;
-    border-radius: 3px;
-    top: 0;
-    left: 0;
+/* Action area */
+.aa-card-actions { padding: 8px 12px 12px; display: flex; flex-direction: column; gap: 7px; }
+.aa-cart-form { display: flex; }
+.aa-cart-btn {
+    width: 100%; height: 40px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    background: #000; color: #fff; border: none; border-radius: 6px;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: background .2s;
 }
-
-.price-slider-fill {
-    position: absolute;
-    height: 6px;
-    background: linear-gradient(90deg, #000, #333);
-    border-radius: 3px;
-    top: 0;
-}
-
-.price-slider {
-    position: absolute;
-    width: 100%;
-    height: 6px;
-    top: 0;
-    left: 0;
-    margin: 0;
-    padding: 0;
-    pointer-events: none;
-    -webkit-appearance: none;
-    appearance: none;
-    background: transparent;
-    z-index: 5;
-}
-
-.price-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #000;
-    border: 3px solid #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    cursor: pointer;
-    pointer-events: all;
-    transition: all 0.2s;
-}
-
-.price-slider::-webkit-slider-thumb:hover {
-    width: 24px;
-    height: 24px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-}
-
-.price-slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #000;
-    border: 3px solid #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    cursor: pointer;
-    pointer-events: all;
-}
-
-.xo-field-price__input-group {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    padding: 10px 0;
-}
-
-.xo-field-price__label {
-    font-weight: 600;
-    color: #333;
-}
-
-.price-display {
-    font-weight: 600;
+.aa-cart-btn:hover { background: #222; }
+.aa-cart-btn:disabled { background: #bbb; cursor: not-allowed; }
+.aa-cart-btn.added { background: #1a7a3c; }
+.aa-buy-btn {
+    width: 100%; height: 38px;
+    background: transparent; border: 1.5px solid #000; border-radius: 6px;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s;
     color: #000;
-    font-size: 14px;
 }
+.aa-buy-btn:hover { background: #000; color: #fff; }
+.aa-buy-btn:disabled { border-color: #ccc; color: #ccc; cursor: not-allowed; }
+
+/* Toast */
+.aa-toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 500;
+    color: #fff; background: #222; box-shadow: 0 4px 20px rgba(0,0,0,.2);
+    transform: translateY(70px); opacity: 0; transition: all .35s cubic-bezier(.34,1.56,.64,1);
+    pointer-events: none;
+}
+.aa-toast.show { transform: translateY(0); opacity: 1; }
+.aa-toast--ok  { background: #1a7a3c; }
+.aa-toast--err { background: #c0392b; }
+.aa-toast--wish{ background: #c0396b; }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Gender Filter
+    // ── Filters ──
     const genderCheckboxes = document.querySelectorAll('.gender-filter-checkbox');
-    genderCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            if (this.checked) {
-                genderCheckboxes.forEach(cb => {
-                    if (cb !== this) cb.checked = false;
-                });
-            }
-            applyFilters();
-        });
-    });
+    genderCheckboxes.forEach(cb => cb.addEventListener('change', function() {
+        if (this.checked) genderCheckboxes.forEach(c => { if (c !== this) c.checked = false; });
+        applyFilters();
+    }));
+    document.querySelectorAll('.brand-filter-checkbox, .material-filter-checkbox, .color-filter-checkbox').forEach(cb => cb.addEventListener('change', applyFilters));
+    document.querySelectorAll('.sort-radio').forEach(r => r.addEventListener('change', applyFilters));
 
-    // Brand, Shape, Material Filters
-    const filterCheckboxes = document.querySelectorAll('.brand-filter-checkbox, .shape-filter-checkbox, .material-filter-checkbox');
-    filterCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', applyFilters);
-    });
-
-    // Price Sliders
     const minSlider = document.querySelector('.price-slider--min');
     const maxSlider = document.querySelector('.price-slider--max');
     const minDisplay = document.getElementById('price-min-display');
     const maxDisplay = document.getElementById('price-max-display');
     const fill = document.querySelector('.price-slider-fill');
-    
     let debounceTimer;
-    
+
     function updateSliders() {
-        let minValue = parseInt(minSlider.value);
-        let maxValue = parseInt(maxSlider.value);
-        
-        if (minValue > maxValue - 10) {
-            minValue = maxValue - 10;
-            minSlider.value = minValue;
-        }
-        
-        const minPercent = ((minValue - minSlider.min) / (minSlider.max - minSlider.min)) * 100;
-        const maxPercent = ((maxValue - maxSlider.min) / (maxSlider.max - maxSlider.min)) * 100;
-        
-        fill.style.left = minPercent + '%';
-        fill.style.right = (100 - maxPercent) + '%';
-        
-        minDisplay.textContent = minValue;
-        maxDisplay.textContent = maxValue;
+        let mn = parseInt(minSlider.value), mx = parseInt(maxSlider.value);
+        if (mn > mx - 10) { mn = mx - 10; minSlider.value = mn; }
+        const mnP = ((mn - minSlider.min) / (minSlider.max - minSlider.min)) * 100;
+        const mxP = ((mx - minSlider.min) / (maxSlider.max - maxSlider.min)) * 100;
+        fill.style.left = mnP + '%'; fill.style.right = (100 - mxP) + '%';
+        minDisplay.textContent = mn; maxDisplay.textContent = mx;
     }
-    
     if (minSlider && maxSlider) {
-        minSlider.addEventListener('input', updateSliders);
-        maxSlider.addEventListener('input', updateSliders);
-        minSlider.addEventListener('change', () => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(applyFilters, 500);
-        });
-        maxSlider.addEventListener('change', () => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(applyFilters, 500);
-        });
+        minSlider.addEventListener('input', updateSliders); maxSlider.addEventListener('input', updateSliders);
+        minSlider.addEventListener('change', () => { clearTimeout(debounceTimer); debounceTimer = setTimeout(applyFilters, 500); });
+        maxSlider.addEventListener('change', () => { clearTimeout(debounceTimer); debounceTimer = setTimeout(applyFilters, 500); });
         updateSliders();
     }
 
-    // Apply Filters Function
     function applyFilters() {
         const params = new URLSearchParams();
-        
-        // Gender
-        const selectedGender = document.querySelector('.gender-filter-checkbox:checked');
-        if (selectedGender && selectedGender.value !== 'all') {
-            params.set('gender', selectedGender.value);
-        }
-        
-        // Brands
-        document.querySelectorAll('.brand-filter-checkbox:checked').forEach(cb => {
-            params.append('brand', cb.value);
-        });
-        
-        // Shapes
-        document.querySelectorAll('.shape-filter-checkbox:checked').forEach(cb => {
-            params.append('shape', cb.value);
-        });
-        
-        // Materials
-        document.querySelectorAll('.material-filter-checkbox:checked').forEach(cb => {
-            params.append('material', cb.value);
-        });
-        
-        // Price
-        if (minSlider && maxSlider) {
-            params.set('min_price', minSlider.value);
-            params.set('max_price', maxSlider.value);
-        }
-        
-        // Sort
-        const sortValue = document.querySelector('.sort-radio:checked');
-        if (sortValue) {
-            params.set('sort', sortValue.value);
-        }
-        
+        const sg = document.querySelector('.gender-filter-checkbox:checked');
+        if (sg && sg.value !== 'all') params.set('gender', sg.value);
+        document.querySelectorAll('.brand-filter-checkbox:checked').forEach(cb => params.append('brand', cb.value));
+        document.querySelectorAll('.material-filter-checkbox:checked').forEach(cb => params.append('material', cb.value));
+        document.querySelectorAll('.color-filter-checkbox:checked').forEach(cb => params.append('color', cb.value));
+        if (minSlider && maxSlider) { params.set('min_price', minSlider.value); params.set('max_price', maxSlider.value); }
+        const sv = document.querySelector('.sort-radio:checked'); if (sv) params.set('sort', sv.value);
         params.set('ajax', '1');
-        
-        const loadingIndicator = document.getElementById('loading-indicator');
-        const productsContainer = document.getElementById('products-container');
-        
-        if (loadingIndicator) loadingIndicator.style.display = 'block';
-        if (productsContainer) productsContainer.style.opacity = '0.5';
-        
-        fetch(`${window.location.pathname}?${params.toString()}`, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newProductsContainer = doc.querySelector('#products-container');
-            
-            if (newProductsContainer && productsContainer) {
-                productsContainer.innerHTML = newProductsContainer.innerHTML;
-            }
-            
+        ajaxLoad(params);
+    }
+
+    function ajaxLoad(params) {
+        const loading = document.getElementById('loading-indicator');
+        const container = document.getElementById('products-container');
+        if (loading) loading.style.display = 'block';
+        if (container) container.style.opacity = '0.5';
+        fetch(`${window.location.pathname}?${params.toString()}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.text()).then(html => {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const nc = doc.querySelector('#products-container');
+            if (nc && container) container.innerHTML = nc.innerHTML;
             params.delete('ajax');
             window.history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
-            
-            if (loadingIndicator) loadingIndicator.style.display = 'none';
-            if (productsContainer) productsContainer.style.opacity = '1';
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            if (loadingIndicator) loadingIndicator.style.display = 'none';
-            if (productsContainer) productsContainer.style.opacity = '1';
+        }).catch(console.error).finally(() => {
+            if (loading) loading.style.display = 'none';
+            if (container) container.style.opacity = '1';
         });
     }
 
-    // Sort Change
-    document.querySelectorAll('.sort-radio').forEach(radio => {
-        radio.addEventListener('change', applyFilters);
-    });
-
-    // Pagination
     document.addEventListener('click', function(e) {
-        if (e.target.matches('.pagination-link') || e.target.closest('.pagination-link')) {
-            e.preventDefault();
-            const link = e.target.matches('.pagination-link') ? e.target : e.target.closest('.pagination-link');
-            const page = link.dataset.page;
-            
-            if (page) {
-                const params = new URLSearchParams(window.location.search);
-                params.set('page', page);
-                params.set('ajax', '1');
-                
-                const loadingIndicator = document.getElementById('loading-indicator');
-                const productsContainer = document.getElementById('products-container');
-                
-                if (loadingIndicator) loadingIndicator.style.display = 'block';
-                if (productsContainer) productsContainer.style.opacity = '0.5';
-                
-                fetch(`${window.location.pathname}?${params.toString()}`, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(response => response.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const newProductsContainer = doc.querySelector('#products-container');
-                    
-                    if (newProductsContainer && productsContainer) {
-                        productsContainer.innerHTML = newProductsContainer.innerHTML;
-                    }
-                    
-                    params.delete('ajax');
-                    window.history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
-                    
-                    if (loadingIndicator) loadingIndicator.style.display = 'none';
-                    if (productsContainer) productsContainer.style.opacity = '1';
-                    
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    if (loadingIndicator) loadingIndicator.style.display = 'none';
-                    if (productsContainer) productsContainer.style.opacity = '1';
-                });
-            }
-        }
+        const link = e.target.matches('.pagination-link') ? e.target : e.target.closest('.pagination-link');
+        if (!link) return;
+        e.preventDefault();
+        const page = link.dataset.page; if (!page) return;
+        const params = new URLSearchParams(window.location.search);
+        params.set('page', page); params.set('ajax', '1');
+        ajaxLoad(params);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // Clear All
-    const clearAllBtn = document.getElementById('clear-all-btn');
-    if (clearAllBtn) {
-        clearAllBtn.addEventListener('click', function() {
-            window.location.href = window.location.pathname;
-        });
+    document.getElementById('clear-all-btn')?.addEventListener('click', () => { window.location.href = window.location.pathname; });
+
+    // ── Toast ──
+    let toastTimer;
+    function aaToast(msg, type) {
+        const t = document.getElementById('aa-toast');
+        t.textContent = msg; t.className = 'aa-toast aa-toast--' + (type||'ok') + ' show';
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
     }
+    function getCsrf() { const m = document.cookie.match(/csrftoken=([^;]+)/); return m ? m[1] : ''; }
+
+    // ── Wishlist ──
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.aa-heart'); if (!btn) return;
+        const id = btn.dataset.productId;
+        const was = btn.dataset.wishlisted === 'true';
+        btn.classList.toggle('wishlisted', !was); btn.dataset.wishlisted = (!was).toString();
+        btn.classList.add('burst'); btn.addEventListener('animationend', () => btn.classList.remove('burst'), { once: true });
+        fetch(`/wishlist/toggle/${id}/`, {
+            method: 'POST', headers: { 'X-CSRFToken': getCsrf(), 'X-Requested-With': 'XMLHttpRequest' }
+        }).then(r => r.json()).then(d => {
+            aaToast(d.added ? '❤️ Added to wishlist!' : '💔 Removed from wishlist', 'wish');
+            document.querySelectorAll('[data-wishlist-count]').forEach(el => { if (d.wishlist_count !== undefined) el.textContent = d.wishlist_count; });
+        }).catch(() => { btn.classList.toggle('wishlisted', was); btn.dataset.wishlisted = was.toString(); });
+    });
+
+    // ── Add to Cart ──
+    document.addEventListener('submit', function(e) {
+        if (!e.target.matches('.aa-cart-form')) return;
+        e.preventDefault();
+        const form = e.target, btn = form.querySelector('.aa-cart-btn'), id = form.dataset.productId;
+        const origHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>&nbsp;Adding…';
+        fetch("{% url 'cart:add_to_cart' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCsrf(), 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `product_id=${id}&quantity=1`
+        }).then(r => r.json()).then(d => {
+            btn.classList.add('added'); btn.innerHTML = '✓ Added';
+            aaToast('🛒 Added to cart!', 'ok');
+            document.querySelectorAll('[data-cart-count]').forEach(el => { if (d.cart_count !== undefined) el.textContent = d.cart_count; });
+            setTimeout(() => { btn.classList.remove('added'); btn.innerHTML = origHTML; btn.disabled = false; }, 1800);
+        }).catch(() => { btn.innerHTML = origHTML; btn.disabled = false; aaToast('Error adding to cart', 'err'); });
+    });
+
+    // ── Buy Now ──
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.aa-buy-btn'); if (!btn) return;
+        const id = btn.dataset.productId, orig = btn.textContent;
+        btn.disabled = true; btn.textContent = '⏳ Please wait…';
+        fetch("{% url 'cart:add_to_cart' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCsrf(), 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `product_id=${id}&quantity=1`
+        }).then(r => r.json()).then(() => { window.location.href = "{% url 'orders:checkout' %}"; })
+        .catch(() => { btn.textContent = orig; btn.disabled = false; aaToast('Error. Try again.', 'err'); });
+    });
 });
 </script>
 {% endblock %}
