@@ -1061,10 +1061,26 @@
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
 
-  /* ── CSRF ─────────────────────────────────────────── */
+  /* ── CSRF — reads from cookie OR meta tag ─────────── */
   function getCsrf() {
-    var m = document.cookie.match(/csrftoken=([^;]+)/);
-    return m ? decodeURIComponent(m[1]) : '';
+    // Try cookie first
+    var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+    if (m) return decodeURIComponent(m[1]);
+    // Fallback: meta tag  <meta name="csrf-token" content="...">
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
+  }
+
+  /* ── Safe JSON fetch — never throws on non-JSON ───── */
+  function safeJson(response) {
+    var ct = response.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      return Promise.resolve({ __httpStatus: response.status, __notJson: true });
+    }
+    return response.json().then(function(data) {
+      data.__httpStatus = response.status;
+      return data;
+    });
   }
 
   /* ── Toast ────────────────────────────────────────── */
@@ -1083,7 +1099,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   window.showToast = showToast;
 
-  /* ── Update header badge counts ─────────────────── */
+  /* ── Badge helpers ───────────────────────────────── */
   function updateCartBadge(count) {
     document.querySelectorAll(
       '.header-v24__cart-count, #cart-count, #cart-items-count, .cart-badge, [data-cart-count]'
@@ -1112,7 +1128,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(function () { btn.classList.remove('burst'); }, 450);
   }
 
-  /* ── Ripple on button click ───────────────────────── */
+  /* ── Ripple ───────────────────────────────────────── */
   function addRipple(btn, e) {
     var ripple = document.createElement('span');
     ripple.className = 'ripple';
@@ -1123,7 +1139,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(function () { ripple.remove(); }, 600);
   }
 
-/* ── WISHLIST TOGGLE ──────────────────────────────── */
+  /* ── WISHLIST TOGGLE ──────────────────────────────── */
   document.addEventListener('click', function (e) {
     var heartBtn = e.target.closest('.aa-pcard__heart');
     if (!heartBtn) return;
@@ -1131,67 +1147,93 @@ document.addEventListener('DOMContentLoaded', function () {
     e.stopPropagation();
 
     var pid = heartBtn.dataset.productId;
-    if (!pid) {
-      // Static/fallback card — just toggle UI
+
+    /* Static/fallback card with no real product id */
+    if (!pid || pid === 'undefined' || pid === '') {
       heartBtn.classList.toggle('wishlisted');
       triggerHeartBurst(heartBtn);
+      showToast('❤️ Saved!', 'wish');
       return;
     }
 
-    // Optimistic update
+    /* Optimistic UI update */
     var wasWishlisted = heartBtn.classList.contains('wishlisted');
     heartBtn.classList.toggle('wishlisted');
     triggerHeartBurst(heartBtn);
 
+    /* Disable button briefly to prevent double-clicks */
+    heartBtn.style.pointerEvents = 'none';
+
+    var csrf = getCsrf();
+
     fetch('/wishlist/toggle/' + pid + '/', {
       method: 'POST',
+      credentials: 'same-origin',           // ← sends session cookie
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRFToken': getCsrf()
-      }
+        'X-CSRFToken': csrf,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'csrfmiddlewaretoken=' + encodeURIComponent(csrf)
     })
-.then(function (r) {
-  if (r.status === 401) {
-    wasWishlisted
-      ? heartBtn.classList.add('wishlisted')
-      : heartBtn.classList.remove('wishlisted');
-    showToast('💛 Please log in to save items to your wishlist.', 'info');
-    return null;
-  }
-  // Guard against non-JSON responses (Django HTML error pages)
-  var contentType = r.headers.get('content-type') || '';
-  if (!contentType.includes('application/json')) {
-    console.error('Non-JSON response from server:', r.status, r.url);
-    wasWishlisted
-      ? heartBtn.classList.add('wishlisted')
-      : heartBtn.classList.remove('wishlisted');
-    showToast('Server error. Please try again.', 'err');
-    return null;
-  }
-  return r.json();
-})
+    .then(function (r) {
+      /* Handle 401 (not logged in) before parsing JSON */
+      if (r.status === 401) {
+        heartBtn.classList.toggle('wishlisted'); // revert
+        showToast('💛 Please log in to save items to your wishlist.', 'info');
+        heartBtn.style.pointerEvents = '';
+        return null;
+      }
+      return safeJson(r);
+    })
     .then(function (data) {
       if (!data) return;
+
+      /* Non-JSON response (Django error page, etc.) */
+      if (data.__notJson) {
+        wasWishlisted
+          ? heartBtn.classList.add('wishlisted')
+          : heartBtn.classList.remove('wishlisted');
+        showToast('Server error (' + data.__httpStatus + '). Please try again.', 'err');
+        heartBtn.style.pointerEvents = '';
+        return;
+      }
+
+      /* Server returned an error in JSON */
+      if (data.error) {
+        wasWishlisted
+          ? heartBtn.classList.add('wishlisted')
+          : heartBtn.classList.remove('wishlisted');
+        showToast(data.message || 'Something went wrong.', 'err');
+        heartBtn.style.pointerEvents = '';
+        return;
+      }
+
+      /* Success ✓ */
       updateWishlistBadge(data.wishlist_count);
       showToast(
         data.added ? '❤️ Added to wishlist!' : '💔 Removed from wishlist.',
         data.added ? 'wish' : 'info'
       );
-      // Sync all heart buttons for the same product on the page
+
+      /* Sync every heart for the same product across the page */
       document.querySelectorAll('.aa-pcard__heart[data-product-id="' + pid + '"]')
         .forEach(function (btn) {
           data.added
             ? btn.classList.add('wishlisted')
             : btn.classList.remove('wishlisted');
+          btn.style.pointerEvents = '';
         });
     })
-.catch(function (err) {
-  console.error('Wishlist fetch error:', err);
-  wasWishlisted
-    ? heartBtn.classList.add('wishlisted')
-    : heartBtn.classList.remove('wishlisted');
-  showToast('Something went wrong. Please try again.', 'err');
-});
+    .catch(function (err) {
+      console.error('Wishlist error:', err);
+      /* Revert optimistic update */
+      wasWishlisted
+        ? heartBtn.classList.add('wishlisted')
+        : heartBtn.classList.remove('wishlisted');
+      showToast('Network error. Please try again.', 'err');
+      heartBtn.style.pointerEvents = '';
+    });
   });
 
   /* ── ADD TO CART ──────────────────────────────────── */
@@ -1203,7 +1245,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var submitBtn = form.querySelector('.aa-pcard__cart-btn');
     if (!submitBtn || submitBtn.classList.contains('soldout')) return;
 
-    // Ripple
     addRipple(submitBtn, e);
 
     var pid = form.querySelector('input[name="product_id"]').value;
@@ -1215,15 +1256,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
     fetch("{% url 'cart:add_to_cart' %}", {
       method: 'POST',
+      credentials: 'same-origin',
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
         'X-CSRFToken': getCsrf(),
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: 'product_id=' + pid + '&quantity=' + qty
+      body: 'product_id=' + encodeURIComponent(pid) + '&quantity=' + encodeURIComponent(qty)
     })
-    .then(function (r) { return r.json(); })
+    .then(function (r) { return safeJson(r); })
     .then(function (data) {
+      if (data.__notJson) {
+        showToast('Server error. Please try again.', 'err');
+        submitBtn.innerHTML = originalHTML;
+        submitBtn.disabled = false;
+        return;
+      }
       if (data.success) {
         updateCartBadge(data.cart_count);
         showToast('🛒 Added to cart!', 'ok');
@@ -1247,7 +1295,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  /* ── BUY NOW (direct checkout redirect) ─────────── */
+  /* ── BUY NOW ──────────────────────────────────────── */
   document.addEventListener('click', function (e) {
     var buyBtn = e.target.closest('.aa-pcard__buy-btn[data-product-id]');
     if (!buyBtn) return;
@@ -1260,14 +1308,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     fetch("{% url 'cart:add_to_cart' %}", {
       method: 'POST',
+      credentials: 'same-origin',
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
         'X-CSRFToken': getCsrf(),
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: 'product_id=' + pid + '&quantity=1'
+      body: 'product_id=' + encodeURIComponent(pid) + '&quantity=1'
     })
-    .then(function (r) { return r.json(); })
+    .then(function (r) { return safeJson(r); })
     .then(function (data) {
       if (data.success) {
         window.location.href = "{% url 'orders:checkout' %}";
@@ -1329,10 +1378,7 @@ document.addEventListener('DOMContentLoaded', function () {
     startAuto();
     track.addEventListener('mouseenter', stopAuto);
     track.addEventListener('mouseleave', startAuto);
-
-    window.addEventListener('resize', function () {
-      currentPos = 0; slide();
-    });
+    window.addEventListener('resize', function () { currentPos = 0; slide(); });
   }
 
   /* ── Scroll reveal ───────────────────────────────── */
@@ -1366,3 +1412,5 @@ document.addEventListener('DOMContentLoaded', function () {
 }
 </style>
 {% endblock %}
+ 
+ 

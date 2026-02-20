@@ -12,7 +12,7 @@ urlpatterns = [
     # ── Toggle (add/remove) — two URL patterns ────────────────────
     # 1. With product_id in URL  →  /wishlist/toggle/42/
     path('toggle/<int:product_id>/', views.toggle_wishlist, name='toggle'),
-
+    
     # 2. POST-body only  →  /wishlist/toggle/   (legacy / base.html AJAX)
     path('toggle/', views.toggle_wishlist_post, name='toggle_post'),
 
