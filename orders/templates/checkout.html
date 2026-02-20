@@ -196,7 +196,9 @@ textarea.ck-input{resize:vertical;min-height:90px;line-height:1.5}
       <!-- THE FORM — note: simple direct POST, no JS intercept -->
       <form id="checkoutForm" method="POST" action="{% url 'orders:place_order' %}">
         {% csrf_token %}
-
+{% if is_buy_now %}
+<input type="hidden" name="is_buy_now" value="1">
+{% endif %}
         <!-- SECTION 1: SHIPPING ADDRESS -->
         <div class="ck-card">
           <div class="ck-section-head">

@@ -364,13 +364,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const btn = e.target.closest('.aa-buy-btn'); if (!btn) return;
         const id = btn.dataset.productId, orig = btn.textContent;
         btn.disabled = true; btn.textContent = '⏳ Please wait…';
-        fetch(`/cart/buy-now/${id}/`, {
+        fetch("{% url 'cart:add_to_cart' %}", {
             method: 'POST',
             headers: { 'X-CSRFToken': getCsrf(), 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `quantity=1`
-        }).then(r => r.json()).then(d => {
-            if (d.redirect) window.location.href = d.redirect;
-        }).catch(() => { btn.textContent = orig; btn.disabled = false; aaToast('Error. Try again.', 'err'); });
+            body: `product_id=${id}&quantity=1`
+        }).then(r => r.json()).then(() => { window.location.href = "{% url 'orders:checkout' %}"; })
+        .catch(() => { btn.textContent = orig; btn.disabled = false; aaToast('Error. Try again.', 'err'); });
     });
 });
 </script>
