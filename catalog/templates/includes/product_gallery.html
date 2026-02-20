@@ -1,0 +1,474 @@
+ 
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   PRODUCT GALLERY COMPONENT
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Outer wrapper ── */
+.pgl-wrap {
+  position: sticky;
+  top: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  user-select: none;
+}
+
+/* ── Main stage ── */
+.pgl-main {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #f5f0e8;
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: zoom-in;
+  outline: none;
+}
+
+.pgl-main__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 20px;
+  display: block;
+  transition: transform 0.45s cubic-bezier(0.4,0,0.2,1),
+              opacity 0.22s ease;
+}
+
+/* Hover scale (only when not zoomed) */
+.pgl-main:not(.zoomed):hover .pgl-main__img {
+  transform: scale(1.05);
+}
+
+/* Zoom state */
+.pgl-main.zoomed {
+  cursor: zoom-out;
+}
+.pgl-main.zoomed .pgl-main__img {
+  transform: scale(2.4);
+  transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%);
+  transition: transform-origin 0s,
+              transform 0.08s ease;
+  padding: 0;
+  object-fit: cover;
+}
+
+/* Fade when switching */
+.pgl-main__img.pgl-fade {
+  opacity: 0;
+  transform: scale(0.97) !important;
+}
+
+/* ── Prev / Next arrows ── */
+.pgl-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.14);
+  transition: opacity 0.2s ease, background 0.2s ease,
+              box-shadow 0.2s ease, transform 0.2s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+.pgl-main:hover .pgl-nav { opacity: 1; pointer-events: auto; }
+.pgl-nav:hover {
+  background: #fff;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  transform: translateY(-50%) scale(1.08);
+}
+.pgl-nav--prev { left: 12px; }
+.pgl-nav--next { right: 12px; }
+.pgl-nav svg  { width: 14px; height: 14px; color: #333; }
+
+/* ── Counter badge ── */
+.pgl-badge {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  background: rgba(10,10,10,0.42);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 4px 11px;
+  border-radius: 20px;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.pgl-badge.hidden { opacity: 0; }
+
+/* ── Dot indicators (mobile) ── */
+.pgl-dots {
+  display: none;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 0 0;
+}
+.pgl-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #d4b896;
+  transition: background 0.2s, transform 0.2s;
+}
+.pgl-dot.active {
+  background: #b8976a;
+  transform: scale(1.35);
+}
+@media (max-width: 600px) {
+  .pgl-dots { display: flex; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   THUMBNAIL STRIP
+   ══════════════════════════════════════════════════════════════════ */
+.pgl-thumbs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: #d4b896 transparent;
+}
+.pgl-thumbs::-webkit-scrollbar { height: 3px; }
+.pgl-thumbs::-webkit-scrollbar-thumb {
+  background: #d4b896;
+  border-radius: 2px;
+}
+
+.pgl-thumb {
+  flex-shrink: 0;
+  width: 76px;
+  height: 76px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f5f0e8;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.22s ease,
+              transform 0.22s ease,
+              box-shadow 0.22s ease;
+  position: relative;
+  scroll-snap-align: start;
+}
+
+.pgl-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 6px;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.pgl-thumb:hover {
+  border-color: #d4b896;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 16px rgba(0,0,0,0.1);
+}
+.pgl-thumb:hover img { transform: scale(1.06); }
+
+.pgl-thumb.active {
+  border-color: #b8976a;
+  box-shadow: 0 0 0 1px #b8976a,
+              0 4px 18px rgba(184,151,106,0.28);
+}
+.pgl-thumb.active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(184,151,106,0.07);
+  pointer-events: none;
+  border-radius: 7px;
+}
+
+/* Color name label on thumb */
+.pgl-thumb__label {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 2px;
+  background: rgba(0,0,0,0.48);
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.2s;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pgl-thumb:hover .pgl-thumb__label { opacity: 1; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .pgl-wrap { position: static; }
+  .pgl-main { border-radius: 14px; }
+}
+@media (max-width: 600px) {
+  .pgl-thumb { width: 60px; height: 60px; }
+}
+@media (max-width: 420px) {
+  .pgl-thumb { width: 52px; height: 52px; }
+}
+</style>
+
+
+<div class="pgl-wrap" id="pglWrap">
+
+  {# ── Main Stage ── #}
+  <div class="pgl-main" id="pglMain" tabindex="0"
+       role="img" aria-label="{{ product.name }} — image gallery">
+
+      <div class="cl-gallery">
+      <div class="cl-main-img">
+        {% if product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" id="mainImg" />
+        {% endif %}
+      </div>
+      <div class="cl-thumbs" id="thumbStrip">
+        {% if product.image %}
+        <div class="cl-thumb active" onclick="switchImage(this, '{{ product.image.url }}')">
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" />
+        </div>
+        {% endif %}
+        {% for image in images %}
+        <div class="cl-thumb" onclick="switchImage(this, '{{ image.image.url }}')">
+          <img src="{{ image.image.url }}" alt="{{ product.name }}" />
+        </div>
+        {% endfor %}
+        {% if colors %}
+        {% for color in colors %}
+        <div class="cl-thumb" onclick="switchImage(this, '{{ color.image.url }}')" title="{{ color.name }}">
+          <img src="{{ color.image.url }}" alt="{{ color.name }}" />
+        </div>
+        {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <button class="pgl-nav pgl-nav--prev" id="pglPrev" aria-label="Previous image" type="button">
+      <svg fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <button class="pgl-nav pgl-nav--next" id="pglNext" aria-label="Next image" type="button">
+      <svg fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+
+    <span class="pgl-badge" id="pglBadge">1 / 1</span>
+  </div>
+
+  {# ── Mobile dots ── #}
+  <div class="pgl-dots" id="pglDots"></div>
+
+  {# ── Thumbnail strip ── #}
+  <div class="pgl-thumbs" id="pglThumbs" role="list">
+
+    {% if product.image %}
+    <div class="pgl-thumb active"
+         data-src="{{ product.image.url }}"
+         role="listitem" tabindex="0"
+         aria-label="View image 1">
+      <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" />
+    </div>
+    {% endif %}
+
+    {% for image in images %}
+    <div class="pgl-thumb"
+         data-src="{{ image.image.url }}"
+         role="listitem" tabindex="0"
+         aria-label="View image {{ forloop.counter|add:1 }}">
+      <img src="{{ image.image.url }}" alt="{{ product.name }}" loading="lazy" />
+    </div>
+    {% endfor %}
+
+    {% if colors %}{% for color in colors %}
+    <div class="pgl-thumb"
+         data-src="{{ color.image.url }}"
+         role="listitem" tabindex="0"
+         title="{{ color.name }}"
+         aria-label="{{ color.name }} variant">
+      <img src="{{ color.image.url }}" alt="{{ color.name }}" loading="lazy" />
+      <span class="pgl-thumb__label">{{ color.name }}</span>
+    </div>
+    {% endfor %}{% endif %}
+
+  </div>
+</div>
+
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   PRODUCT GALLERY JS  — self-contained IIFE
+   ════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  var mainImg  = document.getElementById('pglMainImg');
+  var mainBox  = document.getElementById('pglMain');
+  var thumbWrap = document.getElementById('pglThumbs');
+  var prevBtn  = document.getElementById('pglPrev');
+  var nextBtn  = document.getElementById('pglNext');
+  var badge    = document.getElementById('pglBadge');
+  var dotsWrap = document.getElementById('pglDots');
+
+  if (!mainImg || !thumbWrap) return;
+
+  var thumbs  = Array.from(thumbWrap.querySelectorAll('.pgl-thumb'));
+  var current = 0;
+  var total   = thumbs.length;
+
+  /* ── Build mobile dots ── */
+  if (dotsWrap && total > 1) {
+    thumbs.forEach(function (_, i) {
+      var d = document.createElement('div');
+      d.className = 'pgl-dot' + (i === 0 ? ' active' : '');
+      dotsWrap.appendChild(d);
+    });
+  }
+
+  var dots = dotsWrap ? Array.from(dotsWrap.querySelectorAll('.pgl-dot')) : [];
+
+  /* ── Update badge + dots ── */
+  function updateUI() {
+    if (total <= 1) {
+      badge.classList.add('hidden');
+      return;
+    }
+    badge.textContent = (current + 1) + ' / ' + total;
+    dots.forEach(function (d, i) { d.classList.toggle('active', i === current); });
+  }
+
+  /* ── Switch to index ── */
+  function goTo(idx, force) {
+    if (idx < 0) idx = total - 1;
+    if (idx >= total) idx = 0;
+    if (idx === current && !force) return;
+
+    var newSrc = thumbs[idx].dataset.src;
+
+    /* Fade out */
+    mainImg.classList.add('pgl-fade');
+    mainBox.classList.remove('zoomed');
+
+    setTimeout(function () {
+      mainImg.src = newSrc;
+      if (mainImg.complete) {
+        mainImg.classList.remove('pgl-fade');
+      } else {
+        mainImg.onload = function () { mainImg.classList.remove('pgl-fade'); };
+      }
+    }, 160);
+
+    /* Thumb active states */
+    thumbs.forEach(function (t, i) { t.classList.toggle('active', i === idx); });
+
+    /* Scroll thumb into view */
+    thumbs[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+    current = idx;
+    updateUI();
+  }
+
+  /* ── Thumb clicks + keyboard ── */
+  thumbs.forEach(function (thumb, i) {
+    thumb.addEventListener('click', function () { goTo(i, true); });
+    thumb.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goTo(i, true); }
+    });
+  });
+
+  /* ── Arrow buttons ── */
+  if (prevBtn) prevBtn.addEventListener('click', function (e) {
+    e.stopPropagation(); goTo(current - 1);
+  });
+  if (nextBtn) nextBtn.addEventListener('click', function (e) {
+    e.stopPropagation(); goTo(current + 1);
+  });
+
+  /* ── Keyboard left / right on main ── */
+  mainBox.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); goTo(current - 1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(current + 1); }
+    if (e.key === 'Escape')     { mainBox.classList.remove('zoomed'); }
+  });
+
+  /* ── Touch / swipe ── */
+  var tsX = 0, tsY = 0;
+  mainBox.addEventListener('touchstart', function (e) {
+    tsX = e.changedTouches[0].screenX;
+    tsY = e.changedTouches[0].screenY;
+  }, { passive: true });
+  mainBox.addEventListener('touchend', function (e) {
+    var dx = tsX - e.changedTouches[0].screenX;
+    var dy = Math.abs(tsY - e.changedTouches[0].screenY);
+    if (Math.abs(dx) > 40 && dy < 60) {
+      dx > 0 ? goTo(current + 1) : goTo(current - 1);
+    }
+  }, { passive: true });
+
+  /* ── Zoom: click to zoom, mousemove to pan ── */
+  mainBox.addEventListener('click', function (e) {
+    if (e.target.closest('.pgl-nav')) return;
+    mainBox.classList.toggle('zoomed');
+  });
+  mainBox.addEventListener('mousemove', function (e) {
+    if (!mainBox.classList.contains('zoomed')) return;
+    var r  = mainBox.getBoundingClientRect();
+    var px = ((e.clientX - r.left) / r.width  * 100).toFixed(1) + '%';
+    var py = ((e.clientY - r.top)  / r.height * 100).toFixed(1) + '%';
+    mainBox.style.setProperty('--zoom-x', px);
+    mainBox.style.setProperty('--zoom-y', py);
+  });
+  mainBox.addEventListener('mouseleave', function () {
+    mainBox.classList.remove('zoomed');
+  });
+
+  /* ══════════════════════════════════════════════════════════════
+     PUBLIC API
+     Call window.pglSwitchTo(src) from color swatch handlers to
+     sync the gallery when the user picks a colour variant.
+     ══════════════════════════════════════════════════════════════ */
+  window.pglSwitchTo = function (src) {
+    var idx = thumbs.findIndex(function (t) { return t.dataset.src === src; });
+    if (idx !== -1) {
+      goTo(idx, true);
+    } else {
+      /* src not in thumb list — just swap main image without touching strip */
+      mainImg.classList.add('pgl-fade');
+      mainBox.classList.remove('zoomed');
+      setTimeout(function () {
+        mainImg.src = src;
+        if (mainImg.complete) { mainImg.classList.remove('pgl-fade'); }
+        else { mainImg.onload = function () { mainImg.classList.remove('pgl-fade'); }; }
+      }, 160);
+    }
+  };
+
+  /* ── Init ── */
+  updateUI();
+
+})();
+</script>

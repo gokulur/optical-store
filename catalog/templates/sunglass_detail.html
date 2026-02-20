@@ -729,33 +729,8 @@
   <div class="sg-product-wrap">
 
     <!-- ── GALLERY ───────────────────────────────── -->
-   <div class="cl-gallery">
-      <div class="cl-main-img">
-        {% if product.image %}
-        <img src="{{ product.image.url }}" alt="{{ product.name }}" id="mainImg" />
-        {% endif %}
-      </div>
-      <div class="cl-thumbs" id="thumbStrip">
-        {% if product.image %}
-        <div class="cl-thumb active" onclick="switchImage(this, '{{ product.image.url }}')">
-          <img src="{{ product.image.url }}" alt="{{ product.name }}" />
-        </div>
-        {% endif %}
-        {% for image in images %}
-        <div class="cl-thumb" onclick="switchImage(this, '{{ image.image.url }}')">
-          <img src="{{ image.image.url }}" alt="{{ product.name }}" />
-        </div>
-        {% endfor %}
-        {% if colors %}
-        {% for color in colors %}
-        <div class="cl-thumb" onclick="switchImage(this, '{{ color.image.url }}')" title="{{ color.name }}">
-          <img src="{{ color.image.url }}" alt="{{ color.name }}" />
-        </div>
-        {% endfor %}
-        {% endif %}
-      </div>
-    </div>
-
+ 
+{% include 'includes/product_gallery.html' %}
     <!-- ── PRODUCT INFO ───────────────────────────── -->
     <div class="sg-info">
 
