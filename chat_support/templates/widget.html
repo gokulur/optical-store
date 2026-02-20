@@ -1,10 +1,6 @@
 {% load static %}
 {% csrf_token %}
-<!-- ═══════════════════════════════════════════
-     AL AMEEN OPTICS — CHAT WIDGET
-     Drop anywhere inside <body> on any page.
-     Self-contained. No base.html needed.
-═══════════════════════════════════════════ -->
+ 
 <style>
 .chat-widget-wrap {
     position: fixed;
@@ -190,6 +186,11 @@ input[type=file].cw-file { display: none; }
 .cw-gerr { font-size: 12px; color: #e05c5c; min-height: 16px; }
 .cw-footer { padding: 10px; text-align: center; background: #f8f9fa; border-top: 1px solid #efefef; flex-shrink: 0; }
 .cw-footer p { margin: 0; font-size: 11px; color: #bbb; }
+.cw-typing { display: flex; align-items: center; gap: 5px; padding: 8px 12px; }
+.cw-typing span { width: 7px; height: 7px; border-radius: 50%; background: #aaa; animation: typing-dot .9s ease-in-out infinite; }
+.cw-typing span:nth-child(2) { animation-delay: .15s; }
+.cw-typing span:nth-child(3) { animation-delay: .3s; }
+@keyframes typing-dot { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-5px);opacity:1} }
 @media(max-width:480px){
     .chat-window { width: calc(100vw - 40px); height: calc(100vh - 100px); }
     .cw-quick { grid-template-columns: 1fr; }
@@ -283,44 +284,75 @@ input[type=file].cw-file { display: none; }
 (function(){
 'use strict';
 
- 
-const CSRF_TOKEN = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '';
-if (!CSRF_TOKEN) console.warn('[Chat] CSRF token not found! Add {% csrf_token %} to the page or this template.');
+/* ══════════════════════════════════════════════════════════════
+   FIX 1 — CSRF TOKEN: Read from cookie (most reliable method).
+   The hidden input approach fails if {% csrf_token %} doesn't
+   render inside a <form>, or if the DOM isn't ready yet.
+   Reading the cookie works regardless of DOM state.
+   ══════════════════════════════════════════════════════════════ */
+function getCsrfToken() {
+    // Try cookie first (always set by Django's CsrfViewMiddleware)
+    var cookieMatch = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+    if (cookieMatch) return decodeURIComponent(cookieMatch[1]);
+    // Fallback: hidden input rendered by {% csrf_token %}
+    var inp = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (inp) return inp.value;
+    // Last resort: meta tag (if you add <meta name="csrf-token"> to base.html)
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta) return meta.getAttribute('content');
+    console.error('[Chat] CSRF token not found! Messages will fail with 403.');
+    return '';
+}
 
- 
-const URL_START    = '{% url "chat:start_chat" %}';
-const URL_SEND     = (id) => `{% url "chat:start_chat" %}`.replace('start/', `conversation/${id}/send/`);
-const URL_MESSAGES = (id, lastId) => `{% url "chat:start_chat" %}`.replace('start/', `conversation/${id}/messages/?last_message_id=${lastId}`);
+/* ══════════════════════════════════════════════════════════════
+   FIX 2 — URL BUILDER: Use Django-resolved URLs directly.
+   The old .replace() hack was fragile — if the URL structure
+   changed or had i18n prefix variations it could silently break.
+   We now use window.CHAT_URLS injected by the template below.
+   ══════════════════════════════════════════════════════════════ */
+var URLS = window.CHAT_URLS || {};
 
 /* ── User context from Django ── */
-const USER_IS_AUTH = {{ request.user.is_authenticated|yesno:"true,false" }};
-const USER_NAME    = "{{ request.user.get_full_name|default:request.user.username|default:'' }}";
+var USER_IS_AUTH = {{ request.user.is_authenticated|yesno:"true,false" }};
+var USER_NAME    = "{{ request.user.get_full_name|default:request.user.username|default:''|escapejs }}";
 
 /* ── DOM refs ── */
-const launchBtn   = document.getElementById('chatLaunchBtn');
-const chatWindow  = document.getElementById('chatWindow');
-const minBtn      = document.getElementById('chatMinBtn');
-const badge       = document.getElementById('chatBadge');
-const screenChat  = document.getElementById('screenChat');
-const screenGuest = document.getElementById('screenGuest');
-const cwMsgs      = document.getElementById('cwMsgs');
-const cwInput     = document.getElementById('cwInput');
-const cwSend      = document.getElementById('cwSendBtn');
-const cwAtt       = document.getElementById('cwAttBtn');
-const cwFile      = document.getElementById('cwFile');
-const cwQuick     = document.getElementById('cwQuick');
-const guestName   = document.getElementById('guestName');
-const guestEmail  = document.getElementById('guestEmail');
-const guestErr    = document.getElementById('guestErr');
-const guestSubmit = document.getElementById('guestSubmit');
+var launchBtn   = document.getElementById('chatLaunchBtn');
+var chatWindow  = document.getElementById('chatWindow');
+var minBtn      = document.getElementById('chatMinBtn');
+var badge       = document.getElementById('chatBadge');
+var screenChat  = document.getElementById('screenChat');
+var screenGuest = document.getElementById('screenGuest');
+var cwMsgs      = document.getElementById('cwMsgs');
+var cwInput     = document.getElementById('cwInput');
+var cwSend      = document.getElementById('cwSendBtn');
+var cwAtt       = document.getElementById('cwAttBtn');
+var cwFile      = document.getElementById('cwFile');
+var cwQuick     = document.getElementById('cwQuick');
+var guestName   = document.getElementById('guestName');
+var guestEmail  = document.getElementById('guestEmail');
+var guestErr    = document.getElementById('guestErr');
+var guestSubmit = document.getElementById('guestSubmit');
 
 /* ── State ── */
-let isOpen      = false;
-let convId      = localStorage.getItem('aa_conv_id') || null;
-let lastId      = 0;
-let pollTimer   = null;
-let pendingMsg  = '';
-let pendingFile = null;
+var isOpen      = false;
+var convId      = null;
+var lastId      = 0;
+var pollTimer   = null;
+var pendingMsg  = '';
+var pendingFile = null;
+
+/* ══════════════════════════════════════════════════════════════
+   FIX 3 — RESTORE convId CAREFULLY.
+   If the stored conversation_id is stale/deleted on the server,
+   the GET /messages/ call will return 404 HTML → poll crashes.
+   We validate it first before trusting it.
+   ══════════════════════════════════════════════════════════════ */
+var storedConvId = localStorage.getItem('aa_conv_id');
+if (storedConvId) {
+    // We'll validate asynchronously; set convId tentatively
+    convId = storedConvId;
+}
 
 /* ── Toggle ── */
 function toggle() {
@@ -341,24 +373,39 @@ launchBtn.addEventListener('click', toggle);
 minBtn.addEventListener('click', toggle);
 
 function showBadge() { badge.style.display = 'flex'; launchBtn.classList.add('has-notif'); }
-function hideBadge() { badge.style.display = 'none'; }
+function hideBadge()  { badge.style.display = 'none'; }
 
-const esc     = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const nowTime = () => new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-const scrollB = () => setTimeout(() => { cwMsgs.scrollTop = cwMsgs.scrollHeight; }, 60);
+function esc(s) {
+    return String(s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+var nowTime = function() {
+    return new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+};
+function scrollB() { setTimeout(function(){ cwMsgs.scrollTop = cwMsgs.scrollHeight; }, 60); }
 
 /* ══════════════════════════════════════════════════════════════
-   FETCH WRAPPERS
-   credentials:'same-origin' ensures the session cookie is sent.
-   X-Requested-With lets Django know it's AJAX (some middleware cares).
-   All errors are logged to console so you can see exactly what failed.
+   FIX 4 — apiPost: Always fetch a fresh CSRF token per call.
+   The old code read CSRF_TOKEN once at startup — if the cookie
+   rotated (after login/logout) the stale token caused 403s.
+
+   Also: response.ok check now logs the full server error body
+   so you can debug 500s, 403s, 404s from the browser console.
    ══════════════════════════════════════════════════════════════ */
 function apiPost(url, fields, file) {
-    const fd = new FormData();
-    fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
+    var csrf = getCsrfToken();
+    if (!csrf) {
+        return Promise.reject(new Error('No CSRF token — check Django middleware.'));
+    }
+
+    var fd = new FormData();
+    fd.append('csrfmiddlewaretoken', csrf);
     if (fields) {
-        Object.entries(fields).forEach(([k, v]) => {
-            if (v !== null && v !== undefined) fd.append(k, v);
+        Object.keys(fields).forEach(function(k) {
+            if (fields[k] !== null && fields[k] !== undefined) {
+                fd.append(k, fields[k]);
+            }
         });
     }
     if (file) fd.append('attachment', file);
@@ -368,30 +415,53 @@ function apiPost(url, fields, file) {
         credentials: 'same-origin',
         headers: { 'X-Requested-With': 'XMLHttpRequest' },
         body: fd,
-    }).then(res => {
+    }).then(function(res) {
         if (!res.ok) {
-            // Log status + first 300 chars of body so you can see the error page
-            return res.text().then(body => {
-                console.error(`[Chat] POST ${url} failed: HTTP ${res.status}`);
-                console.error('[Chat] Server said:', body.substring(0, 300));
-                throw new Error(`HTTP ${res.status}`);
+            return res.text().then(function(body) {
+                console.error('[Chat] POST', url, 'failed: HTTP', res.status);
+                console.error('[Chat] Server response preview:', body.substring(0, 500));
+                // Provide human-readable error messages
+                if (res.status === 403) throw new Error('CSRF verification failed (403). Check CSRF_TRUSTED_ORIGINS in settings.py.');
+                if (res.status === 404) throw new Error('Endpoint not found (404). Check chat/urls.py routing.');
+                if (res.status === 405) throw new Error('Method not allowed (405). View may be missing @require_POST.');
+                if (res.status === 500) throw new Error('Server error (500). Check Django error logs.');
+                throw new Error('HTTP ' + res.status);
             });
         }
-        return res.json();
+        return res.json().catch(function(e) {
+            console.error('[Chat] Response was not JSON despite 200 OK:', e);
+            throw new Error('Server returned non-JSON response. Check view returns JsonResponse.');
+        });
     });
 }
 
+/* ══════════════════════════════════════════════════════════════
+   FIX 5 — apiGet: Handle 404 gracefully.
+   If the stored conversation no longer exists server-side,
+   clear it from localStorage so next open starts fresh.
+   ══════════════════════════════════════════════════════════════ */
 function apiGet(url) {
     return fetch(url, {
         credentials: 'same-origin',
         headers: { 'X-Requested-With': 'XMLHttpRequest' },
-    }).then(res => {
+    }).then(function(res) {
+        if (res.status === 404) {
+            // Stale conversation — wipe it
+            console.warn('[Chat] Conversation not found (404), clearing stored ID.');
+            convId = null;
+            localStorage.removeItem('aa_conv_id');
+            localStorage.removeItem('aa_guest_name');
+            localStorage.removeItem('aa_guest_email');
+            return { success: false, messages: [], _stale: true };
+        }
         if (!res.ok) {
-            console.error(`[Chat] GET ${url} failed: HTTP ${res.status}`);
+            console.error('[Chat] GET', url, 'failed: HTTP', res.status);
             return { success: false, messages: [] };
         }
-        return res.json();
-    }).catch(e => {
+        return res.json().catch(function() {
+            return { success: false, messages: [] };
+        });
+    }).catch(function(e) {
         console.warn('[Chat] poll error:', e);
         return { success: false, messages: [] };
     });
@@ -399,32 +469,32 @@ function apiGet(url) {
 
 /* ── Bubbles ── */
 function addBubble(text, isMe, senderName, timeStr, isSys) {
-    const row = document.createElement('div');
+    var row = document.createElement('div');
     if (isSys) {
         row.className = 'cw-msg-row';
-        row.innerHTML = `<div class="cw-msg-body" style="width:100%;align-items:center">
-            <div class="cw-bubble system">— ${esc(text)} —</div></div>`;
+        row.innerHTML = '<div class="cw-msg-body" style="width:100%;align-items:center">'
+            + '<div class="cw-bubble system">— ' + esc(text) + ' —</div></div>';
     } else {
         row.className = 'cw-msg-row' + (isMe ? ' mine' : '');
-        const myName = USER_IS_AUTH ? USER_NAME : (localStorage.getItem('aa_guest_name') || 'You');
-        const avName = isMe ? myName : (senderName || 'Support');
-        const avBg   = isMe ? '1a1a1a&color=fff' : '4A90E2&color=fff';
-        row.innerHTML = `
-            <div class="av"><img src="https://ui-avatars.com/api/?name=${encodeURIComponent(avName)}&background=${avBg}&size=64" alt=""></div>
-            <div class="cw-msg-body">
-                <div class="cw-bubble">${esc(text).replace(/\n/g,'<br>')}</div>
-                <span class="cw-time">${timeStr || nowTime()}</span>
-            </div>`;
+        var myName = USER_IS_AUTH ? USER_NAME : (localStorage.getItem('aa_guest_name') || 'You');
+        var avName = isMe ? myName : (senderName || 'Support');
+        var avBg   = isMe ? '1a1a1a&color=fff' : '4A90E2&color=fff';
+        row.innerHTML = '<div class="av"><img src="https://ui-avatars.com/api/?name='
+            + encodeURIComponent(avName) + '&background=' + avBg + '&size=64" alt=""></div>'
+            + '<div class="cw-msg-body">'
+            + '<div class="cw-bubble">' + esc(text).replace(/\n/g,'<br>') + '</div>'
+            + '<span class="cw-time">' + (timeStr || nowTime()) + '</span>'
+            + '</div>';
     }
     cwMsgs.appendChild(row);
     scrollB();
 }
 
 function addErrorBubble(msg) {
-    const row = document.createElement('div');
+    var row = document.createElement('div');
     row.className = 'cw-msg-row';
-    row.innerHTML = `<div class="cw-msg-body" style="width:100%">
-        <div class="cw-bubble error-bub">⚠️ ${esc(msg)}</div></div>`;
+    row.innerHTML = '<div class="cw-msg-body" style="width:100%">'
+        + '<div class="cw-bubble error-bub">⚠️ ' + esc(msg) + '</div></div>';
     cwMsgs.appendChild(row);
     scrollB();
 }
@@ -435,9 +505,10 @@ function handleSend(text, file) {
     if (!text && !file) return;
     cwInput.value = '';
 
+    /* Remove quick-reply buttons after first message */
     if (cwQuick && cwQuick.parentNode) cwQuick.remove();
 
-    const proceed = (name, email) => {
+    function proceed(name, email) {
         addBubble(text || '📎 File', true, name, nowTime());
         cwSend.disabled = true;
         if (!convId) {
@@ -445,72 +516,80 @@ function handleSend(text, file) {
         } else {
             postMsg(text, file);
         }
-    };
+    }
 
     if (USER_IS_AUTH) {
         proceed(USER_NAME, '');
     } else {
-        const saved = localStorage.getItem('aa_guest_name');
+        var saved = localStorage.getItem('aa_guest_name');
         if (saved) {
             proceed(saved, localStorage.getItem('aa_guest_email') || '');
         } else {
             pendingMsg  = text;
             pendingFile = file || null;
             showScreen(screenGuest);
-            setTimeout(() => guestName.focus(), 100);
+            setTimeout(function(){ guestName.focus(); }, 100);
         }
     }
 }
 
-/* ── Create conversation ── */
+/* ══════════════════════════════════════════════════════════════
+   FIX 6 — createConv: Use URLS.startChat (Django-resolved).
+   No more fragile string replacement.
+   ══════════════════════════════════════════════════════════════ */
 function createConv(text, file, name, email) {
-    apiPost(URL_START, {
-        subject: 'Website Inquiry',
-        message: text || '',
-        guest_name: name,
-        guest_email: email,
+    apiPost(URLS.startChat, {
+        subject:      'Website Inquiry',
+        message:      text || '',
+        guest_name:   name,
+        guest_email:  email,
     }, file)
-    .then(d => {
-        if (d && d.success) {
+    .then(function(d) {
+        if (d && d.success && d.conversation_id) {
             convId = d.conversation_id;
             localStorage.setItem('aa_conv_id', convId);
             lastId = 0;
             startPoll();
             console.log('[Chat] Conversation started:', convId);
         } else {
-            console.error('[Chat] start_chat returned:', d);
-            addErrorBubble('Could not start chat. Check browser console for details.');
+            console.error('[Chat] start_chat bad response:', d);
+            addErrorBubble('Could not start chat session. Please try again.');
+            cwSend.disabled = false;
         }
     })
-    .catch(e => {
+    .catch(function(e) {
         console.error('[Chat] createConv failed:', e);
-        addErrorBubble('Connection error. Is the server running? Check console.');
-    })
-    .finally(() => { cwSend.disabled = false; });
+        addErrorBubble(e.message || 'Connection error. Please check your network.');
+        cwSend.disabled = false;
+    });
 }
 
-/* ── Post to existing conversation ── */
+ 
 function postMsg(text, file) {
-    apiPost(URL_SEND(convId), { message: text || '' }, file)
-    .then(d => {
+    /* URLS.sendMessage is a template string like:
+       "/en/chat/conversation/__CONV_ID__/send/"
+       We replace the placeholder with the real conv id. */
+    var url = URLS.sendMessage.replace('__CONV_ID__', convId);
+    apiPost(url, { message: text || '' }, file)
+    .then(function(d) {
         if (d && d.success) {
             lastId = Math.max(lastId, d.message.id);
         } else {
-            console.error('[Chat] send_message returned:', d);
-            addErrorBubble('Message failed to send.');
+            console.error('[Chat] send_message bad response:', d);
+            addErrorBubble(d && d.error ? d.error : 'Message failed. Please try again.');
         }
     })
-    .catch(e => {
+    .catch(function(e) {
         console.error('[Chat] postMsg failed:', e);
-        addErrorBubble('Message not sent — connection error.');
+        addErrorBubble(e.message || 'Message not sent — please try again.');
     })
-    .finally(() => { cwSend.disabled = false; });
+    .finally(function() { cwSend.disabled = false; });
 }
 
 /* ── Guest form ── */
-guestSubmit.addEventListener('click', () => {
-    const nm = guestName.value.trim();
-    const em = guestEmail.value.trim();
+guestSubmit.addEventListener('click', function() {
+    var nm = guestName.value.trim();
+    var em = guestEmail.value.trim();
     if (!nm) { guestErr.textContent = 'Please enter your name.'; return; }
     guestErr.textContent = '';
     localStorage.setItem('aa_guest_name',  nm);
@@ -518,30 +597,34 @@ guestSubmit.addEventListener('click', () => {
 
     showScreen(screenChat);
     cwSend.disabled = true;
-    const msg = pendingMsg || 'Hello, I need some help.';
+    var msg = pendingMsg || 'Hello, I need some help.';
     addBubble(msg, true, nm, nowTime());
     createConv(msg, pendingFile, nm, em);
     pendingMsg = ''; pendingFile = null;
     cwInput.focus();
 });
-guestName.addEventListener('keydown',  e => { if (e.key === 'Enter') guestEmail.focus(); });
-guestEmail.addEventListener('keydown', e => { if (e.key === 'Enter') guestSubmit.click(); });
+guestName.addEventListener('keydown',  function(e){ if (e.key === 'Enter') guestEmail.focus(); });
+guestEmail.addEventListener('keydown', function(e){ if (e.key === 'Enter') guestSubmit.click(); });
 
 function showScreen(el) {
-    [screenChat, screenGuest].forEach(s => s.classList.toggle('hidden', s !== el));
+    [screenChat, screenGuest].forEach(function(s){ s.classList.toggle('hidden', s !== el); });
 }
 
 /* ── Poll for staff replies ── */
 function startPoll() {
     if (pollTimer || !convId) return;
-    pollTimer = setInterval(() => {
-        apiGet(URL_MESSAGES(convId, lastId)).then(d => {
+    pollTimer = setInterval(function() {
+        var url = URLS.getMessages
+            .replace('__CONV_ID__', convId)
+            .replace('__LAST_ID__', lastId);
+        apiGet(url).then(function(d) {
             if (!d.success || !d.messages || !d.messages.length) return;
-            d.messages.forEach(m => {
+            d.messages.forEach(function(m) {
                 if (m.id <= lastId) return;
                 lastId = m.id;
                 if (!m.is_from_customer) {
-                    addBubble(m.message, false, m.sender_name, m.created_at, m.message_type === 'system');
+                    addBubble(m.message, false, m.sender_name, m.created_at,
+                              m.message_type === 'system');
                     if (!isOpen) showBadge();
                 }
             });
@@ -550,33 +633,47 @@ function startPoll() {
 }
 
 /* ── Events ── */
-cwSend.addEventListener('click', () => handleSend(cwInput.value));
-cwInput.addEventListener('keypress', e => {
+cwSend.addEventListener('click', function(){ handleSend(cwInput.value); });
+cwInput.addEventListener('keypress', function(e){
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(cwInput.value); }
 });
-cwAtt.addEventListener('click', () => cwFile.click());
-cwFile.addEventListener('change', () => {
+cwAtt.addEventListener('click', function(){ cwFile.click(); });
+cwFile.addEventListener('change', function(){
     if (cwFile.files[0]) { handleSend('', cwFile.files[0]); cwFile.value = ''; }
 });
-document.querySelectorAll('.cw-qbtn').forEach(b => {
-    b.addEventListener('click', () => handleSend(b.dataset.msg));
+document.querySelectorAll('.cw-qbtn').forEach(function(b){
+    b.addEventListener('click', function(){ handleSend(b.dataset.msg); });
 });
 
 /* ── Restore history for returning visitors ── */
 if (convId) {
-    apiGet(URL_MESSAGES(convId, 0)).then(d => {
+    var histUrl = URLS.getMessages
+        .replace('__CONV_ID__', convId)
+        .replace('__LAST_ID__', '0');
+    apiGet(histUrl).then(function(d) {
+        if (d._stale) return; // conversation was deleted, already cleared
         if (d.success && d.messages && d.messages.length) {
-            d.messages.forEach(m => {
+            d.messages.forEach(function(m) {
                 lastId = Math.max(lastId, m.id);
-                addBubble(m.message, m.is_from_customer, m.sender_name, m.created_at, m.message_type === 'system');
+                addBubble(m.message, m.is_from_customer, m.sender_name,
+                          m.created_at, m.message_type === 'system');
             });
         }
         startPoll();
-    }).catch(() => startPoll());
+    }).catch(function(){ startPoll(); });
 }
 
 /* ── Show notification badge after 6s if chat is closed ── */
-setTimeout(() => { if (!isOpen) showBadge(); }, 6000);
+setTimeout(function(){ if (!isOpen) showBadge(); }, 6000);
 
 }());
+</script>
+
+ 
+<script>
+window.CHAT_URLS = {
+    startChat:   "{% url 'chat:start_chat' %}",
+    sendMessage: "{% url 'chat:send_message' conversation_id='__CONV_ID__' %}",
+    getMessages: "{% url 'chat:get_messages' conversation_id='__CONV_ID__' %}?last_message_id=__LAST_ID__",
+};
 </script>

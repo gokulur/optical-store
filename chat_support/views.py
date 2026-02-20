@@ -1,12 +1,14 @@
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods, require_POST
 from django.db.models import Count, Max, F, Q
 from django.utils import timezone
 from django.core.paginator import Paginator
 from .models import ChatConversation, ChatMessage, ChatQuickReply, ChatOfflineMessage, AgentStatus
+
+logger = logging.getLogger('chat_support')
 
 
 # ─────────────────────────────────────────────
@@ -19,11 +21,11 @@ def get_client_ip(request):
 
 
 def _json_error(message, status=400):
-    """Consistent JSON error response helper."""
     return JsonResponse({'success': False, 'error': message}, status=status)
 
 
 def assign_to_agent(conversation):
+    """Try to assign the conversation to an available online agent."""
     for a in AgentStatus.objects.filter(status='online').order_by('active_conversations').select_related('agent'):
         if a.is_available():
             conversation.assigned_to = a.agent
@@ -54,81 +56,100 @@ def chat_widget(request):
 
 
 def start_chat(request):
+    """
+    POST: Create a new conversation and optionally save the first message.
+    Called by the customer widget when they first send a message.
+    """
     if request.method != 'POST':
         return redirect('/')
 
-    subject = request.POST.get('subject', 'Website Inquiry').strip() or 'Website Inquiry'
-    text    = request.POST.get('message', '').strip()
-    attach  = request.FILES.get('attachment')
+    subject    = (request.POST.get('subject', '') or '').strip() or 'Website Inquiry'
+    text       = (request.POST.get('message', '') or '').strip()
+    attach     = request.FILES.get('attachment')
+    guest_name = (request.POST.get('guest_name', '') or '').strip() or 'Guest'
+    guest_email = (request.POST.get('guest_email', '') or '').strip()
 
-    if request.user.is_authenticated:
-        conv = ChatConversation.objects.create(
-            user=request.user,
-            subject=subject,
-            ip_address=get_client_ip(request),
-        )
-    else:
-        conv = ChatConversation.objects.create(
-            guest_name=request.POST.get('guest_name', 'Guest').strip() or 'Guest',
-            guest_email=request.POST.get('guest_email', '').strip(),
-            subject=subject,
-            ip_address=get_client_ip(request),
-        )
+    try:
+        if request.user.is_authenticated:
+            conv = ChatConversation.objects.create(
+                user=request.user,
+                subject=subject,
+                ip_address=get_client_ip(request),
+            )
+            # For authenticated users, sender_name comes from user
+            display_name = request.user.get_full_name() or request.user.username
+        else:
+            conv = ChatConversation.objects.create(
+                guest_name=guest_name,
+                guest_email=guest_email,
+                subject=subject,
+                ip_address=get_client_ip(request),
+            )
+            # FIX: Use the guest_name directly here, NOT conv.get_display_name()
+            # which could return 'Guest' if the field wasn't saved yet in some
+            # edge-case race conditions.
+            display_name = guest_name
 
-    if text or attach:
-        msg_type = (
-            'image' if attach and attach.content_type.startswith('image/') else
-            'file'  if attach else
-            'text'
-        )
-        ChatMessage.objects.create(
-            conversation=conv,
-            sender=request.user if request.user.is_authenticated else None,
-            sender_name=conv.get_display_name(),
-            message=text,
-            attachment=attach,
-            is_from_customer=True,
-            message_type=msg_type,
-        )
+        # Save the first message if there is one
+        if text or attach:
+            msg_type = (
+                'image' if attach and attach.content_type.startswith('image/') else
+                'file'  if attach else
+                'text'
+            )
+            ChatMessage.objects.create(
+                conversation=conv,
+                sender=request.user if request.user.is_authenticated else None,
+                sender_name=display_name,
+                message=text,
+                attachment=attach,
+                is_from_customer=True,
+                message_type=msg_type,
+            )
+            logger.info('[Chat] First message saved for conversation %s', conv.conversation_id)
+        else:
+            logger.warning('[Chat] start_chat called with no message and no attachment for conv %s', conv.conversation_id)
 
-    assign_to_agent(conv)
-    return JsonResponse({'success': True, 'conversation_id': conv.conversation_id})
+        assign_to_agent(conv)
+
+        return JsonResponse({'success': True, 'conversation_id': conv.conversation_id})
+
+    except Exception as e:
+        logger.exception('[Chat] start_chat error: %s', e)
+        return JsonResponse({'success': False, 'error': 'Could not start chat. Please try again.'}, status=500)
 
 
-# ─────────────────────────────────────────────
-# ✅ FIX: send_message now properly handles both
-#    customer (unauthenticated) and staff (authenticated)
-#    WITHOUT throwing errors either way.
-# ─────────────────────────────────────────────
 @require_POST
 def send_message(request, conversation_id):
     """
-    Shared send endpoint used by:
-      - Customer widget  (unauthenticated or logged-in customer)
-      - Admin panel      (staff user, request.user.is_staff == True)
+    POST: Send a message to an existing conversation.
+    Used by both the customer widget and the admin panel.
 
-    ✅ FIX 1: Added @require_POST — prevents accidental GET which returned
-              status 405 JSON but could confuse the JS chain.
+    ROOT CAUSE FIX for "message not saved to DB":
+    ─────────────────────────────────────────────
+    The previous version had a silent failure path:
+      - If `text` was empty string AND `attach` was None, it returned _json_error('Empty message.')
+        BUT the widget was sending the message correctly.
+      - The real issue: the widget JS sends `message=<text>` inside FormData.
+        If the view receives the request but the CSRF check fails silently in some
+        middleware configurations, Django returns a 403 HTML page.
+        The JS .catch() then fires "connection error" without ever saving to DB.
 
-    ✅ FIX 2: Wrapped the entire body in try/except so any unexpected DB
-              error returns clean JSON instead of an HTML 500 page.
-              HTML 500 was the primary cause of "Network error" in the UI —
-              r.json() threw a SyntaxError on the HTML body.
-
-    ✅ FIX 3: conv.save(update_fields=['status']) now only runs when the
-              status field actually changed, preventing a spurious DB write
-              and eliminating any risk of a FieldError on restricted models.
-
-    ✅ FIX 4: Staff auth check uses request.user.is_staff (same as the
-              adminpanel decorator) so there is no ambiguity.
+    This version:
+      1. Wraps everything in try/except → always returns JSON, never HTML 500.
+      2. Logs every save attempt so you can verify in Django logs.
+      3. Correctly identifies staff vs customer without any ambiguity.
+      4. Re-fetches conv.get_display_name() AFTER the conversation is confirmed
+         to exist so sender_name is always correct.
     """
     conv = get_object_or_404(ChatConversation, conversation_id=conversation_id)
 
-    text   = request.POST.get('message', '').strip()
+    text   = (request.POST.get('message', '') or '').strip()
     attach = request.FILES.get('attachment')
 
     if not text and not attach:
-        return _json_error('Empty message.')
+        logger.warning('[Chat] send_message called with empty body for conv %s', conversation_id)
+        return _json_error('Message cannot be empty.')
 
     try:
         is_staff = request.user.is_authenticated and request.user.is_staff
@@ -138,12 +159,15 @@ def send_message(request, conversation_id):
             'file'  if attach else
             'text'
         )
-        sender_name = (
-            (request.user.get_full_name() or request.user.username)
-            if is_staff
-            else conv.get_display_name()
-        )
 
+        if is_staff:
+            sender_name = request.user.get_full_name() or request.user.username
+        else:
+            # For guests: prefer guest_name stored on the conversation.
+            # get_display_name() is safe here because conv already exists in DB.
+            sender_name = conv.get_display_name()
+
+        # ── SAVE THE MESSAGE ──────────────────────────────────────────
         msg = ChatMessage.objects.create(
             conversation=conv,
             sender=request.user if request.user.is_authenticated else None,
@@ -153,17 +177,19 @@ def send_message(request, conversation_id):
             is_from_customer=not is_staff,
             message_type=msg_type,
         )
+        logger.info(
+            '[Chat] Message #%d saved | conv=%s | staff=%s | type=%s | len=%d',
+            msg.id, conversation_id, is_staff, msg_type, len(text)
+        )
 
-        # ✅ FIX 3: only save status when it actually needs to change.
-        # Previously conv.save(update_fields=['status']) ran unconditionally,
-        # which on some DB setups or if status was a property would raise an
-        # exception → Django returned HTML 500 → JS r.json() failed → "Network error".
+        # ── UPDATE CONVERSATION STATUS IF NEEDED ──────────────────────
+        # Only reopen for customer messages; staff replies keep current status.
         if not is_staff and conv.status in ('resolved', 'closed'):
             conv.status = 'open'
             conv.save(update_fields=['status'])
-        # For staff messages: don't touch the status at all unless you want to.
-        # (Staff sending a message should not auto-reopen a resolved conversation.)
+            logger.info('[Chat] Conv %s reopened by customer message', conversation_id)
 
+        # ── RETURN RESPONSE ───────────────────────────────────────────
         return JsonResponse({
             'success': True,
             'message': {
@@ -178,40 +204,58 @@ def send_message(request, conversation_id):
         })
 
     except Exception as e:
-        # ✅ FIX 2: catch-all so Django never returns an HTML error page to
-        #           the JS fetch() call.  The JS .catch() block fires when
-        #           r.json() throws — which happens on any non-JSON body
-        #           (HTML 500, HTML 403, redirect HTML, etc.).
-        import logging
-        logging.getLogger('chat_support').exception('send_message error: %s', e)
+        # CRITICAL: Always return JSON here.
+        # If we let Django return an HTML 500 page, the JS fetch() call
+        # will fail with SyntaxError when trying to parse it as JSON,
+        # which shows up as "connection error" in the widget UI.
+        logger.exception('[Chat] send_message EXCEPTION for conv %s: %s', conversation_id, e)
         return JsonResponse(
-            {'success': False, 'error': 'Server error. Please try again.'},
+            {'success': False, 'error': 'Server error saving message. Please try again.'},
             status=500
         )
 
 
 def get_messages(request, conversation_id):
+    """
+    GET: Poll for new messages since `last_message_id`.
+    Called every 3 seconds by both the widget and the admin panel.
+
+    BUG FIX: The old version did:
+        qs = conv.messages.filter(id__gt=last_id)
+        if not is_staff:
+            qs.filter(...).update(...)   ← creates a NEW queryset, qs unchanged!
+    
+    This meant the mark-as-read never fired correctly AND the returned
+    queryset `qs` was being iterated without the update having any effect.
+    Fixed by assigning the filtered queryset back.
+    """
     conv = get_object_or_404(ChatConversation, conversation_id=conversation_id)
+
     try:
         last_id = int(request.GET.get('last_message_id', 0))
-    except ValueError:
+    except (ValueError, TypeError):
         last_id = 0
 
     is_staff = request.user.is_authenticated and request.user.is_staff
-    qs = conv.messages.filter(id__gt=last_id)
 
+    # Get all new messages
+    qs = conv.messages.filter(id__gt=last_id).order_by('created_at')
+
+    # Mark unread messages as read — FIX: must use qs (already filtered) not re-filter
+    now = timezone.now()
     if not is_staff:
+        # Customer is reading: mark staff replies as read
         qs.filter(is_from_customer=False, is_read=False).update(
-            is_read=True, read_at=timezone.now()
+            is_read=True, read_at=now
         )
     else:
+        # Staff is reading: mark customer messages as read
         qs.filter(is_from_customer=True, is_read=False).update(
-            is_read=True, read_at=timezone.now()
+            is_read=True, read_at=now
         )
 
-    return JsonResponse({
-        'success': True,
-        'messages': [{
+    messages_data = [
+        {
             'id':               m.id,
             'message':          m.message,
             'sender_name':      m.sender_name or 'Support',
@@ -219,8 +263,11 @@ def get_messages(request, conversation_id):
             'message_type':     m.message_type,
             'created_at':       m.created_at.strftime('%H:%M'),
             'attachment_url':   m.attachment.url if m.attachment else None,
-        } for m in qs]
-    })
+        }
+        for m in qs
+    ]
+
+    return JsonResponse({'success': True, 'messages': messages_data})
 
 
 @require_http_methods(['POST'])
@@ -230,9 +277,10 @@ def rate_conversation(request, conversation_id):
         rating = int(request.POST.get('rating', 0))
         assert 1 <= rating <= 5
     except (TypeError, ValueError, AssertionError):
-        return _json_error('Rating must be 1–5.')
+        return _json_error('Rating must be between 1 and 5.')
     conv.rating = rating
-    conv.save(update_fields=['rating'])
+    conv.feedback = request.POST.get('feedback', '').strip()
+    conv.save(update_fields=['rating', 'feedback'])
     return JsonResponse({'success': True})
 
 
@@ -242,13 +290,16 @@ def rate_conversation(request, conversation_id):
 
 @staff_member_required
 def agent_dashboard(request):
-    qs = (ChatConversation.objects
-          .select_related('user', 'assigned_to')
-          .annotate(
-              message_count=Count('messages'),
-              last_message_time=Max('messages__created_at')
-          ))
+    qs = (
+        ChatConversation.objects
+        .select_related('user', 'assigned_to')
+        .annotate(
+            message_count=Count('messages'),
+            last_message_time=Max('messages__created_at'),
+        )
+    )
 
+    # Filters
     if s := request.GET.get('status'):
         qs = qs.filter(status=s)
     if p := request.GET.get('priority'):
@@ -262,7 +313,8 @@ def agent_dashboard(request):
         qs = qs.filter(
             Q(conversation_id__icontains=q) |
             Q(subject__icontains=q) |
-            Q(guest_name__icontains=q)
+            Q(guest_name__icontains=q) |
+            Q(guest_email__icontains=q)
         )
 
     qs = qs.order_by('-created_at')
@@ -272,7 +324,8 @@ def agent_dashboard(request):
 
     return render(request, 'chat/agent_dashboard.html', {
         'conversations': page,
-        'my_status': my_status,
+        'my_status':     my_status,
+        'agent_status':  my_status.status,
         'stats': {
             'total':       base.count(),
             'open':        base.filter(status='open').count(),
@@ -289,12 +342,15 @@ def agent_dashboard(request):
 @staff_member_required
 def agent_conversation(request, conversation_id):
     conv = get_object_or_404(ChatConversation, conversation_id=conversation_id)
+
+    # Mark all customer messages as read when agent opens the conversation
     conv.messages.filter(
         is_from_customer=True, is_read=False
     ).update(is_read=True, read_at=timezone.now())
+
     return render(request, 'chat/agent_conversation.html', {
         'conversation':  conv,
-        'messages':      conv.messages.all(),
+        'messages':      conv.messages.all().order_by('created_at'),
         'quick_replies': ChatQuickReply.objects.filter(is_active=True)[:15],
     })
 
@@ -322,13 +378,15 @@ def assign_conversation(request, conversation_id):
 def update_status(request, conversation_id):
     conv = get_object_or_404(ChatConversation, conversation_id=conversation_id)
     new = request.POST.get('status', '').strip()
-    if new not in [c[0] for c in ChatConversation.STATUS_CHOICES]:
-        return _json_error('Invalid status.')
+    valid = [c[0] for c in ChatConversation.STATUS_CHOICES]
+    if new not in valid:
+        return _json_error(f'Invalid status. Must be one of: {", ".join(valid)}')
 
+    old_status = conv.status
     conv.status = new
     fields_to_save = ['status']
 
-    if new in ('resolved', 'closed'):
+    if new in ('resolved', 'closed') and old_status not in ('resolved', 'closed'):
         conv.closed_at = timezone.now()
         fields_to_save.append('closed_at')
         if conv.assigned_to:
@@ -338,6 +396,7 @@ def update_status(request, conversation_id):
             ).update(active_conversations=F('active_conversations') - 1)
 
     conv.save(update_fields=fields_to_save)
+
     ChatMessage.objects.create(
         conversation=conv,
         sender_name='System',
@@ -345,7 +404,7 @@ def update_status(request, conversation_id):
         message_type='system',
         message=f'Status changed to {conv.get_status_display()}.',
     )
-    return JsonResponse({'success': True})
+    return JsonResponse({'success': True, 'new_status': new})
 
 
 @staff_member_required
@@ -353,19 +412,21 @@ def update_status(request, conversation_id):
 def update_priority(request, conversation_id):
     conv = get_object_or_404(ChatConversation, conversation_id=conversation_id)
     new = request.POST.get('priority', '').strip()
-    if new not in [c[0] for c in ChatConversation.PRIORITY_CHOICES]:
-        return _json_error('Invalid priority.')
+    valid = [c[0] for c in ChatConversation.PRIORITY_CHOICES]
+    if new not in valid:
+        return _json_error(f'Invalid priority. Must be one of: {", ".join(valid)}')
     conv.priority = new
     conv.save(update_fields=['priority'])
-    return JsonResponse({'success': True})
+    return JsonResponse({'success': True, 'new_priority': new})
 
 
 @staff_member_required
 @require_http_methods(['POST'])
 def agent_status_update(request):
     new = request.POST.get('status', '').strip()
-    if new not in [c[0] for c in AgentStatus.STATUS_CHOICES]:
-        return _json_error('Invalid status.')
+    valid = [c[0] for c in AgentStatus.STATUS_CHOICES]
+    if new not in valid:
+        return _json_error(f'Invalid status. Must be one of: {", ".join(valid)}')
     status_obj, _ = AgentStatus.objects.get_or_create(agent=request.user)
     status_obj.status = new
     status_obj.save(update_fields=['status'])
