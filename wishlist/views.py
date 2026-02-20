@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 
 from .models import Wishlist, WishlistItem
 from catalog.models import Product
@@ -18,13 +18,33 @@ def get_or_create_wishlist(user):
     return wishlist
 
 
+def get_wishlist_count(wishlist):
+    """
+    Safely get wishlist item count.
+    Handles .count as @property, method, or missing attribute.
+    """
+    try:
+        val = wishlist.count
+        return val() if callable(val) else int(val)
+    except Exception:
+        return wishlist.items.count()
+
+
+def ajax_or_json(request):
+    """Returns True if the request expects a JSON response."""
+    return (
+        request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        or 'application/json' in request.headers.get('accept', '')
+    )
+
+
 # ─────────────────────────────────────────────
 # WISHLIST PAGE
 # ─────────────────────────────────────────────
 
 @login_required
 def wishlist_view(request):
-    """Full wishlist page."""
+    """Full wishlist page — GET only."""
     wishlist = get_or_create_wishlist(request.user)
     items = wishlist.items.select_related(
         'product', 'product__brand', 'product__category'
@@ -49,62 +69,82 @@ def wishlist_view(request):
 
 
 # ─────────────────────────────────────────────
-# TOGGLE (add / remove) — used by every heart button
+# TOGGLE (add / remove) — POST only
 # ─────────────────────────────────────────────
 
 @require_POST
 def toggle_wishlist(request, product_id):
     """
-    Add the product if not in wishlist, remove if it is.
-    Returns 401 JSON for unauthenticated AJAX requests.
+    Toggle a product in/out of the wishlist.
+    - 401 JSON  → not authenticated (AJAX)
+    - 200 JSON  → success
+    - 500 JSON  → server error (AJAX), exception re-raised otherwise
     """
+    is_ajax = ajax_or_json(request)
+
     if not request.user.is_authenticated:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        if is_ajax:
             return JsonResponse({
                 'error': 'login_required',
                 'message': 'Please log in to save items to your wishlist.',
             }, status=401)
-        return redirect(f'/accounts/login/?next=/wishlist/toggle/{product_id}/')
+        return redirect(f'/accounts/login/?next=/wishlist/')
 
-    product  = get_object_or_404(Product, id=product_id, is_active=True)
-    wishlist = get_or_create_wishlist(request.user)
+    try:
+        product  = get_object_or_404(Product, id=product_id, is_active=True)
+        wishlist = get_or_create_wishlist(request.user)
 
-    item = WishlistItem.objects.filter(wishlist=wishlist, product=product).first()
+        item = WishlistItem.objects.filter(wishlist=wishlist, product=product).first()
 
-    if item:
-        item.delete()
-        added   = False
-        message = f'"{product.name}" removed from your wishlist.'
-    else:
-        WishlistItem.objects.create(wishlist=wishlist, product=product)
-        added   = True
-        message = f'"{product.name}" added to your wishlist!'
+        if item:
+            item.delete()
+            added   = False
+            message = f'"{product.name}" removed from your wishlist.'
+        else:
+            WishlistItem.objects.create(wishlist=wishlist, product=product)
+            added   = True
+            message = f'"{product.name}" added to your wishlist!'
 
-    wishlist_count = wishlist.count
+        count = get_wishlist_count(wishlist)
 
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({
-            'added':          added,
-            'wishlist_count': wishlist_count,
-            'message':        message,
-            'product_id':     product_id,
-        })
+        if is_ajax:
+            return JsonResponse({
+                'added':          added,
+                'wishlist_count': count,
+                'message':        message,
+                'product_id':     product_id,
+            })
 
-    messages.success(request, message)
-    return redirect(request.META.get('HTTP_REFERER', 'wishlist:wishlist'))
+        messages.success(request, message)
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        if is_ajax:
+            return JsonResponse({'error': 'server_error', 'message': str(exc)}, status=500)
+        raise
 
 
 # ─────────────────────────────────────────────
-# LEGACY /wishlist/toggle/  (no product_id in URL)
+# LEGACY /wishlist/toggle/  (POST body contains product_id)
 # ─────────────────────────────────────────────
 
 @require_POST
 def toggle_wishlist_post(request):
-    """
-    POST body: { product_id: <id> }
-    Kept for backward-compat with base.html AJAX call pattern.
-    """
+    """POST body: { product_id: <id> } — backward-compat."""
     import json
+
+    is_ajax = ajax_or_json(request)
+
+    if not request.user.is_authenticated:
+        if is_ajax:
+            return JsonResponse({
+                'error': 'login_required',
+                'message': 'Please log in to save items to your wishlist.',
+            }, status=401)
+        return redirect('/accounts/login/?next=/wishlist/')
+
     try:
         data       = json.loads(request.body)
         product_id = data.get('product_id')
@@ -114,133 +154,101 @@ def toggle_wishlist_post(request):
     if not product_id:
         return JsonResponse({'error': 'product_id required'}, status=400)
 
-    if not request.user.is_authenticated:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({
-                'error': 'login_required',
-                'message': 'Please log in to save items to your wishlist.',
-            }, status=401)
-        return redirect(f'/accounts/login/?next=/wishlist/')
-
     return toggle_wishlist(request, product_id)
 
 
 # ─────────────────────────────────────────────
-# REMOVE single item (GET or POST, no toggle)
+# REMOVE single item — GET or POST accepted
 # ─────────────────────────────────────────────
 
+@require_http_methods(["GET", "POST"])
 def remove_from_wishlist(request, product_id):
-    """Hard remove — always removes regardless of current state."""
+    """Hard remove. Accepts both GET (wishlist.html JS uses GET) and POST."""
+    is_ajax = ajax_or_json(request)
+
     if not request.user.is_authenticated:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        if is_ajax:
             return JsonResponse({'error': 'login_required'}, status=401)
         return redirect('/accounts/login/')
 
-    product  = get_object_or_404(Product, id=product_id)
-    wishlist = get_or_create_wishlist(request.user)
-    WishlistItem.objects.filter(wishlist=wishlist, product=product).delete()
+    try:
+        product  = get_object_or_404(Product, id=product_id)
+        wishlist = get_or_create_wishlist(request.user)
+        WishlistItem.objects.filter(wishlist=wishlist, product=product).delete()
+        count = get_wishlist_count(wishlist)
 
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({
-            'success':        True,
-            'wishlist_count': wishlist.count,
-            'product_id':     product_id,
-        })
+        if is_ajax:
+            return JsonResponse({
+                'success':        True,
+                'wishlist_count': count,
+                'product_id':     product_id,
+            })
 
-    messages.success(request, f'"{product.name}" removed from your wishlist.')
-    return redirect('wishlist:wishlist')
+        messages.success(request, f'"{product.name}" removed from your wishlist.')
+        return redirect('wishlist:wishlist')
+
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        if is_ajax:
+            return JsonResponse({'error': str(exc)}, status=500)
+        raise
 
 
 # ─────────────────────────────────────────────
-# CLEAR entire wishlist
+# CLEAR entire wishlist — POST only
 # ─────────────────────────────────────────────
 
 @require_POST
 def clear_wishlist(request):
     """Remove every item from the wishlist in one shot."""
+    is_ajax = ajax_or_json(request)
+
     if not request.user.is_authenticated:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        if is_ajax:
             return JsonResponse({'error': 'login_required'}, status=401)
         return redirect('/accounts/login/')
 
-    wishlist = get_or_create_wishlist(request.user)
-    deleted, _ = wishlist.items.all().delete()
+    try:
+        wishlist = get_or_create_wishlist(request.user)
+        deleted, _ = wishlist.items.all().delete()
 
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({'success': True, 'deleted': deleted, 'wishlist_count': 0})
+        if is_ajax:
+            return JsonResponse({'success': True, 'deleted': deleted, 'wishlist_count': 0})
 
-    messages.success(request, 'Your wishlist has been cleared.')
-    return redirect('wishlist:wishlist')
+        messages.success(request, 'Your wishlist has been cleared.')
+        return redirect('wishlist:wishlist')
+
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        if is_ajax:
+            return JsonResponse({'error': str(exc)}, status=500)
+        raise
 
 
 # ─────────────────────────────────────────────
-# MOVE TO CART
+# MOVE TO CART — POST only
 # ─────────────────────────────────────────────
 
 @require_POST
 def move_to_cart(request, product_id):
     """Add the product to the cart then remove it from the wishlist."""
+    is_ajax = ajax_or_json(request)
+
     if not request.user.is_authenticated:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        if is_ajax:
             return JsonResponse({'error': 'login_required'}, status=401)
         return redirect('/accounts/login/')
 
-    from cart.views import get_or_create_cart as get_cart
-    from cart.models import CartItem
+    try:
+        from cart.views import get_or_create_cart as get_cart
+        from cart.models import CartItem
 
-    product  = get_object_or_404(Product, id=product_id, is_active=True)
-    wishlist = get_or_create_wishlist(request.user)
-    cart     = get_cart(request)
+        product  = get_object_or_404(Product, id=product_id, is_active=True)
+        wishlist = get_or_create_wishlist(request.user)
+        cart     = get_cart(request)
 
-    cart_item, created = CartItem.objects.get_or_create(
-        cart=cart,
-        product=product,
-        defaults={'quantity': 1, 'unit_price': product.base_price},
-    )
-    if not created:
-        cart_item.quantity += 1
-        cart_item.save()
-
-    WishlistItem.objects.filter(wishlist=wishlist, product=product).delete()
-
-    cart_count     = cart.items.count()
-    wishlist_count = wishlist.count
-
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({
-            'success':        True,
-            'cart_count':     cart_count,
-            'wishlist_count': wishlist_count,
-            'message':        f'"{product.name}" moved to cart!',
-        })
-
-    messages.success(request, f'"{product.name}" moved to cart!')
-    return redirect('wishlist:wishlist')
-
-
-# ─────────────────────────────────────────────
-# MOVE ALL TO CART
-# ─────────────────────────────────────────────
-
-@require_POST
-def move_all_to_cart(request):
-    """Move every wishlist item to the cart at once."""
-    if not request.user.is_authenticated:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'error': 'login_required'}, status=401)
-        return redirect('/accounts/login/')
-
-    from cart.views import get_or_create_cart as get_cart
-    from cart.models import CartItem
-
-    wishlist = get_or_create_wishlist(request.user)
-    cart     = get_cart(request)
-    moved    = 0
-
-    for wish_item in wishlist.items.select_related('product'):
-        product = wish_item.product
-        if not product.is_active:
-            continue
         cart_item, created = CartItem.objects.get_or_create(
             cart=cart,
             product=product,
@@ -249,29 +257,95 @@ def move_all_to_cart(request):
         if not created:
             cart_item.quantity += 1
             cart_item.save()
-        moved += 1
 
-    wishlist.items.all().delete()
+        WishlistItem.objects.filter(wishlist=wishlist, product=product).delete()
 
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({
-            'success':        True,
-            'moved':          moved,
-            'cart_count':     cart.items.count(),
-            'wishlist_count': 0,
-        })
+        if is_ajax:
+            return JsonResponse({
+                'success':        True,
+                'cart_count':     cart.items.count(),
+                'wishlist_count': get_wishlist_count(wishlist),
+                'message':        f'"{product.name}" moved to cart!',
+            })
 
-    messages.success(request, f'{moved} item(s) moved to your cart.')
-    return redirect('wishlist:wishlist')
+        messages.success(request, f'"{product.name}" moved to cart!')
+        return redirect('wishlist:wishlist')
+
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        if is_ajax:
+            return JsonResponse({'error': str(exc)}, status=500)
+        raise
 
 
 # ─────────────────────────────────────────────
-# WISHLIST COUNT (AJAX helper)
+# MOVE ALL TO CART — POST only
+# ─────────────────────────────────────────────
+
+@require_POST
+def move_all_to_cart(request):
+    """Move every wishlist item to the cart at once."""
+    is_ajax = ajax_or_json(request)
+
+    if not request.user.is_authenticated:
+        if is_ajax:
+            return JsonResponse({'error': 'login_required'}, status=401)
+        return redirect('/accounts/login/')
+
+    try:
+        from cart.views import get_or_create_cart as get_cart
+        from cart.models import CartItem
+
+        wishlist = get_or_create_wishlist(request.user)
+        cart     = get_cart(request)
+        moved    = 0
+
+        for wish_item in wishlist.items.select_related('product'):
+            product = wish_item.product
+            if not product.is_active:
+                continue
+            cart_item, created = CartItem.objects.get_or_create(
+                cart=cart,
+                product=product,
+                defaults={'quantity': 1, 'unit_price': product.base_price},
+            )
+            if not created:
+                cart_item.quantity += 1
+                cart_item.save()
+            moved += 1
+
+        wishlist.items.all().delete()
+
+        if is_ajax:
+            return JsonResponse({
+                'success':        True,
+                'moved':          moved,
+                'cart_count':     cart.items.count(),
+                'wishlist_count': 0,
+            })
+
+        messages.success(request, f'{moved} item(s) moved to your cart.')
+        return redirect('wishlist:wishlist')
+
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        if is_ajax:
+            return JsonResponse({'error': str(exc)}, status=500)
+        raise
+
+
+# ─────────────────────────────────────────────
+# WISHLIST COUNT — GET only
 # ─────────────────────────────────────────────
 
 def wishlist_count(request):
     """Quick endpoint to refresh the badge count in the header."""
     if not request.user.is_authenticated:
         return JsonResponse({'wishlist_count': 0})
-    wishlist = get_or_create_wishlist(request.user)
-    return JsonResponse({'wishlist_count': wishlist.count})
+    try:
+        wishlist = get_or_create_wishlist(request.user)
+        return JsonResponse({'wishlist_count': get_wishlist_count(wishlist)})
+    except Exception:
+        return JsonResponse({'wishlist_count': 0})

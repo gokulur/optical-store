@@ -1,33 +1,30 @@
-# wishlist/urls.py
-
 from django.urls import path
 from . import views
 
 app_name = 'wishlist'
 
 urlpatterns = [
-    # ── Full wishlist page ────────────────────────────────────────
+    # Full wishlist page (GET, login required)
     path('', views.wishlist_view, name='wishlist'),
 
-    # ── Toggle (add/remove) — two URL patterns ────────────────────
-    # 1. With product_id in URL  →  /wishlist/toggle/42/
+    # Toggle add/remove — heart button uses this (POST only)
     path('toggle/<int:product_id>/', views.toggle_wishlist, name='toggle'),
-    
-    # 2. POST-body only  →  /wishlist/toggle/   (legacy / base.html AJAX)
+
+    # Legacy toggle via POST body (no product_id in URL)
     path('toggle/', views.toggle_wishlist_post, name='toggle_post'),
 
-    # ── Hard remove ───────────────────────────────────────────────
+    # Hard remove (GET or POST)
     path('remove/<int:product_id>/', views.remove_from_wishlist, name='remove'),
 
-    # ── Clear all ─────────────────────────────────────────────────
+    # Clear entire wishlist (POST only)
     path('clear/', views.clear_wishlist, name='clear'),
 
-    # ── Move to cart ──────────────────────────────────────────────
+    # Move single item to cart (POST only)
     path('move-to-cart/<int:product_id>/', views.move_to_cart, name='move_to_cart'),
+
+    # Move all items to cart (POST only)
     path('move-all-to-cart/', views.move_all_to_cart, name='move_all_to_cart'),
 
-    # ── Count badge (AJAX) ────────────────────────────────────────
+    # Badge count helper (GET)
     path('count/', views.wishlist_count, name='count'),
 ]
-
- 
