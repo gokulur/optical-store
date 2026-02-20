@@ -565,3 +565,158 @@ def cancel_order(request, order_number):
 def get_order_status(request, order_number):
     order = get_object_or_404(Order, order_number=order_number, customer=request.user)
     return JsonResponse({'order_number': order.order_number, 'status': order.status, 'status_display': order.get_status_display(), 'payment_status': order.payment_status, 'tracking_number': order.tracking_number, 'carrier': order.carrier})
+
+
+@login_required
+@require_POST
+def buy_now(request, product_id):
+    """Store a single product in session for immediate checkout."""
+    from django.http import JsonResponse
+    from catalog.models import Product
+    
+    product = get_object_or_404(Product, id=product_id, is_active=True)
+    # Store buy-now item in session
+    request.session['buy_now'] = {'product_id': product.id, 'quantity': 1}
+    return JsonResponse({'redirect': '/orders/buy-now/checkout/'})
+
+
+@login_required
+def buy_now_checkout(request):
+    """Checkout page showing only the buy-now product."""
+    buy_now_data = request.session.get('buy_now')
+    if not buy_now_data:
+        return redirect('cart:cart_view')
+    
+    from catalog.models import Product
+    product = get_object_or_404(Product, id=buy_now_data['product_id'], is_active=True)
+    quantity = buy_now_data.get('quantity', 1)
+    
+    unit_price = product.base_price
+    subtotal = unit_price * quantity
+    shipping = Decimal('0.00') if subtotal >= Decimal('200.00') else Decimal('20.00')
+    total = subtotal + shipping
+    
+    addrs = request.user.addresses.all()
+    
+    return render(request, 'buy_now_checkout.html', {
+        'product': product,
+        'quantity': quantity,
+        'unit_price': unit_price,
+        'subtotal': subtotal,
+        'tax': Decimal('0.00'),
+        'shipping': shipping,
+        'total': total,
+        'shipping_addresses': addrs,
+        'default_shipping': addrs.filter(is_default_shipping=True).first(),
+        'is_buy_now': True,
+    })
+
+
+@login_required
+@require_POST
+def place_buy_now_order(request):
+    """Place order for buy-now item (session-based, not from cart)."""
+    buy_now_data = request.session.get('buy_now')
+    if not buy_now_data:
+        messages.error(request, 'Session expired. Please try again.')
+        return redirect('cart:cart_view')
+    
+    from catalog.models import Product
+    try:
+        product = get_object_or_404(Product, id=buy_now_data['product_id'], is_active=True)
+        quantity = buy_now_data.get('quantity', 1)
+        pm = request.POST.get('payment_method', '').strip()
+        
+        if not pm:
+            messages.error(request, 'Please select a payment method.')
+            return redirect('orders:buy_now_checkout')
+        
+        addr_id = request.POST.get('shipping_address_id', '').strip()
+        if addr_id:
+            try:
+                a = Address.objects.get(id=addr_id, user=request.user)
+                ship = {
+                    'line1': a.address_line1, 'line2': getattr(a, 'address_line2', '') or '',
+                    'city': a.city, 'state': getattr(a, 'state', '') or '',
+                    'country': a.country, 'postal_code': getattr(a, 'postal_code', '') or '',
+                    'phone': getattr(a, 'phone', '') or '',
+                    'name': getattr(a, 'full_name', '') or request.user.get_full_name() or request.user.email,
+                }
+            except Address.DoesNotExist:
+                messages.error(request, 'Address not found.')
+                return redirect('orders:buy_now_checkout')
+        else:
+            fn = request.POST.get('full_name', '').strip()
+            a1 = request.POST.get('address_line1', '').strip()
+            ct = request.POST.get('city', '').strip()
+            if not fn or not a1 or not ct:
+                messages.error(request, 'Please fill in all required address fields.')
+                return redirect('orders:buy_now_checkout')
+            ship = {
+                'line1': a1, 'line2': request.POST.get('address_line2', '').strip(),
+                'city': ct, 'state': request.POST.get('state', '').strip(),
+                'country': request.POST.get('country', 'Qatar').strip() or 'Qatar',
+                'postal_code': request.POST.get('postal_code', '').strip(),
+                'phone': request.POST.get('phone', '').strip(), 'name': fn,
+            }
+        
+        unit_price = _dec(product.base_price)
+        subtotal = unit_price * quantity
+        shipping_amt = Decimal('0.00') if subtotal >= Decimal('200.00') else Decimal('20.00')
+        total = subtotal + shipping_amt
+        
+        with transaction.atomic():
+            order = Order.objects.create(
+                order_number=_gen_order_number(), customer=request.user,
+                order_type='online', status='pending', currency='QAR',
+                subtotal=subtotal, tax_amount=Decimal('0.00'),
+                shipping_amount=shipping_amt, discount_amount=Decimal('0.00'),
+                total_amount=total,
+                customer_email=request.user.email,
+                customer_phone=ship.get('phone', ''), customer_name=ship.get('name', ''),
+                shipping_address_line1=ship.get('line1', ''), shipping_address_line2=ship.get('line2', ''),
+                shipping_city=ship.get('city', ''), shipping_state=ship.get('state', ''),
+                shipping_country=ship.get('country', 'Qatar'), shipping_postal_code=ship.get('postal_code', ''),
+                billing_same_as_shipping=True,
+                billing_address_line1=ship.get('line1', ''), billing_city=ship.get('city', ''),
+                billing_country=ship.get('country', 'Qatar'),
+                payment_method=pm, payment_status='pending',
+                customer_notes=request.POST.get('customer_notes', '').strip(),
+            )
+            
+            OrderItem.objects.create(
+                order=order, product=product,
+                product_name=product.name,
+                product_sku=str(getattr(product, 'sku', '') or ''),
+                quantity=quantity, unit_price=unit_price,
+                subtotal=subtotal,
+            )
+            
+            OrderStatusHistory.objects.create(
+                order=order, to_status='pending',
+                notes='Buy Now order created', changed_by=request.user,
+            )
+        
+        # Clear buy-now session
+        del request.session['buy_now']
+        
+        if pm == 'cash_on_delivery':
+            order.status = 'confirmed'
+            order.confirmed_at = timezone.now()
+            order.save(update_fields=['status', 'confirmed_at'])
+            OrderStatusHistory.objects.create(order=order, from_status='pending', to_status='confirmed', notes='COD confirmed', changed_by=request.user)
+            messages.success(request, f'✅ Order {order.order_number} placed!')
+            return redirect('orders:order_confirmation', order_number=order.order_number)
+        elif pm == 'sadad':
+            return redirect('orders:sadad_payment', order_number=order.order_number)
+        elif pm == 'stripe':
+            return redirect('orders:stripe_payment', order_number=order.order_number)
+        else:
+            order.delete()
+            messages.error(request, f'Unknown payment method: {pm}')
+            return redirect('orders:buy_now_checkout')
+    
+    except Exception as e:
+        logger.error(f"place_buy_now_order error: {e}", exc_info=True)
+        messages.error(request, 'Something went wrong. Please try again.')
+        return redirect('orders:buy_now_checkout')

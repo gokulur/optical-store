@@ -34,4 +34,9 @@ urlpatterns = [
     path('<str:order_number>/track/',            views.track_order,    name='track_order'),
     path('<str:order_number>/cancel/',           views.cancel_order,   name='cancel_order'),
     path('<str:order_number>/',                  views.order_detail,   name='order_detail'),
+
+
+    path('buy-now/<int:product_id>/', views.buy_now, name='buy_now'),
+    path('buy-now/checkout/', views.buy_now_checkout, name='buy_now_checkout'),
+    path('buy-now/place/', views.place_buy_now_order, name='place_buy_now_order'),
 ]
