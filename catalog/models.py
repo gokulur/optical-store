@@ -110,6 +110,12 @@ class Product(models.Model):
     class Meta:
         db_table = 'catalog_products'
 
+    @property
+    def is_in_stock(self):
+        if not self.track_inventory:
+            return True
+        return self.stock_quantity > 0
+
 
 
 class ProductVariant(models.Model):
