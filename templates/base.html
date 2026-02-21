@@ -925,5 +925,231 @@
   {% block extra_scripts %}{% endblock %}
 
 </div><!-- #xo-root -->
+
+ 
+<script>
+  window.URLS = {
+    wishlistToggle: "{% url 'wishlist:toggle' 0 %}".replace('/0/', '/'),
+    addToCart:      "{% url 'cart:add_to_cart' %}",
+    checkout:       "{% url 'orders:checkout' %}"
+  };
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  'use strict';
+
+  /* ── CSRF ─────────────────────────────────────────── */
+  function getCsrf() {
+    var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+    if (m) return decodeURIComponent(m[1]);
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
+  }
+
+  /* ── Build wishlist URL with correct i18n prefix ─── */
+  function wishlistUrl(pid) {
+    return window.URLS.wishlistToggle + pid + '/';
+  }
+
+  /* ── Safe JSON ────────────────────────────────────── */
+  function safeJson(r) {
+    var ct = r.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      return Promise.resolve({ __httpStatus: r.status, __notJson: true });
+    }
+    return r.json().then(function (d) { d.__httpStatus = r.status; return d; });
+  }
+
+  /* ── Toast ────────────────────────────────────────── */
+  /* Use base.html's showToast — it's already on window */
+  function toast(msg, type) {
+    if (typeof window.showToast === 'function') {
+      var mapped = (type === 'ok' || type === 'wish') ? 'success'
+                 : type === 'err'  ? 'error'
+                 : type === 'info' ? 'info' : 'info';
+      window.showToast(msg, mapped);
+    }
+  }
+
+  /* ── Heart burst ─────────────────────────────────── */
+  function triggerHeartBurst(btn) {
+    btn.classList.add('burst');
+    setTimeout(function () { btn.classList.remove('burst'); }, 450);
+  }
+
+  /* ── Ripple ──────────────────────────────────────── */
+  function addRipple(btn, e) {
+    if (!e || !e.clientX) return;
+    var r = document.createElement('span'); r.className = 'ripple';
+    var rect = btn.getBoundingClientRect();
+    r.style.left = (e.clientX - rect.left - 10) + 'px';
+    r.style.top  = (e.clientY - rect.top  - 10) + 'px';
+    btn.appendChild(r);
+    setTimeout(function () { r.remove(); }, 600);
+  }
+
+  /* ════════════════════════════════════════════════════
+     WISHLIST TOGGLE
+  ════════════════════════════════════════════════════ */
+  document.addEventListener('click', function (e) {
+    var heartBtn = e.target.closest('.aa-pcard__heart');
+    if (!heartBtn) return;
+    e.preventDefault(); e.stopPropagation();
+
+    var pid = heartBtn.dataset.productId;
+    if (!pid || pid === 'undefined' || pid === '') {
+      heartBtn.classList.toggle('wishlisted');
+      triggerHeartBurst(heartBtn);
+      toast('❤️ Saved!', 'wish');
+      return;
+    }
+
+    var wasWishlisted = heartBtn.classList.contains('wishlisted');
+    heartBtn.classList.toggle('wishlisted');
+    triggerHeartBurst(heartBtn);
+    heartBtn.style.pointerEvents = 'none';
+
+    var csrf = getCsrf();
+    fetch(wishlistUrl(pid), {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrf, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'csrfmiddlewaretoken=' + encodeURIComponent(csrf)
+    })
+    .then(function (r) {
+      if (r.status === 401) {
+        wasWishlisted ? heartBtn.classList.add('wishlisted') : heartBtn.classList.remove('wishlisted');
+        toast('💛 Please log in to save items to your wishlist.', 'info');
+        heartBtn.style.pointerEvents = ''; return null;
+      }
+      return safeJson(r);
+    })
+    .then(function (data) {
+      if (!data) return;
+      if (data.__notJson || data.error) {
+        wasWishlisted ? heartBtn.classList.add('wishlisted') : heartBtn.classList.remove('wishlisted');
+        toast(data.message || 'Something went wrong.', 'err');
+        heartBtn.style.pointerEvents = ''; return;
+      }
+      /* ✅ Use base.html's updateWishlistCount */
+      if (typeof window.updateWishlistCount === 'function') {
+        window.updateWishlistCount(data.wishlist_count);
+      }
+      toast(data.added ? '❤️ Added to wishlist!' : '💔 Removed from wishlist.', data.added ? 'wish' : 'info');
+      document.querySelectorAll('.aa-pcard__heart[data-product-id="' + pid + '"]').forEach(function (b) {
+        data.added ? b.classList.add('wishlisted') : b.classList.remove('wishlisted');
+        b.style.pointerEvents = '';
+      });
+    })
+    .catch(function () {
+      wasWishlisted ? heartBtn.classList.add('wishlisted') : heartBtn.classList.remove('wishlisted');
+      toast('Network error. Please try again.', 'err');
+      heartBtn.style.pointerEvents = '';
+    });
+  });
+
+  /* ════════════════════════════════════════════════════
+     ADD TO CART
+     ─────────────────────────────────────────────────
+     ⚠️  NO submit listener here.
+     base.html already has ONE submit listener for
+     .add-to-cart-form (capturing phase). Adding another
+     here caused EVERY cart add to fire TWICE (double-add
+     bug seen on home page). base.html's handler calls
+     window.ajaxAddToCart() which calls
+     window.updateCartBadge() automatically.
+
+     We only need to handle BUY NOW (click, not submit).
+  ════════════════════════════════════════════════════ */
+
+  /* ── BUY NOW ─────────────────────────────────────── */
+  document.addEventListener('click', function (e) {
+    var buyBtn = e.target.closest('.aa-pcard__buy-btn[data-product-id]');
+    if (!buyBtn) return;
+    e.preventDefault();
+    var pid = buyBtn.dataset.productId;
+    var orig = buyBtn.innerHTML;
+    buyBtn.innerHTML = '⏳ Please wait…';
+    buyBtn.style.pointerEvents = 'none';
+
+    fetch(window.URLS.addToCart, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'product_id=' + encodeURIComponent(pid) + '&quantity=1'
+    })
+    .then(function (r) { return safeJson(r); })
+    .then(function (data) {
+      if (data.success) {
+        /* ✅ Update nav badge before redirecting */
+        if (typeof window.updateCartBadge === 'function') {
+          window.updateCartBadge(data.cart_count || 0);
+        }
+        window.location.href = window.URLS.checkout;
+      } else {
+        toast(data.message || 'Could not process.', 'err');
+        buyBtn.innerHTML = orig; buyBtn.style.pointerEvents = '';
+      }
+    })
+    .catch(function () {
+      toast('Network error.', 'err');
+      buyBtn.innerHTML = orig; buyBtn.style.pointerEvents = '';
+    });
+  });
+
+  /* ── Color swatches ──────────────────────────────── */
+  document.addEventListener('click', function (e) {
+    var dot = e.target.closest('.aa-pcard__color-dot');
+    if (!dot) return;
+    e.preventDefault(); e.stopPropagation();
+    var p = dot.closest('.aa-pcard__colors');
+    if (p) p.querySelectorAll('.aa-pcard__color-dot').forEach(function (d) { d.classList.remove('active'); });
+    dot.classList.add('active');
+  });
+
+  /* ── Brands Carousel ─────────────────────────────── */
+  var track = document.querySelector('.our-brands-carousel-track');
+  var prevBtn = document.querySelector('.brands-carousel-prev');
+  var nextBtn = document.querySelector('.brands-carousel-next');
+  if (track && prevBtn && nextBtn) {
+    var items = track.querySelectorAll('.brand-carousel-item');
+    var gap = 60, currentPos = 0, autoTimer;
+    function getStep() { return (items[0] ? items[0].offsetWidth : 180) + gap; }
+    function getMax() { return -(getStep() * Math.max(0, items.length - 4)); }
+    function slide() { track.style.transform = 'translateX(' + currentPos + 'px)'; }
+    function scrollNext() { currentPos = currentPos > getMax() ? currentPos - getStep() : 0; slide(); }
+    function scrollPrev() { currentPos = currentPos < 0 ? currentPos + getStep() : getMax(); slide(); }
+    nextBtn.addEventListener('click', function () { scrollNext(); resetAuto(); });
+    prevBtn.addEventListener('click', function () { scrollPrev(); resetAuto(); });
+    function startAuto() { autoTimer = setInterval(scrollNext, 3000); }
+    function stopAuto() { clearInterval(autoTimer); }
+    function resetAuto() { stopAuto(); startAuto(); }
+    startAuto();
+    track.addEventListener('mouseenter', stopAuto);
+    track.addEventListener('mouseleave', startAuto);
+    window.addEventListener('resize', function () { currentPos = 0; slide(); });
+  }
+
+  /* ── Scroll reveal ───────────────────────────────── */
+  if ('IntersectionObserver' in window) {
+    var cards = document.querySelectorAll('.aa-pcard');
+    cards.forEach(function (c) {
+      c.style.opacity = '0'; c.style.transform = 'translateY(24px)';
+      c.style.transition = 'opacity .5s ease,transform .5s ease';
+    });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          setTimeout(function () { entry.target.style.opacity = '1'; entry.target.style.transform = 'translateY(0)'; }, 60);
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    cards.forEach(function (c) { io.observe(c); });
+  }
+
+});
+</script>
+<style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
+ 
 </body>
 </html>
