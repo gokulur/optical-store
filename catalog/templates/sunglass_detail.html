@@ -1,659 +1,384 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}{{ product.name }} - Sunglasses{% endblock %}
+{% block title %}{{ product.name }} – Al Ameen Optics{% endblock %}
 
-{% block content %}
+{% block extra_styles %}
+{% load static %}
+ 
 <style>
-/* ═══════════════════════════════════════════════════════
-   DESIGN TOKENS
-═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════
+   DESIGN TOKENS — Matches home page palette
+═══════════════════════════════════════════════ */
 :root {
-  --ink:        #0d0d0d;
-  --ink-soft:   #444;
-  --gold:       #b8976a;
-  --gold-light: #d4b896;
-  --gold-pale:  #f5f0e8;
-  --white:      #fafaf8;
-  --muted:      #8a8680;
-  --border:     #e8e2d8;
-  --green:      #2a7a2a;
-  --green-bg:   #f0f7ee;
-  --red:        #c0392b;
-  --radius-sm:  8px;
-  --radius-md:  12px;
-  --radius-lg:  18px;
-  --shadow-sm:  0 2px 12px rgba(0,0,0,0.07);
-  --shadow-md:  0 6px 28px rgba(0,0,0,0.10);
-  --shadow-lg:  0 16px 56px rgba(0,0,0,0.13);
-  --ease:       cubic-bezier(0.4,0,0.2,1);
-  --t:          0.26s;
+  --aa-ink:      #0d0d0d;
+  --aa-ink-soft: #555;
+  --aa-gold:     #b8976a;
+  --aa-gold-lt:  #d4b896;
+  --aa-sand:     #f7f3ed;
+  --aa-muted:    #8a8580;
+  --aa-border:   #e8e2d8;
+  --aa-green:    #2a7a2a;
+  --aa-green-bg: #f0f7ee;
+  --aa-radius:   12px;
+  --aa-shadow:   0 4px 24px rgba(0,0,0,.08);
+  --aa-ease:     cubic-bezier(.4,0,.2,1);
+  --aa-t:        .26s;
 }
 
-/* ═══════════════════════════════════════════════════════
-   PAGE WRAPPER
-═══════════════════════════════════════════════════════ */
-.pd-wrap {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 0 24px 80px;
-}
+/* ─── PAGE WRAP ─── */
+.pd-page { max-width: 1340px; margin: 0 auto; padding: 0 24px 100px; }
 
-/* Breadcrumb */
+/* ─── BREADCRUMB ─── */
 .pd-crumb {
-  display: flex; align-items: center; gap: 6px;
-  padding: 18px 0 28px;
-  font-size: 12px; font-weight: 500;
-  letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--muted);
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 16px 0 28px; font-size: 12px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--aa-muted);
 }
-.pd-crumb a { color: var(--muted); text-decoration: none; transition: color var(--t); }
-.pd-crumb a:hover { color: var(--ink); }
-.pd-crumb-sep { color: #ccc; font-size: 10px; }
-.pd-crumb-current { color: var(--ink); font-weight: 600; }
+.pd-crumb a { color: var(--aa-muted); text-decoration: none; transition: color var(--aa-t); }
+.pd-crumb a:hover { color: var(--aa-ink); }
+.pd-crumb-sep { font-size: 10px; color: #ccc; }
+.pd-crumb span:last-child { color: var(--aa-ink); }
 
-/* Two-column layout */
+/* ─── GRID ─── */
 .pd-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 64px;
+  gap: 60px;
   align-items: start;
 }
 @media (max-width: 960px) { .pd-grid { grid-template-columns: 1fr; gap: 32px; } }
 
-/* ═══════════════════════════════════════════════════════
-   GALLERY — vertical rail + main stage
-═══════════════════════════════════════════════════════ */
-.gal {
-  position: sticky;
-  top: 90px;
-  display: grid;
-  grid-template-columns: 80px 1fr;
-  gap: 12px;
-}
-@media (max-width: 960px) { .gal { position: static; } }
-@media (max-width: 600px) {
-  .gal { grid-template-columns: 1fr; grid-template-rows: auto auto; }
-}
+/* ─── PRODUCT INFO ─── */
+.pi { display: flex; flex-direction: column; }
 
-/* Rail */
-.gal__rail {
-  display: flex; flex-direction: column; gap: 8px;
-  max-height: 540px;
-  overflow-y: auto; overflow-x: hidden;
-  scrollbar-width: thin; scrollbar-color: #d4b896 transparent;
-  padding-right: 2px;
-}
-.gal__rail::-webkit-scrollbar { width: 3px; }
-.gal__rail::-webkit-scrollbar-thumb { background: #d4b896; border-radius: 2px; }
-@media (max-width: 600px) {
-  .gal__rail {
-    order: 2; flex-direction: row;
-    max-height: none; overflow-y: hidden; overflow-x: auto;
-    padding-right: 0; padding-bottom: 2px;
-  }
-}
-
-/* Thumb */
-.gal__thumb {
-  width: 78px; height: 78px; flex-shrink: 0;
-  border-radius: 10px; overflow: hidden;
-  background: var(--gold-pale);
-  border: 2.5px solid transparent;
-  cursor: pointer; position: relative;
-  transition: border-color var(--t), box-shadow var(--t), transform var(--t);
-  outline: none;
-}
-.gal__thumb img {
-  width: 100%; height: 100%;
-  object-fit: contain; padding: 6px; display: block;
-  transition: transform 0.3s var(--ease);
-}
-.gal__thumb:hover { border-color: var(--gold-light); transform: translateX(2px); box-shadow: var(--shadow-sm); }
-.gal__thumb:hover img { transform: scale(1.06); }
-.gal__thumb.is-on { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), var(--shadow-sm); }
-.gal__thumb.is-on::after {
-  content: ''; position: absolute; inset: 0;
-  background: rgba(184,151,106,0.08); border-radius: 7px; pointer-events: none;
-}
-.gal__thumb-lbl {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
-  padding: 3px; background: rgba(0,0,0,0.5); color: #fff;
-  text-align: center; opacity: 0; transition: opacity 0.2s;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.gal__thumb:hover .gal__thumb-lbl { opacity: 1; }
-
-/* Stage */
-.gal__stage {
-  position: relative; width: 100%; aspect-ratio: 1/1;
-  background: var(--gold-pale);
-  border-radius: var(--radius-lg);
-  overflow: hidden; cursor: zoom-in; outline: none;
-  background-image:
-    radial-gradient(ellipse at 25% 25%, rgba(255,255,255,0.6) 0%, transparent 55%),
-    radial-gradient(ellipse at 78% 78%, rgba(184,151,106,0.08) 0%, transparent 55%);
-}
-.gal__main-img {
-  width: 100%; height: 100%;
-  object-fit: contain; padding: 32px; display: block;
-  transition: opacity 0.22s var(--ease), transform 0.44s var(--ease);
-  will-change: transform;
-}
-.gal__stage:not(.is-zoom):hover .gal__main-img { transform: scale(1.04); }
-.gal__main-img.is-fade { opacity: 0; transform: scale(0.95); }
-
-/* Zoom */
-.gal__stage.is-zoom { cursor: zoom-out; }
-.gal__stage.is-zoom .gal__main-img {
-  transform: scale(2.5);
-  transform-origin: var(--zx,50%) var(--zy,50%);
-  transition: transform 0.06s linear;
-  padding: 0; object-fit: cover;
-}
-
-/* Counter */
-.gal__count {
-  position: absolute; bottom: 14px; right: 14px;
-  background: rgba(13,13,13,0.38); backdrop-filter: blur(6px);
-  color: #fff; font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
-  padding: 4px 12px; border-radius: 20px; pointer-events: none;
-}
-.gal__count.is-hide { display: none; }
-
-/* Floating buttons on stage */
-.gal__fab {
-  position: absolute; width: 36px; height: 36px; border-radius: 50%;
-  background: rgba(255,255,255,0.88); backdrop-filter: blur(6px);
-  border: 1px solid rgba(0,0,0,0.07);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; box-shadow: var(--shadow-sm);
-  transition: all 0.2s var(--ease);
-  opacity: 0; pointer-events: none; z-index: 4;
-}
-.gal__stage:hover .gal__fab { opacity: 1; pointer-events: auto; }
-.gal__fab:hover { background: #fff; transform: scale(1.1) !important; box-shadow: var(--shadow-md); }
-.gal__fab svg { width: 14px; height: 14px; color: #333; }
-.gal__fab--expand { top: 14px; right: 14px; }
-.gal__fab--share  { top: 14px; left: 14px; }
-
-/* Nav arrows */
-.gal__arrow {
-  position: absolute; top: 50%; transform: translateY(-50%);
-  width: 38px; height: 38px; border-radius: 50%;
-  background: rgba(255,255,255,0.9); backdrop-filter: blur(6px);
-  border: 1px solid rgba(0,0,0,0.07);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; box-shadow: var(--shadow-sm);
-  transition: all 0.2s var(--ease);
-  opacity: 0; pointer-events: none; z-index: 4;
-}
-.gal__stage:hover .gal__arrow { opacity: 1; pointer-events: auto; }
-.gal__arrow:hover { background: #fff; box-shadow: var(--shadow-md); }
-.gal__arrow--prev { left: 12px; }
-.gal__arrow--prev:hover { transform: translateY(-50%) translateX(-2px); }
-.gal__arrow--next { right: 58px; }
-.gal__arrow--next:hover { transform: translateY(-50%) translateX(2px); }
-.gal__arrow.is-hide { display: none; }
-.gal__arrow svg { width: 14px; height: 14px; color: #222; }
-
-/* Lightbox */
-.gal__lb {
-  display: none; position: fixed; inset: 0; z-index: 9999;
-  background: rgba(10,10,10,0.95); backdrop-filter: blur(12px);
-  align-items: center; justify-content: center; flex-direction: column; gap: 24px;
-}
-.gal__lb.is-open { display: flex; }
-.gal__lb-img {
-  max-width: 88vw; max-height: 78vh; object-fit: contain;
-  border-radius: var(--radius-md);
-  animation: lbIn 0.28s var(--ease);
-}
-@keyframes lbIn { from { opacity:0; transform:scale(0.94); } to { opacity:1; transform:scale(1); } }
-.gal__lb-strip {
-  display: flex; gap: 10px; overflow-x: auto; max-width: 90vw; padding: 4px;
-  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.25) transparent;
-}
-.gal__lb-dot {
-  width: 58px; height: 58px; flex-shrink: 0; border-radius: 8px; overflow: hidden;
-  border: 2.5px solid rgba(255,255,255,0.15); cursor: pointer;
-  transition: border-color 0.2s, transform 0.2s;
-}
-.gal__lb-dot img { width:100%; height:100%; object-fit:contain; }
-.gal__lb-dot.is-on { border-color: var(--gold); transform: scale(1.08); }
-.gal__lb-close {
-  position: fixed; top: 18px; right: 22px;
-  width: 42px; height: 42px; border-radius: 50%;
-  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 22px; cursor: pointer;
-  transition: background 0.2s;
-}
-.gal__lb-close:hover { background: rgba(255,255,255,0.2); }
-.gal__lb-nav {
-  position: fixed; top: 50%; transform: translateY(-50%);
-  width: 48px; height: 48px; border-radius: 50%;
-  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; cursor: pointer; transition: background 0.2s, transform 0.2s; z-index: 2;
-}
-.gal__lb-nav:hover { background: rgba(255,255,255,0.22); }
-.gal__lb-nav--prev { left: 18px; }
-.gal__lb-nav--prev:hover { transform: translateY(-50%) translateX(-2px); }
-.gal__lb-nav--next { right: 18px; }
-.gal__lb-nav--next:hover { transform: translateY(-50%) translateX(2px); }
-.gal__lb-nav svg { width: 18px; height: 18px; }
-.gal__lb-count {
-  position: fixed; top: 22px; left: 50%; transform: translateX(-50%);
-  color: rgba(255,255,255,0.55); font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
-  pointer-events: none;
-}
-
-/* ═══════════════════════════════════════════════════════
-   PRODUCT INFO PANEL
-═══════════════════════════════════════════════════════ */
-.pi { display: flex; flex-direction: column; gap: 0; }
-
-.pi__badges { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 16px; }
+.pi__badges { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
 .pi__badge {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
   padding: 4px 10px; border-radius: 4px;
-  background: var(--gold-pale); color: var(--gold);
 }
-.pi__badge--sale { background: var(--green-bg); color: var(--green); }
+.pi__badge--brand  { background: var(--aa-sand); color: var(--aa-gold); }
+.pi__badge--sale   { background: var(--aa-green-bg); color: var(--aa-green); }
 .pi__badge--gender { background: #f0f0ff; color: #5558a8; }
 
-.pi__title { font-size: clamp(24px, 2.8vw, 34px); font-weight: 800; line-height: 1.15; color: var(--ink); letter-spacing: -0.03em; margin: 0 0 8px; }
+.pi__title {
+  font-size: clamp(22px, 2.6vw, 32px);
+  font-weight: 800; line-height: 1.15;
+  color: var(--aa-ink); letter-spacing: -.03em;
+  margin: 0 0 10px;
+}
+.pi__meta { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; flex-wrap: wrap; }
+.pi__brand { font-size: 13px; color: var(--aa-muted); }
+.pi__brand strong { color: var(--aa-ink); }
+.pi__sku { font-size: 11px; color: #c5c0b8; letter-spacing: .06em; }
 
-.pi__meta { display: flex; align-items: center; gap: 16px; margin-bottom: 6px; flex-wrap: wrap; }
-.pi__brand { font-size: 13px; color: var(--muted); }
-.pi__brand strong { color: var(--ink); font-weight: 700; }
-.pi__sku { font-size: 11px; color: #bbb; letter-spacing: 0.06em; }
-
-/* Wishlist btn */
 .pi__wish {
-  margin-left: auto; width: 42px; height: 42px; border-radius: 50%;
-  background: var(--white); border: 2px solid var(--border);
+  margin-left: auto; flex-shrink: 0;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--aa-sand); border: 2px solid var(--aa-border);
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: all var(--t); flex-shrink: 0;
+  cursor: pointer; transition: all var(--aa-t);
 }
-.pi__wish:hover { border-color: #e05f5f; background: #fff5f5; }
-.pi__wish.is-on { border-color: #e05f5f; background: #fff5f5; }
+.pi__wish:hover, .pi__wish.is-on { border-color: #e05f5f; background: #fff5f5; }
+.pi__wish svg { width: 18px; height: 18px; transition: fill var(--aa-t), stroke var(--aa-t); }
 
-/* Price block */
+/* ─── PRICE ─── */
 .pi__price-box {
-  display: flex; align-items: baseline; gap: 12px;
-  padding: 18px 22px; border-radius: var(--radius-md);
-  background: var(--gold-pale); margin: 20px 0 24px;
-  border: 1px solid rgba(184,151,106,0.2);
+  display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+  padding: 18px 22px; border-radius: var(--aa-radius);
+  background: var(--aa-sand); border: 1px solid rgba(184,151,106,.18);
+  margin: 20px 0 22px;
 }
-.pi__price { font-size: 32px; font-weight: 900; color: var(--ink); letter-spacing: -0.04em; }
-.pi__price-old { font-size: 17px; color: var(--muted); text-decoration: line-through; }
+.pi__price { font-size: 34px; font-weight: 900; color: var(--aa-ink); letter-spacing: -.04em; }
+.pi__price-was { font-size: 17px; color: var(--aa-muted); text-decoration: line-through; }
 .pi__price-save {
-  font-size: 12px; font-weight: 800; background: var(--green); color: #fff;
-  padding: 3px 9px; border-radius: 4px; letter-spacing: 0.04em;
+  font-size: 12px; font-weight: 800; background: var(--aa-green); color: #fff;
+  padding: 3px 9px; border-radius: 4px; letter-spacing: .04em;
 }
 
-/* Short desc */
-.pi__desc { font-size: 14px; line-height: 1.75; color: var(--ink-soft); margin-bottom: 24px; }
+.pi__desc { font-size: 14px; line-height: 1.78; color: var(--aa-ink-soft); margin-bottom: 22px; }
 
-/* Section label */
+/* ─── LABEL ─── */
 .pi__lbl {
-  font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--muted); margin-bottom: 10px;
+  font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--aa-muted); margin-bottom: 10px;
 }
 
-/* Color swatches */
-.pi__colors { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 26px; }
+/* ─── SWATCHES ─── */
+.pi__swatches { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
 .pi__swatch {
-  display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  cursor: pointer; outline: none;
 }
 .pi__swatch-dot {
   width: 36px; height: 36px; border-radius: 50%;
   border: 3px solid transparent;
-  box-shadow: 0 0 0 1.5px var(--border);
-  transition: all var(--t);
+  box-shadow: 0 0 0 1.5px var(--aa-border);
+  transition: all var(--aa-t);
 }
-.pi__swatch.is-on .pi__swatch-dot,
-.pi__swatch:hover .pi__swatch-dot { box-shadow: 0 0 0 2.5px var(--gold); transform: scale(1.1); }
-.pi__swatch-name { font-size: 10px; color: var(--muted); font-weight: 500; letter-spacing: 0.03em; }
+.pi__swatch:hover .pi__swatch-dot,
+.pi__swatch.is-on .pi__swatch-dot {
+  box-shadow: 0 0 0 2.5px var(--aa-gold);
+  transform: scale(1.1);
+}
+.pi__swatch-name { font-size: 10px; color: var(--aa-muted); font-weight: 500; }
 
-/* Size select */
+/* ─── SELECT ─── */
 .pi__select {
-  width: 100%; padding: 13px 16px; margin-bottom: 24px;
-  border: 2px solid var(--border); border-radius: var(--radius-md);
-  font-size: 15px; font-weight: 600; color: var(--ink);
-  background: var(--white); cursor: pointer; appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8680' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  width: 100%; padding: 13px 16px; margin-bottom: 22px;
+  border: 2px solid var(--aa-border); border-radius: var(--aa-radius);
+  font-size: 14px; font-weight: 600; color: var(--aa-ink);
+  background: #fff; cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8580' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 16px center;
-  transition: border-color var(--t);
+  transition: border-color var(--aa-t);
 }
-.pi__select:focus { border-color: var(--gold); outline: none; }
+.pi__select:focus { border-color: var(--aa-gold); outline: none; }
 
-/* Power toggle */
-.pi__power-wrap { margin-bottom: 24px; }
+/* ─── POWER TOGGLE ─── */
+.pi__power-wrap { margin-bottom: 22px; }
 .pi__power-toggle {
-  display: flex; background: var(--gold-pale); border-radius: var(--radius-md);
-  padding: 4px; border: 1px solid rgba(184,151,106,0.2); gap: 4px;
+  display: flex; background: var(--aa-sand); border-radius: var(--aa-radius);
+  padding: 4px; border: 1px solid rgba(184,151,106,.2); gap: 4px;
 }
 .pi__power-btn {
   flex: 1; padding: 12px 8px; border: none; background: transparent;
-  border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
-  cursor: pointer; color: var(--muted); transition: all var(--t);
+  border-radius: 8px; font-size: 13px; font-weight: 600;
+  cursor: pointer; color: var(--aa-muted); transition: all var(--aa-t);
 }
-.pi__power-btn.is-on { background: var(--ink); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.18); }
+.pi__power-btn.is-on { background: var(--aa-ink); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.18); }
 
-/* Lens confirmed */
+/* ─── LENS OK ─── */
 .pi__lens-ok {
   display: none; align-items: center; gap: 8px;
-  background: var(--green-bg); border: 1px solid #3a8a2e;
-  color: #2a6a20; border-radius: var(--radius-sm);
-  padding: 11px 14px; font-size: 13px; font-weight: 600; margin-bottom: 14px;
+  background: var(--aa-green-bg); border: 1px solid #3a8a2e;
+  color: #2a6a20; border-radius: 8px;
+  padding: 10px 14px; font-size: 13px; font-weight: 600; margin-bottom: 14px;
 }
 .pi__lens-ok.is-show { display: flex; }
-.pi__lens-ok-change {
+.pi__lens-ok button {
   margin-left: auto; background: none; border: none;
   color: #2a6a20; font-size: 12px; font-weight: 700; cursor: pointer;
   text-decoration: underline; text-underline-offset: 2px;
 }
 
-/* Qty */
+/* ─── QUANTITY ─── */
 .pi__qty-wrap { margin-bottom: 22px; }
 .pi__qty {
   display: inline-flex; align-items: center;
-  border: 2px solid var(--border); border-radius: var(--radius-md); overflow: hidden;
+  border: 2px solid var(--aa-border); border-radius: var(--aa-radius); overflow: hidden;
 }
 .pi__qty-btn {
-  width: 46px; height: 46px; border: none; background: var(--gold-pale);
-  font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-  color: var(--ink); transition: background var(--t); font-weight: 400; line-height: 1;
+  width: 46px; height: 46px; border: none; background: var(--aa-sand);
+  font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--aa-ink); transition: background var(--aa-t); line-height: 1;
 }
-.pi__qty-btn:hover { background: var(--border); }
+.pi__qty-btn:hover { background: var(--aa-border); }
 .pi__qty-num {
-  width: 54px; height: 46px; border: none;
-  border-left: 2px solid var(--border); border-right: 2px solid var(--border);
-  text-align: center; font-size: 16px; font-weight: 700; color: var(--ink);
-  background: var(--white);
+  width: 56px; height: 46px; border: none;
+  border-left: 2px solid var(--aa-border); border-right: 2px solid var(--aa-border);
+  text-align: center; font-size: 16px; font-weight: 700; color: var(--aa-ink);
+  background: #fff;
 }
 .pi__qty-num:focus { outline: none; }
 
-/* CTA buttons */
+/* ─── CTA BUTTONS ─── */
 .pi__cta { display: flex; flex-direction: column; gap: 12px; margin-bottom: 26px; }
 .pi__btn {
-  width: 100%; padding: 17px 24px; border-radius: var(--radius-md);
-  font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
-  cursor: pointer; transition: all var(--t); border: 2px solid transparent;
+  width: 100%; padding: 17px 24px; border-radius: 50px;
+  font-size: 14px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  cursor: pointer; transition: all var(--aa-t); border: 2px solid transparent;
   position: relative; overflow: hidden;
 }
-.pi__btn::after {
-  content: ''; position: absolute; inset: 0;
-  background: rgba(255,255,255,0.1);
-  transform: translateX(-100%);
-  transition: transform 0.4s var(--ease);
-}
-.pi__btn:hover::after { transform: translateX(0); }
-
 .pi__btn--lens {
-  background: var(--white); border-color: var(--gold); color: var(--gold);
+  background: #fff; border-color: var(--aa-gold); color: var(--aa-gold);
   display: none;
 }
 .pi__btn--lens.is-show { display: block; }
-.pi__btn--lens:hover { background: var(--gold); color: #fff; }
-
-.pi__btn--cart { background: var(--ink); border-color: var(--ink); color: #fff; }
-.pi__btn--cart:hover { background: #2a2a2a; border-color: #2a2a2a; }
-.pi__btn--cart.is-loading { opacity: 0.7; pointer-events: none; }
-
-.pi__btn--buy { background: var(--gold); border-color: var(--gold); color: #fff; }
+.pi__btn--lens:hover { background: var(--aa-gold); color: #fff; }
+.pi__btn--cart {
+  background: var(--aa-ink); border-color: var(--aa-ink); color: #fff;
+}
+.pi__btn--cart:hover { background: #2a2a2a; }
+.pi__btn--cart:active { transform: scale(.98); }
+.pi__btn--buy {
+  background: var(--aa-gold); border-color: var(--aa-gold); color: #fff;
+}
 .pi__btn--buy:hover { background: #a07050; border-color: #a07050; }
+.pi__btn--buy:active { transform: scale(.98); }
 
-/* Shipping trust bar */
+/* ─── TRUST BAR ─── */
 .pi__trust {
-  background: var(--gold-pale); border-radius: var(--radius-md);
+  background: var(--aa-sand); border-radius: var(--aa-radius);
   padding: 16px 20px; display: flex; flex-direction: column; gap: 12px;
-  border: 1px solid rgba(184,151,106,0.18); margin-bottom: 26px;
+  border: 1px solid rgba(184,151,106,.18); margin-bottom: 24px;
 }
-.pi__trust-row { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--ink); }
+.pi__trust-row { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--aa-ink); }
 .pi__trust-icon {
-  width: 34px; height: 34px; border-radius: 50%; background: var(--white);
+  width: 34px; height: 34px; border-radius: 50%; background: #fff;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 1px 6px rgba(0,0,0,.07);
 }
-.pi__trust-icon svg { width: 15px; height: 15px; color: var(--gold); }
+.pi__trust-icon svg { width: 15px; height: 15px; color: var(--aa-gold); }
 
-/* Specs */
-.pi__specs { margin-top: 4px; }
-.pi__specs-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.pi__specs-table tr { border-bottom: 1px solid var(--border); }
+/* ─── SPECS ─── */
+.pi__specs-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px; }
+.pi__specs-table tr { border-bottom: 1px solid var(--aa-border); }
 .pi__specs-table td { padding: 10px 0; vertical-align: top; }
-.pi__specs-table td:first-child { font-weight: 600; color: var(--ink); width: 42%; }
-.pi__specs-table td:last-child { color: var(--muted); }
+.pi__specs-table td:first-child { font-weight: 600; color: var(--aa-ink); width: 44%; }
+.pi__specs-table td:last-child { color: var(--aa-muted); }
 
-/* ═══════════════════════════════════════════════════════
-   BELOW-FOLD SECTIONS
-═══════════════════════════════════════════════════════ */
-.pd-section { padding: 52px 0; border-top: 1px solid var(--border); }
-.pd-section__title { font-size: 22px; font-weight: 800; color: var(--ink); margin-bottom: 20px; letter-spacing: -0.02em; }
-.pd-section__body { font-size: 15px; line-height: 1.85; color: var(--ink-soft); }
+/* ─── BELOW FOLD ─── */
+.pd-section { padding: 52px 0; border-top: 1px solid var(--aa-border); }
+.pd-section__h { font-size: 22px; font-weight: 800; color: var(--aa-ink); margin-bottom: 18px; letter-spacing: -.02em; }
+.pd-section__body { font-size: 15px; line-height: 1.85; color: var(--aa-ink-soft); }
 
-/* Related grid */
-.pd-related-grid {
-  display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-top: 28px;
+/* ─── RELATED GRID ─── */
+.pd-rel-grid {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-top: 24px;
 }
-@media (max-width: 900px) { .pd-related-grid { grid-template-columns: repeat(2,1fr); } }
-.pd-card {
+@media (max-width:860px) { .pd-rel-grid { grid-template-columns: repeat(2,1fr); } }
+.pd-rel-card {
   text-decoration: none; color: inherit; display: block;
-  border-radius: var(--radius-md); overflow: hidden;
-  border: 1px solid var(--border); background: var(--white);
-  transition: all var(--t);
+  border-radius: var(--aa-radius); overflow: hidden;
+  border: 1px solid var(--aa-border); background: #fff;
+  transition: all var(--aa-t);
 }
-.pd-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--gold-light); }
-.pd-card__img { aspect-ratio: 1/1; background: var(--gold-pale); overflow: hidden; }
-.pd-card__img img { width:100%; height:100%; object-fit:contain; display:block; transition: transform 0.4s var(--ease); }
-.pd-card:hover .pd-card__img img { transform: scale(1.06); }
-.pd-card__info { padding: 14px; }
-.pd-card__brand { font-size: 10px; color: var(--gold); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
-.pd-card__name { font-size: 14px; font-weight: 700; margin: 4px 0; color: var(--ink); }
-.pd-card__price { font-size: 15px; font-weight: 800; color: var(--ink); }
+.pd-rel-card:hover { transform: translateY(-4px); box-shadow: var(--aa-shadow); border-color: var(--aa-gold-lt); }
+.pd-rel-card__img { aspect-ratio: 1/1; background: var(--aa-sand); overflow: hidden; }
+.pd-rel-card__img img { width:100%; height:100%; object-fit:contain; padding:10px; transition: transform .4s; display:block; }
+.pd-rel-card:hover .pd-rel-card__img img { transform: scale(1.06); }
+.pd-rel-card__info { padding: 14px; }
+.pd-rel-card__brand { font-size: 10px; color: var(--aa-gold); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.pd-rel-card__name { font-size: 14px; font-weight: 700; margin: 4px 0; color: var(--aa-ink); line-height: 1.3; }
+.pd-rel-card__price { font-size: 15px; font-weight: 800; color: var(--aa-ink); }
 
-/* ═══════════════════════════════════════════════════════
-   LENS MODAL
-═══════════════════════════════════════════════════════ */
-.lm-overlay {
-  display: none; position: fixed; inset: 0; z-index: 8888;
-  background: rgba(13,13,13,0.55); backdrop-filter: blur(5px);
-  align-items: center; justify-content: center; padding: 20px;
-  overflow-y: auto;
-}
-.lm-overlay.is-open { display: flex; }
-.lm-box {
-  background: var(--white); width: 100%; max-width: 680px;
+/* ─── LENS MODAL ─── */
+.lm { display: none; position: fixed; inset: 0; z-index: 8888;
+  background: rgba(13,13,13,.55); backdrop-filter: blur(5px);
+  align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+.lm.is-open { display: flex; }
+.lm__box {
+  background: #fff; width: 100%; max-width: 640px;
   border-radius: 20px; overflow: hidden;
-  box-shadow: var(--shadow-lg);
-  animation: mIn 0.3s var(--ease); margin: auto;
+  box-shadow: 0 24px 80px rgba(0,0,0,.2);
+  animation: lmIn .3s var(--aa-ease); margin: auto;
 }
-@keyframes mIn { from { opacity:0; transform:translateY(22px) scale(0.97); } to { opacity:1; transform:none; } }
-.lm-head {
-  padding: 24px 28px 18px;
-  border-bottom: 1px solid var(--border);
+@keyframes lmIn { from { opacity:0; transform:translateY(22px) scale(.97); } to { opacity:1; transform:none; } }
+.lm__head {
+  padding: 22px 28px 18px; border-bottom: 1px solid var(--aa-border);
   display: flex; align-items: center; justify-content: space-between;
 }
-.lm-head h2 { margin: 0; font-size: 19px; font-weight: 800; color: var(--ink); }
-.lm-close {
-  background: none; border: none; font-size: 26px; line-height: 1;
-  cursor: pointer; color: var(--muted); padding: 0 4px; transition: color var(--t);
-}
-.lm-close:hover { color: var(--ink); }
-.lm-body { padding: 24px 28px; max-height: 70vh; overflow-y: auto; }
-.lm-step-lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
-
-/* Color chips in modal */
-.lm-colors { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
-.lm-color-chip {
+.lm__head h3 { margin: 0; font-size: 18px; font-weight: 800; }
+.lm__close { background: none; border: none; font-size: 26px; cursor: pointer; color: var(--aa-muted); padding: 0; line-height: 1; }
+.lm__close:hover { color: var(--aa-ink); }
+.lm__body { padding: 22px 28px; max-height: 68vh; overflow-y: auto; }
+.lm__step { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--aa-muted); margin-bottom: 12px; }
+.lm__colors { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 26px; }
+.lm__color-chip {
   display: flex; flex-direction: column; align-items: center; gap: 6px;
-  padding: 10px 14px; border: 2px solid var(--border); border-radius: var(--radius-md);
-  cursor: pointer; transition: all var(--t); min-width: 72px; text-align: center;
+  padding: 10px 14px; border: 2px solid var(--aa-border); border-radius: var(--aa-radius);
+  cursor: pointer; transition: all var(--aa-t); min-width: 72px; text-align: center;
 }
-.lm-color-chip:hover, .lm-color-chip.is-on { border-color: var(--ink); background: var(--gold-pale); }
-.lm-color-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.07); }
-.lm-color-name { font-size: 12px; font-weight: 600; color: var(--ink); }
+.lm__color-chip:hover, .lm__color-chip.is-on { border-color: var(--aa-ink); background: var(--aa-sand); }
+.lm__color-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(0,0,0,.07); }
+.lm__color-name { font-size: 12px; font-weight: 600; color: var(--aa-ink); }
+.lm__opt {
+  border: 2px solid var(--aa-border); border-radius: var(--aa-radius);
+  padding: 16px 20px; margin-bottom: 10px; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  transition: all var(--aa-t);
+}
+.lm__opt:hover { border-color: #aaa; box-shadow: var(--aa-shadow); }
+.lm__opt.is-on { border-color: var(--aa-ink); background: var(--aa-sand); }
+.lm__opt-left { display: flex; align-items: center; gap: 12px; }
+.lm__radio {
+  width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--aa-border);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all var(--aa-t);
+}
+.lm__opt.is-on .lm__radio { border-color: var(--aa-ink); background: var(--aa-ink); }
+.lm__radio::after { content:''; width:8px; height:8px; border-radius:50%; background:#fff; display:none; }
+.lm__opt.is-on .lm__radio::after { display:block; }
+.lm__opt-name { font-size: 14px; font-weight: 700; }
+.lm__opt-desc { font-size: 12px; color: var(--aa-muted); margin-top: 2px; }
+.lm__opt-price { font-size: 17px; font-weight: 800; white-space: nowrap; }
+.lm__rx { background: var(--aa-sand); border-radius: var(--aa-radius); padding: 18px; margin: 18px 0 0; }
+.lm__rx-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; }
+.lm__rx-table th { background: var(--aa-ink); color: #fff; padding: 9px 12px; font-size: 13px; font-weight: 600; text-align: left; }
+.lm__rx-table td { padding: 9px 12px; border-bottom: 1px solid var(--aa-border); }
+.lm__rx-table tr:last-child td { border-bottom: none; }
+.lm__rx-table td:first-child { font-weight: 600; font-size: 13px; white-space: nowrap; }
+.lm__rx-input {
+  width: 100%; padding: 7px 10px; border: 1.5px solid var(--aa-border); border-radius: 6px;
+  font-size: 13px; min-width: 65px; transition: border-color var(--aa-t);
+}
+.lm__rx-input:focus { border-color: var(--aa-gold); outline: none; }
+.lm__foot {
+  padding: 18px 28px 24px; border-top: 1px solid var(--aa-border);
+  background: #fff; position: sticky; bottom: 0;
+}
+.lm__total { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.lm__total-lbl { font-size: 14px; font-weight: 600; }
+.lm__total-val { font-size: 24px; font-weight: 900; letter-spacing: -.03em; }
+.lm__confirm {
+  width: 100%; padding: 15px; background: var(--aa-ink); color: #fff;
+  border: none; border-radius: 50px; font-size: 15px; font-weight: 800;
+  cursor: pointer; transition: background var(--aa-t); letter-spacing: .04em;
+}
+.lm__confirm:hover { background: #2a2a2a; }
 
-/* Lens option cards */
-.lm-opt {
-  border: 2px solid var(--border); border-radius: var(--radius-md);
-  padding: 18px 20px; margin-bottom: 12px; cursor: pointer;
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  transition: all var(--t);
-}
-.lm-opt:hover { border-color: #aaa; box-shadow: var(--shadow-sm); }
-.lm-opt.is-on { border-color: var(--ink); background: var(--gold-pale); }
-.lm-opt-left { display: flex; align-items: center; gap: 13px; }
-.lm-radio {
-  width: 20px; height: 20px; border-radius: 50%;
-  border: 2px solid var(--border); flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  transition: all var(--t);
-}
-.lm-opt.is-on .lm-radio { border-color: var(--ink); background: var(--ink); }
-.lm-radio::after { content:''; width:8px; height:8px; border-radius:50%; background:#fff; display:none; }
-.lm-opt.is-on .lm-radio::after { display:block; }
-.lm-opt-name { font-size: 15px; font-weight: 700; color: var(--ink); }
-.lm-opt-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
-.lm-opt-price { font-size: 18px; font-weight: 800; color: var(--ink); white-space: nowrap; }
-
-/* Rx table */
-.lm-rx-wrap { background: var(--gold-pale); border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px; }
-.lm-rx-table { width: 100%; border-collapse: collapse; background: var(--white); border-radius: 8px; overflow: hidden; }
-.lm-rx-table th { background: var(--ink); color: #fff; padding: 10px 12px; font-size: 13px; font-weight: 600; text-align: left; }
-.lm-rx-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
-.lm-rx-table tr:last-child td { border-bottom: none; }
-.lm-rx-table td:first-child { font-weight: 600; font-size: 13px; }
-.lm-rx-input {
-  width: 100%; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 6px;
-  font-size: 14px; transition: border-color var(--t); min-width: 70px;
-}
-.lm-rx-input:focus { border-color: var(--gold); outline: none; }
-
-/* Modal footer */
-.lm-foot {
-  padding: 20px 28px 26px; border-top: 1px solid var(--border);
-  position: sticky; bottom: 0; background: var(--white);
-}
-.lm-total-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.lm-total-lbl { font-size: 14px; font-weight: 600; color: var(--ink); }
-.lm-total-price { font-size: 24px; font-weight: 900; color: var(--ink); letter-spacing: -0.03em; }
-.lm-confirm {
-  width: 100%; padding: 16px; background: var(--ink); color: #fff;
-  border: none; border-radius: var(--radius-md); font-size: 16px; font-weight: 800;
-  cursor: pointer; transition: background var(--t); letter-spacing: 0.05em;
-}
-.lm-confirm:hover { background: #2a2a2a; }
-
-/* ═══════════════════════════════════════════════════════
-   TOAST
-═══════════════════════════════════════════════════════ */
+/* ─── TOAST ─── */
 .pd-toast {
-  position: fixed; bottom: 28px; right: 28px; z-index: 9999;
-  padding: 14px 22px; border-radius: var(--radius-md);
+  position: fixed; bottom: 28px; right: 28px; z-index: 99999;
+  padding: 14px 22px; border-radius: var(--aa-radius);
   font-size: 14px; font-weight: 700; color: #fff;
-  box-shadow: var(--shadow-lg); pointer-events: none;
+  box-shadow: 0 8px 32px rgba(0,0,0,.2); pointer-events: none;
   transform: translateY(70px); opacity: 0;
-  transition: all 0.32s var(--ease); max-width: 320px;
-  background: var(--ink);
+  transition: all .32s var(--aa-ease); max-width: 320px;
+  background: var(--aa-ink);
 }
 .pd-toast.is-show { transform: translateY(0); opacity: 1; }
-.pd-toast--ok  { background: var(--green); }
-.pd-toast--err { background: var(--red); }
+.pd-toast--ok  { background: var(--aa-green) !important; }
+.pd-toast--err { background: #c03020 !important; }
 </style>
+{% endblock %}
 
-
-<div class="pd-wrap">
+{% block content %}
+<div class="pd-page">
 
   <!-- Breadcrumb -->
-  <nav class="pd-crumb" aria-label="Breadcrumb">
+  <nav class="pd-crumb">
     <a href="{% url 'home' %}">Home</a>
     <span class="pd-crumb-sep">›</span>
     <a href="{% url 'catalog:sunglasses_list' %}">Sunglasses</a>
     <span class="pd-crumb-sep">›</span>
-    <span class="pd-crumb-current">{{ product.name }}</span>
+    <span>{{ product.name }}</span>
   </nav>
 
-  <!-- MAIN GRID -->
+  <!-- Main Grid -->
   <div class="pd-grid">
 
-    <!-- ════════════ GALLERY ════════════ -->
-    <div class="gal" id="gal">
+    <!-- ══ GALLERY ══ -->
+    <div>
+      {% include 'partials/_product_gallery.html' with main_image=product.image images=images variants=variants product=product %}
+    </div>
 
-      <!-- Rail -->
-      <div class="gal__rail" id="galRail">
-        {% if product.image %}
-        <div class="gal__thumb is-on" data-src="{{ product.image.url }}" tabindex="0" title="{{ product.name }}">
-          <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="eager"/>
-        </div>
-        {% endif %}
-        {% for img in images %}
-        <div class="gal__thumb" data-src="{{ img.image.url }}" tabindex="0" title="{{ product.name }}">
-          <img src="{{ img.image.url }}" alt="{{ product.name }} view {{ forloop.counter }}" loading="lazy"/>
-        </div>
-        {% endfor %}
-        {% for v in variants %}{% if v.images.exists %}{% for vi in v.images.all %}{% if forloop.first %}
-        <div class="gal__thumb" data-src="{{ vi.image.url }}" data-variant="{{ v.id }}" tabindex="0" title="{{ v.color_name }}">
-          <img src="{{ vi.image.url }}" alt="{{ v.color_name }}" loading="lazy"/>
-          {% if v.color_name %}<span class="gal__thumb-lbl">{{ v.color_name }}</span>{% endif %}
-        </div>
-        {% endif %}{% endfor %}{% endif %}{% endfor %}
-      </div>
-
-      <!-- Stage -->
-      <div class="gal__stage" id="galStage" tabindex="0">
-        {% if product.image %}
-        <img class="gal__main-img" id="galMainImg" src="{{ product.image.url }}" alt="{{ product.name }}" draggable="false"/>
-        {% else %}
-        <svg style="width:48%;height:48%;margin:auto;display:block;opacity:.2;" viewBox="0 0 80 80" fill="none">
-          <rect x="8" y="8" width="64" height="64" rx="4" stroke="#b8976a" stroke-width="2"/>
-          <circle cx="30" cy="30" r="8" stroke="#b8976a" stroke-width="2"/>
-          <path d="M8 52l16-16 12 12 10-10 26 22" stroke="#b8976a" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        {% endif %}
-
-        <!-- FABs -->
-        <button class="gal__fab gal__fab--share" id="galShare" type="button" aria-label="Share">
-          <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        </button>
-        <button class="gal__fab gal__fab--expand" id="galExpand" type="button" aria-label="View fullscreen">
-          <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
-        </button>
-
-        <!-- Arrows -->
-        <button class="gal__arrow gal__arrow--prev" id="galPrev" type="button" aria-label="Previous image">
-          <svg fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <button class="gal__arrow gal__arrow--next" id="galNext" type="button" aria-label="Next image">
-          <svg fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-
-        <span class="gal__count" id="galCount">1 / 1</span>
-      </div>
-    </div><!-- /gal -->
-
-
-    <!-- ════════════ PRODUCT INFO ════════════ -->
+    <!-- ══ PRODUCT INFO ══ -->
     <div class="pi">
 
       <!-- Badges + wishlist -->
-      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
         <div class="pi__badges">
-          {% if product.is_featured %}<span class="pi__badge">Featured</span>{% endif %}
+          {% if product.brand %}<span class="pi__badge pi__badge--brand">{{ product.brand.name }}</span>{% endif %}
           {% if product.compare_at_price %}<span class="pi__badge pi__badge--sale">Sale</span>{% endif %}
           {% if product.gender != 'unisex' %}<span class="pi__badge pi__badge--gender">{{ product.gender|capfirst }}</span>{% endif %}
         </div>
         <button class="pi__wish{% if product in request.user.wishlist.products.all %} is-on{% endif %}"
-                id="wishBtn" data-product-id="{{ product.id }}" onclick="toggleWish(this)" aria-label="Wishlist">
-          {% if product in request.user.wishlist.products.all %}
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="#e05f5f"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/></svg>
-          {% else %}
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/></svg>
-          {% endif %}
+                id="piWishBtn" data-product-id="{{ product.id }}" aria-label="Wishlist">
+          <svg viewBox="0 0 24 24"
+               fill="{% if product in request.user.wishlist.products.all %}#e05f5f{% else %}none{% endif %}"
+               stroke="{% if product in request.user.wishlist.products.all %}#e05f5f{% else %}currentColor{% endif %}"
+               stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </button>
       </div>
 
@@ -667,8 +392,8 @@
       <div class="pi__price-box">
         <span class="pi__price" id="dispPrice">QAR {{ product.base_price }}</span>
         {% if product.compare_at_price %}
-        <span class="pi__price-old">QAR {{ product.compare_at_price }}</span>
-        <span class="pi__price-save">SAVE QAR {{ product.compare_at_price|floatformat:0 }}</span>
+        <span class="pi__price-was">QAR {{ product.compare_at_price }}</span>
+        <span class="pi__price-save">Save QAR {{ product.compare_at_price|floatformat:0 }}</span>
         {% endif %}
       </div>
 
@@ -676,29 +401,24 @@
       <p class="pi__desc">{{ product.short_description }}</p>
       {% endif %}
 
-      <!-- FORM -->
-      <form id="pdForm" method="POST" action="{% url 'cart:add_to_cart' %}" onsubmit="return false;">
+      <form id="pdForm" onsubmit="return false;">
         {% csrf_token %}
         <input type="hidden" name="product_id" value="{{ product.id }}">
         <input type="hidden" name="selected_variant_id" id="hdVariant" value="">
         <input type="hidden" name="power_type" id="hdPower" value="without">
         <input type="hidden" name="selected_lens_color" id="hdLensColor" value="">
-        <input type="hidden" name="selected_lens_option" id="hdLensOption" value="">
+        <input type="hidden" name="selected_lens_option" id="hdLensOpt" value="">
         <input type="hidden" name="total_lens_price" id="hdLensPrice" value="0">
-        <input type="hidden" name="right_sph" id="hRSph"><input type="hidden" name="right_cyl" id="hRCyl">
-        <input type="hidden" name="right_axis" id="hRAxis"><input type="hidden" name="left_sph" id="hLSph">
-        <input type="hidden" name="left_cyl" id="hLCyl"><input type="hidden" name="left_axis" id="hLAxis">
 
-        <!-- Frame color -->
+        <!-- Frame Color -->
         {% if variants %}
         <p class="pi__lbl">Frame Color</p>
-        <div class="pi__colors">
+        <div class="pi__swatches">
           {% for v in variants %}
           <div class="pi__swatch{% if forloop.first %} is-on{% endif %}"
                data-variant="{{ v.id }}"
                data-img="{% if v.images.exists %}{{ v.images.first.image.url }}{% endif %}"
-               onclick="pickVariant(this)"
-               title="{{ v.color_name }}">
+               onclick="pickVariant(this)" tabindex="0" role="button" aria-label="{{ v.color_name }}">
             <div class="pi__swatch-dot" style="background:{% if v.color_code %}{{ v.color_code }}{% else %}linear-gradient(135deg,#ccc,#999){% endif %};"></div>
             <span class="pi__swatch-name">{{ v.color_name }}</span>
           </div>
@@ -707,15 +427,15 @@
         {% endif %}
 
         <!-- Size -->
-        {% with fsz=variants.0.size %}{% if fsz %}
+        {% if variants.0.size %}
         <p class="pi__lbl">Frame Size</p>
         <select class="pi__select" name="selected_size">
           <option value="">Select size</option>
           {% for v in variants %}{% if v.size %}<option value="{{ v.size }}">{{ v.size }}</option>{% endif %}{% endfor %}
         </select>
-        {% endif %}{% endwith %}
+        {% endif %}
 
-        <!-- Prescription toggle -->
+        <!-- Prescription -->
         <div class="pi__power-wrap">
           <p class="pi__lbl">Prescription Lenses</p>
           <div class="pi__power-toggle">
@@ -724,20 +444,16 @@
           </div>
         </div>
 
-        <!-- Lens select button -->
-        <button type="button" class="pi__btn pi__btn--lens" id="lensSelectBtn" onclick="openLensModal()">
-          🔍 Select Prescription Lenses
-        </button>
+        <button type="button" class="pi__btn pi__btn--lens" id="lensBtn" onclick="openLm()">🔍 Select Prescription Lenses</button>
 
-        <!-- Lens confirmed badge -->
         <div class="pi__lens-ok" id="lensOk">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          <span id="lensOkText">Lens selected</span>
-          <button type="button" class="pi__lens-ok-change" onclick="openLensModal()">Change</button>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="lensOkTxt">Lens selected</span>
+          <button type="button" onclick="openLm()">Change</button>
         </div>
 
-        <!-- Quantity -->
-        <p class="pi__lbl" style="margin-top:4px;">Quantity</p>
+        <!-- Qty -->
+        <p class="pi__lbl">Quantity</p>
         <div class="pi__qty-wrap">
           <div class="pi__qty">
             <button type="button" class="pi__qty-btn" onclick="chQty(-1)">−</button>
@@ -746,10 +462,12 @@
           </div>
         </div>
 
-        <!-- Actions -->
+        <!-- CTAs -->
         <div class="pi__cta">
-          <button type="button" class="pi__btn pi__btn--cart" id="cartBtn" onclick="addCart()">Add to Cart</button>
-          <button type="button" class="pi__btn pi__btn--buy" onclick="buyNow()">Buy it now →</button>
+          <button type="button" class="pi__btn pi__btn--cart" id="cartBtn" onclick="addCart()">
+            <svg style="width:16px;height:16px;vertical-align:middle;margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Add to Cart
+          </button>
+          <button type="button" class="pi__btn pi__btn--buy" onclick="buyNow()">Buy it Now →</button>
         </div>
       </form>
 
@@ -757,38 +475,35 @@
       <div class="pi__trust">
         <div class="pi__trust-row">
           <div class="pi__trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
-          <span>Delivery in <strong>3–6 business days</strong> — Qatar / GCC</span>
+          <span>Delivery in <strong>3–6 business days</strong> · Qatar / GCC</span>
         </div>
         <div class="pi__trust-row">
           <div class="pi__trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div>
           <span>Free returns within <strong>45 days</strong> of purchase</span>
         </div>
         <div class="pi__trust-row">
-          <div class="pi__trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="pi__trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
           <span><strong>100% Authentic</strong> — genuine products guaranteed</span>
         </div>
       </div>
 
-      <!-- Specifications -->
+      <!-- Specs -->
       {% if specifications %}
-      <div class="pi__specs">
-        <p class="pi__lbl">Specifications</p>
-        <table class="pi__specs-table">
-          {% for s in specifications %}
-          <tr><td>{{ s.spec_key }}</td><td>{{ s.spec_value }}</td></tr>
-          {% endfor %}
-        </table>
-      </div>
+      <p class="pi__lbl">Specifications</p>
+      <table class="pi__specs-table">
+        {% for s in specifications %}
+        <tr><td>{{ s.spec_key }}</td><td>{{ s.spec_value }}</td></tr>
+        {% endfor %}
+      </table>
       {% endif %}
 
     </div><!-- /pi -->
   </div><!-- /pd-grid -->
 
-
   <!-- Description -->
   {% if product.description %}
   <div class="pd-section">
-    <h2 class="pd-section__title">About This Product</h2>
+    <h2 class="pd-section__h">About This Product</h2>
     <div class="pd-section__body">{{ product.description|linebreaksbr }}</div>
   </div>
   {% endif %}
@@ -796,15 +511,15 @@
   <!-- Related -->
   {% if related_products %}
   <div class="pd-section">
-    <h2 class="pd-section__title">You May Also Like</h2>
-    <div class="pd-related-grid">
+    <h2 class="pd-section__h">You May Also Like</h2>
+    <div class="pd-rel-grid">
       {% for r in related_products %}
-      <a href="{% url 'catalog:sunglass_detail' r.slug %}" class="pd-card">
-        <div class="pd-card__img">{% if r.image %}<img src="{{ r.image.url }}" alt="{{ r.name }}" loading="lazy">{% endif %}</div>
-        <div class="pd-card__info">
-          {% if r.brand %}<p class="pd-card__brand">{{ r.brand.name }}</p>{% endif %}
-          <p class="pd-card__name">{{ r.name }}</p>
-          <p class="pd-card__price">QAR {{ r.base_price }}</p>
+      <a href="{% url 'catalog:sunglass_detail' r.slug %}" class="pd-rel-card">
+        <div class="pd-rel-card__img">{% if r.image %}<img src="{{ r.image.url }}" alt="{{ r.name }}" loading="lazy">{% endif %}</div>
+        <div class="pd-rel-card__info">
+          {% if r.brand %}<p class="pd-rel-card__brand">{{ r.brand.name }}</p>{% endif %}
+          <p class="pd-rel-card__name">{{ r.name }}</p>
+          <p class="pd-rel-card__price">QAR {{ r.base_price }}</p>
         </div>
       </a>
       {% endfor %}
@@ -812,388 +527,195 @@
   </div>
   {% endif %}
 
-</div><!-- /pd-wrap -->
+</div><!-- /pd-page -->
 
-
-<!-- ═══════════════ LENS MODAL ═══════════════ -->
-<div class="lm-overlay" id="lmOverlay" onclick="handleLmBg(event)">
-  <div class="lm-box">
-    <div class="lm-head">
-      <h2>Choose Prescription Lenses</h2>
-      <button class="lm-close" onclick="closeLensModal()">×</button>
+<!-- ═════════════ LENS MODAL ═════════════ -->
+<div class="lm" id="lmOverlay" onclick="if(event.target===this)closeLm()">
+  <div class="lm__box">
+    <div class="lm__head">
+      <h3>Choose Prescription Lenses</h3>
+      <button class="lm__close" onclick="closeLm()">×</button>
     </div>
-    <div class="lm-body">
-      <p class="lm-step-lbl">Step 1 — Lens Tint</p>
-      <div class="lm-colors">
-        <div class="lm-color-chip" onclick="pickLensColor(this,'grey')"><div class="lm-color-dot" style="background:#808080;"></div><span class="lm-color-name">Grey</span></div>
-        <div class="lm-color-chip" onclick="pickLensColor(this,'brown')"><div class="lm-color-dot" style="background:#8B4513;"></div><span class="lm-color-name">Brown</span></div>
-        <div class="lm-color-chip" onclick="pickLensColor(this,'green')"><div class="lm-color-dot" style="background:#228B22;"></div><span class="lm-color-name">Green</span></div>
-        <div class="lm-color-chip" onclick="pickLensColor(this,'blue')"><div class="lm-color-dot" style="background:#1a5fa8;"></div><span class="lm-color-name">Blue</span></div>
-        <div class="lm-color-chip" onclick="pickLensColor(this,'clear')"><div class="lm-color-dot" style="background:linear-gradient(135deg,#e8f4ff,#c5d9f0);border:1.5px solid #b0c8e0;"></div><span class="lm-color-name">Clear</span></div>
+    <div class="lm__body">
+      <p class="lm__step">Step 1 — Lens Tint</p>
+      <div class="lm__colors">
+        <div class="lm__color-chip" onclick="pickLensColor(this,'grey')"><div class="lm__color-dot" style="background:#808080;"></div><span class="lm__color-name">Grey</span></div>
+        <div class="lm__color-chip" onclick="pickLensColor(this,'brown')"><div class="lm__color-dot" style="background:#8B4513;"></div><span class="lm__color-name">Brown</span></div>
+        <div class="lm__color-chip" onclick="pickLensColor(this,'green')"><div class="lm__color-dot" style="background:#228B22;"></div><span class="lm__color-name">Green</span></div>
+        <div class="lm__color-chip" onclick="pickLensColor(this,'blue')"><div class="lm__color-dot" style="background:#1a5fa8;"></div><span class="lm__color-name">Blue</span></div>
+        <div class="lm__color-chip" onclick="pickLensColor(this,'clear')"><div class="lm__color-dot" style="background:linear-gradient(135deg,#e8f4ff,#c5d9f0);border:1.5px solid #b0c8e0;"></div><span class="lm__color-name">Clear</span></div>
       </div>
-
-      <p class="lm-step-lbl">Step 2 — Lens Type</p>
-      <div class="lm-opt" onclick="pickLensOpt(this,'regular_156',250)">
-        <div class="lm-opt-left"><div class="lm-radio"></div><div><div class="lm-opt-name">Regular 1.56</div><div class="lm-opt-desc">Anti-reflection • For mild prescriptions</div></div></div>
-        <div class="lm-opt-price">250 QAR</div>
+      <p class="lm__step">Step 2 — Lens Type</p>
+      <div class="lm__opt" onclick="pickLensOpt(this,'regular_156',250)">
+        <div class="lm__opt-left"><div class="lm__radio"></div><div><div class="lm__opt-name">Regular 1.56</div><div class="lm__opt-desc">Anti-reflection · Mild prescriptions</div></div></div>
+        <div class="lm__opt-price">250 QAR</div>
       </div>
-      <div class="lm-opt" onclick="pickLensOpt(this,'essilor_crizal',350)">
-        <div class="lm-opt-left"><div class="lm-radio"></div><div><div class="lm-opt-name">Essilor Crizal Easy Pro 1.5</div><div class="lm-opt-desc">UV • Scratch & dust resistant • Superior clarity</div></div></div>
-        <div class="lm-opt-price">350 QAR</div>
+      <div class="lm__opt" onclick="pickLensOpt(this,'essilor_crizal',350)">
+        <div class="lm__opt-left"><div class="lm__radio"></div><div><div class="lm__opt-name">Essilor Crizal Easy Pro 1.5</div><div class="lm__opt-desc">UV · Scratch & dust resistant · Superior clarity</div></div></div>
+        <div class="lm__opt-price">350 QAR</div>
       </div>
-
-      <p class="lm-step-lbl" style="margin-top:24px;">Step 3 — Prescription (Rx)</p>
-      <div class="lm-rx-wrap">
-        <table class="lm-rx-table">
+      <p class="lm__step" style="margin-top:22px;">Step 3 — Prescription (Rx)</p>
+      <div class="lm__rx">
+        <table class="lm__rx-table">
           <thead><tr><th>Eye</th><th>SPH</th><th>CYL</th><th>AXIS</th></tr></thead>
           <tbody>
-            <tr><td><strong>Right (OD)</strong></td><td><input class="lm-rx-input" type="number" step="0.25" placeholder="-1.50" id="mRSph"></td><td><input class="lm-rx-input" type="number" step="0.25" placeholder="-0.50" id="mRCyl"></td><td><input class="lm-rx-input" type="number" min="0" max="180" placeholder="0–180" id="mRAxis"></td></tr>
-            <tr><td><strong>Left (OS)</strong></td><td><input class="lm-rx-input" type="number" step="0.25" placeholder="-2.00" id="mLSph"></td><td><input class="lm-rx-input" type="number" step="0.25" placeholder="-0.75" id="mLCyl"></td><td><input class="lm-rx-input" type="number" min="0" max="180" placeholder="0–180" id="mLAxis"></td></tr>
+            <tr><td><strong>Right (OD)</strong></td><td><input class="lm__rx-input" type="number" step="0.25" placeholder="-1.50" id="mRSph"></td><td><input class="lm__rx-input" type="number" step="0.25" placeholder="-0.50" id="mRCyl"></td><td><input class="lm__rx-input" type="number" min="0" max="180" placeholder="0–180" id="mRAxis"></td></tr>
+            <tr><td><strong>Left (OS)</strong></td><td><input class="lm__rx-input" type="number" step="0.25" placeholder="-2.00" id="mLSph"></td><td><input class="lm__rx-input" type="number" step="0.25" placeholder="-0.75" id="mLCyl"></td><td><input class="lm__rx-input" type="number" min="0" max="180" placeholder="0–180" id="mLAxis"></td></tr>
           </tbody>
         </table>
       </div>
     </div>
-    <div class="lm-foot">
-      <div class="lm-total-row">
-        <span class="lm-total-lbl">Lens Price:</span>
-        <span class="lm-total-price" id="lmTotal">— QAR</span>
-      </div>
-      <button class="lm-confirm" onclick="confirmLens()">Confirm Lens Selection →</button>
+    <div class="lm__foot">
+      <div class="lm__total"><span class="lm__total-lbl">Lens Price:</span><span class="lm__total-val" id="lmTotal">— QAR</span></div>
+      <button class="lm__confirm" onclick="confirmLens()">Confirm Lens Selection →</button>
     </div>
   </div>
 </div>
 
-<!-- Lightbox -->
-<div class="gal__lb" id="galLb">
-  <span class="gal__lb-count" id="galLbCount">1 / 1</span>
-  <button class="gal__lb-close" onclick="closeLb()">×</button>
-  <button class="gal__lb-nav gal__lb-nav--prev" onclick="lbNav(-1)"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-  <img class="gal__lb-img" id="galLbImg" src="" alt="">
-  <button class="gal__lb-nav gal__lb-nav--next" onclick="lbNav(1)"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
-  <div class="gal__lb-strip" id="galLbStrip"></div>
-</div>
-
-<!-- Toast -->
 <div class="pd-toast" id="pdToast"></div>
 
-
 <script>
-/* ══════════════════════════════════════════
-   STATE
-══════════════════════════════════════════ */
-const BASE = parseFloat('{{ product.base_price|default:0 }}');
-let selVariant  = '';
-let powerType   = 'without';
-let lensColor   = '';
-let lensOpt     = '';
-let lensPrice   = 0;
-let lensOk      = false;
+const BASE_PRICE = parseFloat('{{ product.base_price|default:0 }}');
+let lensColor='', lensOpt='', lensPrice=0, lensConfirmed=false;
+let powerType='without';
 
-/* ══════════════════════════════════════════
-   GALLERY
-══════════════════════════════════════════ */
-(function(){
-  const stage    = document.getElementById('galStage');
-  const mainImg  = document.getElementById('galMainImg');
-  const rail     = document.getElementById('galRail');
-  const prevBtn  = document.getElementById('galPrev');
-  const nextBtn  = document.getElementById('galNext');
-  const expandBtn= document.getElementById('galExpand');
-  const shareBtn = document.getElementById('galShare');
-  const countBdg = document.getElementById('galCount');
-  const lb       = document.getElementById('galLb');
-  const lbImg    = document.getElementById('galLbImg');
-  const lbStrip  = document.getElementById('galLbStrip');
-  const lbCount  = document.getElementById('galLbCount');
+/* CSRF */
+function getCsrf(){var m=document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);return m?decodeURIComponent(m[1]):'';};
 
-  if (!stage || !mainImg) return;
+/* Toast */
+var _tt;
+function toast(msg,type){
+  var t=document.getElementById('pdToast');
+  t.textContent=msg; t.className='pd-toast is-show'+(type?' pd-toast--'+type:'');
+  clearTimeout(_tt); _tt=setTimeout(function(){t.classList.remove('is-show');},3400);
+}
 
-  const thumbs = Array.from(rail.querySelectorAll('.gal__thumb'));
-  const srcs   = thumbs.map(t => t.dataset.src || '');
-  const total  = srcs.length;
-  let cur = 0;
-
-  // Build lb strip
-  srcs.forEach((src, i) => {
-    const d = document.createElement('div');
-    d.className = 'gal__lb-dot' + (i===0?' is-on':'');
-    const im = document.createElement('img');
-    im.src = src; im.alt = ''; im.loading = 'lazy';
-    d.appendChild(im);
-    d.addEventListener('click', () => lbGoTo(i));
-    lbStrip.appendChild(d);
-  });
-  const lbDots = Array.from(lbStrip.querySelectorAll('.gal__lb-dot'));
-
-  if (total <= 1) {
-    prevBtn && prevBtn.classList.add('is-hide');
-    nextBtn && nextBtn.classList.add('is-hide');
-    countBdg && countBdg.classList.add('is-hide');
-  }
-
-  function goTo(idx, force) {
-    if (!force && idx === cur) return;
-    if (idx < 0) idx = total - 1;
-    if (idx >= total) idx = 0;
-    mainImg.classList.add('is-fade');
-    stage.classList.remove('is-zoom');
-    setTimeout(() => {
-      mainImg.src = srcs[idx];
-      mainImg.onload = () => mainImg.classList.remove('is-fade');
-      if (mainImg.complete) mainImg.classList.remove('is-fade');
-    }, 190);
-    thumbs.forEach((t,i) => t.classList.toggle('is-on', i===idx));
-    thumbs[idx] && thumbs[idx].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
-    if (total > 1) countBdg.textContent = `${idx+1} / ${total}`;
-    cur = idx;
-  }
-
-  // Thumb clicks + keyboard
-  thumbs.forEach((t,i) => {
-    t.addEventListener('click', () => goTo(i, true));
-    t.addEventListener('keydown', e => {
-      if (e.key==='Enter'||e.key===' '){e.preventDefault();goTo(i,true);}
-      if (e.key==='ArrowDown'||e.key==='ArrowRight'){e.preventDefault();thumbs[i+1]&&thumbs[i+1].focus();}
-      if (e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();thumbs[i-1]&&thumbs[i-1].focus();}
-    });
-  });
-
-  prevBtn && prevBtn.addEventListener('click', e=>{e.stopPropagation();goTo(cur-1);});
-  nextBtn && nextBtn.addEventListener('click', e=>{e.stopPropagation();goTo(cur+1);});
-
-  // Zoom
-  stage.addEventListener('click', e => {
-    if (e.target.closest('.gal__arrow,.gal__fab')) return;
-    stage.classList.toggle('is-zoom');
-  });
-  stage.addEventListener('mousemove', e => {
-    if (!stage.classList.contains('is-zoom')) return;
-    const r = stage.getBoundingClientRect();
-    stage.style.setProperty('--zx', ((e.clientX-r.left)/r.width*100).toFixed(2)+'%');
-    stage.style.setProperty('--zy', ((e.clientY-r.top)/r.height*100).toFixed(2)+'%');
-  });
-  stage.addEventListener('mouseleave', () => stage.classList.remove('is-zoom'));
-
-  // Touch swipe
-  let tx=0,ty=0;
-  stage.addEventListener('touchstart', e=>{tx=e.changedTouches[0].screenX;ty=e.changedTouches[0].screenY;},{passive:true});
-  stage.addEventListener('touchend', e=>{
-    const dx=tx-e.changedTouches[0].screenX;
-    if(Math.abs(dx)>44&&Math.abs(ty-e.changedTouches[0].screenY)<70){
-      stage.classList.remove('is-zoom'); dx>0?goTo(cur+1):goTo(cur-1);
-    }
-  },{passive:true});
-
-  // Stage keyboard
-  stage.addEventListener('keydown', e=>{
-    if(e.key==='ArrowLeft'){e.preventDefault();goTo(cur-1);}
-    if(e.key==='ArrowRight'){e.preventDefault();goTo(cur+1);}
-    if(e.key==='Escape') stage.classList.remove('is-zoom');
-    if(e.key==='Enter'||e.key==='f') openLb();
-  });
-
-  // Lightbox
-  function openLb() {
-    lbGoTo(cur);
-    lb.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeLb() {
-    lb.classList.remove('is-open');
-    document.body.style.overflow = '';
-  }
-  function lbGoTo(idx) {
-    if(idx<0) idx=total-1; if(idx>=total) idx=0;
-    lbImg.style.cssText = 'opacity:0;transform:scale(0.95);';
-    setTimeout(()=>{
-      lbImg.src = srcs[idx];
-      lbImg.style.cssText = 'transition:opacity .22s,transform .22s;opacity:1;transform:scale(1);';
-    },130);
-    lbCount.textContent = `${idx+1} / ${total}`;
-    lbDots.forEach((d,i)=>d.classList.toggle('is-on',i===idx));
-    lbDots[idx]&&lbDots[idx].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
-    cur = idx;
-    thumbs.forEach((t,i)=>t.classList.toggle('is-on',i===idx));
-    if(total>1) countBdg.textContent=`${idx+1} / ${total}`;
-  }
-  window.closeLb  = closeLb;
-  window.lbNav    = d => lbGoTo(cur+d);
-  expandBtn && expandBtn.addEventListener('click', e=>{e.stopPropagation();openLb();});
-  lb.addEventListener('click', e=>{ if(e.target===lb) closeLb(); });
-
-  // Share
-  shareBtn && shareBtn.addEventListener('click', e=>{
-    e.stopPropagation();
-    if(navigator.share){navigator.share({url:location.href});}
-    else if(navigator.clipboard){
-      navigator.clipboard.writeText(location.href).then(()=>{
-        shareBtn.style.background='#f0f7ee';
-        setTimeout(()=>shareBtn.style.background='',1400);
-      });
-    }
-  });
-
-  // Public API for variant sync
-  window.galGoToSrc = src => {
-    const idx = srcs.indexOf(src);
-    if(idx !== -1) goTo(idx, true);
-    else {
-      mainImg.classList.add('is-fade');
-      stage.classList.remove('is-zoom');
-      setTimeout(()=>{
-        mainImg.src = src;
-        if(mainImg.complete) mainImg.classList.remove('is-fade');
-        else mainImg.onload = ()=>mainImg.classList.remove('is-fade');
-      },190);
-    }
-  };
-
-  goTo(0, true);
-})();
-
-
-/* ══════════════════════════════════════════
-   VARIANTS
-══════════════════════════════════════════ */
-function pickVariant(el) {
-  document.querySelectorAll('.pi__swatch').forEach(s=>s.classList.remove('is-on'));
+/* Variant */
+function pickVariant(el){
+  document.querySelectorAll('.pi__swatch').forEach(function(s){s.classList.remove('is-on');});
   el.classList.add('is-on');
-  selVariant = el.dataset.variant || '';
-  document.getElementById('hdVariant').value = selVariant;
-  const img = el.dataset.img;
-  if(img && window.galGoToSrc) galGoToSrc(img);
+  document.getElementById('hdVariant').value = el.dataset.variant||'';
+  var img = el.dataset.img;
+  if(img && window.__aaGal) window.__aaGal.goToSrc(img);
 }
 
-/* ══════════════════════════════════════════
-   POWER
-══════════════════════════════════════════ */
-function setPower(type, btn) {
-  powerType = type;
-  document.querySelectorAll('.pi__power-btn').forEach(b=>b.classList.remove('is-on'));
+/* Power */
+function setPower(type, btn){
+  powerType=type;
+  document.querySelectorAll('.pi__power-btn').forEach(function(b){b.classList.remove('is-on');});
   btn.classList.add('is-on');
-  document.getElementById('hdPower').value = type;
-  const lBtn = document.getElementById('lensSelectBtn');
-  if(type==='with') {
-    lBtn.classList.add('is-show');
-  } else {
-    lBtn.classList.remove('is-show');
-    lensColor=''; lensOpt=''; lensPrice=0; lensOk=false;
-    document.getElementById('lensOk').classList.remove('is-show');
-    document.getElementById('hdLensColor').value='';
-    document.getElementById('hdLensOption').value='';
-    document.getElementById('hdLensPrice').value='0';
-    updateDispPrice();
-  }
+  document.getElementById('hdPower').value=type;
+  var lb=document.getElementById('lensBtn');
+  if(type==='with'){lb.classList.add('is-show');}
+  else{lb.classList.remove('is-show');lensColor='';lensOpt='';lensPrice=0;lensConfirmed=false;document.getElementById('lensOk').classList.remove('is-show');document.getElementById('hdLensPrice').value='0';updateDispPrice();}
 }
 
-/* ══════════════════════════════════════════
-   LENS MODAL
-══════════════════════════════════════════ */
-function openLensModal(){ document.getElementById('lmOverlay').classList.add('is-open'); document.body.style.overflow='hidden'; }
-function closeLensModal(){ document.getElementById('lmOverlay').classList.remove('is-open'); document.body.style.overflow=''; }
-function handleLmBg(e){ if(e.target===document.getElementById('lmOverlay')) closeLensModal(); }
-
-function pickLensColor(chip,color){
-  document.querySelectorAll('.lm-color-chip').forEach(c=>c.classList.remove('is-on'));
-  chip.classList.add('is-on'); lensColor=color;
-}
-function pickLensOpt(card,val,price){
-  document.querySelectorAll('.lm-opt').forEach(c=>c.classList.remove('is-on'));
-  card.classList.add('is-on'); lensOpt=val; lensPrice=price;
-  document.getElementById('lmTotal').textContent = price+' QAR';
-}
+/* Lens modal */
+function openLm(){document.getElementById('lmOverlay').classList.add('is-open');document.body.style.overflow='hidden';}
+function closeLm(){document.getElementById('lmOverlay').classList.remove('is-open');document.body.style.overflow='';}
+function pickLensColor(chip,c){document.querySelectorAll('.lm__color-chip').forEach(function(x){x.classList.remove('is-on');});chip.classList.add('is-on');lensColor=c;}
+function pickLensOpt(card,val,price){document.querySelectorAll('.lm__opt').forEach(function(x){x.classList.remove('is-on');});card.classList.add('is-on');lensOpt=val;lensPrice=price;document.getElementById('lmTotal').textContent=price+' QAR';}
 function confirmLens(){
-  if(!lensColor){showToast('Please select a lens tint color','err');return;}
-  if(!lensOpt){showToast('Please select a lens type','err');return;}
+  if(!lensColor){toast('Please select a lens tint color','err');return;}
+  if(!lensOpt){toast('Please select a lens type','err');return;}
   document.getElementById('hdLensColor').value=lensColor;
-  document.getElementById('hdLensOption').value=lensOpt;
+  document.getElementById('hdLensOpt').value=lensOpt;
   document.getElementById('hdLensPrice').value=lensPrice;
-  ['RSph','RCyl','RAxis','LSph','LCyl','LAxis'].forEach(k=>{
-    document.getElementById('h'+k).value = document.getElementById('m'+k).value||'';
-  });
-  lensOk=true; updateDispPrice();
-  const ok=document.getElementById('lensOk');
+  lensConfirmed=true; updateDispPrice();
+  var ok=document.getElementById('lensOk');
   ok.classList.add('is-show');
-  const nm = lensOpt==='essilor_crizal'?'Essilor Crizal Easy Pro':'Regular 1.56';
-  document.getElementById('lensOkText').textContent = `${nm} · ${lensColor.charAt(0).toUpperCase()+lensColor.slice(1)} · ${lensPrice} QAR`;
-  closeLensModal();
-  showToast(`Lens confirmed! +${lensPrice} QAR`,'ok');
+  document.getElementById('lensOkTxt').textContent=(lensOpt==='essilor_crizal'?'Essilor Crizal Easy Pro':'Regular 1.56')+' · '+lensColor.charAt(0).toUpperCase()+lensColor.slice(1)+' · '+lensPrice+' QAR';
+  closeLm(); toast('Lens confirmed! +'+lensPrice+' QAR','ok');
 }
 function updateDispPrice(){
-  const t = BASE+(lensOk?lensPrice:0);
-  document.getElementById('dispPrice').textContent='QAR '+t.toFixed(2);
+  document.getElementById('dispPrice').textContent='QAR '+(BASE_PRICE+(lensConfirmed?lensPrice:0)).toFixed(2);
 }
 
-/* ══════════════════════════════════════════
-   QTY
-══════════════════════════════════════════ */
-function chQty(d){
-  const inp=document.getElementById('qtyVal');
-  inp.value=Math.min(Math.max(1,parseInt(inp.value)+d),parseInt(inp.max)||99);
-}
+/* Qty */
+function chQty(d){var i=document.getElementById('qtyVal');i.value=Math.min(Math.max(1,parseInt(i.value)+d),parseInt(i.max)||99);}
 
-/* ══════════════════════════════════════════
-   CART / BUY
-══════════════════════════════════════════ */
+/* Add to cart */
 function addCart(){
-  if(powerType==='with'&&!lensOk){showToast('Please select prescription lenses first','err');openLensModal();return;}
-  const btn=document.getElementById('cartBtn');
-  btn.classList.add('is-loading'); btn.textContent='Adding…';
-  const form=document.getElementById('pdForm');
-  const fd=new FormData(form);
-  fd.set('quantity',document.getElementById('qtyVal').value);
-  fetch("{% url 'cart:add_to_cart' %}",{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':form.querySelector('[name=csrfmiddlewaretoken]').value}})
-  .then(r=>r.json()).then(data=>{
-    btn.classList.remove('is-loading'); btn.textContent='Add to Cart';
+  if(powerType==='with'&&!lensConfirmed){toast('Please select prescription lenses first','err');openLm();return;}
+  var btn=document.getElementById('cartBtn');
+  var orig=btn.innerHTML; btn.textContent='Adding…'; btn.disabled=true;
+  var form=document.getElementById('pdForm');
+  var fd=new FormData();
+  fd.append('csrfmiddlewaretoken',getCsrf());
+  fd.append('product_id','{{ product.id }}');
+  fd.append('quantity',document.getElementById('qtyVal').value);
+  fd.append('selected_variant_id',document.getElementById('hdVariant').value);
+  fd.append('power_type',document.getElementById('hdPower').value);
+  fd.append('selected_lens_color',document.getElementById('hdLensColor').value);
+  fd.append('selected_lens_option',document.getElementById('hdLensOpt').value);
+  fd.append('total_lens_price',document.getElementById('hdLensPrice').value);
+  fetch("{% url 'cart:add_to_cart' %}",{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}})
+  .then(function(r){return r.json();})
+  .then(function(data){
+    btn.innerHTML=orig; btn.disabled=false;
     if(data.success){
-      showToast('Added to cart!','ok');
-      const cc=document.getElementById('cartCount');
+      toast('🛒 Added to cart!','ok');
+      var cc=document.getElementById('cartCount')||document.querySelector('[data-cart-count]');
       if(cc&&data.cart_count) cc.textContent=data.cart_count;
-    } else showToast(data.message||'Error adding to cart','err');
-  }).catch(()=>{btn.classList.remove('is-loading');btn.textContent='Add to Cart';showToast('Something went wrong','err');});
+    } else { toast(data.message||'Could not add to cart.','err'); }
+  })
+  .catch(function(){btn.innerHTML=orig;btn.disabled=false;toast('Network error.','err');});
 }
+
+/* Buy now */
 function buyNow(){
-  if(powerType==='with'&&!lensOk){showToast('Please select prescription lenses first','err');openLensModal();return;}
-  const form=document.getElementById('pdForm');
-  form.action="{% url 'orders:checkout' %}"; form.method='POST'; form.submit();
+  if(powerType==='with'&&!lensConfirmed){toast('Please select prescription lenses first','err');openLm();return;}
+  var fd=new FormData();
+  fd.append('csrfmiddlewaretoken',getCsrf());
+  fd.append('product_id','{{ product.id }}');
+  fd.append('quantity',document.getElementById('qtyVal').value);
+  fd.append('selected_variant_id',document.getElementById('hdVariant').value||'');
+  fd.append('power_type',document.getElementById('hdPower').value);
+  fd.append('selected_lens_color',document.getElementById('hdLensColor').value);
+  fd.append('selected_lens_option',document.getElementById('hdLensOpt').value);
+  fd.append('total_lens_price',document.getElementById('hdLensPrice').value);
+  fetch("{% url 'cart:add_to_cart' %}",{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}})
+  .then(function(r){return r.json();})
+  .then(function(d){if(d.success){window.location.href="{% url 'orders:checkout' %}";}else{toast(d.message||'Could not process.','err');}})
+  .catch(function(){toast('Network error.','err');});
 }
 
-/* ══════════════════════════════════════════
-   WISHLIST
-══════════════════════════════════════════ */
-function toggleWish(btn){
-  const csrf=document.querySelector('[name=csrfmiddlewaretoken]').value;
-  fetch('/users/wishlist/toggle/',{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrf,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({product_id:btn.dataset.productId})})
-  .then(r=>r.json()).then(d=>{
-    if(d.added){btn.classList.add('is-on');btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="#e05f5f"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/></svg>';showToast('Added to wishlist','ok');}
-    else{btn.classList.remove('is-on');btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6.7-4.4-10-9c-3.3-4.6.2-11 6-9 2 .6 4 2.4 4 2.4s2-1.8 4-2.4c5.8-2 9.3 4.4 6 9-3.3 4.6-10 9-10 9z"/></svg>';showToast('Removed from wishlist','');}
-  }).catch(()=>showToast('Login required','err'));
-}
-
-/* ══════════════════════════════════════════
-   TOAST
-══════════════════════════════════════════ */
-let _tt;
-function showToast(msg,type=''){
-  const t=document.getElementById('pdToast');
-  t.textContent=msg; t.className='pd-toast is-show'+(type?' pd-toast--'+type:'');
-  clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('is-show'),3400);
-}
-
-/* Keyboard: close lightbox/modal on Escape */
-document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){
-    closeLensModal();
-    document.getElementById('galLb')&&document.getElementById('galLb').classList.remove('is-open');
-    document.body.style.overflow='';
-  }
+/* Wishlist */
+document.getElementById('piWishBtn').addEventListener('click',function(){
+  var btn=this;
+  var pid=btn.dataset.productId;
+  var csrf=getCsrf();
+  fetch("{% url 'wishlist:toggle' 0 %}".replace('/0/','/'+pid+'/'),{
+    method:'POST',credentials:'same-origin',
+    headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrf,'Content-Type':'application/x-www-form-urlencoded'},
+    body:'csrfmiddlewaretoken='+encodeURIComponent(csrf)
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    var svg=btn.querySelector('svg');
+    if(data.added){
+      btn.classList.add('is-on');
+      svg.setAttribute('fill','#e05f5f');svg.setAttribute('stroke','#e05f5f');
+      toast('❤️ Added to wishlist!','ok');
+    } else {
+      btn.classList.remove('is-on');
+      svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');
+      toast('💔 Removed from wishlist.','');
+    }
+    var wc=document.querySelector('.wishlist-count,[data-wishlist-count]');
+    if(wc&&data.wishlist_count) wc.textContent=data.wishlist_count;
+  })
+  .catch(function(){toast('Please log in to use wishlist.','');});
 });
 
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLm();});
+
 /* Init first variant */
-document.addEventListener('DOMContentLoaded', ()=>{
-  const first=document.querySelector('.pi__swatch');
-  if(first){ selVariant=first.dataset.variant||''; document.getElementById('hdVariant').value=selVariant; }
+document.addEventListener('DOMContentLoaded',function(){
+  var first=document.querySelector('.pi__swatch');
+  if(first){document.getElementById('hdVariant').value=first.dataset.variant||'';}
 });
 </script>
 
+<script src="{% static 'js/aa-gallery.js' %}"></script>
 {% endblock %}
