@@ -3,7 +3,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_http_methods
-from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from decimal import Decimal
 
@@ -17,9 +16,9 @@ from lenses.models import LensOption, LensAddOn, SunglassLensOption
 # ============================================
 
 def get_or_create_cart(request):
-    """Get or create cart for user or session"""
+    """Get or create cart for user or session."""
     if request.user.is_authenticated:
-        cart, created = Cart.objects.get_or_create(
+        cart, _ = Cart.objects.get_or_create(
             customer=request.user,
             defaults={'currency': request.session.get('currency', 'QAR')}
         )
@@ -27,7 +26,7 @@ def get_or_create_cart(request):
         if not request.session.session_key:
             request.session.create()
         session_key = request.session.session_key
-        cart, created = Cart.objects.get_or_create(
+        cart, _ = Cart.objects.get_or_create(
             session_key=session_key,
             customer=None,
             defaults={'currency': request.session.get('currency', 'QAR')}
@@ -36,7 +35,7 @@ def get_or_create_cart(request):
 
 
 def calculate_item_total(cart_item):
-    """Calculate total price for a cart item including lens options and add-ons"""
+    """Calculate total price for a cart item including lens options and add-ons."""
     total = cart_item.unit_price * cart_item.quantity
 
     if cart_item.lens_price:
@@ -49,7 +48,10 @@ def calculate_item_total(cart_item):
 
 
 def get_cart_totals(cart):
-    """Calculate all cart totals — returns total QUANTITY not distinct rows"""
+    """
+    Calculate all cart totals.
+    cart_count = total QUANTITY (sum of all item quantities).
+    """
     cart_items = cart.items.select_related(
         'product', 'variant', 'lens_option', 'sunglass_lens_option'
     ).prefetch_related('lens_addons')
@@ -63,12 +65,12 @@ def get_cart_totals(cart):
 
     # Free shipping over QAR 200
     shipping = Decimal('0.00')
-    if subtotal > 0 and subtotal < Decimal('200.00'):
+    if Decimal('0.00') < subtotal < Decimal('200.00'):
         shipping = Decimal('20.00')
 
     total = subtotal + tax + shipping
 
-    # ✅ Sum all quantities — so 1 product with qty=3 counts as 3
+    # Sum all quantities — 1 product with qty=3 counts as 3
     total_qty = cart_items.aggregate(total=Sum('quantity'))['total'] or 0
 
     return {
@@ -76,7 +78,7 @@ def get_cart_totals(cart):
         'tax': tax,
         'shipping': shipping,
         'total': total,
-        'item_count': total_qty,
+        'item_count': total_qty,   # ← always total quantity
     }
 
 
@@ -90,7 +92,7 @@ def get_product_stock(product):
 
 
 def merge_guest_cart_on_login(user, session_key):
-    """Merge guest cart with user cart on login"""
+    """Merge guest cart with user cart on login."""
     try:
         guest_cart = Cart.objects.filter(session_key=session_key, customer=None).first()
         if not guest_cart:
@@ -125,7 +127,7 @@ def merge_guest_cart_on_login(user, session_key):
 # ============================================
 
 def cart_view(request):
-    """Display cart contents"""
+    """Display cart contents."""
     cart = get_or_create_cart(request)
     cart_items = cart.items.select_related(
         'product', 'variant', 'lens_option', 'sunglass_lens_option'
@@ -140,7 +142,7 @@ def cart_view(request):
     tax = subtotal * tax_rate
 
     shipping = Decimal('0.00')
-    if subtotal > 0 and subtotal < Decimal('200.00'):
+    if Decimal('0.00') < subtotal < Decimal('200.00'):
         shipping = Decimal('20.00')
 
     total = subtotal + tax + shipping
@@ -152,6 +154,9 @@ def cart_view(request):
         if subtotal > 0 else 0
     )
 
+    # ← FIXED: use sum of quantities, not count of rows
+    total_qty = cart_items.aggregate(total=Sum('quantity'))['total'] or 0
+
     context = {
         'cart': cart,
         'cart_items': cart_items,
@@ -159,7 +164,8 @@ def cart_view(request):
         'tax': tax,
         'shipping': shipping,
         'total': total,
-        'item_count': cart_items.count(),
+        'item_count': total_qty,           # sum of quantities
+        'cart_count': total_qty,           # for header badge consistency
         'free_shipping_remaining': free_shipping_remaining,
         'shipping_progress': shipping_progress,
     }
@@ -182,13 +188,18 @@ def update_cart_quantity(request, item_id, action):
 
         if action == 'increase':
             if cart_item.quantity >= stock_limit:
+                totals = get_cart_totals(cart)
                 return JsonResponse({
                     'success': False,
                     'limit_reached': True,
                     'quantity': cart_item.quantity,
                     'message': f'Only {stock_limit} unit(s) available in stock.',
                     'item_total': str(calculate_item_total(cart_item)),
-                    'cart_count': get_cart_totals(cart)['item_count'],
+                    'subtotal': str(totals['subtotal']),
+                    'shipping': str(totals['shipping']),
+                    'tax': str(totals['tax']),
+                    'cart_total': str(totals['total']),
+                    'cart_count': totals['item_count'],
                 })
 
             cart_item.quantity += 1
@@ -196,13 +207,18 @@ def update_cart_quantity(request, item_id, action):
 
         elif action == 'decrease':
             if cart_item.quantity <= 1:
+                totals = get_cart_totals(cart)
                 return JsonResponse({
                     'success': False,
                     'block': True,
                     'quantity': cart_item.quantity,
                     'message': 'Minimum quantity is 1. Use the Remove button to delete.',
                     'item_total': str(calculate_item_total(cart_item)),
-                    'cart_count': get_cart_totals(cart)['item_count'],
+                    'subtotal': str(totals['subtotal']),
+                    'shipping': str(totals['shipping']),
+                    'tax': str(totals['tax']),
+                    'cart_total': str(totals['total']),
+                    'cart_count': totals['item_count'],
                 })
 
             cart_item.quantity -= 1
@@ -222,7 +238,7 @@ def update_cart_quantity(request, item_id, action):
             'shipping': str(totals['shipping']),
             'tax': str(totals['tax']),
             'cart_total': str(totals['total']),
-            'cart_count': totals['item_count'],  # ✅ total quantity
+            'cart_count': totals['item_count'],   # total quantity
             'stock_limit': stock_limit,
         })
 
@@ -252,7 +268,7 @@ def remove_from_cart(request, item_id):
         return JsonResponse({
             'success': True,
             'message': f'{product_name} removed from cart.',
-            'cart_count': totals['item_count'],  # ✅ total quantity
+            'cart_count': totals['item_count'],   # total quantity after removal
             'subtotal': str(totals['subtotal']),
             'shipping': str(totals['shipping']),
             'tax': str(totals['tax']),
@@ -270,7 +286,7 @@ def remove_from_cart(request, item_id):
 
 @require_POST
 def add_to_cart(request):
-    """Add a simple product (accessories, etc.) to cart"""
+    """Add a simple product (accessories, etc.) to cart."""
     try:
         product_id = request.POST.get('product_id')
         variant_id = request.POST.get('variant_id')
@@ -313,23 +329,23 @@ def add_to_cart(request):
                 requires_prescription=False,
             )
 
-        messages.success(request, f'{product.name} added to cart!')
+        totals = get_cart_totals(cart)
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            totals = get_cart_totals(cart)
             return JsonResponse({
                 'success': True,
-                'message': 'Item added to cart.',
+                'message': f'{product.name} added to cart!',
                 'cart_count': totals['item_count'],
                 'cart_total': str(totals['total']),
             })
 
+        messages.success(request, f'{product.name} added to cart!')
         return redirect('cart:cart_view')
 
     except Exception as e:
-        messages.error(request, f'Error adding to cart: {e}')
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': False, 'message': str(e)}, status=400)
+        messages.error(request, f'Error adding to cart: {e}')
         return redirect('catalog:home')
 
 
@@ -339,14 +355,13 @@ def add_to_cart(request):
 
 @require_POST
 def add_eyeglass_to_cart(request):
-    """Add eyeglass with mandatory lens selection to cart"""
+    """Add eyeglass with mandatory lens selection to cart."""
     try:
         product_id     = request.POST.get('product_id')
         variant_id     = request.POST.get('variant_id')
         quantity       = max(1, int(request.POST.get('quantity', 1)))
         lens_option_id = request.POST.get('lens_option_id')
         addon_ids      = request.POST.getlist('addon_ids[]')
-
         requires_prescription = request.POST.get('requires_prescription') == 'true'
 
         prescription_data = None
@@ -411,23 +426,23 @@ def add_eyeglass_to_cart(request):
             except LensAddOn.DoesNotExist:
                 pass
 
-        messages.success(request, f'{product.name} with lenses added to cart!')
+        totals = get_cart_totals(cart)
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            totals = get_cart_totals(cart)
             return JsonResponse({
                 'success': True,
-                'message': 'Item added to cart.',
+                'message': f'{product.name} with lenses added to cart!',
                 'cart_count': totals['item_count'],
                 'cart_total': str(totals['total']),
             })
 
+        messages.success(request, f'{product.name} with lenses added to cart!')
         return redirect('cart:cart_view')
 
     except Exception as e:
-        messages.error(request, f'Error adding eyeglass to cart: {e}')
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': False, 'message': str(e)}, status=400)
+        messages.error(request, f'Error adding eyeglass to cart: {e}')
         return redirect('catalog:eyeglasses_list')
 
 
@@ -437,7 +452,7 @@ def add_eyeglass_to_cart(request):
 
 @require_POST
 def add_sunglass_to_cart(request):
-    """Add sunglass with optional lens to cart"""
+    """Add sunglass with optional lens to cart."""
     try:
         product_id            = request.POST.get('product_id')
         variant_id            = request.POST.get('variant_id')
@@ -485,23 +500,23 @@ def add_sunglass_to_cart(request):
             prescription_data=prescription_data,
         )
 
-        messages.success(request, f'{product.name} added to cart!')
+        totals = get_cart_totals(cart)
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            totals = get_cart_totals(cart)
             return JsonResponse({
                 'success': True,
-                'message': 'Item added to cart.',
+                'message': f'{product.name} added to cart!',
                 'cart_count': totals['item_count'],
                 'cart_total': str(totals['total']),
             })
 
+        messages.success(request, f'{product.name} added to cart!')
         return redirect('cart:cart_view')
 
     except Exception as e:
-        messages.error(request, f'Error adding sunglass to cart: {e}')
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': False, 'message': str(e)}, status=400)
+        messages.error(request, f'Error adding sunglass to cart: {e}')
         return redirect('catalog:sunglasses_list')
 
 
@@ -511,7 +526,7 @@ def add_sunglass_to_cart(request):
 
 @require_POST
 def add_contact_lens_to_cart(request):
-    """Add contact lens with power/color options to cart"""
+    """Add contact lens with power/color options to cart."""
     try:
         product_id  = request.POST.get('product_id')
         quantity    = max(1, int(request.POST.get('quantity', 1)))
@@ -546,23 +561,23 @@ def add_contact_lens_to_cart(request):
             prescription_data=prescription_data,
         )
 
-        messages.success(request, f'{product.name} added to cart!')
+        totals = get_cart_totals(cart)
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            totals = get_cart_totals(cart)
             return JsonResponse({
                 'success': True,
-                'message': 'Item added to cart.',
+                'message': f'{product.name} added to cart!',
                 'cart_count': totals['item_count'],
                 'cart_total': str(totals['total']),
             })
 
+        messages.success(request, f'{product.name} added to cart!')
         return redirect('cart:cart_view')
 
     except Exception as e:
-        messages.error(request, f'Error adding contact lens to cart: {e}')
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': False, 'message': str(e)}, status=400)
+        messages.error(request, f'Error adding contact lens to cart: {e}')
         return redirect('catalog:contact_lenses_list')
 
 
@@ -572,7 +587,7 @@ def add_contact_lens_to_cart(request):
 
 @require_POST
 def update_cart_item(request, item_id):
-    """Update cart item quantity via standard form POST"""
+    """Update cart item quantity via standard form POST."""
     try:
         cart      = get_or_create_cart(request)
         cart_item = get_object_or_404(CartItem, id=item_id, cart=cart)
@@ -587,16 +602,17 @@ def update_cart_item(request, item_id):
             cart_item.save()
             messages.success(request, 'Cart updated.')
 
+        totals = get_cart_totals(cart)
+
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            totals = get_cart_totals(cart)
             return JsonResponse({'success': True, 'cart_count': totals['item_count']})
 
         return redirect('cart:cart_view')
 
     except Exception as e:
-        messages.error(request, f'Error updating cart: {e}')
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': False, 'message': str(e)}, status=400)
+        messages.error(request, f'Error updating cart: {e}')
         return redirect('cart:cart_view')
 
 
@@ -606,7 +622,7 @@ def update_cart_item(request, item_id):
 
 @require_POST
 def clear_cart(request):
-    """Clear all items from cart"""
+    """Clear all items from cart."""
     try:
         cart = get_or_create_cart(request)
         cart.items.all().delete()
@@ -618,9 +634,9 @@ def clear_cart(request):
         return redirect('cart:cart_view')
 
     except Exception as e:
-        messages.error(request, f'Error clearing cart: {e}')
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': False, 'message': str(e)}, status=400)
+        messages.error(request, f'Error clearing cart: {e}')
         return redirect('cart:cart_view')
 
 
@@ -629,7 +645,7 @@ def clear_cart(request):
 # ============================================
 
 def get_cart_count(request):
-    """Return current cart total quantity"""
+    """Return current cart total quantity."""
     cart   = get_or_create_cart(request)
     result = cart.items.aggregate(total=Sum('quantity'))
     count  = result['total'] or 0
@@ -637,7 +653,7 @@ def get_cart_count(request):
 
 
 def get_cart_summary(request):
-    """Return cart summary for header mini-cart"""
+    """Return cart summary for header mini-cart."""
     cart       = get_or_create_cart(request)
     cart_items = cart.items.select_related('product', 'variant').prefetch_related('product__images')
 
@@ -667,5 +683,3 @@ def get_cart_summary(request):
         'subtotal': str(subtotal),
         'count':    total_qty,
     })
-
-
