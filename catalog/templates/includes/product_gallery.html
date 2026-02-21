@@ -1,21 +1,145 @@
- 
-<style>
-/* ══════════════════════════════════════════════════════════════════
-   PRODUCT GALLERY COMPONENT
-   ══════════════════════════════════════════════════════════════════ */
+{% comment %}
+  ╔══════════════════════════════════════════════════════════════════════╗
+  ║  PRODUCT GALLERY COMPONENT  —  product_gallery.html                  ║
+  ║  Include in: sunglass_detail, eyeglass_detail, contact_lens_detail,  ║
+  ║              accessories_detail, medical_lens_detail                  ║
+  ║                                                                       ║
+  ║  Context vars expected (all optional with fallbacks):                 ║
+  ║    product.image      — main product image                            ║
+  ║    images             — ProductImage queryset (product.images.all())  ║
+  ║    colors             — color variant queryset (contact lens / etc.)  ║
+  ║    variants           — ProductVariant queryset (for frame colors)    ║
+  ╚══════════════════════════════════════════════════════════════════════╝
+{% endcomment %}
 
-/* ── Outer wrapper ── */
-.pgl-wrap {
+<style>
+/* ═══════════════════════════════════════════════════════
+   PGL — PRO PRODUCT GALLERY
+   Sticky left-column gallery with vertical thumbnail rail,
+   zoom overlay, keyboard nav, touch swipe, variant sync.
+═══════════════════════════════════════════════════════ */
+
+/* ── Layout wrapper ────────────────────────────────── */
+.pgl {
   position: sticky;
-  top: 90px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  user-select: none;
+  top: 88px;
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 12px;
+  align-items: start;
+  max-width: 560px;
+}
+@media (max-width: 1100px) { .pgl { top: 72px; } }
+@media (max-width: 900px)  {
+  .pgl {
+    position: static;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    max-width: 100%;
+  }
 }
 
-/* ── Main stage ── */
-.pgl-main {
+/* ── Vertical thumbnail rail ───────────────────────── */
+.pgl__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 520px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #d4b896 transparent;
+  padding-right: 2px;
+}
+.pgl__rail::-webkit-scrollbar { width: 3px; }
+.pgl__rail::-webkit-scrollbar-thumb { background: #d4b896; border-radius: 2px; }
+
+@media (max-width: 900px) {
+  .pgl__rail {
+    order: 2;
+    flex-direction: row;
+    max-height: none;
+    overflow-y: hidden;
+    overflow-x: auto;
+    padding-right: 0;
+    padding-bottom: 2px;
+    gap: 8px;
+    scrollbar-width: thin;
+  }
+}
+
+/* ── Individual thumbnail ──────────────────────────── */
+.pgl__thumb {
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f5f0e8;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  position: relative;
+  transition:
+    border-color 0.22s ease,
+    box-shadow   0.22s ease,
+    transform    0.22s ease;
+  outline: none;
+}
+.pgl__thumb img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  padding: 5px;
+  display: block;
+  transition: transform 0.3s ease;
+}
+.pgl__thumb:hover {
+  border-color: #d4b896;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+.pgl__thumb:hover img { transform: scale(1.07); }
+.pgl__thumb.is-active {
+  border-color: #b8976a;
+  box-shadow:
+    0 0 0 1px #b8976a,
+    0 4px 18px rgba(184,151,106,0.32);
+}
+.pgl__thumb.is-active::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(184,151,106,0.08);
+  border-radius: 7px;
+  pointer-events: none;
+}
+/* Color swatch label on thumb (for color variants) */
+.pgl__thumb-label {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 3px 4px;
+  background: rgba(10,10,10,0.52);
+  color: #fff;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pgl__thumb:hover .pgl__thumb-label { opacity: 1; }
+
+/* Video thumb indicator */
+.pgl__thumb--video::before {
+  content: '▶';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: rgba(255,255,255,0.92);
+  background: rgba(10,10,10,0.26);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ── Main stage ────────────────────────────────────── */
+.pgl__stage {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -23,384 +147,556 @@
   border-radius: 18px;
   overflow: hidden;
   cursor: zoom-in;
+  user-select: none;
   outline: none;
+  /* Subtle inner texture */
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.55) 0%, transparent 60%),
+    radial-gradient(circle at 80% 80%, rgba(184,151,106,0.07) 0%, transparent 60%);
 }
+@media (max-width: 900px) { .pgl__stage { order: 1; border-radius: 14px; } }
 
-.pgl-main__img {
-  width: 100%;
-  height: 100%;
+/* main image */
+.pgl__img {
+  width: 100%; height: 100%;
   object-fit: contain;
-  padding: 20px;
+  padding: 28px;
   display: block;
-  transition: transform 0.45s cubic-bezier(0.4,0,0.2,1),
-              opacity 0.22s ease;
+  transition:
+    opacity   0.2s ease,
+    transform 0.45s cubic-bezier(0.4,0,0.2,1);
+  will-change: transform;
 }
+.pgl__stage:not(.is-zoomed):hover .pgl__img { transform: scale(1.04); }
 
-/* Hover scale (only when not zoomed) */
-.pgl-main:not(.zoomed):hover .pgl-main__img {
-  transform: scale(1.05);
-}
+/* Fade-swap animation */
+.pgl__img.is-fading { opacity: 0; transform: scale(0.96); }
 
 /* Zoom state */
-.pgl-main.zoomed {
-  cursor: zoom-out;
-}
-.pgl-main.zoomed .pgl-main__img {
-  transform: scale(2.4);
-  transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%);
-  transition: transform-origin 0s,
-              transform 0.08s ease;
+.pgl__stage.is-zoomed { cursor: zoom-out; }
+.pgl__stage.is-zoomed .pgl__img {
+  transform: scale(2.6);
+  transform-origin: var(--zx, 50%) var(--zy, 50%);
   padding: 0;
   object-fit: cover;
+  transition: transform 0.06s linear;
 }
 
-/* Fade when switching */
-.pgl-main__img.pgl-fade {
-  opacity: 0;
-  transform: scale(0.97) !important;
-}
-
-/* ── Prev / Next arrows ── */
-.pgl-nav {
+/* Badge: "1 / 5" */
+.pgl__count {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.9);
+  bottom: 14px; right: 14px;
+  background: rgba(10,10,10,0.40);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(0,0,0,0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 5;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.14);
-  transition: opacity 0.2s ease, background 0.2s ease,
-              box-shadow 0.2s ease, transform 0.2s ease;
-  opacity: 0;
-  pointer-events: none;
-}
-.pgl-main:hover .pgl-nav { opacity: 1; pointer-events: auto; }
-.pgl-nav:hover {
-  background: #fff;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-  transform: translateY(-50%) scale(1.08);
-}
-.pgl-nav--prev { left: 12px; }
-.pgl-nav--next { right: 12px; }
-.pgl-nav svg  { width: 14px; height: 14px; color: #333; }
-
-/* ── Counter badge ── */
-.pgl-badge {
-  position: absolute;
-  bottom: 14px;
-  right: 14px;
-  background: rgba(10,10,10,0.42);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
   color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.07em;
   padding: 4px 11px;
   border-radius: 20px;
   pointer-events: none;
   transition: opacity 0.2s;
 }
-.pgl-badge.hidden { opacity: 0; }
+.pgl__count.is-hidden { opacity: 0; }
 
-/* ── Dot indicators (mobile) ── */
-.pgl-dots {
-  display: none;
-  justify-content: center;
-  gap: 6px;
-  padding: 4px 0 0;
-}
-.pgl-dot {
-  width: 6px; height: 6px;
+/* Expand (fullscreen) button */
+.pgl__expand {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 50%;
-  background: #d4b896;
-  transition: background 0.2s, transform 0.2s;
-}
-.pgl-dot.active {
-  background: #b8976a;
-  transform: scale(1.35);
-}
-@media (max-width: 600px) {
-  .pgl-dots { display: flex; }
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   THUMBNAIL STRIP
-   ══════════════════════════════════════════════════════════════════ */
-.pgl-thumbs {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: thin;
-  scrollbar-color: #d4b896 transparent;
-}
-.pgl-thumbs::-webkit-scrollbar { height: 3px; }
-.pgl-thumbs::-webkit-scrollbar-thumb {
-  background: #d4b896;
-  border-radius: 2px;
-}
-
-.pgl-thumb {
-  flex-shrink: 0;
-  width: 76px;
-  height: 76px;
-  border-radius: 10px;
-  overflow: hidden;
-  background: #f5f0e8;
-  border: 2.5px solid transparent;
+  display: flex; align-items: center; justify-content: center;
   cursor: pointer;
-  transition: border-color 0.22s ease,
-              transform 0.22s ease,
-              box-shadow 0.22s ease;
-  position: relative;
-  scroll-snap-align: start;
-}
-
-.pgl-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 6px;
-  display: block;
-  transition: transform 0.3s ease;
-}
-
-.pgl-thumb:hover {
-  border-color: #d4b896;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 16px rgba(0,0,0,0.1);
-}
-.pgl-thumb:hover img { transform: scale(1.06); }
-
-.pgl-thumb.active {
-  border-color: #b8976a;
-  box-shadow: 0 0 0 1px #b8976a,
-              0 4px 18px rgba(184,151,106,0.28);
-}
-.pgl-thumb.active::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(184,151,106,0.07);
-  pointer-events: none;
-  border-radius: 7px;
-}
-
-/* Color name label on thumb */
-.pgl-thumb__label {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  text-align: center;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  padding: 3px 2px;
-  background: rgba(0,0,0,0.48);
-  color: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  transition: all 0.2s;
   opacity: 0;
-  transition: opacity 0.2s;
-  text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  pointer-events: none;
+  z-index: 5;
 }
-.pgl-thumb:hover .pgl-thumb__label { opacity: 1; }
+.pgl__stage:hover .pgl__expand {
+  opacity: 1; pointer-events: auto;
+}
+.pgl__expand:hover { background: #fff; transform: scale(1.1); }
+.pgl__expand svg { width: 14px; height: 14px; color: #333; }
 
-/* ── Responsive ── */
-@media (max-width: 900px) {
-  .pgl-wrap { position: static; }
-  .pgl-main { border-radius: 14px; }
+/* Prev / Next nav arrows */
+.pgl__nav {
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.90);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(0,0,0,0.07);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.14);
+  transition: all 0.2s;
+  opacity: 0; pointer-events: none;
+  z-index: 5;
 }
-@media (max-width: 600px) {
-  .pgl-thumb { width: 60px; height: 60px; }
+.pgl__stage:hover .pgl__nav { opacity: 1; pointer-events: auto; }
+.pgl__nav:hover {
+  background: #fff;
+  box-shadow: 0 4px 22px rgba(0,0,0,0.2);
+  transform: translateY(-50%) scale(1.1);
 }
-@media (max-width: 420px) {
-  .pgl-thumb { width: 52px; height: 52px; }
+.pgl__nav--prev { left: 12px; }
+.pgl__nav--next { right: 52px; } /* offset from expand btn */
+.pgl__nav svg { width: 13px; height: 13px; color: #222; }
+
+/* Hide prev/next when only 1 image */
+.pgl__nav.is-hidden { display: none; }
+
+/* ── Fullscreen lightbox ───────────────────────────── */
+.pgl__lightbox {
+  display: none;
+  position: fixed; inset: 0;
+  z-index: 9999;
+  background: rgba(10,10,10,0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  align-items: center; justify-content: center;
+  flex-direction: column;
+  gap: 20px;
 }
+.pgl__lightbox.is-open { display: flex; }
+
+.pgl__lb-img-wrap {
+  position: relative;
+  max-width: 88vw; max-height: 80vh;
+  display: flex; align-items: center; justify-content: center;
+}
+.pgl__lb-img {
+  max-width: 88vw; max-height: 80vh;
+  object-fit: contain;
+  border-radius: 8px;
+  animation: lbIn 0.28s ease;
+}
+@keyframes lbIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.pgl__lb-close {
+  position: fixed; top: 20px; right: 24px;
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%; width: 42px; height: 42px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #fff;
+  font-size: 22px; line-height: 1;
+  transition: background 0.2s;
+}
+.pgl__lb-close:hover { background: rgba(255,255,255,0.2); }
+
+.pgl__lb-nav {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 50%; width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #fff;
+  transition: background 0.2s, transform 0.2s;
+  z-index: 10;
+}
+.pgl__lb-nav:hover { background: rgba(255,255,255,0.22); transform: translateY(-50%) scale(1.08); }
+.pgl__lb-nav--prev { left: 20px; }
+.pgl__lb-nav--next { right: 20px; }
+.pgl__lb-nav svg { width: 18px; height: 18px; }
+
+.pgl__lb-strip {
+  display: flex; gap: 10px;
+  overflow-x: auto; max-width: 90vw;
+  padding: 4px 0;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.3) transparent;
+}
+.pgl__lb-dot {
+  width: 56px; height: 56px; flex-shrink: 0;
+  border-radius: 8px; overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.18);
+  cursor: pointer; transition: border-color 0.2s, transform 0.2s;
+  background: rgba(255,255,255,0.06);
+}
+.pgl__lb-dot img { width: 100%; height: 100%; object-fit: contain; }
+.pgl__lb-dot.is-active { border-color: #b8976a; transform: scale(1.08); }
+
+.pgl__lb-count {
+  position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+  color: rgba(255,255,255,0.6); font-size: 13px; font-weight: 600;
+  letter-spacing: 0.06em; pointer-events: none;
+}
+
+/* ── Mobile swipe dots ─────────────────────────────── */
+.pgl__dots {
+  display: none;
+  justify-content: center; gap: 6px;
+  margin-top: 10px;
+}
+.pgl__dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #d4b896;
+  transition: background 0.2s, transform 0.2s, width 0.2s;
+}
+.pgl__dot.is-active { background: #b8976a; transform: scale(1.4); }
+@media (max-width: 600px) { .pgl__dots { display: flex; } }
+
+/* ── NEW badge on thumb (optional) ────────────────── */
+.pgl__thumb-badge {
+  position: absolute; top: 5px; left: 5px;
+  font-size: 8px; font-weight: 800; letter-spacing: 0.08em;
+  text-transform: uppercase; padding: 2px 5px;
+  background: #2a7a2a; color: #fff; border-radius: 3px;
+  line-height: 1.4; pointer-events: none;
+}
+
+/* ── Share copy-link button ─────────────────────── */
+.pgl__share {
+  position: absolute; top: 14px; left: 14px;
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  transition: all 0.2s;
+  opacity: 0; pointer-events: none; z-index: 5;
+}
+.pgl__stage:hover .pgl__share { opacity: 1; pointer-events: auto; }
+.pgl__share:hover { background: #fff; transform: scale(1.1); }
+.pgl__share svg { width: 14px; height: 14px; color: #555; }
+
+/* ── 360 badge (placeholder styling) ────────────── */
+.pgl__360-btn {
+  position: absolute; bottom: 14px; left: 14px;
+  background: rgba(10,10,10,0.44);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  color: #fff; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 5px 10px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.18);
+  cursor: pointer; pointer-events: none; display: none;
+  transition: background 0.2s;
+  z-index: 5;
+}
+
 </style>
 
 
-<div class="pgl-wrap" id="pglWrap">
+{# ─────────────────────────────────────────────────── #}
+{# BUILD IMAGE LIST: primary + gallery + color variants #}
+{# ─────────────────────────────────────────────────── #}
+{% comment %}
+  We build a flat JS array from Django template tags.
+  Each entry: { src, label, isPrimary }
+{% endcomment %}
 
-  {# ── Main Stage ── #}
-  <div class="pgl-main" id="pglMain" tabindex="0"
-       role="img" aria-label="{{ product.name }} — image gallery">
+<div class="pgl" id="pgl" role="region" aria-label="Product image gallery">
 
-      <div class="cl-gallery">
-      <div class="cl-main-img">
-        {% if product.image %}
-        <img src="{{ product.image.url }}" alt="{{ product.name }}" id="mainImg" />
-        {% endif %}
-      </div>
-      <div class="cl-thumbs" id="thumbStrip">
-        {% if product.image %}
-        <div class="cl-thumb active" onclick="switchImage(this, '{{ product.image.url }}')">
-          <img src="{{ product.image.url }}" alt="{{ product.name }}" />
-        </div>
-        {% endif %}
-        {% for image in images %}
-        <div class="cl-thumb" onclick="switchImage(this, '{{ image.image.url }}')">
-          <img src="{{ image.image.url }}" alt="{{ product.name }}" />
-        </div>
-        {% endfor %}
-        {% if colors %}
-        {% for color in colors %}
-        <div class="cl-thumb" onclick="switchImage(this, '{{ color.image.url }}')" title="{{ color.name }}">
-          <img src="{{ color.image.url }}" alt="{{ color.name }}" />
-        </div>
-        {% endfor %}
-        {% endif %}
-      </div>
+  <!-- ── THUMBNAIL RAIL ──────────────────────────── -->
+  <div class="pgl__rail" id="pglRail" role="list" aria-label="Product thumbnails">
+
+    {# Primary image #}
+    {% if product.image %}
+    <div class="pgl__thumb is-active"
+         data-src="{{ product.image.url }}"
+         data-idx="0"
+         role="listitem" tabindex="0"
+         aria-label="Product image 1"
+         onclick="pgl.goTo(0)">
+      <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="eager" />
     </div>
+    {% endif %}
 
-    <button class="pgl-nav pgl-nav--prev" id="pglPrev" aria-label="Previous image" type="button">
+    {# Additional gallery images #}
+    {% for image in images %}
+    <div class="pgl__thumb"
+         data-src="{{ image.image.url }}"
+         data-idx="{{ forloop.counter }}"
+         role="listitem" tabindex="0"
+         aria-label="Product image {{ forloop.counter|add:1 }}"
+         onclick="pgl.goTo({{ forloop.counter }})">
+      <img src="{{ image.image.url }}" alt="{{ product.name }} — view {{ forloop.counter }}" loading="lazy" />
+    </div>
+    {% endfor %}
+
+    {# Contact lens color swatches #}
+    {% if colors %}
+    {% for color in colors %}
+    {% with forloop.counter as ci %}
+    <div class="pgl__thumb"
+         data-src="{{ color.image.url }}"
+         data-idx="{{ forloop.counter|add:images|length|add:1 }}"
+         data-color-id="{{ color.id }}"
+         role="listitem" tabindex="0"
+         title="{{ color.name }}"
+         aria-label="{{ color.name }}"
+         onclick="pgl.goToSrc('{{ color.image.url }}')">
+      <img src="{{ color.image.url }}" alt="{{ color.name }}" loading="lazy" />
+      <span class="pgl__thumb-label">{{ color.name }}</span>
+    </div>
+    {% endwith %}
+    {% endfor %}
+    {% endif %}
+
+    {# Frame color variants (if variants have images) #}
+    {% for variant in variants %}
+    {% if variant.images.exists %}
+    {% for vimg in variant.images.all %}
+    {% if forloop.first %}
+    <div class="pgl__thumb"
+         data-src="{{ vimg.image.url }}"
+         data-variant-id="{{ variant.id }}"
+         role="listitem" tabindex="0"
+         title="{{ variant.color_name }}"
+         aria-label="{{ variant.color_name }}"
+         onclick="pgl.goToSrc('{{ vimg.image.url }}')">
+      <img src="{{ vimg.image.url }}" alt="{{ variant.color_name }}" loading="lazy" />
+      {% if variant.color_name %}
+      <span class="pgl__thumb-label">{{ variant.color_name }}</span>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% endfor %}
+
+  </div><!-- /pgl__rail -->
+
+  <!-- ── MAIN STAGE ────────────────────────────────── -->
+  <div class="pgl__stage" id="pglStage" tabindex="0"
+       role="img" aria-label="{{ product.name }} — main product view">
+
+    {% if product.image %}
+    <img class="pgl__img"
+         id="pglMainImg"
+         src="{{ product.image.url }}"
+         alt="{{ product.name }}"
+         draggable="false" />
+    {% else %}
+    {# Placeholder SVG when no image #}
+    <svg style="width:50%;height:50%;margin:auto;display:block;opacity:.25;"
+         viewBox="0 0 80 80" fill="none">
+      <rect x="8" y="8" width="64" height="64" rx="4" stroke="#b8976a" stroke-width="2"/>
+      <circle cx="30" cy="30" r="8" stroke="#b8976a" stroke-width="2"/>
+      <path d="M8 52l16-16 12 12 10-10 26 22" stroke="#b8976a" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    {% endif %}
+
+    {# Share button #}
+    <button class="pgl__share" id="pglShare" aria-label="Share product" type="button">
+      <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+           stroke-linejoin="round" viewBox="0 0 24 24">
+        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/>
+        <circle cx="18" cy="19" r="3"/>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+      </svg>
+    </button>
+
+    {# Expand / Lightbox trigger #}
+    <button class="pgl__expand" id="pglExpandBtn" aria-label="View full size" type="button">
+      <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+           stroke-linejoin="round" viewBox="0 0 24 24">
+        <polyline points="15 3 21 3 21 9"/>
+        <polyline points="9 21 3 21 3 15"/>
+        <line x1="21" y1="3" x2="14" y2="10"/>
+        <line x1="3" y1="21" x2="10" y2="14"/>
+      </svg>
+    </button>
+
+    {# Prev arrow #}
+    <button class="pgl__nav pgl__nav--prev" id="pglPrev" aria-label="Previous image" type="button">
       <svg fill="none" stroke="currentColor" stroke-width="2.2"
            stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
         <polyline points="15 18 9 12 15 6"/>
       </svg>
     </button>
-    <button class="pgl-nav pgl-nav--next" id="pglNext" aria-label="Next image" type="button">
+
+    {# Next arrow #}
+    <button class="pgl__nav pgl__nav--next" id="pglNext" aria-label="Next image" type="button">
       <svg fill="none" stroke="currentColor" stroke-width="2.2"
            stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
         <polyline points="9 18 15 12 9 6"/>
       </svg>
     </button>
 
-    <span class="pgl-badge" id="pglBadge">1 / 1</span>
+    {# Image counter badge #}
+    <span class="pgl__count" id="pglCount">1 / 1</span>
+
+  </div><!-- /pgl__stage -->
+
+</div><!-- /pgl -->
+
+{# Mobile swipe dots #}
+<div class="pgl__dots" id="pglDots"></div>
+
+
+<!-- ═════════════════════════════════════════════════
+     LIGHTBOX  (appended to body)
+════════════════════════════════════════════════════ -->
+<div class="pgl__lightbox" id="pglLightbox" role="dialog"
+     aria-modal="true" aria-label="Image viewer">
+
+  <span class="pgl__lb-count" id="pglLbCount">1 / 1</span>
+
+  <button class="pgl__lb-close" id="pglLbClose" aria-label="Close viewer">×</button>
+
+  <button class="pgl__lb-nav pgl__lb-nav--prev" id="pglLbPrev" aria-label="Previous">
+    <svg fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+  </button>
+
+  <div class="pgl__lb-img-wrap">
+    <img class="pgl__lb-img" id="pglLbImg" src="" alt="Full view" />
   </div>
 
-  {# ── Mobile dots ── #}
-  <div class="pgl-dots" id="pglDots"></div>
+  <button class="pgl__lb-nav pgl__lb-nav--next" id="pglLbNext" aria-label="Next">
+    <svg fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  </button>
 
-  {# ── Thumbnail strip ── #}
-  <div class="pgl-thumbs" id="pglThumbs" role="list">
+  <div class="pgl__lb-strip" id="pglLbStrip"></div>
 
-    {% if product.image %}
-    <div class="pgl-thumb active"
-         data-src="{{ product.image.url }}"
-         role="listitem" tabindex="0"
-         aria-label="View image 1">
-      <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" />
-    </div>
-    {% endif %}
-
-    {% for image in images %}
-    <div class="pgl-thumb"
-         data-src="{{ image.image.url }}"
-         role="listitem" tabindex="0"
-         aria-label="View image {{ forloop.counter|add:1 }}">
-      <img src="{{ image.image.url }}" alt="{{ product.name }}" loading="lazy" />
-    </div>
-    {% endfor %}
-
-    {% if colors %}{% for color in colors %}
-    <div class="pgl-thumb"
-         data-src="{{ color.image.url }}"
-         role="listitem" tabindex="0"
-         title="{{ color.name }}"
-         aria-label="{{ color.name }} variant">
-      <img src="{{ color.image.url }}" alt="{{ color.name }}" loading="lazy" />
-      <span class="pgl-thumb__label">{{ color.name }}</span>
-    </div>
-    {% endfor %}{% endif %}
-
-  </div>
 </div>
 
 
 <script>
-/* ════════════════════════════════════════════════════════════════
-   PRODUCT GALLERY JS  — self-contained IIFE
-   ════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   PGL — Product Gallery Controller
+   ═══════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
 
+  /* ── DOM refs ─────────────────────────────────────────── */
+  var stage    = document.getElementById('pglStage');
   var mainImg  = document.getElementById('pglMainImg');
-  var mainBox  = document.getElementById('pglMain');
-  var thumbWrap = document.getElementById('pglThumbs');
+  var rail     = document.getElementById('pglRail');
   var prevBtn  = document.getElementById('pglPrev');
   var nextBtn  = document.getElementById('pglNext');
-  var badge    = document.getElementById('pglBadge');
+  var expandBtn= document.getElementById('pglExpandBtn');
+  var shareBtn = document.getElementById('pglShare');
+  var countBdg = document.getElementById('pglCount');
   var dotsWrap = document.getElementById('pglDots');
+  var lb       = document.getElementById('pglLightbox');
+  var lbImg    = document.getElementById('pglLbImg');
+  var lbClose  = document.getElementById('pglLbClose');
+  var lbPrev   = document.getElementById('pglLbPrev');
+  var lbNext   = document.getElementById('pglLbNext');
+  var lbStrip  = document.getElementById('pglLbStrip');
+  var lbCount  = document.getElementById('pglLbCount');
 
-  if (!mainImg || !thumbWrap) return;
+  if (!stage) return;
 
-  var thumbs  = Array.from(thumbWrap.querySelectorAll('.pgl-thumb'));
-  var current = 0;
-  var total   = thumbs.length;
+  /* ── Collect all thumbs ───────────────────────────────── */
+  var thumbEls = Array.from(rail ? rail.querySelectorAll('.pgl__thumb') : []);
+  var srcs     = thumbEls.map(function (t) { return t.dataset.src || ''; });
+  var total    = srcs.length;
+  var current  = 0;
 
-  /* ── Build mobile dots ── */
+  /* ── Build dots (mobile) ─────────────────────────────── */
   if (dotsWrap && total > 1) {
-    thumbs.forEach(function (_, i) {
+    srcs.forEach(function (_, i) {
       var d = document.createElement('div');
-      d.className = 'pgl-dot' + (i === 0 ? ' active' : '');
+      d.className = 'pgl__dot' + (i === 0 ? ' is-active' : '');
       dotsWrap.appendChild(d);
     });
   }
+  var dotEls = dotsWrap ? Array.from(dotsWrap.querySelectorAll('.pgl__dot')) : [];
 
-  var dots = dotsWrap ? Array.from(dotsWrap.querySelectorAll('.pgl-dot')) : [];
+  /* ── Build lightbox strip ─────────────────────────────── */
+  if (lbStrip && total > 0) {
+    srcs.forEach(function (src, i) {
+      var dot = document.createElement('div');
+      dot.className = 'pgl__lb-dot' + (i === 0 ? ' is-active' : '');
+      var img = document.createElement('img');
+      img.src = src; img.alt = 'View ' + (i + 1); img.loading = 'lazy';
+      dot.appendChild(img);
+      dot.addEventListener('click', function () { lbGoTo(i); });
+      lbStrip.appendChild(dot);
+    });
+  }
+  var lbDotEls = lbStrip ? Array.from(lbStrip.querySelectorAll('.pgl__lb-dot')) : [];
 
-  /* ── Update badge + dots ── */
-  function updateUI() {
-    if (total <= 1) {
-      badge.classList.add('hidden');
-      return;
-    }
-    badge.textContent = (current + 1) + ' / ' + total;
-    dots.forEach(function (d, i) { d.classList.toggle('active', i === current); });
+  /* ── Hide arrows if only 1 image ─────────────────────── */
+  if (total <= 1) {
+    if (prevBtn) prevBtn.classList.add('is-hidden');
+    if (nextBtn) nextBtn.classList.add('is-hidden');
+    if (countBdg) countBdg.classList.add('is-hidden');
   }
 
-  /* ── Switch to index ── */
-  function goTo(idx, force) {
+  /* ══ Core: go to index ════════════════════════════════ */
+  function goTo(idx, skipFade) {
+    if (total === 0) return;
     if (idx < 0) idx = total - 1;
     if (idx >= total) idx = 0;
-    if (idx === current && !force) return;
+    if (idx === current && !skipFade) return;
 
-    var newSrc = thumbs[idx].dataset.src;
+    var newSrc = srcs[idx];
 
-    /* Fade out */
-    mainImg.classList.add('pgl-fade');
-    mainBox.classList.remove('zoomed');
+    /* Image swap with fade */
+    if (mainImg) {
+      mainImg.classList.add('is-fading');
+      stage.classList.remove('is-zoomed');
 
-    setTimeout(function () {
-      mainImg.src = newSrc;
-      if (mainImg.complete) {
-        mainImg.classList.remove('pgl-fade');
-      } else {
-        mainImg.onload = function () { mainImg.classList.remove('pgl-fade'); };
-      }
-    }, 160);
+      setTimeout(function () {
+        mainImg.src = newSrc;
+        mainImg.onload = function () { mainImg.classList.remove('is-fading'); };
+        if (mainImg.complete) { mainImg.classList.remove('is-fading'); }
+      }, 180);
+    }
 
-    /* Thumb active states */
-    thumbs.forEach(function (t, i) { t.classList.toggle('active', i === idx); });
+    /* Update thumbs */
+    thumbEls.forEach(function (t, i) {
+      t.classList.toggle('is-active', i === idx);
+    });
 
-    /* Scroll thumb into view */
-    thumbs[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    /* Scroll active thumb into view */
+    if (thumbEls[idx]) {
+      thumbEls[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+
+    /* Dots */
+    dotEls.forEach(function (d, i) { d.classList.toggle('is-active', i === idx); });
+
+    /* Counter */
+    if (countBdg && total > 1) {
+      countBdg.textContent = (idx + 1) + ' / ' + total;
+    }
 
     current = idx;
-    updateUI();
   }
 
-  /* ── Thumb clicks + keyboard ── */
-  thumbs.forEach(function (thumb, i) {
-    thumb.addEventListener('click', function () { goTo(i, true); });
-    thumb.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goTo(i, true); }
-    });
+  /* ══ Zoom ══════════════════════════════════════════════ */
+  stage.addEventListener('click', function (e) {
+    if (e.target.closest('.pgl__nav') ||
+        e.target.closest('.pgl__expand') ||
+        e.target.closest('.pgl__share')) return;
+    stage.classList.toggle('is-zoomed');
   });
 
-  /* ── Arrow buttons ── */
+  stage.addEventListener('mousemove', function (e) {
+    if (!stage.classList.contains('is-zoomed')) return;
+    var r  = stage.getBoundingClientRect();
+    var px = ((e.clientX - r.left) / r.width  * 100).toFixed(2) + '%';
+    var py = ((e.clientY - r.top)  / r.height * 100).toFixed(2) + '%';
+    stage.style.setProperty('--zx', px);
+    stage.style.setProperty('--zy', py);
+  });
+
+  stage.addEventListener('mouseleave', function () {
+    stage.classList.remove('is-zoomed');
+  });
+
+  /* ══ Arrow buttons ══════════════════════════════════════ */
   if (prevBtn) prevBtn.addEventListener('click', function (e) {
     e.stopPropagation(); goTo(current - 1);
   });
@@ -408,67 +704,151 @@
     e.stopPropagation(); goTo(current + 1);
   });
 
-  /* ── Keyboard left / right on main ── */
-  mainBox.addEventListener('keydown', function (e) {
-    if (e.key === 'ArrowLeft')  { e.preventDefault(); goTo(current - 1); }
-    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(current + 1); }
-    if (e.key === 'Escape')     { mainBox.classList.remove('zoomed'); }
+  /* ══ Thumb keyboard nav ════════════════════════════════ */
+  thumbEls.forEach(function (thumb, i) {
+    thumb.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goTo(i, true); }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        var next = thumbEls[i + 1]; if (next) next.focus();
+      }
+      if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        var prev = thumbEls[i - 1]; if (prev) prev.focus();
+      }
+    });
   });
 
-  /* ── Touch / swipe ── */
-  var tsX = 0, tsY = 0;
-  mainBox.addEventListener('touchstart', function (e) {
-    tsX = e.changedTouches[0].screenX;
-    tsY = e.changedTouches[0].screenY;
+  /* ══ Stage keyboard nav ════════════════════════════════ */
+  stage.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); goTo(current - 1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(current + 1); }
+    if (e.key === 'Escape')     { stage.classList.remove('is-zoomed'); }
+    if (e.key === 'Enter' || e.key === 'f') { openLightbox(); }
+  });
+
+  /* ══ Touch swipe ═══════════════════════════════════════ */
+  var touchStartX = 0, touchStartY = 0;
+  stage.addEventListener('touchstart', function (e) {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
   }, { passive: true });
-  mainBox.addEventListener('touchend', function (e) {
-    var dx = tsX - e.changedTouches[0].screenX;
-    var dy = Math.abs(tsY - e.changedTouches[0].screenY);
-    if (Math.abs(dx) > 40 && dy < 60) {
+  stage.addEventListener('touchend', function (e) {
+    var dx = touchStartX - e.changedTouches[0].screenX;
+    var dy = Math.abs(touchStartY - e.changedTouches[0].screenY);
+    if (Math.abs(dx) > 44 && dy < 70) {
+      stage.classList.remove('is-zoomed');
       dx > 0 ? goTo(current + 1) : goTo(current - 1);
     }
   }, { passive: true });
 
-  /* ── Zoom: click to zoom, mousemove to pan ── */
-  mainBox.addEventListener('click', function (e) {
-    if (e.target.closest('.pgl-nav')) return;
-    mainBox.classList.toggle('zoomed');
+  /* ══ LIGHTBOX ══════════════════════════════════════════ */
+  function openLightbox() {
+    if (!lb) return;
+    lbGoTo(current);
+    lb.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    if (!lb) return;
+    lb.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  function lbGoTo(idx) {
+    if (idx < 0) idx = total - 1;
+    if (idx >= total) idx = 0;
+    if (lbImg) {
+      lbImg.style.opacity = '0';
+      lbImg.style.transform = 'scale(0.95)';
+      setTimeout(function () {
+        lbImg.src = srcs[idx];
+        lbImg.style.transition = 'opacity 0.22s, transform 0.22s';
+        lbImg.style.opacity = '1';
+        lbImg.style.transform = 'scale(1)';
+      }, 140);
+    }
+    if (lbCount) lbCount.textContent = (idx + 1) + ' / ' + total;
+    lbDotEls.forEach(function (d, i) { d.classList.toggle('is-active', i === idx); });
+    /* Also sync main gallery */
+    current = idx;
+    thumbEls.forEach(function (t, i) { t.classList.toggle('is-active', i === idx); });
+    dotEls.forEach(function (d, i) { d.classList.toggle('is-active', i === idx); });
+    if (countBdg && total > 1) countBdg.textContent = (idx + 1) + ' / ' + total;
+    /* Scroll lb strip */
+    if (lbDotEls[idx]) {
+      lbDotEls[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }
+
+  if (expandBtn) expandBtn.addEventListener('click', function (e) {
+    e.stopPropagation(); openLightbox();
   });
-  mainBox.addEventListener('mousemove', function (e) {
-    if (!mainBox.classList.contains('zoomed')) return;
-    var r  = mainBox.getBoundingClientRect();
-    var px = ((e.clientX - r.left) / r.width  * 100).toFixed(1) + '%';
-    var py = ((e.clientY - r.top)  / r.height * 100).toFixed(1) + '%';
-    mainBox.style.setProperty('--zoom-x', px);
-    mainBox.style.setProperty('--zoom-y', py);
-  });
-  mainBox.addEventListener('mouseleave', function () {
-    mainBox.classList.remove('zoomed');
+  if (lbClose) lbClose.addEventListener('click', closeLightbox);
+  if (lbPrev)  lbPrev.addEventListener('click', function () { lbGoTo(current - 1); });
+  if (lbNext)  lbNext.addEventListener('click', function () { lbGoTo(current + 1); });
+
+  /* Close lightbox on backdrop click */
+  if (lb) lb.addEventListener('click', function (e) {
+    if (e.target === lb) closeLightbox();
   });
 
-  /* ══════════════════════════════════════════════════════════════
-     PUBLIC API
-     Call window.pglSwitchTo(src) from color swatch handlers to
-     sync the gallery when the user picks a colour variant.
-     ══════════════════════════════════════════════════════════════ */
-  window.pglSwitchTo = function (src) {
-    var idx = thumbs.findIndex(function (t) { return t.dataset.src === src; });
-    if (idx !== -1) {
-      goTo(idx, true);
-    } else {
-      /* src not in thumb list — just swap main image without touching strip */
-      mainImg.classList.add('pgl-fade');
-      mainBox.classList.remove('zoomed');
-      setTimeout(function () {
-        mainImg.src = src;
-        if (mainImg.complete) { mainImg.classList.remove('pgl-fade'); }
-        else { mainImg.onload = function () { mainImg.classList.remove('pgl-fade'); }; }
-      }, 160);
+  /* Keyboard in lightbox */
+  document.addEventListener('keydown', function (e) {
+    if (!lb || !lb.classList.contains('is-open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft')  lbGoTo(current - 1);
+    if (e.key === 'ArrowRight') lbGoTo(current + 1);
+  });
+
+  /* ══ Share / copy link ═════════════════════════════════ */
+  if (shareBtn) shareBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var url = window.location.href;
+    if (navigator.share) {
+      navigator.share({ url: url });
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(function () {
+        shareBtn.style.background = '#f0f7ee';
+        setTimeout(function () { shareBtn.style.background = ''; }, 1400);
+      });
     }
+  });
+
+  /* ══ PUBLIC API ══════════════════════════════════════════
+     Called from variant color swatches, color select modals,
+     etc. to sync the gallery when selection changes.
+     Usage:  pgl.goTo(0)   — go to index
+             pgl.goToSrc('/media/img.jpg')  — go to matching src
+  ════════════════════════════════════════════════════════ */
+  window.pgl = {
+    goTo: function (idx) { goTo(idx, true); },
+    goToSrc: function (src) {
+      var idx = srcs.indexOf(src);
+      if (idx !== -1) {
+        goTo(idx, true);
+      } else {
+        /* src not in strip — swap main image only */
+        if (mainImg) {
+          mainImg.classList.add('is-fading');
+          stage.classList.remove('is-zoomed');
+          setTimeout(function () {
+            mainImg.src = src;
+            if (mainImg.complete) mainImg.classList.remove('is-fading');
+            else mainImg.onload = function () { mainImg.classList.remove('is-fading'); };
+          }, 180);
+        }
+      }
+    },
+    openLightbox: openLightbox,
+    closeLightbox: closeLightbox,
+    current: function () { return current; },
+    total:   function () { return total; },
   };
 
-  /* ── Init ── */
-  updateUI();
+  /* ── Init ─────────────────────────────────────────────── */
+  goTo(0, true);
 
 })();
 </script>
