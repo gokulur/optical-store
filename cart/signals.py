@@ -1,36 +1,17 @@
-# cart/context_processors.py
-from django.db.models import Sum
-from .models import Cart
+# cart/signals.py
+"""
+Signal handlers for cart functionality.
+Merges guest cart into user cart on login.
+"""
+from django.contrib.auth.signals import user_logged_in
+from django.dispatch import receiver
+from .views import merge_guest_cart_on_login
 
 
-def cart_processor(request):
+@receiver(user_logged_in)
+def merge_cart_on_login(sender, user, request, **kwargs):
     """
-    Add cart info to template context.
-    Counts total QUANTITY (sum), not distinct rows.
+    Automatically merge guest cart with user cart when user logs in.
     """
-    cart_count = 0
-
-    try:
-        if request.user.is_authenticated:
-            cart = Cart.objects.filter(customer=request.user).first()
-            if cart:
-                result = cart.items.aggregate(total=Sum('quantity'))
-                cart_count = result['total'] or 0
-        else:
-            # Only read session_key if a session already exists — don't force-create one
-            session_key = request.session.session_key
-            if session_key:
-                cart = Cart.objects.filter(
-                    session_key=session_key,
-                    customer=None
-                ).first()
-                if cart:
-                    result = cart.items.aggregate(total=Sum('quantity'))
-                    cart_count = result['total'] or 0
-
-    except Exception as e:
-        print(f"Cart context processor error: {e}")
-
-    return {
-        'cart_count': cart_count,
-    }
+    if request.session.session_key:
+        merge_guest_cart_on_login(user, request.session.session_key)
