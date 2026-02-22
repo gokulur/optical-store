@@ -305,33 +305,31 @@ def sunglass_detail(request, slug):
 
 # Eyeglass Detail
 def eyeglass_detail(request, slug):
-    """Eyeglass product detail page"""
     product = get_object_or_404(
         Product.objects.select_related('brand', 'category'),
-        slug=slug,
-        product_type='eyeglasses',
-        is_active=True
+        slug=slug, product_type='eyeglasses', is_active=True
     )
-    
-    # Get lens options for selection
+    all_images = product.images.all().order_by('display_order')
+    primary_image = all_images.filter(is_primary=True).first() or all_images.first()
+    extra_images = all_images.exclude(id=primary_image.id) if primary_image else all_images
+
     lens_brands = LensBrand.objects.filter(is_active=True)
     lens_types = LensType.objects.filter(is_active=True)
-    
-    
+
     context = {
         'product': product,
+        'primary_image': primary_image,
+        'images': extra_images,
         'variants': product.variants.filter(is_active=True),
-        'images': product.images.all(),
         'specifications': product.specifications.all(),
         'lens_brands': lens_brands,
         'lens_types': lens_types,
         'related_products': Product.objects.filter(
-            category=product.category,
-            product_type='eyeglasses',
-            is_active=True
-        ).exclude(id=product.id)[:4]
+            category=product.category, product_type='eyeglasses', is_active=True
+        ).exclude(id=product.id).prefetch_related('images')[:4]
     }
     return render(request, 'eyeglass_detail.html', context)
+
 
 
 # Contact Lens Detail
