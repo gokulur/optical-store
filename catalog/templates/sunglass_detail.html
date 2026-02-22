@@ -208,11 +208,11 @@
       <div class="gal" id="galRoot">
         <!-- Thumbnail Rail -->
         <div class="gal__rail" id="galRail">
-          {% if product.image %}
-          <div class="gal__thumb is-active" data-src="{{ product.image.url }}" tabindex="0">
-            <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="eager">
-          </div>
-          {% endif %}
+         {% if primary_image %}
+<div class="gal__thumb is-active" data-src="{{ primary_image.image.url }}" tabindex="0">
+  <img src="{{ primary_image.image.url }}" alt="{{ product.name }}" loading="eager">
+</div>
+{% endif %}
           {% for img in images %}
           <div class="gal__thumb" data-src="{{ img.image.url }}" tabindex="0">
             <img src="{{ img.image.url }}" alt="{{ product.name }}" loading="lazy">
@@ -228,9 +228,9 @@
         <!-- Stage -->
         <div class="gal__stage-wrap">
           <div class="gal__stage" id="galStage" tabindex="0">
-            {% if product.image %}
-            <img class="gal__img" id="galMain" src="{{ product.image.url }}" alt="{{ product.name }}">
-            {% else %}
+            {% if primary_image %}
+<img class="gal__img" id="galMain" src="{{ primary_image.image.url }}" alt="{{ product.name }}">
+{% else %}
             <div class="gal__placeholder">
               <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><rect x="8" y="8" width="64" height="64" rx="6" stroke="currentColor" stroke-width="2"/><circle cx="30" cy="32" r="8" stroke="currentColor" stroke-width="2"/><path d="M8 55l20-18 14 12 10-10 20 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
@@ -369,7 +369,7 @@
     <div class="pd-rel-grid">
       {% for r in related_products %}
       <a href="{% url 'catalog:sunglass_detail' r.slug %}" class="pd-rel-card">
-        <div class="pd-rel-card__img">{% if r.image %}<img src="{{ r.image.url }}" alt="{{ r.name }}" loading="lazy">{% endif %}</div>
+        <div class="pd-rel-card__img">{% with r.images.first as rimg %}{% if rimg %}<img src="{{ rimg.image.url }}" alt="{{ r.name }}" loading="lazy">{% endif %}{% endwith %}</div>
         <div class="pd-rel-card__info">
           {% if r.brand %}<p class="pd-rel-card__brand">{{ r.brand.name }}</p>{% endif %}
           <p class="pd-rel-card__name">{{ r.name }}</p>
