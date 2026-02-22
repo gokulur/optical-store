@@ -13,7 +13,7 @@
   --aa-ease:cubic-bezier(.4,0,.2,1);--aa-t:.26s;
 }
 
-/* ── GALLERY ── */
+/* ══ GAL GALLERY ══ */
 .gal{display:grid;grid-template-columns:88px 1fr;gap:12px;position:sticky;top:90px;align-self:start;}
 @media(max-width:960px){.gal{position:static;}}
 @media(max-width:540px){.gal{grid-template-columns:1fr;}}
@@ -21,7 +21,7 @@
 .gal__rail::-webkit-scrollbar{width:3px;}
 .gal__rail::-webkit-scrollbar-thumb{background:#d4b896;border-radius:99px;}
 @media(max-width:540px){.gal__rail{flex-direction:row;max-height:none;overflow-y:hidden;overflow-x:auto;order:2;}}
-.gal__thumb{flex-shrink:0;width:84px;height:84px;border-radius:10px;overflow:hidden;border:2px solid var(--aa-border);background:var(--aa-sand);cursor:pointer;transition:border-color .2s,transform .2s;padding:0;}
+.gal__thumb{flex-shrink:0;width:84px;height:84px;border-radius:10px;overflow:hidden;border:2px solid var(--aa-border);background:var(--aa-sand);cursor:pointer;transition:border-color .2s,transform .2s;}
 @media(max-width:540px){.gal__thumb{width:68px;height:68px;}}
 .gal__thumb img{width:100%;height:100%;object-fit:contain;padding:4px;display:block;}
 .gal__thumb:hover{border-color:var(--aa-gold);transform:translateX(2px);}
@@ -29,7 +29,7 @@
 .gal__thumb.is-active{border-color:var(--aa-ink);box-shadow:0 0 0 1px var(--aa-ink);}
 .gal__stage-wrap{position:relative;}
 .gal__stage{position:relative;width:100%;aspect-ratio:1/1;border-radius:16px;overflow:hidden;background:var(--aa-sand);cursor:zoom-in;}
-.gal__img{width:100%;height:100%;object-fit:contain;padding:24px;display:block;transition:opacity .18s ease;will-change:opacity;}
+.gal__img{width:100%;height:100%;object-fit:contain;padding:24px;display:block;transition:opacity .18s ease;}
 .gal__img.fading{opacity:0;}
 .gal__placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--aa-gold);}
 .gal__arr{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.9);border:1px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;box-shadow:0 2px 10px rgba(0,0,0,.12);opacity:0;pointer-events:none;transition:opacity .2s;color:#1a1a1a;}
@@ -41,8 +41,6 @@
 .gal__counter.solo{display:none;}
 .gal__fs{position:absolute;bottom:12px;right:12px;width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.88);border:1px solid rgba(0,0,0,.07);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;opacity:0;pointer-events:none;transition:opacity .2s;}
 .gal__stage:hover .gal__fs{opacity:1;pointer-events:auto;}
-
-/* lightbox */
 .gal__lb{display:none;position:fixed;inset:0;z-index:99999;background:rgba(6,6,6,.96);backdrop-filter:blur(16px);flex-direction:column;align-items:center;justify-content:center;gap:18px;}
 .gal__lb.open{display:flex;}
 .gal__lb-close{position:fixed;top:18px;right:22px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;}
@@ -56,7 +54,7 @@
 .gal__lb-dot.active{border-color:#d4b896;}
 .gal__lb-count{position:fixed;top:24px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.5);font-size:13px;font-weight:600;letter-spacing:.1em;}
 
-/* ── PAGE ── */
+/* ══ PAGE ══ */
 .pd-page{max-width:1340px;margin:0 auto;padding:0 24px 100px;}
 .pd-crumb{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:16px 0 28px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--aa-muted);}
 .pd-crumb a{color:var(--aa-muted);text-decoration:none;transition:color var(--aa-t);}
@@ -64,8 +62,6 @@
 .pd-crumb-sep{font-size:10px;color:#ccc;}
 .pd-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;}
 @media(max-width:960px){.pd-grid{grid-template-columns:1fr;gap:32px;}}
-
-/* ── INFO ── */
 .pi{display:flex;flex-direction:column;}
 .pi__badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
 .pi__badge{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:4px;}
@@ -138,7 +134,7 @@
 .pd-toast--ok{background:var(--aa-green)!important;}
 .pd-toast--err{background:#c03020!important;}
 
-/* ── LENS MODAL ── */
+/* ══ LENS MODAL ══ */
 .lm-ov{display:none;position:fixed;inset:0;z-index:8888;background:rgba(13,13,13,.55);backdrop-filter:blur(5px);align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;}
 .lm-ov.is-open{display:flex;}
 .lm-box{background:#fff;width:100%;max-width:900px;border-radius:20px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.2);animation:lmIn .3s var(--aa-ease);margin:auto;}
@@ -213,6 +209,7 @@
     <!-- ══ GALLERY ══ -->
     <div>
       <div class="gal" id="galRoot">
+
         <!-- Thumbnail Rail -->
         <div class="gal__rail" id="galRail">
           {% if primary_image %}
@@ -232,7 +229,7 @@
           {% endif %}{% endfor %}
         </div>
 
-        <!-- Stage -->
+        <!-- Main Stage -->
         <div class="gal__stage-wrap">
           <div class="gal__stage" id="galStage" tabindex="0">
             {% if primary_image %}
@@ -242,10 +239,10 @@
               <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><rect x="8" y="8" width="64" height="64" rx="6" stroke="currentColor" stroke-width="2"/><circle cx="30" cy="32" r="8" stroke="currentColor" stroke-width="2"/><path d="M8 55l20-18 14 12 10-10 20 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
             {% endif %}
-            <button class="gal__arr gal__arr--prev hidden" id="galPrev" type="button" aria-label="Previous">
+            <button class="gal__arr gal__arr--prev hidden" id="galPrev" type="button" aria-label="Previous image">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-            <button class="gal__arr gal__arr--next hidden" id="galNext" type="button" aria-label="Next">
+            <button class="gal__arr gal__arr--next hidden" id="galNext" type="button" aria-label="Next image">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
             <span class="gal__counter solo" id="galCounter">1 / 1</span>
@@ -307,7 +304,8 @@
         <p class="pi__lbl">Frame Color</p>
         <div class="pi__swatches">
           {% for v in variants %}
-          <div class="pi__swatch{% if forloop.first %} is-on{% endif %}" data-variant="{{ v.id }}"
+          <div class="pi__swatch{% if forloop.first %} is-on{% endif %}"
+               data-variant="{{ v.id }}"
                data-img="{% if v.images.exists %}{{ v.images.first.image.url }}{% endif %}"
                onclick="pickVariant(this)" tabindex="0" role="button">
             <div class="pi__swatch-dot" style="background:{% if v.color_code %}{{ v.color_code }}{% else %}linear-gradient(135deg,#ccc,#999){% endif %};"></div>
@@ -365,7 +363,10 @@
   </div>
 
   {% if product.description %}
-  <div class="pd-section"><h2 class="pd-section__h">About This Product</h2><div class="pd-section__body">{{ product.description|linebreaksbr }}</div></div>
+  <div class="pd-section">
+    <h2 class="pd-section__h">About This Product</h2>
+    <div class="pd-section__body">{{ product.description|linebreaksbr }}</div>
+  </div>
   {% endif %}
 
   {% if related_products %}
@@ -374,7 +375,11 @@
     <div class="pd-rel-grid">
       {% for r in related_products %}
       <a href="{% url 'catalog:eyeglass_detail' r.slug %}" class="pd-rel-card">
-        <div class="pd-rel-card__img">{% with r.images.first as rimg %}{% if rimg %}<img src="{{ rimg.image.url }}" alt="{{ r.name }}" loading="lazy">{% endif %}{% endwith %}</div>
+        <div class="pd-rel-card__img">
+          {% with r.images.first as rimg %}
+            {% if rimg %}<img src="{{ rimg.image.url }}" alt="{{ r.name }}" loading="lazy">{% endif %}
+          {% endwith %}
+        </div>
         <div class="pd-rel-card__info">
           {% if r.brand %}<p class="pd-rel-card__brand">{{ r.brand.name }}</p>{% endif %}
           <p class="pd-rel-card__name">{{ r.name }}</p>
@@ -385,7 +390,8 @@
     </div>
   </div>
   {% endif %}
-</div>
+
+</div><!-- /pd-page -->
 
 <!-- ══ LENS MODAL ══ -->
 <div class="lm-ov" id="lmOv" onclick="if(event.target===this)closeLm()">
@@ -394,7 +400,7 @@
       <h3>Select Your Lenses</h3>
       <button class="lm-close" onclick="closeLm()">×</button>
     </div>
-    <div class="lm-tabs" id="lmTabs">
+    <div class="lm-tabs">
       <button class="lm-tab active" onclick="showPanel('p-sv',this)">Single Vision</button>
       <button class="lm-tab" onclick="showPanel('p-prog',this)">Progressive & Bifocal</button>
       <button class="lm-tab" onclick="showPanel('p-rd',this)">Reading</button>
@@ -493,16 +499,16 @@
   </div>
 </div>
 
-<!-- LIGHTBOX -->
+<!-- ══ LIGHTBOX ══ -->
 <div class="gal__lb" id="galLb">
   <button class="gal__lb-close" onclick="GAL.closeLb()" aria-label="Close">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
   </button>
-  <button class="gal__lb-nav gal__lb-nav--prev" onclick="GAL.lbNav(-1)" aria-label="Previous">
+  <button class="gal__lb-nav gal__lb-nav--prev" onclick="GAL.lbNav(-1)">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
   </button>
   <img class="gal__lb-img" id="lbImg" src="" alt="">
-  <button class="gal__lb-nav gal__lb-nav--next" onclick="GAL.lbNav(1)" aria-label="Next">
+  <button class="gal__lb-nav gal__lb-nav--next" onclick="GAL.lbNav(1)">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
   </button>
   <div class="gal__lb-strip" id="lbStrip"></div>
@@ -513,205 +519,264 @@
 
 <script>
 /* ══════════════════════════════════════
-   GALLERY ENGINE
+   GAL — Inline Gallery Engine
+   Reads images from #galRail .gal__thumb[data-src]
+   No external dependencies.
 ══════════════════════════════════════ */
-var GAL=(function(){
-  var thumbEls,srcs,cur=0,total=0,mainImg,counter,lb,lbImg,lbStrip,lbCount;
-  function init(){
-    thumbEls=Array.from(document.querySelectorAll('#galRail .gal__thumb'));
-    srcs=thumbEls.map(function(t){return t.dataset.src||'';});
-    total=srcs.length;
-    mainImg=document.getElementById('galMain');
-    counter=document.getElementById('galCounter');
-    lb=document.getElementById('galLb');
-    lbImg=document.getElementById('lbImg');
-    lbStrip=document.getElementById('lbStrip');
-    lbCount=document.getElementById('lbCount');
-    if(!mainImg||total===0)return;
-    srcs.forEach(function(src,i){
-      var d=document.createElement('div');d.className='gal__lb-dot'+(i===0?' active':'');
-      var im=document.createElement('img');im.src=src;im.loading='lazy';d.appendChild(im);
-      d.addEventListener('click',function(){lbGoTo(i);});lbStrip.appendChild(d);
+var GAL = (function () {
+  var thumbs, srcs, cur = 0, total = 0;
+  var mainImg, counter, lb, lbImg, lbStrip, lbCount;
+
+  function init() {
+    thumbs  = Array.from(document.querySelectorAll('#galRail .gal__thumb'));
+    srcs    = thumbs.map(function (t) { return t.dataset.src || ''; });
+    total   = srcs.length;
+    mainImg = document.getElementById('galMain');
+    counter = document.getElementById('galCounter');
+    lb      = document.getElementById('galLb');
+    lbImg   = document.getElementById('lbImg');
+    lbStrip = document.getElementById('lbStrip');
+    lbCount = document.getElementById('lbCount');
+    if (!mainImg || total === 0) return;
+
+    /* build lightbox thumbnail strip */
+    srcs.forEach(function (src, i) {
+      var d  = document.createElement('div');
+      d.className = 'gal__lb-dot' + (i === 0 ? ' active' : '');
+      var im = document.createElement('img'); im.src = src; im.loading = 'lazy';
+      d.appendChild(im);
+      d.addEventListener('click', function () { lbGoTo(i); });
+      lbStrip.appendChild(d);
     });
-    if(total>1){
+
+    if (total > 1) {
       document.getElementById('galPrev').classList.remove('hidden');
       document.getElementById('galNext').classList.remove('hidden');
       counter.classList.remove('solo');
     }
     updateCounter();
-    thumbEls.forEach(function(t,i){
-      t.addEventListener('click',function(){goTo(i);});
-      t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();goTo(i);}});
+
+    thumbs.forEach(function (t, i) {
+      t.addEventListener('click', function () { goTo(i); });
+      t.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goTo(i); }
+      });
     });
-    document.getElementById('galPrev').addEventListener('click',function(e){e.stopPropagation();goTo(cur-1);});
-    document.getElementById('galNext').addEventListener('click',function(e){e.stopPropagation();goTo(cur+1);});
-    document.getElementById('galFs').addEventListener('click',function(e){e.stopPropagation();openLb();});
-    document.getElementById('galStage').addEventListener('click',function(e){
-      if(e.target.closest('#galPrev,#galNext,#galFs'))return;openLb();
+    document.getElementById('galPrev').addEventListener('click', function (e) { e.stopPropagation(); goTo(cur - 1); });
+    document.getElementById('galNext').addEventListener('click', function (e) { e.stopPropagation(); goTo(cur + 1); });
+    document.getElementById('galFs').addEventListener('click',   function (e) { e.stopPropagation(); openLb(); });
+    document.getElementById('galStage').addEventListener('click', function (e) {
+      if (e.target.closest('#galPrev,#galNext,#galFs')) return; openLb();
     });
-    document.getElementById('galStage').addEventListener('keydown',function(e){
-      if(e.key==='ArrowLeft')goTo(cur-1);
-      if(e.key==='ArrowRight')goTo(cur+1);
-      if(e.key==='Enter')openLb();
+    document.getElementById('galStage').addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowLeft')  goTo(cur - 1);
+      if (e.key === 'ArrowRight') goTo(cur + 1);
+      if (e.key === 'Enter')      openLb();
     });
-    var txS=0;
-    document.getElementById('galStage').addEventListener('touchstart',function(e){txS=e.changedTouches[0].screenX;},{passive:true});
-    document.getElementById('galStage').addEventListener('touchend',function(e){
-      var dx=txS-e.changedTouches[0].screenX;if(Math.abs(dx)>50){dx>0?goTo(cur+1):goTo(cur-1);}
-    },{passive:true});
-    lb.addEventListener('click',function(e){if(e.target===lb)closeLb();});
+    var tx0 = 0;
+    document.getElementById('galStage').addEventListener('touchstart', function (e) { tx0 = e.changedTouches[0].screenX; }, { passive: true });
+    document.getElementById('galStage').addEventListener('touchend',   function (e) {
+      var dx = tx0 - e.changedTouches[0].screenX;
+      if (Math.abs(dx) > 50) { dx > 0 ? goTo(cur + 1) : goTo(cur - 1); }
+    }, { passive: true });
+    lb.addEventListener('click', function (e) { if (e.target === lb) closeLb(); });
   }
-  function goTo(idx){
-    if(idx<0)idx=total-1;if(idx>=total)idx=0;
-    var newSrc=srcs[idx];if(!newSrc)return;
+
+  function goTo(idx) {
+    if (idx < 0) idx = total - 1;
+    if (idx >= total) idx = 0;
+    var newSrc = srcs[idx]; if (!newSrc) return;
     mainImg.classList.add('fading');
-    var tmp=new Image();tmp.onload=tmp.onerror=function(){mainImg.src=newSrc;mainImg.classList.remove('fading');};tmp.src=newSrc;
-    thumbEls.forEach(function(t,i){t.classList.toggle('is-active',i===idx);});
-    if(thumbEls[idx])thumbEls[idx].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
-    cur=idx;updateCounter();if(lb.classList.contains('open'))lbGoTo(idx);
+    var tmp = new Image();
+    tmp.onload = tmp.onerror = function () { mainImg.src = newSrc; mainImg.classList.remove('fading'); };
+    tmp.src = newSrc;
+    thumbs.forEach(function (t, i) { t.classList.toggle('is-active', i === idx); });
+    if (thumbs[idx]) thumbs[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    cur = idx; updateCounter();
+    if (lb.classList.contains('open')) lbGoTo(idx);
   }
-  function goToSrc(src){
-    var idx=srcs.indexOf(src);if(idx!==-1){goTo(idx);return;}
-    mainImg.classList.add('fading');setTimeout(function(){mainImg.src=src;mainImg.classList.remove('fading');},100);
+
+  /* Called by pickVariant() — switches to a URL not necessarily in the rail */
+  function goToSrc(src) {
+    var idx = srcs.indexOf(src);
+    if (idx !== -1) { goTo(idx); return; }
+    mainImg.classList.add('fading');
+    setTimeout(function () { mainImg.src = src; mainImg.classList.remove('fading'); }, 100);
   }
-  function updateCounter(){
-    if(counter)counter.textContent=(cur+1)+' / '+total;
-    var dots=lbStrip?lbStrip.querySelectorAll('.gal__lb-dot'):[];
-    Array.from(dots).forEach(function(d,i){d.classList.toggle('active',i===cur);});
-    if(lbCount)lbCount.textContent=(cur+1)+' / '+total;
+
+  function updateCounter() {
+    if (counter) counter.textContent = (cur + 1) + ' / ' + total;
+    var dots = lbStrip ? lbStrip.querySelectorAll('.gal__lb-dot') : [];
+    Array.from(dots).forEach(function (d, i) { d.classList.toggle('active', i === cur); });
+    if (lbCount) lbCount.textContent = (cur + 1) + ' / ' + total;
   }
-  function openLb(){lbGoTo(cur);lb.classList.add('open');document.body.style.overflow='hidden';}
-  function closeLb(){lb.classList.remove('open');document.body.style.overflow='';}
-  function lbGoTo(idx){
-    if(idx<0)idx=total-1;if(idx>=total)idx=0;
-    lbImg.style.opacity='0';lbImg.style.transform='scale(.94)';lbImg.style.transition='opacity .22s,transform .22s';
-    setTimeout(function(){lbImg.src=srcs[idx];lbImg.style.opacity='1';lbImg.style.transform='scale(1)';},110);
-    cur=idx;updateCounter();
-    var dots=lbStrip.querySelectorAll('.gal__lb-dot');
-    Array.from(dots).forEach(function(d,i){d.classList.toggle('active',i===idx);});
-    if(dots[idx])dots[idx].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+
+  function openLb()  { lbGoTo(cur); lb.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeLb() { lb.classList.remove('open'); document.body.style.overflow = ''; }
+
+  function lbGoTo(idx) {
+    if (idx < 0) idx = total - 1; if (idx >= total) idx = 0;
+    lbImg.style.cssText = 'opacity:0;transform:scale(.94);transition:opacity .22s,transform .22s';
+    setTimeout(function () {
+      lbImg.src = srcs[idx];
+      lbImg.style.cssText = 'opacity:1;transform:scale(1);transition:opacity .22s,transform .22s';
+    }, 110);
+    cur = idx; updateCounter();
+    var dots = lbStrip.querySelectorAll('.gal__lb-dot');
+    Array.from(dots).forEach(function (d, i) { d.classList.toggle('active', i === idx); });
+    if (dots[idx]) dots[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }
-  document.addEventListener('keydown',function(e){
-    if(!lb||!lb.classList.contains('open'))return;
-    if(e.key==='ArrowLeft')lbGoTo(cur-1);
-    if(e.key==='ArrowRight')lbGoTo(cur+1);
-    if(e.key==='Escape')closeLb();
+
+  document.addEventListener('keydown', function (e) {
+    if (!lb || !lb.classList.contains('open')) return;
+    if (e.key === 'ArrowLeft')  lbGoTo(cur - 1);
+    if (e.key === 'ArrowRight') lbGoTo(cur + 1);
+    if (e.key === 'Escape')     closeLb();
   });
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-  return{goTo:goTo,goToSrc:goToSrc,openLb:openLb,closeLb:closeLb,lbNav:function(d){lbGoTo(cur+d);}};
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+
+  return { goTo: goTo, goToSrc: goToSrc, openLb: openLb, closeLb: closeLb, lbNav: function (d) { lbGoTo(cur + d); } };
 })();
 
-/* ══ Product Logic ══ */
-const BASE_PRICE=parseFloat('{{ product.base_price|default:0 }}');
-var activePan='p-sv',lensOpt='',lensAddon='',lensCat='sv',lensBase=0,addonP=0,rdPower='',lensConfirmed=false;
-function getCsrf(){var m=document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);return m?decodeURIComponent(m[1]):'';}
+/* ══ Page Logic ══ */
+var BASE_PRICE    = parseFloat('{{ product.base_price|default:0 }}');
+var activePan     = 'p-sv', lensOpt = '', lensAddon = '', lensCat = 'sv';
+var lensBase      = 0, addonP = 0, lensConfirmed = false;
+
+function getCsrf() {
+  var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : '';
+}
 var _tt;
-function toast(msg,type){
-  if(typeof window.showToast==='function'){window.showToast(msg,type==='ok'?'success':type==='err'?'error':'info');return;}
-  var t=document.getElementById('pdToast');t.textContent=msg;t.className='pd-toast is-show'+(type?' pd-toast--'+type:'');
-  clearTimeout(_tt);_tt=setTimeout(function(){t.classList.remove('is-show');},3400);
+function toast(msg, type) {
+  if (typeof window.showToast === 'function') { window.showToast(msg, type === 'ok' ? 'success' : type === 'err' ? 'error' : 'info'); return; }
+  var t = document.getElementById('pdToast');
+  t.textContent = msg; t.className = 'pd-toast is-show' + (type ? ' pd-toast--' + type : '');
+  clearTimeout(_tt); _tt = setTimeout(function () { t.classList.remove('is-show'); }, 3400);
 }
-function pickVariant(el){
-  document.querySelectorAll('.pi__swatch').forEach(function(s){s.classList.remove('is-on');});
+function pickVariant(el) {
+  document.querySelectorAll('.pi__swatch').forEach(function (s) { s.classList.remove('is-on'); });
   el.classList.add('is-on');
-  document.getElementById('hdVariant').value=el.dataset.variant||'';
-  var img=el.dataset.img;if(img)GAL.goToSrc(img);
+  document.getElementById('hdVariant').value = el.dataset.variant || '';
+  var img = el.dataset.img; if (img) GAL.goToSrc(img);
 }
-function chQty(d){var i=document.getElementById('qtyVal');i.value=Math.min(Math.max(1,parseInt(i.value)+d),parseInt(i.max)||99);}
-function openLm(){document.getElementById('lmOv').classList.add('is-open');document.body.style.overflow='hidden';}
-function closeLm(){document.getElementById('lmOv').classList.remove('is-open');document.body.style.overflow='';}
-function showPanel(id,btn){
-  document.querySelectorAll('.lm-panel').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('.lm-tab').forEach(function(b){b.classList.remove('active');});
-  document.getElementById(id).classList.add('active');btn.classList.add('active');
-  activePan=id;lensOpt='';lensAddon='';lensBase=0;addonP=0;rdPower='';
-  document.querySelectorAll('.lm-opt').forEach(function(c){c.classList.remove('is-on');});
-  document.querySelectorAll('.pwr-chip').forEach(function(c){c.classList.remove('is-on');});
+function chQty(d) {
+  var i = document.getElementById('qtyVal');
+  i.value = Math.min(Math.max(1, parseInt(i.value) + d), parseInt(i.max) || 99);
+}
+function openLm()  { document.getElementById('lmOv').classList.add('is-open'); document.body.style.overflow = 'hidden'; }
+function closeLm() { document.getElementById('lmOv').classList.remove('is-open'); document.body.style.overflow = ''; }
+function showPanel(id, btn) {
+  document.querySelectorAll('.lm-panel').forEach(function (p) { p.classList.remove('active'); });
+  document.querySelectorAll('.lm-tab').forEach(function (b) { b.classList.remove('active'); });
+  document.getElementById(id).classList.add('active'); btn.classList.add('active');
+  activePan = id; lensOpt = ''; lensAddon = ''; lensBase = 0; addonP = 0;
+  document.querySelectorAll('.lm-opt').forEach(function (c) { c.classList.remove('is-on'); });
+  document.querySelectorAll('.pwr-chip').forEach(function (c) { c.classList.remove('is-on'); });
   updTotal();
 }
-function selCard(card,val,price,cat){
-  var pan=card.closest('.lm-panel');pan.querySelectorAll('.lm-opt').forEach(function(c){c.classList.remove('is-on');});
-  card.classList.add('is-on');lensOpt=val;lensBase=price;lensCat=cat;addonP=0;rdPower='';
-  var first=card.querySelector('.lm-addon-lbl');
-  if(first){var r=first.querySelector('input[type=radio]');if(r)r.checked=true;card.querySelectorAll('.lm-addon-lbl').forEach(function(l){l.classList.remove('is-on');});first.classList.add('is-on');}
+function selCard(card, val, price, cat) {
+  card.closest('.lm-panel').querySelectorAll('.lm-opt').forEach(function (c) { c.classList.remove('is-on'); });
+  card.classList.add('is-on');
+  lensOpt = val; lensBase = price; lensCat = cat; addonP = 0;
+  var first = card.querySelector('.lm-addon-lbl');
+  if (first) {
+    var r = first.querySelector('input[type=radio]'); if (r) r.checked = true;
+    card.querySelectorAll('.lm-addon-lbl').forEach(function (l) { l.classList.remove('is-on'); });
+    first.classList.add('is-on');
+  }
   updTotal();
 }
-function pickAddon(ev,lbl,price){
-  ev.stopPropagation();var r=lbl.querySelector('input[type=radio]');if(r)r.checked=true;
-  var card=lbl.closest('.lm-opt');card.querySelectorAll('.lm-addon-lbl').forEach(function(l){l.classList.remove('is-on');});
-  lbl.classList.add('is-on');addonP=price;lensAddon=r?r.value:'';updTotal();
+function pickAddon(ev, lbl, price) {
+  ev.stopPropagation();
+  var r = lbl.querySelector('input[type=radio]'); if (r) r.checked = true;
+  lbl.closest('.lm-opt').querySelectorAll('.lm-addon-lbl').forEach(function (l) { l.classList.remove('is-on'); });
+  lbl.classList.add('is-on'); addonP = price; lensAddon = r ? r.value : ''; updTotal();
 }
-function rdGrid_init(){
-  var g=document.getElementById('rdGrid');if(!g)return;
-  var pows=['+0.75','+1.00','+1.25','+1.50','+1.75','+2.00','+2.25','+2.50','+2.75','+3.00'];
-  pows.forEach(function(p){
-    var c=document.createElement('div');c.className='pwr-chip';c.textContent=p;
-    c.addEventListener('click',function(){
-      document.querySelectorAll('.pwr-chip').forEach(function(x){x.classList.remove('is-on');});
-      c.classList.add('is-on');rdPower=p;
-      lensOpt='reading_'+p.replace('+','p').replace('.','_');lensBase=150;lensCat='reading';addonP=0;updTotal();
-    });g.appendChild(c);
+function updTotal() { document.getElementById('lmTotal').textContent = lensOpt ? (lensBase + addonP) + ' QAR' : '— QAR'; }
+function rdGrid_init() {
+  var g = document.getElementById('rdGrid'); if (!g) return;
+  ['+0.75','+1.00','+1.25','+1.50','+1.75','+2.00','+2.25','+2.50','+2.75','+3.00'].forEach(function (p) {
+    var c = document.createElement('div'); c.className = 'pwr-chip'; c.textContent = p;
+    c.addEventListener('click', function () {
+      document.querySelectorAll('.pwr-chip').forEach(function (x) { x.classList.remove('is-on'); });
+      c.classList.add('is-on');
+      lensOpt = 'reading_' + p.replace('+', 'p').replace('.', '_');
+      lensBase = 150; lensCat = 'reading'; addonP = 0; updTotal();
+    }); g.appendChild(c);
   });
 }
-function updTotal(){var t=lensBase+addonP;document.getElementById('lmTotal').textContent=lensOpt?t+' QAR':'— QAR';}
-function confirmLens(){
-  if(!lensOpt){toast('Please select a lens option','err');return;}
-  var total=lensBase+addonP;
-  document.getElementById('hdLensOpt').value=lensOpt;
-  document.getElementById('hdLensAddon').value=lensAddon;
-  document.getElementById('hdLensPrice').value=total;
-  document.getElementById('hdLensCat').value=lensCat;
-  if(activePan==='p-sv'){['rSph','rCyl','rAxis','rAdd','lSph','lCyl','lAxis','lAdd'].forEach(function(k){document.getElementById('h_'+k).value=document.getElementById('m_'+k).value||'';});}
-  if(activePan==='p-prog'){['rSph','rCyl','rAxis','rAdd','lSph','lCyl','lAxis','lAdd'].forEach(function(k){document.getElementById('h_'+k).value=document.getElementById('p_'+k).value||'';});}
-  lensConfirmed=true;
-  document.getElementById('dispPrice').textContent='QAR '+(BASE_PRICE+total).toFixed(2);
-  var ok=document.getElementById('lensOk');ok.classList.add('is-show');
-  document.getElementById('lensOkTxt').textContent=lensOpt.replace(/_/g,' ')+' · '+total+' QAR';
-  closeLm();toast('Lens confirmed! +'+total+' QAR','ok');
+function confirmLens() {
+  if (!lensOpt) { toast('Please select a lens option', 'err'); return; }
+  var total = lensBase + addonP;
+  document.getElementById('hdLensOpt').value   = lensOpt;
+  document.getElementById('hdLensAddon').value = lensAddon;
+  document.getElementById('hdLensPrice').value = total;
+  document.getElementById('hdLensCat').value   = lensCat;
+  var pfx = activePan === 'p-sv' ? 'm_' : activePan === 'p-prog' ? 'p_' : null;
+  if (pfx) {
+    ['rSph','rCyl','rAxis','rAdd','lSph','lCyl','lAxis','lAdd'].forEach(function (k) {
+      var el = document.getElementById(pfx + k);
+      document.getElementById('h_' + k).value = el ? el.value : '';
+    });
+  }
+  lensConfirmed = true;
+  document.getElementById('dispPrice').textContent = 'QAR ' + (BASE_PRICE + total).toFixed(2);
+  var ok = document.getElementById('lensOk'); ok.classList.add('is-show');
+  document.getElementById('lensOkTxt').textContent = lensOpt.replace(/_/g, ' ') + ' · ' + total + ' QAR';
+  closeLm(); toast('Lens confirmed! +' + total + ' QAR', 'ok');
 }
-function buildFd(){
-  var fd=new FormData();
-  fd.append('csrfmiddlewaretoken',getCsrf());
-  fd.append('product_id','{{ product.id }}');
-  fd.append('quantity',document.getElementById('qtyVal').value);
-  fd.append('selected_variant_id',document.getElementById('hdVariant').value);
-  fd.append('selected_lens_option',document.getElementById('hdLensOpt').value);
-  fd.append('lens_addon',document.getElementById('hdLensAddon').value);
-  fd.append('total_lens_price',document.getElementById('hdLensPrice').value);
-  fd.append('lens_category',document.getElementById('hdLensCat').value);
+function buildFd() {
+  var fd = new FormData();
+  fd.append('csrfmiddlewaretoken', getCsrf());
+  fd.append('product_id',          '{{ product.id }}');
+  fd.append('quantity',             document.getElementById('qtyVal').value);
+  fd.append('selected_variant_id',  document.getElementById('hdVariant').value);
+  fd.append('selected_lens_option', document.getElementById('hdLensOpt').value);
+  fd.append('lens_addon',           document.getElementById('hdLensAddon').value);
+  fd.append('total_lens_price',     document.getElementById('hdLensPrice').value);
+  fd.append('lens_category',        document.getElementById('hdLensCat').value);
   return fd;
 }
-function addCart(){
-  if(!lensConfirmed){toast('Please select your lenses first','err');openLm();return;}
-  var btn=document.getElementById('cartBtn');var orig=btn.innerHTML;btn.textContent='Adding…';btn.disabled=true;
-  fetch("{% url 'cart:add_eyeglass_to_cart' %}",{method:'POST',body:buildFd(),headers:{'X-Requested-With':'XMLHttpRequest'}})
-  .then(function(r){return r.json();})
-  .then(function(d){btn.innerHTML=orig;btn.disabled=false;
-    if(d.success){toast('🛒 Added to cart!','ok');var cc=document.querySelector('[data-cart-count]');if(cc&&d.cart_count)cc.textContent=d.cart_count;}
-    else{toast(d.message||'Error','err');}
-  }).catch(function(){btn.innerHTML=orig;btn.disabled=false;toast('Network error','err');});
+function addCart() {
+  if (!lensConfirmed) { toast('Please select your lenses first', 'err'); openLm(); return; }
+  var btn = document.getElementById('cartBtn'), orig = btn.innerHTML;
+  btn.textContent = 'Adding…'; btn.disabled = true;
+  fetch("{% url 'cart:add_eyeglass_to_cart' %}", { method: 'POST', body: buildFd(), headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      btn.innerHTML = orig; btn.disabled = false;
+      if (d.success) { toast('🛒 Added to cart!', 'ok'); var cc = document.querySelector('[data-cart-count]'); if (cc && d.cart_count) cc.textContent = d.cart_count; }
+      else { toast(d.message || 'Error', 'err'); }
+    }).catch(function () { btn.innerHTML = orig; btn.disabled = false; toast('Network error', 'err'); });
 }
-function buyNow(){
-  if(!lensConfirmed){toast('Please select your lenses first','err');openLm();return;}
-  fetch("{% url 'cart:add_eyeglass_to_cart' %}",{method:'POST',body:buildFd(),headers:{'X-Requested-With':'XMLHttpRequest'}})
-  .then(function(r){return r.json();})
-  .then(function(d){if(d.success)window.location.href="{% url 'orders:checkout' %}";else toast(d.message||'Error','err');})
-  .catch(function(){toast('Network error','err');});
+function buyNow() {
+  if (!lensConfirmed) { toast('Please select your lenses first', 'err'); openLm(); return; }
+  fetch("{% url 'cart:add_eyeglass_to_cart' %}", { method: 'POST', body: buildFd(), headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) { if (d.success) window.location.href = "{% url 'orders:checkout' %}"; else toast(d.message || 'Error', 'err'); })
+    .catch(function () { toast('Network error', 'err'); });
 }
-document.getElementById('piWishBtn').addEventListener('click',function(){
-  var btn=this;var pid=btn.dataset.productId;var csrf=getCsrf();
-  fetch("{% url 'wishlist:toggle' 0 %}".replace('/0/','/'+pid+'/'),{method:'POST',credentials:'same-origin',headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrf,'Content-Type':'application/x-www-form-urlencoded'},body:'csrfmiddlewaretoken='+encodeURIComponent(csrf)})
-  .then(function(r){return r.json();})
-  .then(function(d){var svg=btn.querySelector('svg');
-    if(d.added){btn.classList.add('is-on');svg.setAttribute('fill','#e05f5f');svg.setAttribute('stroke','#e05f5f');toast('❤️ Added to wishlist!','ok');}
-    else{btn.classList.remove('is-on');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');toast('Removed from wishlist','');}
-  }).catch(function(){toast('Please log in','');});
+document.getElementById('piWishBtn').addEventListener('click', function () {
+  var btn = this, pid = btn.dataset.productId, csrf = getCsrf();
+  fetch("{% url 'wishlist:toggle' 0 %}".replace('/0/', '/' + pid + '/'), {
+    method: 'POST', credentials: 'same-origin',
+    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrf, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'csrfmiddlewaretoken=' + encodeURIComponent(csrf)
+  }).then(function (r) { return r.json(); })
+    .then(function (d) {
+      var svg = btn.querySelector('svg');
+      if (d.added) { btn.classList.add('is-on'); svg.setAttribute('fill', '#e05f5f'); svg.setAttribute('stroke', '#e05f5f'); toast('❤️ Added to wishlist!', 'ok'); }
+      else { btn.classList.remove('is-on'); svg.setAttribute('fill', 'none'); svg.setAttribute('stroke', 'currentColor'); toast('Removed from wishlist', ''); }
+    }).catch(function () { toast('Please log in', ''); });
 });
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeLm();GAL.closeLb();}});
-document.addEventListener('DOMContentLoaded',function(){
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeLm(); GAL.closeLb(); } });
+document.addEventListener('DOMContentLoaded', function () {
   rdGrid_init();
-  var first=document.querySelector('.pi__swatch');
-  if(first)document.getElementById('hdVariant').value=first.dataset.variant||'';
+  var first = document.querySelector('.pi__swatch');
+  if (first) document.getElementById('hdVariant').value = first.dataset.variant || '';
 });
 </script>
 {% endblock %}
