@@ -355,33 +355,32 @@ def eyeglass_detail(request, slug):
 
 # Contact Lens Detail
 def contact_lens_detail(request, slug):
-    """Contact lens product detail page"""
     product = get_object_or_404(
         Product.objects.select_related('brand', 'category', 'contact_lens'),
-        slug=slug,
-        product_type='contact_lenses',
-        is_active=True
+        slug=slug, product_type='contact_lenses', is_active=True
     )
-    
     contact_lens = product.contact_lens
     colors = contact_lens.colors.filter(is_active=True)
-    
-    # Power ranges for color lenses
+
+    all_images = product.images.all().order_by('display_order')
+    primary_image = all_images.filter(is_primary=True).first() or all_images.first()
+    extra_images = all_images.exclude(id=primary_image.id) if primary_image else all_images
+
     power_ranges = [
-        -1.00, -1.25, -1.50, -1.75, -2.00, -2.25, -2.50, 
+        -1.00, -1.25, -1.50, -1.75, -2.00, -2.25, -2.50,
         -2.75, -3.00, -3.25, -3.50, -3.75, -4.00
     ]
-    
+
     context = {
         'product': product,
+        'primary_image': primary_image,
+        'images': extra_images,
         'contact_lens': contact_lens,
         'colors': colors,
         'power_ranges': power_ranges,
-        'images': product.images.all(),
         'related_products': Product.objects.filter(
-            product_type='contact_lenses',
-            is_active=True
-        ).exclude(id=product.id)[:4]
+            product_type='contact_lenses', is_active=True
+        ).exclude(id=product.id).prefetch_related('images')[:4]
     }
     return render(request, 'contact_lens_detail.html', context)
 
