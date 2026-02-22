@@ -596,42 +596,26 @@ def medical_lenses_list(request):
 
 
 def medical_lens_detail(request, pk):
-    """
-    Medical lens (LensOption) detail page.
-    Shows index, brand, coating, power range, and prescription entry.
-    """
     lens_option = get_object_or_404(
         LensOption.objects.select_related('lens_brand', 'lens_type')
                           .prefetch_related('coatings'),
-        pk=pk,
-        is_active=True
+        pk=pk, is_active=True
     )
 
-    # Related lenses: same lens_type, exclude self, limit 4
-    related_lens_options = (
-        LensOption.objects
-        .filter(is_active=True)
-        .exclude(pk=pk)
-        .select_related('lens_brand', 'lens_type')
-    )
-    # Prefer same lens type first
+    related_qs = LensOption.objects.filter(is_active=True).exclude(pk=pk).select_related('lens_brand', 'lens_type')
     if lens_option.lens_type:
-        related_same_type = related_lens_options.filter(
-            lens_type=lens_option.lens_type
-        )[:4]
-        if related_same_type.count() < 4:
-            # backfill from other types
-            excluded_ids = list(related_same_type.values_list('id', flat=True)) + [pk]
-            extra = related_lens_options.exclude(id__in=excluded_ids)[:4 - related_same_type.count()]
-            from itertools import chain
-            related_lens_options = list(chain(related_same_type, extra))
+        related_same = list(related_qs.filter(lens_type=lens_option.lens_type)[:4])
+        if len(related_same) < 4:
+            extra_ids = [r.id for r in related_same] + [pk]
+            extra = list(related_qs.exclude(id__in=extra_ids)[:4 - len(related_same)])
+            related_lens_options = related_same + extra
         else:
-            related_lens_options = related_same_type
+            related_lens_options = related_same
     else:
-        related_lens_options = related_lens_options[:4]
+        related_lens_options = list(related_qs[:4])
 
     context = {
-        'lens_option':         lens_option,
+        'lens_option': lens_option,
         'related_lens_options': related_lens_options,
     }
     return render(request, 'medical_lens_detail.html', context)
