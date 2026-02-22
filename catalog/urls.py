@@ -18,8 +18,9 @@ urlpatterns = [
     path('sunglass/<slug:slug>/', views.sunglass_detail, name='sunglass_detail'),
     path('eyeglass/<slug:slug>/', views.eyeglass_detail, name='eyeglass_detail'),
     path('contact-lens/<slug:slug>/', views.contact_lens_detail, name='contact_lens_detail'),
-    path('medical-lens/<int:pk>/', views.medical_lens_detail, name='medical_lens_detail'),  # ← NEW
-    path('product/<slug:slug>/', views.ProductDetailView.as_view(), name='product_detail'),
+    path('medical-lens/<int:pk>/', views.medical_lens_detail, name='medical_lens_detail'),  
+    # path('product/<slug:slug>/', views.ProductDetailView.as_view(), name='product_detail'),
+    path('accessory/<slug:slug>/', views.accessory_detail, name='accessory_detail'),
 
     # Brands
     path('brands/', views.brand_list, name='brand_list'),
@@ -34,4 +35,6 @@ urlpatterns = [
     # AJAX endpoints
     path('api/lens-options/', views.get_lens_options, name='get_lens_options'),
     path('api/contact-lens-powers/', views.get_contact_lens_powers, name='get_contact_lens_powers'),
+
+    
 ]
