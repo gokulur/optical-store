@@ -3,153 +3,351 @@
 {% block title %}{{ product.name }} – Al Ameen Optics{% endblock %}
 
 {% block extra_styles %}
-{% load static %}
-<link rel="stylesheet" href="{% static 'css/aa-gallery.css' %}">
 <style>
-/* ═══════════════════════════════════════════════
-   DESIGN TOKENS — Matches home page palette
-═══════════════════════════════════════════════ */
+/* ═══════════════ DESIGN TOKENS ═══════════════ */
 :root {
-  --aa-ink:      #0d0d0d;
-  --aa-ink-soft: #555;
-  --aa-gold:     #b8976a;
-  --aa-gold-lt:  #d4b896;
-  --aa-sand:     #f7f3ed;
-  --aa-muted:    #8a8580;
-  --aa-border:   #e8e2d8;
-  --aa-green:    #2a7a2a;
-  --aa-green-bg: #f0f7ee;
-  --aa-radius:   12px;
-  --aa-shadow:   0 4px 24px rgba(0,0,0,.08);
-  --aa-ease:     cubic-bezier(.4,0,.2,1);
-  --aa-t:        .26s;
+  --ink:      #0d0d0d;
+  --ink-soft: #555;
+  --gold:     #b8976a;
+  --gold-lt:  #d4b896;
+  --sand:     #f7f3ed;
+  --muted:    #8a8580;
+  --border:   #e8e2d8;
+  --green:    #2a7a2a;
+  --green-bg: #f0f7ee;
+  --radius:   12px;
+  --shadow:   0 4px 24px rgba(0,0,0,.08);
+  --ease:     cubic-bezier(.4,0,.2,1);
+  --t:        .24s;
 }
-.pd-page { max-width: 1340px; margin: 0 auto; padding: 0 24px 100px; }
-.pd-crumb { display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:16px 0 28px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--aa-muted); }
-.pd-crumb a { color:var(--aa-muted);text-decoration:none;transition:color var(--aa-t); }
-.pd-crumb a:hover { color:var(--aa-ink); }
-.pd-crumb-sep { font-size:10px;color:#ccc; }
-.pd-crumb span:last-child { color:var(--aa-ink); }
-.pd-grid { display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start; }
-@media (max-width:960px) { .pd-grid { grid-template-columns:1fr;gap:32px; } }
-.pi { display:flex;flex-direction:column; }
-.pi__badges { display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px; }
-.pi__badge { font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:4px; }
-.pi__badge--brand  { background:var(--aa-sand);color:var(--aa-gold); }
-.pi__badge--sale   { background:var(--aa-green-bg);color:var(--aa-green); }
-.pi__badge--gender { background:#f0f0ff;color:#5558a8; }
-.pi__title { font-size:clamp(22px,2.6vw,32px);font-weight:800;line-height:1.15;color:var(--aa-ink);letter-spacing:-.03em;margin:0 0 10px; }
-.pi__meta { display:flex;align-items:center;gap:14px;margin-bottom:6px;flex-wrap:wrap; }
-.pi__brand { font-size:13px;color:var(--aa-muted); }
-.pi__brand strong { color:var(--aa-ink); }
-.pi__sku { font-size:11px;color:#c5c0b8;letter-spacing:.06em; }
-.pi__wish { margin-left:auto;flex-shrink:0;width:44px;height:44px;border-radius:50%;background:var(--aa-sand);border:2px solid var(--aa-border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--aa-t); }
-.pi__wish:hover,.pi__wish.is-on { border-color:#e05f5f;background:#fff5f5; }
-.pi__wish svg { width:18px;height:18px;transition:fill var(--aa-t),stroke var(--aa-t); }
-.pi__price-box { display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:18px 22px;border-radius:var(--aa-radius);background:var(--aa-sand);border:1px solid rgba(184,151,106,.18);margin:20px 0 22px; }
-.pi__price { font-size:34px;font-weight:900;color:var(--aa-ink);letter-spacing:-.04em; }
-.pi__price-was { font-size:17px;color:var(--aa-muted);text-decoration:line-through; }
-.pi__price-save { font-size:12px;font-weight:800;background:var(--aa-green);color:#fff;padding:3px 9px;border-radius:4px;letter-spacing:.04em; }
-.pi__desc { font-size:14px;line-height:1.78;color:var(--aa-ink-soft);margin-bottom:22px; }
-.pi__lbl { font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--aa-muted);margin-bottom:10px; }
-.pi__swatches { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px; }
-.pi__swatch { display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;outline:none; }
-.pi__swatch-dot { width:36px;height:36px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1.5px var(--aa-border);transition:all var(--aa-t); }
-.pi__swatch:hover .pi__swatch-dot,.pi__swatch.is-on .pi__swatch-dot { box-shadow:0 0 0 2.5px var(--aa-gold);transform:scale(1.1); }
-.pi__swatch-name { font-size:10px;color:var(--aa-muted);font-weight:500; }
-.pi__select { width:100%;padding:13px 16px;margin-bottom:22px;border:2px solid var(--aa-border);border-radius:var(--aa-radius);font-size:14px;font-weight:600;color:var(--aa-ink);background:#fff;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8580' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;transition:border-color var(--aa-t); }
-.pi__select:focus { border-color:var(--aa-gold);outline:none; }
+
+/* ═══════════════ PAGE SHELL ═══════════════ */
+.pd-page { max-width:1340px; margin:0 auto; padding:0 24px 100px; }
+
+/* ═══════════════ BREADCRUMB ═══════════════ */
+.pd-crumb { display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:16px 0 28px; font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+.pd-crumb a { color:var(--muted); text-decoration:none; transition:color var(--t); }
+.pd-crumb a:hover { color:var(--ink); }
+.pd-crumb-sep { font-size:10px; color:#ccc; }
+.pd-crumb span:last-child { color:var(--ink); }
+
+/* ═══════════════ 2-COL GRID ═══════════════ */
+.pd-grid { display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:start; }
+@media (max-width:960px) { .pd-grid { grid-template-columns:1fr; gap:32px; } }
+
+/* ══════════════════════════════════════════
+   GALLERY  — self-contained, no external dep
+══════════════════════════════════════════ */
+.gal {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 14px;
+  position: sticky;
+  top: 90px;
+  align-self: start;
+}
+@media (max-width:960px) { .gal { position:static; } }
+@media (max-width:540px)  { .gal { grid-template-columns:1fr; } }
+
+/* Rail */
+.gal__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 520px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-lt) transparent;
+  padding: 2px;
+}
+.gal__rail::-webkit-scrollbar { width:3px; }
+.gal__rail::-webkit-scrollbar-thumb { background:var(--gold-lt); border-radius:99px; }
+@media (max-width:540px) {
+  .gal__rail { order:2; flex-direction:row; max-height:none; overflow-y:hidden; overflow-x:auto; }
+}
+
+/* Thumb */
+.gal__thumb {
+  flex-shrink: 0;
+  width: 84px; height: 84px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid var(--border);
+  background: var(--sand);
+  cursor: pointer;
+  transition: border-color var(--t), box-shadow var(--t), transform var(--t);
+  padding: 0;
+  outline: none;
+  position: relative;
+}
+@media (max-width:540px) { .gal__thumb { width:68px; height:68px; flex-shrink:0; } }
+.gal__thumb img { width:100%; height:100%; object-fit:contain; padding:6px; display:block; pointer-events:none; transition:transform .3s; }
+.gal__thumb:hover { border-color:var(--gold); transform:translateX(2px); }
+.gal__thumb:hover img { transform:scale(1.06); }
+.gal__thumb.active { border-color:var(--ink); box-shadow:0 0 0 1px var(--ink); }
+.gal__thumb-lbl {
+  position:absolute; bottom:0; left:0; right:0;
+  background:rgba(13,13,13,.72); color:#fff;
+  font-size:9px; font-weight:700; text-align:center;
+  padding:3px 4px; letter-spacing:.03em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  opacity:0; transition:opacity .2s;
+}
+.gal__thumb:hover .gal__thumb-lbl,
+.gal__thumb.active .gal__thumb-lbl { opacity:1; }
+
+/* Stage */
+.gal__stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--sand);
+  background-image:
+    radial-gradient(ellipse at 20% 20%, rgba(255,255,255,.6) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 80%, rgba(184,151,106,.06) 0%, transparent 55%);
+  cursor: zoom-in;
+  user-select: none;
+}
+.gal__img {
+  width:100%; height:100%;
+  object-fit:contain;
+  padding:28px;
+  display:block;
+  transition:opacity .18s, transform .18s;
+  pointer-events:none;
+  -webkit-user-drag:none;
+}
+.gal__img.fade { opacity:0; transform:scale(.97); }
+
+/* Arrows */
+.gal__arr {
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:40px; height:40px; border-radius:50%;
+  background:rgba(255,255,255,.9); backdrop-filter:blur(6px);
+  border:1px solid rgba(0,0,0,.07);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; z-index:10;
+  box-shadow:0 2px 12px rgba(0,0,0,.1);
+  opacity:0; pointer-events:none;
+  transition:all .2s; color:var(--ink);
+}
+.gal__stage:hover .gal__arr { opacity:1; pointer-events:auto; }
+.gal__arr:hover { background:#fff; box-shadow:0 4px 20px rgba(0,0,0,.18); }
+.gal__arr--prev { left:12px; }
+.gal__arr--next { right:12px; }
+.gal__arr--hidden { display:none!important; }
+
+/* Counter */
+.gal__counter {
+  position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+  background:rgba(10,10,10,.42); backdrop-filter:blur(6px);
+  color:#fff; font-size:11px; font-weight:700;
+  letter-spacing:.1em; padding:4px 12px; border-radius:99px;
+  pointer-events:none; white-space:nowrap;
+}
+.gal__counter.hidden { display:none; }
+
+/* Fullscreen btn */
+.gal__fs {
+  position:absolute; bottom:14px; right:14px;
+  width:36px; height:36px; border-radius:8px;
+  background:rgba(255,255,255,.88); backdrop-filter:blur(6px);
+  border:1px solid rgba(0,0,0,.07);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; z-index:10;
+  opacity:0; pointer-events:none; transition:all .2s; color:#333;
+}
+.gal__stage:hover .gal__fs { opacity:1; pointer-events:auto; }
+.gal__fs:hover { background:#fff; transform:scale(1.08); }
+
+/* Lightbox */
+.gal__lb {
+  display:none; position:fixed; inset:0; z-index:99999;
+  background:rgba(6,6,6,.96); backdrop-filter:blur(16px);
+  flex-direction:column; align-items:center; justify-content:center; gap:20px;
+}
+.gal__lb.open { display:flex; }
+.gal__lb-close {
+  position:fixed; top:20px; right:24px;
+  width:46px; height:46px; border-radius:50%;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:background .2s;
+}
+.gal__lb-close:hover { background:rgba(255,255,255,.22); }
+.gal__lb-img { max-width:88vw; max-height:74vh; object-fit:contain; border-radius:12px; }
+.gal__lb-nav {
+  position:fixed; top:50%; transform:translateY(-50%);
+  width:52px; height:52px; border-radius:50%;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.18);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:background .2s;
+}
+.gal__lb-nav:hover { background:rgba(255,255,255,.22); }
+.gal__lb-nav--prev { left:20px; }
+.gal__lb-nav--next { right:20px; }
+.gal__lb-strip { display:flex; gap:10px; overflow-x:auto; max-width:90vw; padding:4px 2px; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.3) transparent; }
+.gal__lb-dot { flex-shrink:0; width:62px; height:62px; border-radius:8px; overflow:hidden; border:2.5px solid rgba(255,255,255,.15); cursor:pointer; transition:border-color .2s, transform .2s; }
+.gal__lb-dot img { width:100%; height:100%; object-fit:contain; padding:3px; }
+.gal__lb-dot.active { border-color:var(--gold-lt); transform:scale(1.1); }
+.gal__lb-count { position:fixed; top:26px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,.5); font-size:13px; font-weight:600; letter-spacing:.1em; pointer-events:none; }
+
+/* Swipe hint */
+.gal__swipe-hint {
+  position:absolute; bottom:14px; left:14px;
+  display:flex; align-items:center; gap:5px;
+  background:rgba(255,255,255,.88); backdrop-filter:blur(6px);
+  border:1px solid rgba(0,0,0,.07);
+  color:#555; font-size:11px; font-weight:600;
+  padding:5px 10px; border-radius:6px;
+  opacity:0; pointer-events:none;
+  transition:opacity .3s .8s;
+}
+.gal__stage:hover .gal__swipe-hint { opacity:1; }
+
+/* ═══════════════ PRODUCT INFO ═══════════════ */
+.pi { display:flex; flex-direction:column; }
+.pi__badges { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px; }
+.pi__badge { font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:4px 10px; border-radius:4px; }
+.pi__badge--brand  { background:var(--sand); color:var(--gold); }
+.pi__badge--sale   { background:var(--green-bg); color:var(--green); }
+.pi__badge--gender { background:#f0f0ff; color:#5558a8; }
+.pi__row { display:flex; align-items:flex-start; gap:10px; margin-bottom:12px; }
+.pi__wish { flex-shrink:0; width:44px; height:44px; border-radius:50%; background:var(--sand); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all var(--t); margin-left:auto; }
+.pi__wish:hover, .pi__wish.on { border-color:#e05f5f; background:#fff5f5; }
+.pi__wish svg { width:18px; height:18px; }
+.pi__title { font-size:clamp(22px,2.6vw,32px); font-weight:800; line-height:1.15; color:var(--ink); letter-spacing:-.03em; margin:0 0 10px; }
+.pi__meta { display:flex; align-items:center; gap:14px; margin-bottom:6px; flex-wrap:wrap; }
+.pi__brand { font-size:13px; color:var(--muted); }
+.pi__brand strong { color:var(--ink); }
+.pi__sku { font-size:11px; color:#c5c0b8; letter-spacing:.06em; }
+.pi__price-box { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; padding:18px 22px; border-radius:var(--radius); background:var(--sand); border:1px solid rgba(184,151,106,.18); margin:20px 0 22px; }
+.pi__price { font-size:34px; font-weight:900; color:var(--ink); letter-spacing:-.04em; }
+.pi__price-was { font-size:17px; color:var(--muted); text-decoration:line-through; }
+.pi__price-save { font-size:12px; font-weight:800; background:var(--green); color:#fff; padding:3px 9px; border-radius:4px; letter-spacing:.04em; }
+.pi__desc { font-size:14px; line-height:1.78; color:var(--ink-soft); margin-bottom:22px; }
+.pi__lbl { font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+.pi__swatches { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px; }
+.pi__swatch { display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; outline:none; }
+.pi__swatch-dot { width:36px; height:36px; border-radius:50%; border:3px solid transparent; box-shadow:0 0 0 1.5px var(--border); transition:all var(--t); }
+.pi__swatch:hover .pi__swatch-dot, .pi__swatch.on .pi__swatch-dot { box-shadow:0 0 0 2.5px var(--gold); transform:scale(1.1); }
+.pi__swatch-name { font-size:10px; color:var(--muted); font-weight:500; }
+.pi__select { width:100%; padding:13px 16px; margin-bottom:22px; border:2px solid var(--border); border-radius:var(--radius); font-size:14px; font-weight:600; color:var(--ink); background:#fff; cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8580' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 16px center; transition:border-color var(--t); }
+.pi__select:focus { border-color:var(--gold); outline:none; }
+
+/* Power toggle */
 .pi__power-wrap { margin-bottom:22px; }
-.pi__power-toggle { display:flex;background:var(--aa-sand);border-radius:var(--aa-radius);padding:4px;border:1px solid rgba(184,151,106,.2);gap:4px; }
-.pi__power-btn { flex:1;padding:12px 8px;border:none;background:transparent;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--aa-muted);transition:all var(--aa-t); }
-.pi__power-btn.is-on { background:var(--aa-ink);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18); }
-.pi__lens-ok { display:none;align-items:center;gap:8px;background:var(--aa-green-bg);border:1px solid #3a8a2e;color:#2a6a20;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:14px; }
-.pi__lens-ok.is-show { display:flex; }
-.pi__lens-ok button { margin-left:auto;background:none;border:none;color:#2a6a20;font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px; }
+.pi__power-toggle { display:flex; background:var(--sand); border-radius:var(--radius); padding:4px; border:1px solid rgba(184,151,106,.2); gap:4px; }
+.pi__power-btn { flex:1; padding:12px 8px; border:none; background:transparent; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; color:var(--muted); transition:all var(--t); }
+.pi__power-btn.on { background:var(--ink); color:#fff; box-shadow:0 2px 8px rgba(0,0,0,.18); }
+
+/* Lens select btn */
+.pi__lens-btn { display:none; width:100%; padding:15px 24px; border-radius:50px; font-size:14px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; border:2px solid var(--gold); background:#fff; color:var(--gold); transition:all var(--t); margin-bottom:12px; }
+.pi__lens-btn.show { display:block; }
+.pi__lens-btn:hover { background:var(--gold); color:#fff; }
+
+/* Lens confirmed */
+.pi__lens-ok { display:none; align-items:center; gap:8px; background:var(--green-bg); border:1px solid #3a8a2e; color:#2a6a20; border-radius:8px; padding:10px 14px; font-size:13px; font-weight:600; margin-bottom:14px; }
+.pi__lens-ok.show { display:flex; }
+.pi__lens-ok button { margin-left:auto; background:none; border:none; color:#2a6a20; font-size:12px; font-weight:700; cursor:pointer; text-decoration:underline; }
+
+/* Qty */
 .pi__qty-wrap { margin-bottom:22px; }
-.pi__qty { display:inline-flex;align-items:center;border:2px solid var(--aa-border);border-radius:var(--aa-radius);overflow:hidden; }
-.pi__qty-btn { width:46px;height:46px;border:none;background:var(--aa-sand);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--aa-ink);transition:background var(--aa-t);line-height:1; }
-.pi__qty-btn:hover { background:var(--aa-border); }
-.pi__qty-num { width:56px;height:46px;border:none;border-left:2px solid var(--aa-border);border-right:2px solid var(--aa-border);text-align:center;font-size:16px;font-weight:700;color:var(--aa-ink);background:#fff; }
+.pi__qty { display:inline-flex; align-items:center; border:2px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.pi__qty-btn { width:46px; height:46px; border:none; background:var(--sand); font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--ink); transition:background var(--t); line-height:1; }
+.pi__qty-btn:hover { background:var(--border); }
+.pi__qty-num { width:56px; height:46px; border:none; border-left:2px solid var(--border); border-right:2px solid var(--border); text-align:center; font-size:16px; font-weight:700; color:var(--ink); background:#fff; }
 .pi__qty-num:focus { outline:none; }
-.pi__cta { display:flex;flex-direction:column;gap:12px;margin-bottom:26px; }
-.pi__btn { width:100%;padding:17px 24px;border-radius:50px;font-size:14px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all var(--aa-t);border:2px solid transparent;position:relative;overflow:hidden; }
-.pi__btn--lens { background:#fff;border-color:var(--aa-gold);color:var(--aa-gold);display:none; }
-.pi__btn--lens.is-show { display:block; }
-.pi__btn--lens:hover { background:var(--aa-gold);color:#fff; }
-.pi__btn--cart { background:var(--aa-ink);border-color:var(--aa-ink);color:#fff; }
+
+/* CTAs */
+.pi__cta { display:flex; flex-direction:column; gap:12px; margin-bottom:26px; }
+.pi__btn { width:100%; padding:17px 24px; border-radius:50px; font-size:14px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; transition:all var(--t); border:2px solid transparent; }
+.pi__btn--cart { background:var(--ink); border-color:var(--ink); color:#fff; }
 .pi__btn--cart:hover { background:#2a2a2a; }
-.pi__btn--cart:active { transform:scale(.98); }
-.pi__btn--buy { background:var(--aa-gold);border-color:var(--aa-gold);color:#fff; }
-.pi__btn--buy:hover { background:#a07050;border-color:#a07050; }
-.pi__btn--buy:active { transform:scale(.98); }
-.pi__trust { background:var(--aa-sand);border-radius:var(--aa-radius);padding:16px 20px;display:flex;flex-direction:column;gap:12px;border:1px solid rgba(184,151,106,.18);margin-bottom:24px; }
-.pi__trust-row { display:flex;align-items:center;gap:12px;font-size:13px;color:var(--aa-ink); }
-.pi__trust-icon { width:34px;height:34px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 1px 6px rgba(0,0,0,.07); }
-.pi__trust-icon svg { width:15px;height:15px;color:var(--aa-gold); }
-.pi__specs-table { width:100%;border-collapse:collapse;font-size:14px;margin-top:8px; }
-.pi__specs-table tr { border-bottom:1px solid var(--aa-border); }
-.pi__specs-table td { padding:10px 0;vertical-align:top; }
-.pi__specs-table td:first-child { font-weight:600;color:var(--aa-ink);width:44%; }
-.pi__specs-table td:last-child { color:var(--aa-muted); }
-.pd-section { padding:52px 0;border-top:1px solid var(--aa-border); }
-.pd-section__h { font-size:22px;font-weight:800;color:var(--aa-ink);margin-bottom:18px;letter-spacing:-.02em; }
-.pd-section__body { font-size:15px;line-height:1.85;color:var(--aa-ink-soft); }
-.pd-rel-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:24px; }
+.pi__btn--buy { background:var(--gold); border-color:var(--gold); color:#fff; }
+.pi__btn--buy:hover { background:#a07050; border-color:#a07050; }
+
+/* Trust */
+.pi__trust { background:var(--sand); border-radius:var(--radius); padding:16px 20px; display:flex; flex-direction:column; gap:12px; border:1px solid rgba(184,151,106,.18); margin-bottom:24px; }
+.pi__trust-row { display:flex; align-items:center; gap:12px; font-size:13px; color:var(--ink); }
+.pi__trust-icon { width:34px; height:34px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 1px 6px rgba(0,0,0,.07); }
+.pi__trust-icon svg { width:15px; height:15px; color:var(--gold); }
+
+/* Specs */
+.pi__specs-table { width:100%; border-collapse:collapse; font-size:14px; margin-top:8px; }
+.pi__specs-table tr { border-bottom:1px solid var(--border); }
+.pi__specs-table td { padding:10px 0; vertical-align:top; }
+.pi__specs-table td:first-child { font-weight:600; color:var(--ink); width:44%; }
+.pi__specs-table td:last-child { color:var(--muted); }
+
+/* Sections */
+.pd-section { padding:52px 0; border-top:1px solid var(--border); }
+.pd-section__h { font-size:22px; font-weight:800; color:var(--ink); margin-bottom:18px; letter-spacing:-.02em; }
+.pd-section__body { font-size:15px; line-height:1.85; color:var(--ink-soft); }
+
+/* Related */
+.pd-rel-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-top:24px; }
 @media (max-width:860px) { .pd-rel-grid { grid-template-columns:repeat(2,1fr); } }
-.pd-rel-card { text-decoration:none;color:inherit;display:block;border-radius:var(--aa-radius);overflow:hidden;border:1px solid var(--aa-border);background:#fff;transition:all var(--aa-t); }
-.pd-rel-card:hover { transform:translateY(-4px);box-shadow:var(--aa-shadow);border-color:var(--aa-gold-lt); }
-.pd-rel-card__img { aspect-ratio:1/1;background:var(--aa-sand);overflow:hidden; }
-.pd-rel-card__img img { width:100%;height:100%;object-fit:contain;padding:10px;transition:transform .4s;display:block; }
+.pd-rel-card { text-decoration:none; color:inherit; display:block; border-radius:var(--radius); overflow:hidden; border:1px solid var(--border); background:#fff; transition:all var(--t); }
+.pd-rel-card:hover { transform:translateY(-4px); box-shadow:var(--shadow); border-color:var(--gold-lt); }
+.pd-rel-card__img { aspect-ratio:1/1; background:var(--sand); overflow:hidden; }
+.pd-rel-card__img img { width:100%; height:100%; object-fit:contain; padding:10px; transition:transform .4s; display:block; }
 .pd-rel-card:hover .pd-rel-card__img img { transform:scale(1.06); }
 .pd-rel-card__info { padding:14px; }
-.pd-rel-card__brand { font-size:10px;color:var(--aa-gold);font-weight:700;text-transform:uppercase;letter-spacing:.08em; }
-.pd-rel-card__name { font-size:14px;font-weight:700;margin:4px 0;color:var(--aa-ink);line-height:1.3; }
-.pd-rel-card__price { font-size:15px;font-weight:800;color:var(--aa-ink); }
-.lm { display:none;position:fixed;inset:0;z-index:8888;background:rgba(13,13,13,.55);backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:20px;overflow-y:auto; }
-.lm.is-open { display:flex; }
-.lm__box { background:#fff;width:100%;max-width:640px;border-radius:20px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.2);animation:lmIn .3s var(--aa-ease);margin:auto; }
-@keyframes lmIn { from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:none} }
-.lm__head { padding:22px 28px 18px;border-bottom:1px solid var(--aa-border);display:flex;align-items:center;justify-content:space-between; }
-.lm__head h3 { margin:0;font-size:18px;font-weight:800; }
-.lm__close { background:none;border:none;font-size:26px;cursor:pointer;color:var(--aa-muted);padding:0;line-height:1; }
-.lm__close:hover { color:var(--aa-ink); }
-.lm__body { padding:22px 28px;max-height:68vh;overflow-y:auto; }
-.lm__step { font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--aa-muted);margin-bottom:12px; }
-.lm__colors { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px; }
-.lm__color-chip { display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 14px;border:2px solid var(--aa-border);border-radius:var(--aa-radius);cursor:pointer;transition:all var(--aa-t);min-width:72px;text-align:center; }
-.lm__color-chip:hover,.lm__color-chip.is-on { border-color:var(--aa-ink);background:var(--aa-sand); }
-.lm__color-dot { width:30px;height:30px;border-radius:50%;border:2px solid rgba(0,0,0,.07); }
-.lm__color-name { font-size:12px;font-weight:600;color:var(--aa-ink); }
-.lm__opt { border:2px solid var(--aa-border);border-radius:var(--aa-radius);padding:16px 20px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:14px;transition:all var(--aa-t); }
-.lm__opt:hover { border-color:#aaa;box-shadow:var(--aa-shadow); }
-.lm__opt.is-on { border-color:var(--aa-ink);background:var(--aa-sand); }
-.lm__opt-left { display:flex;align-items:center;gap:12px; }
-.lm__radio { width:20px;height:20px;border-radius:50%;border:2px solid var(--aa-border);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--aa-t); }
-.lm__opt.is-on .lm__radio { border-color:var(--aa-ink);background:var(--aa-ink); }
-.lm__radio::after { content:'';width:8px;height:8px;border-radius:50%;background:#fff;display:none; }
-.lm__opt.is-on .lm__radio::after { display:block; }
-.lm__opt-name { font-size:14px;font-weight:700; }
-.lm__opt-desc { font-size:12px;color:var(--aa-muted);margin-top:2px; }
-.lm__opt-price { font-size:17px;font-weight:800;white-space:nowrap; }
-.lm__rx { background:var(--aa-sand);border-radius:var(--aa-radius);padding:18px;margin:18px 0 0; }
-.lm__rx-table { width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden; }
-.lm__rx-table th { background:var(--aa-ink);color:#fff;padding:9px 12px;font-size:13px;font-weight:600;text-align:left; }
-.lm__rx-table td { padding:9px 12px;border-bottom:1px solid var(--aa-border); }
+.pd-rel-card__brand { font-size:10px; color:var(--gold); font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
+.pd-rel-card__name { font-size:14px; font-weight:700; margin:4px 0; color:var(--ink); line-height:1.3; }
+.pd-rel-card__price { font-size:15px; font-weight:800; color:var(--ink); }
+
+/* ═══════════════ LENS MODAL ═══════════════ */
+.lm { display:none; position:fixed; inset:0; z-index:8888; background:rgba(13,13,13,.55); backdrop-filter:blur(5px); align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
+.lm.open { display:flex; }
+.lm__box { background:#fff; width:100%; max-width:640px; border-radius:20px; overflow:hidden; box-shadow:0 24px 80px rgba(0,0,0,.2); animation:lmIn .3s var(--ease); margin:auto; }
+@keyframes lmIn { from{opacity:0;transform:translateY(22px) scale(.97)} to{opacity:1;transform:none} }
+.lm__head { padding:22px 28px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.lm__head h3 { margin:0; font-size:18px; font-weight:800; }
+.lm__close { background:none; border:none; font-size:26px; cursor:pointer; color:var(--muted); padding:0; line-height:1; }
+.lm__close:hover { color:var(--ink); }
+.lm__body { padding:22px 28px; max-height:68vh; overflow-y:auto; }
+.lm__step { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+.lm__colors { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:26px; }
+.lm__color-chip { display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 14px; border:2px solid var(--border); border-radius:var(--radius); cursor:pointer; transition:all var(--t); min-width:72px; text-align:center; }
+.lm__color-chip:hover, .lm__color-chip.on { border-color:var(--ink); background:var(--sand); }
+.lm__color-dot { width:30px; height:30px; border-radius:50%; border:2px solid rgba(0,0,0,.07); }
+.lm__color-name { font-size:12px; font-weight:600; color:var(--ink); }
+.lm__opt { border:2px solid var(--border); border-radius:var(--radius); padding:16px 20px; margin-bottom:10px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:14px; transition:all var(--t); }
+.lm__opt:hover { border-color:#aaa; box-shadow:var(--shadow); }
+.lm__opt.on { border-color:var(--ink); background:var(--sand); }
+.lm__opt-left { display:flex; align-items:center; gap:12px; }
+.lm__radio { width:20px; height:20px; border-radius:50%; border:2px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all var(--t); }
+.lm__opt.on .lm__radio { border-color:var(--ink); background:var(--ink); }
+.lm__radio::after { content:''; width:8px; height:8px; border-radius:50%; background:#fff; display:none; }
+.lm__opt.on .lm__radio::after { display:block; }
+.lm__opt-name { font-size:14px; font-weight:700; }
+.lm__opt-desc { font-size:12px; color:var(--muted); margin-top:2px; }
+.lm__opt-price { font-size:17px; font-weight:800; white-space:nowrap; }
+.lm__rx { background:var(--sand); border-radius:var(--radius); padding:18px; margin:18px 0 0; }
+.lm__rx-table { width:100%; border-collapse:collapse; background:#fff; border-radius:8px; overflow:hidden; }
+.lm__rx-table th { background:var(--ink); color:#fff; padding:9px 12px; font-size:13px; font-weight:600; text-align:left; }
+.lm__rx-table td { padding:9px 12px; border-bottom:1px solid var(--border); }
 .lm__rx-table tr:last-child td { border-bottom:none; }
-.lm__rx-table td:first-child { font-weight:600;font-size:13px;white-space:nowrap; }
-.lm__rx-input { width:100%;padding:7px 10px;border:1.5px solid var(--aa-border);border-radius:6px;font-size:13px;min-width:65px;transition:border-color var(--aa-t); }
-.lm__rx-input:focus { border-color:var(--aa-gold);outline:none; }
-.lm__foot { padding:18px 28px 24px;border-top:1px solid var(--aa-border);background:#fff;position:sticky;bottom:0; }
-.lm__total { display:flex;align-items:center;justify-content:space-between;margin-bottom:12px; }
-.lm__total-lbl { font-size:14px;font-weight:600; }
-.lm__total-val { font-size:24px;font-weight:900;letter-spacing:-.03em; }
-.lm__confirm { width:100%;padding:15px;background:var(--aa-ink);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:800;cursor:pointer;transition:background var(--aa-t);letter-spacing:.04em; }
+.lm__rx-table td:first-child { font-weight:600; font-size:13px; white-space:nowrap; }
+.lm__rx-input { width:100%; padding:7px 10px; border:1.5px solid var(--border); border-radius:6px; font-size:13px; min-width:65px; transition:border-color var(--t); }
+.lm__rx-input:focus { border-color:var(--gold); outline:none; }
+.lm__foot { padding:18px 28px 24px; border-top:1px solid var(--border); background:#fff; position:sticky; bottom:0; }
+.lm__total { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.lm__total-lbl { font-size:14px; font-weight:600; }
+.lm__total-val { font-size:24px; font-weight:900; letter-spacing:-.03em; }
+.lm__confirm { width:100%; padding:15px; background:var(--ink); color:#fff; border:none; border-radius:50px; font-size:15px; font-weight:800; cursor:pointer; transition:background var(--t); letter-spacing:.04em; }
 .lm__confirm:hover { background:#2a2a2a; }
-.pd-toast { position:fixed;bottom:28px;right:28px;z-index:99999;padding:14px 22px;border-radius:var(--aa-radius);font-size:14px;font-weight:700;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,.2);pointer-events:none;transform:translateY(70px);opacity:0;transition:all .32s var(--aa-ease);max-width:320px;background:var(--aa-ink); }
-.pd-toast.is-show { transform:translateY(0);opacity:1; }
-.pd-toast--ok  { background:var(--aa-green) !important; }
-.pd-toast--err { background:#c03020 !important; }
+
+/* Toast */
+.pd-toast { position:fixed; bottom:28px; right:28px; z-index:99999; padding:14px 22px; border-radius:var(--radius); font-size:14px; font-weight:700; color:#fff; box-shadow:0 8px 32px rgba(0,0,0,.2); pointer-events:none; transform:translateY(70px); opacity:0; transition:all .32s var(--ease); max-width:320px; background:var(--ink); }
+.pd-toast.show { transform:translateY(0); opacity:1; }
+.pd-toast--ok  { background:var(--green)!important; }
+.pd-toast--err { background:#c03020!important; }
 </style>
 {% endblock %}
 
@@ -169,26 +367,74 @@
   <div class="pd-grid">
 
     <!-- ══ GALLERY ══ -->
-    <div>
-      {% include 'partials/_product_gallery.html' with main_image=product.image images=images variants=variants product=product %}
+    <div class="gal" id="galRoot">
+
+      <!-- Thumbnail Rail -->
+      <div class="gal__rail" id="galRail">
+        {% if product.image %}
+        <button class="gal__thumb active" data-src="{{ product.image.url }}" type="button">
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="eager">
+        </button>
+        {% endif %}
+        {% for img in images %}
+        <button class="gal__thumb" data-src="{{ img.image.url }}" type="button">
+          <img src="{{ img.image.url }}" alt="View {{ forloop.counter }}" loading="lazy">
+        </button>
+        {% endfor %}
+        {% for v in variants %}{% if v.images.exists %}{% with vi=v.images.first %}
+        <button class="gal__thumb" data-src="{{ vi.image.url }}" data-variant="{{ v.id }}" type="button">
+          <img src="{{ vi.image.url }}" alt="{{ v.color_name }}" loading="lazy">
+          {% if v.color_name %}<span class="gal__thumb-lbl">{{ v.color_name }}</span>{% endif %}
+        </button>
+        {% endwith %}{% endif %}{% endfor %}
+      </div>
+
+      <!-- Main Stage -->
+      <div class="gal__stage" id="galStage">
+        {% if product.image %}
+        <img class="gal__img" id="galMain" src="{{ product.image.url }}" alt="{{ product.name }}" draggable="false">
+        {% else %}
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.3;">
+          <svg width="80" height="80" viewBox="0 0 120 120" fill="none"><rect x="10" y="10" width="100" height="100" rx="8" stroke="#b8976a" stroke-width="2"/><circle cx="42" cy="44" r="12" stroke="#b8976a" stroke-width="2"/><path d="M10 80 L36 56 L56 74 L76 52 L110 80" stroke="#b8976a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        {% endif %}
+
+        <!-- Arrows -->
+        <button class="gal__arr gal__arr--prev" id="galPrev" type="button" aria-label="Previous">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="gal__arr gal__arr--next" id="galNext" type="button" aria-label="Next">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Counter -->
+        <span class="gal__counter" id="galCounter">1 / 1</span>
+
+        <!-- Fullscreen -->
+        <button class="gal__fs" id="galFs" type="button" aria-label="Fullscreen">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+        </button>
+
+        <!-- Swipe hint -->
+        <div class="gal__swipe-hint">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Click to zoom
+        </div>
+      </div>
     </div>
 
     <!-- ══ PRODUCT INFO ══ -->
     <div class="pi">
 
       <!-- Badges + wishlist -->
-      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
+      <div class="pi__row">
         <div class="pi__badges">
           {% if product.brand %}<span class="pi__badge pi__badge--brand">{{ product.brand.name }}</span>{% endif %}
           {% if product.compare_at_price %}<span class="pi__badge pi__badge--sale">Sale</span>{% endif %}
           {% if product.gender != 'unisex' %}<span class="pi__badge pi__badge--gender">{{ product.gender|capfirst }}</span>{% endif %}
         </div>
-        <button class="pi__wish{% if product in request.user.wishlist.products.all %} is-on{% endif %}"
-                id="piWishBtn" data-product-id="{{ product.id }}" aria-label="Wishlist">
-          <svg viewBox="0 0 24 24"
-               fill="{% if product in request.user.wishlist.products.all %}#e05f5f{% else %}none{% endif %}"
-               stroke="{% if product in request.user.wishlist.products.all %}#e05f5f{% else %}currentColor{% endif %}"
-               stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <button class="pi__wish{% if product in request.user.wishlist.products.all %} on{% endif %}" id="wishBtn" data-product-id="{{ product.id }}" aria-label="Wishlist">
+          <svg viewBox="0 0 24 24" fill="{% if product in request.user.wishlist.products.all %}#e05f5f{% else %}none{% endif %}" stroke="{% if product in request.user.wishlist.products.all %}#e05f5f{% else %}currentColor{% endif %}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </button>
       </div>
 
@@ -207,9 +453,7 @@
         {% endif %}
       </div>
 
-      {% if product.short_description %}
-      <p class="pi__desc">{{ product.short_description }}</p>
-      {% endif %}
+      {% if product.short_description %}<p class="pi__desc">{{ product.short_description }}</p>{% endif %}
 
       <form id="pdForm" onsubmit="return false;">
         {% csrf_token %}
@@ -220,12 +464,12 @@
         <input type="hidden" name="selected_lens_option" id="hdLensOpt" value="">
         <input type="hidden" name="total_lens_price" id="hdLensPrice" value="0">
 
-        <!-- Frame Color -->
+        <!-- Frame Color swatches -->
         {% if variants %}
         <p class="pi__lbl">Frame Color</p>
-        <div class="pi__swatches">
+        <div class="pi__swatches" id="swatchWrap">
           {% for v in variants %}
-          <div class="pi__swatch{% if forloop.first %} is-on{% endif %}"
+          <div class="pi__swatch{% if forloop.first %} on{% endif %}"
                data-variant="{{ v.id }}"
                data-img="{% if v.images.exists %}{{ v.images.first.image.url }}{% endif %}"
                onclick="pickVariant(this)" tabindex="0" role="button" aria-label="{{ v.color_name }}">
@@ -249,12 +493,12 @@
         <div class="pi__power-wrap">
           <p class="pi__lbl">Prescription Lenses</p>
           <div class="pi__power-toggle">
-            <button type="button" class="pi__power-btn is-on" onclick="setPower('without',this)">Without Power</button>
+            <button type="button" class="pi__power-btn on" onclick="setPower('without',this)">Without Power</button>
             <button type="button" class="pi__power-btn" onclick="setPower('with',this)">+ Add Prescription</button>
           </div>
         </div>
 
-        <button type="button" class="pi__btn pi__btn--lens" id="lensBtn" onclick="openLm()">🔍 Select Prescription Lenses</button>
+        <button type="button" class="pi__lens-btn" id="lensBtn" onclick="openLm()">🔍 Select Prescription Lenses</button>
 
         <div class="pi__lens-ok" id="lensOk">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -281,34 +525,22 @@
         </div>
       </form>
 
-      <!-- Trust bar -->
+      <!-- Trust -->
       <div class="pi__trust">
-        <div class="pi__trust-row">
-          <div class="pi__trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
-          <span>Delivery in <strong>3–6 business days</strong> · Qatar / GCC</span>
-        </div>
-        <div class="pi__trust-row">
-          <div class="pi__trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div>
-          <span>Free returns within <strong>45 days</strong> of purchase</span>
-        </div>
-        <div class="pi__trust-row">
-          <div class="pi__trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
-          <span><strong>100% Authentic</strong> — genuine products guaranteed</span>
-        </div>
+        <div class="pi__trust-row"><div class="pi__trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div><span>Delivery in <strong>3–6 business days</strong> · Qatar / GCC</span></div>
+        <div class="pi__trust-row"><div class="pi__trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><span>Free returns within <strong>45 days</strong></span></div>
+        <div class="pi__trust-row"><div class="pi__trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div><span><strong>100% Authentic</strong> guaranteed</span></div>
       </div>
 
       <!-- Specs -->
       {% if specifications %}
       <p class="pi__lbl">Specifications</p>
       <table class="pi__specs-table">
-        {% for s in specifications %}
-        <tr><td>{{ s.spec_key }}</td><td>{{ s.spec_value }}</td></tr>
-        {% endfor %}
+        {% for s in specifications %}<tr><td>{{ s.spec_key }}</td><td>{{ s.spec_value }}</td></tr>{% endfor %}
       </table>
       {% endif %}
-
-    </div><!-- /pi -->
-  </div><!-- /pd-grid -->
+    </div>
+  </div>
 
   <!-- Description -->
   {% if product.description %}
@@ -336,16 +568,12 @@
     </div>
   </div>
   {% endif %}
+</div>
 
-</div><!-- /pd-page -->
-
-<!-- ═════════════ LENS MODAL ═════════════ -->
-<div class="lm" id="lmOverlay" onclick="if(event.target===this)closeLm()">
+<!-- ══ LENS MODAL ══ -->
+<div class="lm" id="lmModal" onclick="if(event.target===this)closeLm()">
   <div class="lm__box">
-    <div class="lm__head">
-      <h3>Choose Prescription Lenses</h3>
-      <button class="lm__close" onclick="closeLm()">×</button>
-    </div>
+    <div class="lm__head"><h3>Choose Prescription Lenses</h3><button class="lm__close" onclick="closeLm()">×</button></div>
     <div class="lm__body">
       <p class="lm__step">Step 1 — Lens Tint</p>
       <div class="lm__colors">
@@ -364,7 +592,7 @@
         <div class="lm__opt-left"><div class="lm__radio"></div><div><div class="lm__opt-name">Essilor Crizal Easy Pro 1.5</div><div class="lm__opt-desc">UV · Scratch & dust resistant · Superior clarity</div></div></div>
         <div class="lm__opt-price">350 QAR</div>
       </div>
-      <p class="lm__step" style="margin-top:22px;">Step 3 — Prescription (Rx)</p>
+      <p class="lm__step" style="margin-top:22px;">Step 3 — Prescription (Optional)</p>
       <div class="lm__rx">
         <table class="lm__rx-table">
           <thead><tr><th>Eye</th><th>SPH</th><th>CYL</th><th>AXIS</th></tr></thead>
@@ -382,183 +610,340 @@
   </div>
 </div>
 
+<!-- Lightbox -->
+<div class="gal__lb" id="galLb">
+  <button class="gal__lb-close" onclick="closeLb()" aria-label="Close">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <button class="gal__lb-nav gal__lb-nav--prev" onclick="lbNav(-1)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <img class="gal__lb-img" id="lbImg" src="" alt="">
+  <div class="gal__lb-strip" id="lbStrip"></div>
+  <button class="gal__lb-nav gal__lb-nav--next" onclick="lbNav(1)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+  <span class="gal__lb-count" id="lbCount"></span>
+</div>
+
 <div class="pd-toast" id="pdToast"></div>
 
 <script>
-const BASE_PRICE = parseFloat('{{ product.base_price|default:0 }}');
-let lensColor='', lensOpt='', lensPrice=0, lensConfirmed=false;
-let powerType='without';
+/* ════════════════════════════════════════════════════
+   GALLERY ENGINE — Self-contained, no external JS deps
+════════════════════════════════════════════════════ */
+(function () {
+  var thumbs, srcs, cur = 0, total = 0;
+  var mainImg, counter, prevBtn, nextBtn, lb, lbImg, lbStrip, lbCount;
 
-/* CSRF */
-function getCsrf(){var m=document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);return m?decodeURIComponent(m[1]):'';};
+  function init() {
+    mainImg   = document.getElementById('galMain');
+    counter   = document.getElementById('galCounter');
+    prevBtn   = document.getElementById('galPrev');
+    nextBtn   = document.getElementById('galNext');
+    lb        = document.getElementById('galLb');
+    lbImg     = document.getElementById('lbImg');
+    lbStrip   = document.getElementById('lbStrip');
+    lbCount   = document.getElementById('lbCount');
+    var stage = document.getElementById('galStage');
+    var rail  = document.getElementById('galRail');
+    if (!rail || !mainImg) return;
 
-/* Toast — use base.html's toast system (window.showToast) if available */
+    thumbs = Array.from(rail.querySelectorAll('.gal__thumb'));
+    srcs   = thumbs.map(function(t){ return t.dataset.src || ''; });
+    total  = srcs.length;
+
+    // Build lightbox strip
+    srcs.forEach(function(src, i) {
+      var dot = document.createElement('div');
+      dot.className = 'gal__lb-dot' + (i === 0 ? ' active' : '');
+      var im = document.createElement('img'); im.src = src; im.loading = 'lazy';
+      dot.appendChild(im);
+      dot.addEventListener('click', function(){ lbGoTo(i); });
+      lbStrip.appendChild(dot);
+    });
+
+    // Hide arrows/counter if single image
+    if (total <= 1) {
+      prevBtn && prevBtn.classList.add('gal__arr--hidden');
+      nextBtn && nextBtn.classList.add('gal__arr--hidden');
+      counter && counter.classList.add('hidden');
+    }
+    updateCounter();
+
+    // Thumb clicks
+    thumbs.forEach(function(t, i) {
+      t.addEventListener('click', function(){ goTo(i, true); });
+      t.addEventListener('keydown', function(e){
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goTo(i, true); }
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); if(thumbs[i+1]) thumbs[i+1].focus(); }
+        if (e.key === 'ArrowUp'   || e.key === 'ArrowLeft')  { e.preventDefault(); if(thumbs[i-1]) thumbs[i-1].focus(); }
+      });
+    });
+
+    prevBtn && prevBtn.addEventListener('click', function(e){ e.stopPropagation(); goTo(cur - 1); });
+    nextBtn && nextBtn.addEventListener('click', function(e){ e.stopPropagation(); goTo(cur + 1); });
+
+    // Keyboard on stage
+    stage && stage.addEventListener('keydown', function(e){
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); goTo(cur - 1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+      if (e.key === 'Enter')      { openLb(); }
+    });
+
+    // Fullscreen button
+    var fsBtn = document.getElementById('galFs');
+    fsBtn && fsBtn.addEventListener('click', function(e){ e.stopPropagation(); openLb(); });
+
+    // Stage click → lightbox
+    stage && stage.addEventListener('click', function(e){
+      if (e.target.closest('.gal__arr, .gal__fs')) return;
+      openLb();
+    });
+
+    // Touch swipe
+    var txStart = 0, tyStart = 0;
+    stage && stage.addEventListener('touchstart', function(e){ txStart = e.changedTouches[0].screenX; tyStart = e.changedTouches[0].screenY; }, { passive:true });
+    stage && stage.addEventListener('touchend', function(e){
+      var dx = txStart - e.changedTouches[0].screenX;
+      var dy = tyStart - e.changedTouches[0].screenY;
+      if (Math.abs(dx) > 50 && Math.abs(dy) < 60) { dx > 0 ? goTo(cur+1) : goTo(cur-1); }
+    }, { passive:true });
+
+    // Lightbox close on backdrop
+    lb && lb.addEventListener('click', function(e){ if(e.target === lb) closeLb(); });
+
+    // Keyboard: arrows & escape
+    document.addEventListener('keydown', function(e){
+      if (lb && lb.classList.contains('open')) {
+        if (e.key === 'ArrowLeft')  lbGoTo(cur - 1);
+        if (e.key === 'ArrowRight') lbGoTo(cur + 1);
+        if (e.key === 'Escape')     closeLb();
+      }
+    });
+
+    // Expose for variant switching
+    window._galGoToSrc = goToSrc;
+  }
+
+  function goTo(idx, force) {
+    if (!force && idx === cur) return;
+    if (idx < 0) idx = total - 1;
+    if (idx >= total) idx = 0;
+    var src = srcs[idx];
+    if (!src || !mainImg) return;
+
+    // Fade transition
+    mainImg.classList.add('fade');
+    (function(s){ setTimeout(function(){
+      mainImg.src = s;
+      mainImg.onload = function(){ mainImg.classList.remove('fade'); };
+      mainImg.onerror = function(){ mainImg.classList.remove('fade'); };
+    }, 120); })(src);
+
+    thumbs.forEach(function(t, i){
+      t.classList.toggle('active', i === idx);
+      t.setAttribute('aria-selected', i === idx ? 'true' : 'false');
+      t.tabIndex = i === idx ? 0 : -1;
+    });
+    if (thumbs[idx]) thumbs[idx].scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+    cur = idx;
+    updateCounter();
+    if (lb && lb.classList.contains('open')) lbGoTo(idx);
+  }
+
+  function goToSrc(src) {
+    var idx = srcs.indexOf(src);
+    if (idx !== -1) { goTo(idx, true); return; }
+    // Inject src not in list
+    if (!mainImg) return;
+    mainImg.classList.add('fade');
+    setTimeout(function(){ mainImg.src = src; mainImg.onload = function(){ mainImg.classList.remove('fade'); }; }, 120);
+  }
+
+  function updateCounter() {
+    if (counter) counter.textContent = (cur + 1) + ' / ' + total;
+    if (lbCount) lbCount.textContent = (cur + 1) + ' / ' + total;
+    if (!lbStrip) return;
+    Array.from(lbStrip.querySelectorAll('.gal__lb-dot')).forEach(function(d, i){ d.classList.toggle('active', i === cur); });
+  }
+
+  function openLb() {
+    lbGoTo(cur);
+    if (lb) { lb.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  }
+  window.closeLb = function() {
+    if (lb) { lb.classList.remove('open'); document.body.style.overflow = ''; }
+  };
+  window.lbNav = function(d) { lbGoTo(cur + d); };
+
+  function lbGoTo(idx) {
+    if (idx < 0) idx = total - 1;
+    if (idx >= total) idx = 0;
+    if (!lbImg) return;
+    lbImg.style.cssText = 'opacity:0;transform:scale(.94);transition:opacity .22s,transform .22s;';
+    var s = srcs[idx];
+    setTimeout(function(){
+      lbImg.src = s;
+      lbImg.style.cssText = 'opacity:1;transform:scale(1);transition:opacity .22s,transform .22s;';
+    }, 120);
+    cur = idx;
+    updateCounter();
+    var dots = lbStrip ? lbStrip.querySelectorAll('.gal__lb-dot') : [];
+    Array.from(dots).forEach(function(d, i){ d.classList.toggle('active', i === idx); });
+    if (dots[idx]) dots[idx].scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+  }
+
+  document.readyState === 'loading'
+    ? document.addEventListener('DOMContentLoaded', init)
+    : init();
+})();
+
+/* ════════════════════════════════════════════════════
+   PRODUCT INFO LOGIC
+════════════════════════════════════════════════════ */
+var BASE_PRICE = parseFloat('{{ product.base_price|default:0 }}');
+var lensColor = '', lensOpt = '', lensPrice = 0, lensConfirmed = false;
+var powerType = 'without';
+
+function getCsrf() {
+  var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+
 var _tt;
-function toast(msg,type){
-  /* ✅ Always prefer base.html's global showToast */
-  if(typeof window.showToast==='function'){
-    var mapped=type==='ok'?'success':type==='err'?'error':'info';
-    window.showToast(msg,mapped);
+function toast(msg, type) {
+  if (typeof window.showToast === 'function') {
+    window.showToast(msg, type === 'ok' ? 'success' : type === 'err' ? 'error' : 'info');
     return;
   }
-  /* Fallback to page inline toast */
-  var t=document.getElementById('pdToast');
-  if(!t)return;
-  t.textContent=msg;
-  t.className='pd-toast is-show'+(type?' pd-toast--'+type:'');
-  clearTimeout(_tt);_tt=setTimeout(function(){t.classList.remove('is-show');},3400);
+  var t = document.getElementById('pdToast');
+  if (!t) return;
+  t.textContent = msg;
+  t.className = 'pd-toast show' + (type ? ' pd-toast--' + type : '');
+  clearTimeout(_tt);
+  _tt = setTimeout(function(){ t.classList.remove('show'); }, 3400);
 }
 
-/* Variant */
-function pickVariant(el){
-  document.querySelectorAll('.pi__swatch').forEach(function(s){s.classList.remove('is-on');});
-  el.classList.add('is-on');
-  document.getElementById('hdVariant').value=el.dataset.variant||'';
-  var img=el.dataset.img;
-  if(img&&window.__aaGal)window.__aaGal.goToSrc(img);
+function pickVariant(el) {
+  document.querySelectorAll('.pi__swatch').forEach(function(s){ s.classList.remove('on'); });
+  el.classList.add('on');
+  document.getElementById('hdVariant').value = el.dataset.variant || '';
+  var img = el.dataset.img;
+  if (img && window._galGoToSrc) window._galGoToSrc(img);
 }
 
-/* Power */
-function setPower(type,btn){
-  powerType=type;
-  document.querySelectorAll('.pi__power-btn').forEach(function(b){b.classList.remove('is-on');});
-  btn.classList.add('is-on');
-  document.getElementById('hdPower').value=type;
-  var lb=document.getElementById('lensBtn');
-  if(type==='with'){lb.classList.add('is-show');}
-  else{lb.classList.remove('is-show');lensColor='';lensOpt='';lensPrice=0;lensConfirmed=false;document.getElementById('lensOk').classList.remove('is-show');document.getElementById('hdLensPrice').value='0';updateDispPrice();}
+function setPower(type, btn) {
+  powerType = type;
+  document.querySelectorAll('.pi__power-btn').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  document.getElementById('hdPower').value = type;
+  var lb = document.getElementById('lensBtn');
+  if (type === 'with') {
+    lb.classList.add('show');
+  } else {
+    lb.classList.remove('show');
+    lensColor = ''; lensOpt = ''; lensPrice = 0; lensConfirmed = false;
+    document.getElementById('lensOk').classList.remove('show');
+    document.getElementById('hdLensPrice').value = '0';
+    updateDispPrice();
+  }
 }
 
-/* Lens modal */
-function openLm(){document.getElementById('lmOverlay').classList.add('is-open');document.body.style.overflow='hidden';}
-function closeLm(){document.getElementById('lmOverlay').classList.remove('is-open');document.body.style.overflow='';}
-function pickLensColor(chip,c){document.querySelectorAll('.lm__color-chip').forEach(function(x){x.classList.remove('is-on');});chip.classList.add('is-on');lensColor=c;}
-function pickLensOpt(card,val,price){document.querySelectorAll('.lm__opt').forEach(function(x){x.classList.remove('is-on');});card.classList.add('is-on');lensOpt=val;lensPrice=price;document.getElementById('lmTotal').textContent=price+' QAR';}
-function confirmLens(){
-  if(!lensColor){toast('Please select a lens tint color','err');return;}
-  if(!lensOpt){toast('Please select a lens type','err');return;}
-  document.getElementById('hdLensColor').value=lensColor;
-  document.getElementById('hdLensOpt').value=lensOpt;
-  document.getElementById('hdLensPrice').value=lensPrice;
-  lensConfirmed=true;updateDispPrice();
-  var ok=document.getElementById('lensOk');
-  ok.classList.add('is-show');
-  document.getElementById('lensOkTxt').textContent=(lensOpt==='essilor_crizal'?'Essilor Crizal Easy Pro':'Regular 1.56')+' · '+lensColor.charAt(0).toUpperCase()+lensColor.slice(1)+' · '+lensPrice+' QAR';
-  closeLm();toast('Lens confirmed! +'+lensPrice+' QAR','ok');
-}
-function updateDispPrice(){
-  document.getElementById('dispPrice').textContent='QAR '+(BASE_PRICE+(lensConfirmed?lensPrice:0)).toFixed(2);
+function openLm() { document.getElementById('lmModal').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeLm() { document.getElementById('lmModal').classList.remove('open'); document.body.style.overflow = ''; }
+function pickLensColor(chip, c) { document.querySelectorAll('.lm__color-chip').forEach(function(x){ x.classList.remove('on'); }); chip.classList.add('on'); lensColor = c; }
+function pickLensOpt(card, val, price) { document.querySelectorAll('.lm__opt').forEach(function(x){ x.classList.remove('on'); }); card.classList.add('on'); lensOpt = val; lensPrice = price; document.getElementById('lmTotal').textContent = price + ' QAR'; }
+
+function confirmLens() {
+  if (!lensColor) { toast('Please select a lens tint color', 'err'); return; }
+  if (!lensOpt)   { toast('Please select a lens type', 'err'); return; }
+  document.getElementById('hdLensColor').value = lensColor;
+  document.getElementById('hdLensOpt').value   = lensOpt;
+  document.getElementById('hdLensPrice').value  = lensPrice;
+  lensConfirmed = true; updateDispPrice();
+  var ok = document.getElementById('lensOk');
+  ok.classList.add('show');
+  document.getElementById('lensOkTxt').textContent = (lensOpt === 'essilor_crizal' ? 'Essilor Crizal Easy Pro' : 'Regular 1.56') + ' · ' + lensColor.charAt(0).toUpperCase() + lensColor.slice(1) + ' · ' + lensPrice + ' QAR';
+  closeLm(); toast('Lens confirmed! +' + lensPrice + ' QAR', 'ok');
 }
 
-/* Qty */
-function chQty(d){var i=document.getElementById('qtyVal');i.value=Math.min(Math.max(1,parseInt(i.value)+d),parseInt(i.max)||99);}
-
-/* ════════════════════════════════════════════════════
-   ADD TO CART
-   ✅ FIX: was using getElementById('cartCount') which
-   doesn't exist. Now calls window.updateCartBadge()
-   which is defined in base.html and updates #aa-cart-count
-════════════════════════════════════════════════════ */
-function addCart(){
-  if(powerType==='with'&&!lensConfirmed){toast('Please select prescription lenses first','err');openLm();return;}
-  var btn=document.getElementById('cartBtn');
-  var orig=btn.innerHTML;btn.textContent='Adding…';btn.disabled=true;
-  var fd=new FormData();
-  fd.append('csrfmiddlewaretoken',getCsrf());
-  fd.append('product_id','{{ product.id }}');
-  fd.append('quantity',document.getElementById('qtyVal').value);
-  fd.append('selected_variant_id',document.getElementById('hdVariant').value);
-  fd.append('power_type',document.getElementById('hdPower').value);
-  fd.append('selected_lens_color',document.getElementById('hdLensColor').value);
-  fd.append('selected_lens_option',document.getElementById('hdLensOpt').value);
-  fd.append('total_lens_price',document.getElementById('hdLensPrice').value);
-  fetch("{% url 'cart:add_to_cart' %}",{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}})
-  .then(function(r){return r.json();})
-  .then(function(data){
-    btn.innerHTML=orig;btn.disabled=false;
-    if(data.success){
-      toast('🛒 Added to cart!','ok');
-      /* ✅ FIXED: was getElementById('cartCount') — wrong ID, never found badge.
-         Now calls base.html's updateCartBadge with the server count. */
-      if(typeof window.updateCartBadge==='function'){
-        window.updateCartBadge(data.cart_count||0);
-      }
-    } else {
-      toast(data.message||'Could not add to cart.','err');
-    }
-  })
-  .catch(function(){btn.innerHTML=orig;btn.disabled=false;toast('Network error.','err');});
+function updateDispPrice() {
+  document.getElementById('dispPrice').textContent = 'QAR ' + (BASE_PRICE + (lensConfirmed ? lensPrice : 0)).toFixed(2);
 }
 
-/* ════════════════════════════════════════════════════
-   BUY NOW
-   ✅ Same fix — calls window.updateCartBadge()
-════════════════════════════════════════════════════ */
-function buyNow(){
-  if(powerType==='with'&&!lensConfirmed){toast('Please select prescription lenses first','err');openLm();return;}
-  var fd=new FormData();
-  fd.append('csrfmiddlewaretoken',getCsrf());
-  fd.append('product_id','{{ product.id }}');
-  fd.append('quantity',document.getElementById('qtyVal').value);
-  fd.append('selected_variant_id',document.getElementById('hdVariant').value||'');
-  fd.append('power_type',document.getElementById('hdPower').value);
-  fd.append('selected_lens_color',document.getElementById('hdLensColor').value);
-  fd.append('selected_lens_option',document.getElementById('hdLensOpt').value);
-  fd.append('total_lens_price',document.getElementById('hdLensPrice').value);
-  fetch("{% url 'cart:add_to_cart' %}",{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}})
-  .then(function(r){return r.json();})
-  .then(function(d){
-    if(d.success){
-      /* ✅ Update badge before redirect */
-      if(typeof window.updateCartBadge==='function'){
-        window.updateCartBadge(d.cart_count||0);
-      }
-      window.location.href="{% url 'orders:checkout' %}";
-    } else {
-      toast(d.message||'Could not process.','err');
-    }
-  })
-  .catch(function(){toast('Network error.','err');});
+function chQty(d) { var i = document.getElementById('qtyVal'); i.value = Math.min(Math.max(1, parseInt(i.value) + d), parseInt(i.max) || 99); }
+
+function addCart() {
+  if (powerType === 'with' && !lensConfirmed) { toast('Please select prescription lenses first', 'err'); openLm(); return; }
+  var btn = document.getElementById('cartBtn');
+  var orig = btn.innerHTML; btn.textContent = 'Adding…'; btn.disabled = true;
+  var fd = new FormData();
+  fd.append('csrfmiddlewaretoken', getCsrf());
+  fd.append('product_id', '{{ product.id }}');
+  fd.append('quantity', document.getElementById('qtyVal').value);
+  fd.append('selected_variant_id', document.getElementById('hdVariant').value);
+  fd.append('power_type', document.getElementById('hdPower').value);
+  fd.append('selected_lens_color', document.getElementById('hdLensColor').value);
+  fd.append('selected_lens_option', document.getElementById('hdLensOpt').value);
+  fd.append('total_lens_price', document.getElementById('hdLensPrice').value);
+  fetch("{% url 'cart:add_to_cart' %}", { method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'} })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      btn.innerHTML = orig; btn.disabled = false;
+      if (data.success) {
+        toast('🛒 Added to cart!', 'ok');
+        if (typeof window.updateCartBadge === 'function') window.updateCartBadge(data.cart_count || 0);
+      } else { toast(data.message || 'Could not add to cart.', 'err'); }
+    })
+    .catch(function(){ btn.innerHTML = orig; btn.disabled = false; toast('Network error.', 'err'); });
+}
+
+function buyNow() {
+  if (powerType === 'with' && !lensConfirmed) { toast('Please select prescription lenses first', 'err'); openLm(); return; }
+  var fd = new FormData();
+  fd.append('csrfmiddlewaretoken', getCsrf());
+  fd.append('product_id', '{{ product.id }}');
+  fd.append('quantity', document.getElementById('qtyVal').value);
+  fd.append('selected_variant_id', document.getElementById('hdVariant').value || '');
+  fd.append('power_type', document.getElementById('hdPower').value);
+  fd.append('selected_lens_color', document.getElementById('hdLensColor').value);
+  fd.append('selected_lens_option', document.getElementById('hdLensOpt').value);
+  fd.append('total_lens_price', document.getElementById('hdLensPrice').value);
+  fetch("{% url 'cart:add_to_cart' %}", { method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'} })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d.success) {
+        if (typeof window.updateCartBadge === 'function') window.updateCartBadge(d.cart_count || 0);
+        window.location.href = "{% url 'orders:checkout' %}";
+      } else { toast(d.message || 'Could not process.', 'err'); }
+    })
+    .catch(function(){ toast('Network error.', 'err'); });
 }
 
 /* Wishlist */
-document.getElementById('piWishBtn').addEventListener('click',function(){
-  var btn=this;
-  var pid=btn.dataset.productId;
-  var csrf=getCsrf();
-  fetch("{% url 'wishlist:toggle' 0 %}".replace('/0/','/'+pid+'/'),{
-    method:'POST',credentials:'same-origin',
+document.getElementById('wishBtn').addEventListener('click', function(){
+  var btn = this, pid = btn.dataset.productId, csrf = getCsrf();
+  fetch("{% url 'wishlist:toggle' 0 %}".replace('/0/', '/' + pid + '/'), {
+    method:'POST', credentials:'same-origin',
     headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrf,'Content-Type':'application/x-www-form-urlencoded'},
-    body:'csrfmiddlewaretoken='+encodeURIComponent(csrf)
+    body:'csrfmiddlewaretoken=' + encodeURIComponent(csrf)
   })
-  .then(function(r){return r.json();})
+  .then(function(r){ return r.json(); })
   .then(function(data){
-    var svg=btn.querySelector('svg');
-    if(data.added){
-      btn.classList.add('is-on');
-      svg.setAttribute('fill','#e05f5f');svg.setAttribute('stroke','#e05f5f');
-      toast('❤️ Added to wishlist!','ok');
-    } else {
-      btn.classList.remove('is-on');
-      svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');
-      toast('💔 Removed from wishlist.','');
-    }
-    /* ✅ Use base.html updateWishlistCount */
-    if(typeof window.updateWishlistCount==='function'&&data.wishlist_count!==undefined){
-      window.updateWishlistCount(data.wishlist_count);
-    }
+    var svg = btn.querySelector('svg');
+    if (data.added) { btn.classList.add('on'); svg.setAttribute('fill','#e05f5f'); svg.setAttribute('stroke','#e05f5f'); toast('❤️ Added to wishlist!','ok'); }
+    else { btn.classList.remove('on'); svg.setAttribute('fill','none'); svg.setAttribute('stroke','currentColor'); toast('Removed from wishlist',''); }
+    if (typeof window.updateWishlistCount === 'function' && data.wishlist_count !== undefined) window.updateWishlistCount(data.wishlist_count);
   })
-  .catch(function(){toast('Please log in to use wishlist.','');});
+  .catch(function(){ toast('Please log in to use wishlist.',''); });
 });
 
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLm();});
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeLm(); });
 
-/* Init first variant */
-document.addEventListener('DOMContentLoaded',function(){
-  var first=document.querySelector('.pi__swatch');
-  if(first){document.getElementById('hdVariant').value=first.dataset.variant||'';}
+document.addEventListener('DOMContentLoaded', function(){
+  var first = document.querySelector('.pi__swatch');
+  if (first) document.getElementById('hdVariant').value = first.dataset.variant || '';
 });
 </script>
-
-<script src="{% static 'js/aa-gallery.js' %}"></script>
 {% endblock %}
