@@ -225,54 +225,75 @@ def contact_lenses_list(request):
 
 
 # Product Detail Views
-class ProductDetailView(DetailView):
-    """Product detail page"""
-    model = Product
-    template_name = 'product_detail.html'
-    context_object_name = 'product'
-    slug_field = 'slug'
+# class ProductDetailView(DetailView):
+#     """Product detail page"""
+#     model = Product
+#     template_name = 'product_detail.html'
+#     context_object_name = 'product'
+#     slug_field = 'slug'
 
-    def get_queryset(self):
-        return Product.objects.filter(is_active=True).select_related(
-            'brand', 'category'
-        ).prefetch_related(
-            'variants', 'images', 'specifications'
-        )
+#     def get_queryset(self):
+#         return Product.objects.filter(is_active=True).select_related(
+#             'brand', 'category'
+#         ).prefetch_related(
+#             'variants', 'images', 'specifications'
+#         )
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        product = self.object
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         product = self.object
         
-        # Get variants
-        context['variants'] = product.variants.filter(is_active=True)
+#         # Get variants
+#         context['variants'] = product.variants.filter(is_active=True)
         
-        # Get default variant
-        context['default_variant'] = product.variants.filter(
-            is_default=True, is_active=True
-        ).first()
+#         # Get default variant
+#         context['default_variant'] = product.variants.filter(
+#             is_default=True, is_active=True
+#         ).first()
         
-        # Get images
-        context['images'] = product.images.all()
+#         # Get images
+#         context['images'] = product.images.all()
         
-        # Get specifications
-        context['specifications'] = product.specifications.all()
+#         # Get specifications
+#         context['specifications'] = product.specifications.all()
         
-        # Related products
-        context['related_products'] = Product.objects.filter(
-            category=product.category,
-            is_active=True
-        ).exclude(id=product.id)[:4]
+#         # Related products
+#         context['related_products'] = Product.objects.filter(
+#             category=product.category,
+#             is_active=True
+#         ).exclude(id=product.id)[:4]
         
-        # For contact lenses, get color options
-        if product.product_type == 'contact_lenses':
-            try:
-                contact_lens = product.contact_lens
-                context['contact_lens'] = contact_lens
-                context['colors'] = contact_lens.colors.filter(is_active=True)
-            except ContactLensProduct.DoesNotExist:
-                pass
+#         # For contact lenses, get color options
+#         if product.product_type == 'contact_lenses':
+#             try:
+#                 contact_lens = product.contact_lens
+#                 context['contact_lens'] = contact_lens
+#                 context['colors'] = contact_lens.colors.filter(is_active=True)
+#             except ContactLensProduct.DoesNotExist:
+#                 pass
         
-        return context
+#         return context
+
+def accessory_detail(request, slug):
+    product = get_object_or_404(
+        Product.objects.select_related('brand', 'category'),
+        slug=slug, product_type='accessories', is_active=True
+    )
+    all_images = product.images.all().order_by('display_order')
+    primary_image = all_images.filter(is_primary=True).first() or all_images.first()
+    extra_images = all_images.exclude(id=primary_image.id) if primary_image else all_images
+
+    context = {
+        'product': product,
+        'primary_image': primary_image,
+        'images': extra_images,
+        'variants': product.variants.filter(is_active=True),
+        'specifications': product.specifications.all(),
+        'related_products': Product.objects.filter(
+            category=product.category, product_type='accessories', is_active=True
+        ).exclude(id=product.id).prefetch_related('images')[:4]
+    }
+    return render(request, 'accessory_detail.html', context)
 
 
 # Sunglass Detail
