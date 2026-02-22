@@ -277,18 +277,22 @@ class ProductDetailView(DetailView):
 
 # Sunglass Detail
 def sunglass_detail(request, slug):
-    """Sunglass product detail page"""
     product = get_object_or_404(
         Product.objects.select_related('brand', 'category'),
         slug=slug,
         product_type='sunglasses',
         is_active=True
     )
-    
+
+    all_images = product.images.all().order_by('display_order')
+    primary_image = all_images.filter(is_primary=True).first() or all_images.first()
+    extra_images = all_images.exclude(id=primary_image.id) if primary_image else all_images
+
     context = {
         'product': product,
+        'primary_image': primary_image,         
+        'images': extra_images,                  
         'variants': product.variants.filter(is_active=True),
-        'images': product.images.all(),
         'specifications': product.specifications.all(),
         'related_products': Product.objects.filter(
             category=product.category,
