@@ -1184,65 +1184,125 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 <script>
 (function () {
-  var slider   = document.getElementById('aaHeroSlider');
+  'use strict';
+
+  var slider   = document.getElementById('heroSlider');
   if (!slider) return;
 
-  var slides   = slider.querySelectorAll('.aa-hero-slide');
-  var dots     = slider.querySelectorAll('.aa-hero-dot');
-  var prev     = slider.querySelector('.aa-hero-prev');
-  var next     = slider.querySelector('.aa-hero-next');
-  var current  = 0;
-  var total    = slides.length;
-  var timer;
-  var DURATION = 5000;
+  var slides      = Array.from(slider.querySelectorAll('.hs__slide'));
+  var dots        = Array.from(slider.querySelectorAll('.hs__dot'));
+  var prevBtn     = slider.querySelector('.hs__arrow--prev');
+  var nextBtn     = slider.querySelector('.hs__arrow--next');
+  var fill        = slider.querySelector('.hs__progress-fill');
+  var counterCur  = slider.querySelector('.hs__counter-current');
+  var counterTot  = slider.querySelector('.hs__counter-total');
 
-  /* Mobile image swap */
-  function isMobile() { return window.innerWidth <= 768; }
-  slides.forEach(function(slide) {
-    var mobile = slide.dataset.mobile;
-    if (mobile && isMobile()) {
-      slide.style.backgroundImage = "url('" + mobile + "')";
-    }
+  var total    = slides.length;
+  var current  = 0;
+  var timer    = null;
+  var AUTO_MS  = 6000;
+  var isMobile = window.innerWidth <= 768;
+
+  if (total === 0) return;
+
+  /* ── Set total count ── */
+  if (counterTot) counterTot.textContent = pad(total);
+
+  /* ── Set background images ── */
+  slides.forEach(function (slide) {
+    var bg     = slide.dataset.bg;
+    var bgMob  = slide.dataset.bgMobile;
+    var url    = (isMobile && bgMob) ? bgMob : bg;
+    var bgEl   = slide.querySelector('.hs__bg');
+    if (bgEl && url) bgEl.style.backgroundImage = "url('" + url + "')";
   });
 
+  /* ── Go to slide n ── */
   function goTo(n) {
-    slides[current].classList.remove('active');
-    dots[current] && dots[current].classList.remove('active');
-    current = (n + total) % total;
-    slides[current].classList.add('active');
-    dots[current] && dots[current].classList.add('active');
+    var prev = current;
+    slides[prev].classList.remove('is-active');
+    slides[prev].setAttribute('aria-hidden', 'true');
+    dots[prev] && dots[prev].classList.remove('is-active');
+
+    current = ((n % total) + total) % total;
+
+    slides[current].classList.add('is-active');
+    slides[current].setAttribute('aria-hidden', 'false');
+    dots[current] && dots[current].classList.add('is-active');
+
+    if (counterCur) counterCur.textContent = pad(current + 1);
+
+    startProgress();
   }
 
+  /* ── Progress bar ── */
+  function startProgress() {
+    if (!fill) return;
+    fill.style.transition = 'none';
+    fill.style.width = '0%';
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        fill.style.transition = 'width ' + AUTO_MS + 'ms linear';
+        fill.style.width = '100%';
+      });
+    });
+  }
+
+  /* ── Auto-advance ── */
   function startAuto() {
     clearInterval(timer);
-    if (total > 1) timer = setInterval(function () { goTo(current + 1); }, DURATION);
+    if (total > 1) timer = setInterval(function () { goTo(current + 1); }, AUTO_MS);
   }
+  function stopAuto()  { clearInterval(timer); }
+  function resetAuto() { stopAuto(); startAuto(); }
 
-  if (total <= 1) {
-    /* Hide controls if only one slide */
-    prev && (prev.style.display = 'none');
-    next && (next.style.display = 'none');
-  }
+  /* ── Controls ── */
+  prevBtn && prevBtn.addEventListener('click', function () { goTo(current - 1); resetAuto(); });
+  nextBtn && nextBtn.addEventListener('click', function () { goTo(current + 1); resetAuto(); });
 
-  prev && prev.addEventListener('click', function () { goTo(current - 1); startAuto(); });
-  next && next.addEventListener('click', function () { goTo(current + 1); startAuto(); });
   dots.forEach(function (dot, i) {
-    dot.addEventListener('click', function () { goTo(i); startAuto(); });
+    dot.addEventListener('click', function () { goTo(i); resetAuto(); });
   });
 
-  /* Pause on hover */
-  slider.addEventListener('mouseenter', function () { clearInterval(timer); });
-  slider.addEventListener('mouseleave', startAuto);
+  if (total <= 1) {
+    prevBtn && (prevBtn.style.display = 'none');
+    nextBtn && (nextBtn.style.display = 'none');
+  }
 
-  /* Touch swipe */
-  var touchX = 0;
-  slider.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+  /* ── Pause on hover / focus ── */
+  slider.addEventListener('mouseenter', stopAuto);
+  slider.addEventListener('mouseleave', function () { if (total > 1) startAuto(); });
+  slider.addEventListener('focusin',   stopAuto);
+  slider.addEventListener('focusout',  function () { if (total > 1) startAuto(); });
+
+  /* ── Touch / swipe ── */
+  var touchStartX = 0, touchStartY = 0;
+  slider.addEventListener('touchstart', function (e) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
   slider.addEventListener('touchend', function (e) {
-    var diff = touchX - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 40) { goTo(diff > 0 ? current + 1 : current - 1); startAuto(); }
+    var dx = touchStartX - e.changedTouches[0].clientX;
+    var dy = touchStartY - e.changedTouches[0].clientY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+      goTo(dx > 0 ? current + 1 : current - 1);
+      resetAuto();
+    }
   }, { passive: true });
 
+  /* ── Keyboard ── */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft')  { goTo(current - 1); resetAuto(); }
+    if (e.key === 'ArrowRight') { goTo(current + 1); resetAuto(); }
+  });
+
+  /* ── Helpers ── */
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  /* ── Init ── */
+  goTo(0);
   startAuto();
+
 })();
 </script>
 
