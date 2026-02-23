@@ -4,283 +4,299 @@
 
 <style>
   .form-control:focus { border-color: #b66dff; box-shadow: 0 0 0 0.2rem rgba(182,109,255,0.25); }
-  .card { box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); transition: all 0.3s ease; }
+  .card { box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); }
   .btn-gradient-primary { background: linear-gradient(to right, #da8cff, #9a55ff); border: 0; color: white; }
   .btn-gradient-primary:hover { background: linear-gradient(to right, #9a55ff, #da8cff); color: white; }
   .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+  .section-card { border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+  .section-card.purple { background: #f3eeff; border: 1px solid #c9a8ff; }
+  .section-card.yellow { background: #fff8e1; border: 1px solid #ffe082; }
+  .section-card.green  { background: #e8f5e9; border: 1px solid #a5d6a7; }
+  .section-card.blue   { background: #e3f2fd; border: 1px solid #90caf9; }
+  .section-title { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px; }
+  .image-preview-box { border: 2px dashed #dee2e6; border-radius: 8px; padding: 15px; background: #f8f9fa; min-height: 110px; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+  .image-preview-box img { max-width: 100%; max-height: 160px; border-radius: 6px; display: none; }
   .custom-file-label::after { content: "Browse"; }
-  .image-preview-box { border: 2px dashed #dee2e6; border-radius: 8px; padding: 15px; background: #f8f9fa; min-height: 120px; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-  .image-preview-box img { max-width: 100%; max-height: 180px; border-radius: 6px; display: none; }
-  .image-preview-box .placeholder-text { color: #adb5bd; font-size: 13px; }
-  .schedule-section { background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; padding: 20px; }
-  .settings-section { background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 8px; padding: 20px; }
-  .section-title { font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px; }
 </style>
 
 <div class="main-panel">
   <div class="content-wrapper">
 
     <div class="page-header">
-      <h3 class="mb-2"><i class="mdi mdi-image-plus"></i> Add New Banner</h3>
-      <p class="mb-0">Create a homepage, category, or promotional banner</p>
+      <h3 class="mb-2"><i class="mdi mdi-image-plus"></i> Add New Banner / Slide</h3>
+      <p class="mb-0">Create a homepage slider, category or promotional banner</p>
     </div>
 
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb bg-transparent p-0 mb-4">
         <li class="breadcrumb-item"><a href="{% url 'adminpanel:dashboard' %}">Dashboard</a></li>
         <li class="breadcrumb-item"><a href="{% url 'adminpanel:banner_list' %}">Banners</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Add Banner</li>
+        <li class="breadcrumb-item active">Add Banner</li>
       </ol>
     </nav>
 
     {% if messages %}
     {% for message in messages %}
     <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-      <strong>
-        {% if message.tags == 'success' %}<i class="mdi mdi-check-circle"></i>
-        {% elif message.tags == 'error' %}<i class="mdi mdi-alert-circle"></i>
-        {% else %}<i class="mdi mdi-information"></i>{% endif %}
-      </strong>
+      <strong>{% if message.tags == 'success' %}<i class="mdi mdi-check-circle"></i>{% else %}<i class="mdi mdi-alert-circle"></i>{% endif %}</strong>
       {{ message }}
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
+      <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
     </div>
     {% endfor %}
     {% endif %}
 
-    <div class="row">
-      <div class="col-md-12 grid-margin stretch-card">
-        <div class="card">
-          <div class="card-body">
-            <h4 class="card-title mb-4"><i class="mdi mdi-form-select"></i> Banner Information</h4>
+    <form method="POST" enctype="multipart/form-data" id="bannerForm">
+      {% csrf_token %}
+      <div class="row">
 
-            <form method="POST" enctype="multipart/form-data" id="bannerForm">
-              {% csrf_token %}
+        <!-- ── LEFT COLUMN ── -->
+        <div class="col-md-6">
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title mb-4"><i class="mdi mdi-information-outline text-primary"></i> Basic Info</h5>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Banner Title <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-lg" name="title" placeholder="e.g. Summer Sale Slide" required>
+                <small class="text-muted">Internal name for identification</small>
+              </div>
 
               <div class="row">
-
-                <!-- LEFT COLUMN -->
                 <div class="col-md-6">
-
                   <div class="form-group">
-                    <label for="title" class="font-weight-bold">Banner Title <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control form-control-lg" id="title" name="title" placeholder="Enter banner title" required>
-                    <small class="form-text text-muted">Internal name for easy identification</small>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="banner_type" class="font-weight-bold">Banner Type <span class="text-danger">*</span></label>
-                    <select class="form-control form-control-lg" id="banner_type" name="banner_type" required>
-                      <option value="">-- Select Type --</option>
+                    <label class="font-weight-bold">Banner Type <span class="text-danger">*</span></label>
+                    <select class="form-control form-control-lg" name="banner_type" required>
+                      <option value="">-- Select --</option>
                       {% for value, label in banner_types %}
                       <option value="{{ value }}">{{ label }}</option>
                       {% endfor %}
                     </select>
                   </div>
-
+                </div>
+                <div class="col-md-6">
                   <div class="form-group">
-                    <label for="placement" class="font-weight-bold">Placement <span class="text-danger">*</span></label>
-                    <select class="form-control form-control-lg" id="placement" name="placement" required>
-                      <option value="">-- Select Placement --</option>
+                    <label class="font-weight-bold">Placement <span class="text-danger">*</span></label>
+                    <select class="form-control form-control-lg" name="placement" id="placement" required>
+                      <option value="">-- Select --</option>
                       {% for value, label in placement_choices %}
                       <option value="{{ value }}">{{ label }}</option>
                       {% endfor %}
                     </select>
-                    <small class="form-text text-muted">Where should this banner appear on the page?</small>
+                    <small class="text-muted">Use <strong>Main Slider</strong> to show on homepage hero</small>
                   </div>
-
-                  <div class="form-group">
-                    <label for="display_order" class="font-weight-bold">Display Order</label>
-                    <input type="number" class="form-control form-control-lg" id="display_order" name="display_order" value="0" min="0">
-                    <small class="form-text text-muted">Lower numbers appear first</small>
-                  </div>
-
-                  <div class="form-group">
-                    <div class="form-check form-check-flat form-check-primary">
-                      <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" name="is_active" checked>
-                        <span class="font-weight-bold">Active (Visible on Site)</span>
-                        <i class="input-helper"></i>
-                      </label>
-                    </div>
-                  </div>
-
-                  <!-- Link Settings -->
-                  <hr>
-                  <p class="section-title text-muted"><i class="mdi mdi-link-variant"></i> Link Settings</p>
-
-                  <div class="form-group">
-                    <label for="link_type" class="font-weight-bold">Link Type</label>
-                    <select class="form-control form-control-lg" id="link_type" name="link_type">
-                      <option value="">-- No Link --</option>
-                      {% for value, label in link_type_choices %}
-                      <option value="{{ value }}">{{ label }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="link_url" class="font-weight-bold">Link URL</label>
-                    <input type="text" class="form-control form-control-lg" id="link_url" name="link_url" placeholder="https://example.com/category/sunglasses">
-                    <small class="form-text text-muted">Leave empty for no click action</small>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="linked_product_id" class="font-weight-bold">Linked Product ID</label>
-                    <input type="number" class="form-control form-control-lg" id="linked_product_id" name="linked_product_id" placeholder="Optional: enter product ID">
-                    <small class="form-text text-muted">Only needed for direct product banners</small>
-                  </div>
-
                 </div>
+              </div>
 
-                <!-- RIGHT COLUMN -->
+              <div class="row">
                 <div class="col-md-6">
-
-                  <!-- Desktop Image -->
                   <div class="form-group">
-                    <label class="font-weight-bold">Desktop Image <span class="text-danger">*</span></label>
-                    <div class="image-preview-box" id="desktopPreviewBox">
-                      <img id="desktopPreview" alt="Desktop Preview">
-                      <div class="placeholder-text text-center" id="desktopPlaceholder">
-                        <i class="mdi mdi-monitor" style="font-size:36px;color:#ccc;"></i>
-                        <p class="mt-1 mb-0">Desktop image preview</p>
-                        <small>Recommended: 1920×600px</small>
-                      </div>
-                    </div>
-                    <div class="custom-file mt-2">
-                      <input type="file" class="custom-file-input" id="image_desktop" name="image_desktop" accept="image/*" onchange="previewImage(event,'desktopPreview','desktopPlaceholder','desktopLabel')" required>
-                      <label class="custom-file-label" id="desktopLabel" for="image_desktop">Choose desktop image...</label>
-                    </div>
+                    <label class="font-weight-bold">Display Order</label>
+                    <input type="number" class="form-control" name="display_order" value="0" min="0">
+                    <small class="text-muted">Lower = appears first</small>
                   </div>
-
-                  <!-- Mobile Image -->
-                  <div class="form-group">
-                    <label class="font-weight-bold">Mobile Image <small class="text-muted">(optional)</small></label>
-                    <div class="image-preview-box" id="mobilePreviewBox" style="min-height:80px;">
-                      <img id="mobilePreview" alt="Mobile Preview">
-                      <div class="placeholder-text text-center" id="mobilePlaceholder">
-                        <i class="mdi mdi-cellphone" style="font-size:28px;color:#ccc;"></i>
-                        <p class="mt-1 mb-0"><small>Recommended: 768×400px</small></p>
-                      </div>
-                    </div>
-                    <div class="custom-file mt-2">
-                      <input type="file" class="custom-file-input" id="image_mobile" name="image_mobile" accept="image/*" onchange="previewImage(event,'mobilePreview','mobilePlaceholder','mobileLabel')">
-                      <label class="custom-file-label" id="mobileLabel" for="image_mobile">Choose mobile image...</label>
-                    </div>
+                </div>
+                <div class="col-md-6 d-flex align-items-center">
+                  <div class="form-check form-check-flat form-check-primary mt-3">
+                    <label class="form-check-label">
+                      <input type="checkbox" class="form-check-input" name="is_active" checked>
+                      <span class="font-weight-bold">Active</span>
+                      <i class="input-helper"></i>
+                    </label>
                   </div>
-
-                  <!-- Tablet Image -->
-                  <div class="form-group">
-                    <label class="font-weight-bold">Tablet Image <small class="text-muted">(optional)</small></label>
-                    <div class="image-preview-box" id="tabletPreviewBox" style="min-height:80px;">
-                      <img id="tabletPreview" alt="Tablet Preview">
-                      <div class="placeholder-text text-center" id="tabletPlaceholder">
-                        <i class="mdi mdi-tablet" style="font-size:28px;color:#ccc;"></i>
-                        <p class="mt-1 mb-0"><small>Recommended: 1024×500px</small></p>
-                      </div>
-                    </div>
-                    <div class="custom-file mt-2">
-                      <input type="file" class="custom-file-input" id="image_tablet" name="image_tablet" accept="image/*" onchange="previewImage(event,'tabletPreview','tabletPlaceholder','tabletLabel')">
-                      <label class="custom-file-label" id="tabletLabel" for="image_tablet">Choose tablet image...</label>
-                    </div>
-                  </div>
-
-                  <!-- Schedule -->
-                  <div class="schedule-section mt-3">
-                    <p class="section-title text-warning"><i class="mdi mdi-calendar-clock"></i> Schedule (Optional)</p>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="form-group mb-2">
-                          <label class="font-weight-bold text-muted small">Start Date & Time</label>
-                          <input type="datetime-local" class="form-control" id="start_date" name="start_date">
-                          <small class="form-text text-muted">Leave blank = show immediately</small>
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="form-group mb-2">
-                          <label class="font-weight-bold text-muted small">End Date & Time</label>
-                          <input type="datetime-local" class="form-control" id="end_date" name="end_date">
-                          <small class="form-text text-muted">Leave blank = no expiry</small>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Slider Settings -->
-                  <div class="settings-section mt-3">
-                    <p class="section-title text-success"><i class="mdi mdi-play-circle-outline"></i> Slider Settings</p>
-                    <div class="form-group mb-2">
-                      <div class="form-check form-check-flat form-check-primary">
-                        <label class="form-check-label">
-                          <input type="checkbox" class="form-check-input" name="auto_slide" id="auto_slide" checked onchange="toggleSliderDuration()">
-                          <span class="font-weight-bold">Enable Auto-Slide</span>
-                          <i class="input-helper"></i>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="form-group mb-0" id="slideDurationGroup">
-                      <label for="slide_duration" class="font-weight-bold text-muted small">Slide Duration (seconds)</label>
-                      <input type="number" class="form-control" id="slide_duration" name="slide_duration" value="5" min="1" max="30">
-                    </div>
-                  </div>
-
                 </div>
               </div>
-
-              <!-- Submit -->
-              <div class="row mt-4">
-                <div class="col-12">
-                  <hr>
-                  <button type="submit" class="btn btn-gradient-primary btn-lg mr-2">
-                    <i class="mdi mdi-check"></i> Save Banner
-                  </button>
-                  <a href="{% url 'adminpanel:banner_list' %}" class="btn btn-light btn-lg">
-                    <i class="mdi mdi-close"></i> Cancel
-                  </a>
-                </div>
-              </div>
-
-            </form>
+            </div>
           </div>
+
+          <!-- Slide Text Content -->
+          <div class="section-card purple">
+            <p class="section-title text-purple"><i class="mdi mdi-text-box-outline"></i> Slide Text Content</p>
+            <div class="form-group">
+              <label class="font-weight-bold">Slide Heading</label>
+              <input type="text" class="form-control" name="slide_heading" placeholder="e.g. Your Vision Matters More">
+              <small class="text-muted">Large title shown on the slide</small>
+            </div>
+            <div class="form-group">
+              <label class="font-weight-bold">Slide Description</label>
+              <textarea class="form-control" name="slide_description" rows="2" placeholder="Short subtitle or description..."></textarea>
+            </div>
+            <div class="form-group mb-0">
+              <label class="font-weight-bold">CTA Button Text</label>
+              <input type="text" class="form-control" name="cta_text" value="Shop Now" placeholder="e.g. Shop Now">
+            </div>
+          </div>
+
+          <!-- Link Settings -->
+          <div class="section-card blue mt-3">
+            <p class="section-title text-info"><i class="mdi mdi-link-variant"></i> Link Settings</p>
+            <div class="form-group">
+              <label class="font-weight-bold">Link Type</label>
+              <select class="form-control" name="link_type">
+                <option value="">-- No Link --</option>
+                {% for value, label in link_type_choices %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="font-weight-bold">Link URL</label>
+              <input type="text" class="form-control" name="link_url" placeholder="/sunglasses/ or https://...">
+            </div>
+            <div class="form-group mb-0">
+              <label class="font-weight-bold">Linked Product ID <small class="text-muted">(optional)</small></label>
+              <input type="number" class="form-control" name="linked_product_id" placeholder="Product ID">
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── RIGHT COLUMN ── -->
+        <div class="col-md-6">
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title mb-4"><i class="mdi mdi-image-multiple text-success"></i> Banner Images</h5>
+
+              <!-- Desktop -->
+              <div class="form-group">
+                <label class="font-weight-bold">Desktop Image <span class="text-danger">*</span></label>
+                <div class="image-preview-box mb-2" id="desktopBox">
+                  <img id="desktopPreview" alt="Preview">
+                  <div id="desktopPlaceholder" class="text-center text-muted">
+                    <i class="mdi mdi-monitor" style="font-size:32px;"></i>
+                    <p class="mb-0 small mt-1">Recommended: 1920 × 600 px</p>
+                  </div>
+                </div>
+                <div class="custom-file">
+                  <input type="file" class="custom-file-input" name="image_desktop" id="image_desktop" accept="image/*"
+                    onchange="previewImg(event,'desktopPreview','desktopPlaceholder','desktopLabel')" required>
+                  <label class="custom-file-label" id="desktopLabel" for="image_desktop">Choose desktop image...</label>
+                </div>
+              </div>
+
+              <!-- Mobile -->
+              <div class="form-group">
+                <label class="font-weight-bold">Mobile Image <small class="text-muted">(optional)</small></label>
+                <div class="image-preview-box mb-2" id="mobileBox" style="min-height:70px;">
+                  <img id="mobilePreview" alt="Preview">
+                  <div id="mobilePlaceholder" class="text-center text-muted">
+                    <i class="mdi mdi-cellphone" style="font-size:26px;"></i>
+                    <p class="mb-0 small">768 × 400 px</p>
+                  </div>
+                </div>
+                <div class="custom-file">
+                  <input type="file" class="custom-file-input" name="image_mobile" id="image_mobile" accept="image/*"
+                    onchange="previewImg(event,'mobilePreview','mobilePlaceholder','mobileLabel')">
+                  <label class="custom-file-label" id="mobileLabel" for="image_mobile">Choose mobile image...</label>
+                </div>
+              </div>
+
+              <!-- Tablet -->
+              <div class="form-group mb-0">
+                <label class="font-weight-bold">Tablet Image <small class="text-muted">(optional)</small></label>
+                <div class="image-preview-box mb-2" id="tabletBox" style="min-height:70px;">
+                  <img id="tabletPreview" alt="Preview">
+                  <div id="tabletPlaceholder" class="text-center text-muted">
+                    <i class="mdi mdi-tablet" style="font-size:26px;"></i>
+                    <p class="mb-0 small">1024 × 500 px</p>
+                  </div>
+                </div>
+                <div class="custom-file">
+                  <input type="file" class="custom-file-input" name="image_tablet" id="image_tablet" accept="image/*"
+                    onchange="previewImg(event,'tabletPreview','tabletPlaceholder','tabletLabel')">
+                  <label class="custom-file-label" id="tabletLabel" for="image_tablet">Choose tablet image...</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schedule -->
+          <div class="section-card yellow">
+            <p class="section-title text-warning"><i class="mdi mdi-calendar-clock"></i> Schedule <small class="text-muted font-weight-normal">(optional)</small></p>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group mb-0">
+                  <label class="font-weight-bold small">Start Date & Time</label>
+                  <input type="datetime-local" class="form-control" name="start_date">
+                  <small class="text-muted">Blank = show immediately</small>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group mb-0">
+                  <label class="font-weight-bold small">End Date & Time</label>
+                  <input type="datetime-local" class="form-control" name="end_date">
+                  <small class="text-muted">Blank = no expiry</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slider Settings -->
+          <div class="section-card green mt-3">
+            <p class="section-title text-success"><i class="mdi mdi-play-circle-outline"></i> Slider Settings</p>
+            <div class="form-check form-check-flat form-check-primary mb-2">
+              <label class="form-check-label">
+                <input type="checkbox" class="form-check-input" name="auto_slide" id="auto_slide" checked onchange="toggleDuration()">
+                <span class="font-weight-bold">Enable Auto-Slide</span>
+                <i class="input-helper"></i>
+              </label>
+            </div>
+            <div id="durationGroup">
+              <label class="font-weight-bold small">Slide Duration (seconds)</label>
+              <input type="number" class="form-control" name="slide_duration" value="5" min="1" max="60">
+            </div>
+          </div>
+
         </div>
       </div>
-    </div>
 
+      <!-- Submit -->
+      <div class="row mt-3">
+        <div class="col-12">
+          <hr>
+          <button type="submit" class="btn btn-gradient-primary btn-lg mr-2">
+            <i class="mdi mdi-check"></i> Save Banner
+          </button>
+          <a href="{% url 'adminpanel:banner_list' %}" class="btn btn-light btn-lg">
+            <i class="mdi mdi-close"></i> Cancel
+          </a>
+        </div>
+      </div>
+
+    </form>
   </div>
 </div>
 
 <script>
-  function previewImage(event, previewId, placeholderId, labelId) {
-    const file = event.target.files[0];
-    const preview = document.getElementById(previewId);
-    const placeholder = document.getElementById(placeholderId);
-    const label = document.getElementById(labelId);
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        preview.src = e.target.result;
-        preview.style.display = 'block';
-        placeholder.style.display = 'none';
-      };
-      reader.readAsDataURL(file);
-      label.textContent = file.name;
-    }
+  function previewImg(event, previewId, placeholderId, labelId) {
+    var file = event.target.files[0];
+    if (!file) return;
+    var preview = document.getElementById(previewId);
+    var placeholder = document.getElementById(placeholderId);
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+      placeholder.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+    document.getElementById(labelId).textContent = file.name;
   }
 
-  function toggleSliderDuration() {
-    const checked = document.getElementById('auto_slide').checked;
-    document.getElementById('slideDurationGroup').style.display = checked ? 'block' : 'none';
+  function toggleDuration() {
+    document.getElementById('durationGroup').style.display =
+      document.getElementById('auto_slide').checked ? 'block' : 'none';
   }
 
   document.getElementById('bannerForm').addEventListener('submit', function(e) {
-    const title = document.getElementById('title').value.trim();
-    const type = document.getElementById('banner_type').value;
-    const placement = document.getElementById('placement').value;
-    const desktopImg = document.getElementById('image_desktop').files.length;
-    if (!title || !type || !placement || !desktopImg) {
+    var title = document.querySelector('[name="title"]').value.trim();
+    var type  = document.querySelector('[name="banner_type"]').value;
+    var place = document.querySelector('[name="placement"]').value;
+    var img   = document.getElementById('image_desktop').files.length;
+    if (!title || !type || !place || !img) {
       e.preventDefault();
-      alert('Please fill in Title, Type, Placement and upload a Desktop Image!');
+      alert('Please fill Title, Banner Type, Placement and upload a Desktop Image!');
     }
   });
 </script>

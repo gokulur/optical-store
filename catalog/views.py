@@ -3,7 +3,7 @@ from django.views.generic import ListView, DetailView
 from django.db.models import Q, Min, Max
 from django.contrib.auth.decorators import login_required
 
-from optical_project.cart import models
+from cart import models
 from .models import (
     Product, Category, Brand, ProductVariant, 
     ContactLensProduct, ContactLensColor, LensBrand, 
