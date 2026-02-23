@@ -12,6 +12,10 @@ from .models import (
 from django.utils import timezone
 from content.models import Banner
 from django.db import models as db_models
+from django.shortcuts import render
+ 
+from django.db.models import Q           
+from content.models import Banner
 
 # Home Page
 def home_view(request):
