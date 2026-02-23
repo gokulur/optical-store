@@ -223,52 +223,405 @@
 * { box-sizing:border-box; }
 </style>
 <style>
-/* ── Fix: apply CSS-variable background images set by Django template ── */
-.xo-background-lazyload {
-  position: absolute;
-  inset: 0;
-  background-size: cover !important;
-  background-position: center center !important;
-  background-repeat: no-repeat !important;
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+/* ── Variables ── */
+:root {
+  --hs-h: 100vh;
+  --hs-h-min: 620px;
+  --hs-accent: #c8a96e;        /* warm gold */
+  --hs-accent-dark: #a88a50;
+  --hs-text: #f5f0eb;
+  --hs-dur: 700ms;
+  --hs-ease: cubic-bezier(0.76, 0, 0.24, 1);
+  --hs-auto: 6000ms;
 }
 
-/* Desktop: use --img-desktop variable from the parent xo-animate element */
-.slideshow-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.slideshow-bg-image__item {
-  position: absolute;
-  inset: 0;
-}
-
-/* The real fix: pull --img-desktop from parent into background-image */
-.slideshow-bg[style*="--img-desktop"] .xo-background-lazyload {
-  background-image: var(--img-desktop) !important;
-}
-
-@media (max-width: 768px) {
-  .slideshow-bg[style*="--img-mobile"] .xo-background-lazyload {
-    background-image: var(--img-mobile) !important;
-  }
-}
-
-/* Ensure the slideshow section is positioned correctly */
-.xo-slideshow {
+/* ── Root ── */
+.hs {
   position: relative;
   width: 100%;
-  height: 100%;
+  height: var(--hs-h);
+  min-height: var(--hs-h-min);
+  max-height: 900px;
+  overflow: hidden;
+  background: #080810;
+  font-family: 'DM Sans', sans-serif;
+  user-select: none;
+}
+
+/* ── Track ── */
+.hs__track {
+  position: absolute;
+  inset: 0;
+}
+
+/* ── Slide ── */
+.hs__slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--hs-dur) var(--hs-ease);
+  pointer-events: none;
+}
+.hs__slide.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Background + Ken Burns ── */
+.hs__bg {
+  position: absolute;
+  inset: -8%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: scale(1.08);
+  transition: transform 9s ease-out;
+}
+.hs__slide.is-active .hs__bg {
+  transform: scale(1);
+}
+
+/* ── Overlays ── */
+.hs__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.hs__overlay--scrim {
+  background: linear-gradient(
+    105deg,
+    rgba(4,4,10,0.82) 0%,
+    rgba(4,4,10,0.55) 45%,
+    rgba(4,4,10,0.15) 75%,
+    rgba(4,4,10,0.05) 100%
+  );
+}
+.hs__overlay--vignette {
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%);
+}
+
+/* ── Content wrapper ── */
+.hs__content-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 7vw;
+}
+
+/* ── Content block ── */
+.hs__content {
+  max-width: 620px;
+  color: var(--hs-text);
+}
+
+/* ── Eyebrow ── */
+.hs__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s 0.1s, transform 0.7s 0.1s var(--hs-ease);
+}
+.hs__slide.is-active .hs__eyebrow {
+  opacity: 1;
+  transform: translateY(0);
+}
+.hs__eyebrow-line {
+  display: block;
+  width: 40px;
+  height: 1.5px;
+  background: var(--hs-accent);
+  flex-shrink: 0;
+}
+.hs__eyebrow-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--hs-accent);
+}
+
+/* ── Heading ── */
+.hs__heading {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(3.2rem, 6vw, 6rem);
+  font-weight: 300;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  color: #fff;
+  margin: 0 0 20px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s 0.25s, transform 0.8s 0.25s var(--hs-ease);
+}
+.hs__slide.is-active .hs__heading {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Description ── */
+.hs__desc {
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.75;
+  color: rgba(245,240,235,0.75);
+  margin: 0 0 36px;
+  max-width: 420px;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s 0.38s, transform 0.8s 0.38s var(--hs-ease);
+}
+.hs__slide.is-active .hs__desc {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Actions ── */
+.hs__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s 0.5s, transform 0.7s 0.5s var(--hs-ease);
+}
+.hs__slide.is-active .hs__actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Buttons ── */
+.hs__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.32s var(--hs-ease);
+  white-space: nowrap;
+}
+
+.hs__btn--primary {
+  background: var(--hs-accent);
+  color: #08080f;
+  padding: 15px 30px;
+  border-radius: 2px;
+  position: relative;
   overflow: hidden;
 }
+.hs__btn--primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  transform: translateX(-101%);
+  transition: transform 0.4s var(--hs-ease);
+}
+.hs__btn--primary:hover::before { transform: translateX(0); }
+.hs__btn--primary:hover { color: #08080f; }
+.hs__btn--primary:hover .hs__btn-icon svg { transform: translateX(4px); }
+.hs__btn-text, .hs__btn-icon { position: relative; z-index: 1; }
+.hs__btn-icon { display: flex; align-items: center; }
+.hs__btn-icon svg { transition: transform 0.3s var(--hs-ease); }
 
-xo-carousel-slide {
-  position: relative;
-  width: 100%;
-  height: 100%;
+.hs__btn--ghost {
+  background: transparent;
+  color: rgba(245,240,235,0.85);
+  padding: 14px 24px;
+  border: 1px solid rgba(245,240,235,0.3);
+  border-radius: 2px;
+}
+.hs__btn--ghost:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  border-color: rgba(255,255,255,0.6);
+}
+
+/* ── Arrows ── */
+.hs__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #fff;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.3s, border-color 0.3s, transform 0.3s var(--hs-ease);
+}
+.hs__arrow:hover {
+  background: var(--hs-accent);
+  border-color: var(--hs-accent);
+  color: #08080f;
+  transform: translateY(-50%) scale(1.08);
+}
+.hs__arrow--prev { left: 28px; }
+.hs__arrow--next { right: 28px; }
+
+/* ── Bottom bar ── */
+.hs__bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 7vw;
+  gap: 28px;
+  z-index: 20;
+  background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%);
+}
+
+/* Counter */
+.hs__counter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.hs__counter-current {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--hs-accent);
+  min-width: 22px;
+}
+.hs__counter-sep {
   display: block;
+  width: 20px;
+  height: 1px;
+  background: rgba(255,255,255,0.35);
+}
+.hs__counter-total {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.4);
+  font-weight: 300;
+}
+
+/* Progress bar */
+.hs__progress-track {
+  flex: 1;
+  max-width: 220px;
+  height: 1.5px;
+  background: rgba(255,255,255,0.18);
+  position: relative;
+  overflow: hidden;
+  border-radius: 2px;
+}
+.hs__progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0%;
+  background: var(--hs-accent);
+  transition: width linear;
+}
+
+/* Dots */
+.hs__dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.hs__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.35s var(--hs-ease);
+}
+.hs__dot.is-active {
+  background: var(--hs-accent);
+  width: 24px;
+  border-radius: 3px;
+}
+
+/* ── Scroll hint ── */
+.hs__scroll-hint {
+  position: absolute;
+  right: 36px;
+  bottom: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 20;
+  opacity: 0.55;
+  animation: scrollHintFade 2.5s ease-in-out infinite;
+}
+@keyframes scrollHintFade {
+  0%, 100% { opacity: 0.35; transform: translateY(0); }
+  50%       { opacity: 0.7;  transform: translateY(6px); }
+}
+.hs__scroll-line {
+  width: 1px;
+  height: 44px;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.6), transparent);
+}
+.hs__scroll-text {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  font-family: 'DM Sans', sans-serif;
+  writing-mode: vertical-lr;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .hs { max-height: 700px; }
+  .hs__heading { font-size: clamp(2.5rem, 8vw, 4rem); }
+  .hs__arrow { width: 44px; height: 44px; }
+  .hs__arrow--prev { left: 16px; }
+  .hs__arrow--next { right: 16px; }
+  .hs__scroll-hint { display: none; }
+}
+@media (max-width: 600px) {
+  .hs { min-height: 520px; max-height: 620px; }
+  .hs__content-wrap { padding: 0 5vw; align-items: flex-end; padding-bottom: 100px; }
+  .hs__heading { font-size: clamp(2.2rem, 9vw, 3rem); }
+  .hs__desc { font-size: 0.9rem; }
+  .hs__btn--primary { padding: 13px 22px; font-size: 0.75rem; }
+  .hs__btn--ghost { padding: 12px 18px; font-size: 0.75rem; }
+  .hs__arrow { display: none; }
+  .hs__overlay--scrim {
+    background: linear-gradient(
+      to top,
+      rgba(4,4,10,0.88) 0%,
+      rgba(4,4,10,0.55) 40%,
+      rgba(4,4,10,0.2) 100%
+    );
+  }
+  .hs__progress-track { display: none; }
+  .hs__counter { display: none; }
 }
 </style>
 {% endblock %}
@@ -276,55 +629,127 @@ xo-carousel-slide {
 {% block content %}
 
 <!-- Hero Banner Carousel -->
-<section class="shopify-section section">
-  <section class="xo-section--slideshow">
-    <xo-carousel xo-render-bullet="<span></span>" xo-type="nature" xo-speed="400" xo-loop="" xo-hover-pause=""
-      style="--xo-per-view:1;--xo-gap:0px;--xo-speed:400ms;--xo-pagination-progress:0%;--xo-mask:url('https://raw.githubusercontent.com/long-hp/storage/main/nature-sprite.png');"
-      xo-mask-initialized="" xo-initialized="">
-      <xo-carousel-inner style="overflow:hidden;height:700px;transition:height 400ms;">
-        <xo-carousel-list role="list" aria-label="Slider" style="touch-action:none;outline:none;">
-          {% for slide in hero_slides %}
-          <xo-carousel-slide aria-roledescription="Slide" aria-label="{{ forloop.counter }} / {{ hero_slides|length }}"
-            xo-carousel-slide="" role="tabpanel"
-            {% if forloop.first %}xo-active="" xo-center="" xo-visible=""{% endif %}
-            {% if forloop.counter == 2 %}xo-next=""{% endif %}>
-            <div class="xo-slideshow color-inverse" style="--margin:0;">
-              <xo-animate class="slideshow-bg" xo-disabled="" xo-duration="1000"
-                style="--img-desktop:url('{% if slide.image_desktop %}{{ slide.image_desktop.url }}{% endif %}');--img-mobile:url('{% if slide.image_mobile %}{{ slide.image_mobile.url }}{% elif slide.image_desktop %}{{ slide.image_desktop.url }}{% endif %}');">
-                <div class="slideshow-bg-image__item">
-                  <div class="slideshow-bg-image__url xo-background-lazyload" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);"></div>
-                </div>
-              </xo-animate>
-              <xo-container class="xo-container--box">
-                <xo-grid style="--height-desktop:700;--height-mobile:500;--pt:0;--pb:0;" class="slideshow-v56__content">
-                  <div style="--xs:12;--md:6;--start-md:7;--align-items:center;--text-align:center;" class="slideshow-v56__text">
-                    {% if slide.slide_heading %}<xo-animate xo-type="fade-up" xo-duration="700" xo-order="3"><h2 class="slideshow-v56__title" style="--fontsize:6;--fontweight:500">{{ slide.slide_heading }}</h2></xo-animate>{% endif %}
-                    {% if slide.slide_description %}<xo-animate xo-type="fade-up" xo-duration="700" xo-order="5"><p class="slideshow-v56__description" style="--fontsize:1.6;--fontweight:400">{{ slide.slide_description }}</p></xo-animate>{% endif %}
-                    {% if slide.link_url %}<xo-animate xo-type="fade-up" xo-duration="700" xo-order="7" xo-strength="3"><a class="xo-btn xo-btn--light xo-btn--tertiary xo-btn--sm xo-btn--slide-up" style="border-radius:.8rem;padding-left:1.4rem;padding-right:1.4rem;" href="{{ slide.link_url }}"><span class="xo-btn__content"><span class="xo-btn__text" data-text="{{ slide.cta_text|default:'Shop Now' }}">{{ slide.cta_text|default:"Shop Now" }}</span></span></a></xo-animate>{% endif %}
-                    {% if forloop.first %}<div class="carousel-pagination-style3 slideshow-v56__pagination"><div class="carousel-pagination-style3__pagination-wrap"><xo-carousel-pagination class="carousel-pagination-style3__pagination">{% for s in hero_slides %}<xo-carousel-bullet xo-index="{{ forloop.counter0 }}" xo-page="{{ forloop.counter }}" role="button" tabindex="0" aria-label="Bullet {{ forloop.counter }}" {% if forloop.first %}xo-active=""{% endif %}><span></span></xo-carousel-bullet>{% endfor %}</xo-carousel-pagination></div></div>{% endif %}
-                  </div>
-                </xo-grid>
-              </xo-container>
-              {% if forloop.first %}
-              <div class="slideshow-v56__arrows">
-                <xo-carousel-prev class="carousel-navigation-style3" aria-label="Slide left"><div class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--left"><svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div></xo-carousel-prev>
-                <xo-carousel-next class="carousel-navigation-style3" aria-label="Slide right"><div class="carousel-navigation-style3__icon-before carousel-navigation-style3__icon-before--right"><svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div></xo-carousel-next>
-              </div>
-              {% endif %}
-            </div>
-          </xo-carousel-slide>
-          {% empty %}
-          <xo-carousel-slide xo-carousel-slide="" role="tabpanel" xo-active="" xo-center="" xo-visible="">
-            <div class="xo-slideshow color-inverse" style="--margin:0;">
-              <xo-animate class="slideshow-bg" xo-disabled="" xo-duration="1000"><div class="slideshow-bg-image__item"><div class="slideshow-bg-image__url xo-background-lazyload" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);"></div></div></xo-animate>
-              <xo-container class="xo-container--box"><xo-grid style="--height-desktop:700;--height-mobile:500;--pt:0;--pb:0;" class="slideshow-v56__content"><div style="--xs:12;--md:6;--start-md:7;--align-items:center;--text-align:center;" class="slideshow-v56__text"><h2 class="slideshow-v56__title" style="--fontsize:6;--fontweight:500">Your Vision Matters More</h2><p class="slideshow-v56__description" style="--fontsize:1.6;--fontweight:400">Add hero slides from the admin panel → Hero Banners.</p></div></xo-grid></xo-container>
-            </div>
-          </xo-carousel-slide>
-          {% endfor %}
-        </xo-carousel-list>
-      </xo-carousel-inner>
-    </xo-carousel>
-  </section>
+<section class="hs" id="heroSlider" aria-label="Hero Slideshow">
+
+  <!-- Slides -->
+  <div class="hs__track">
+    {% for slide in hero_slides %}
+    <div class="hs__slide {% if forloop.first %}is-active{% endif %}"
+         data-bg="{% if slide.image_desktop %}{{ slide.image_desktop.url }}{% endif %}"
+         data-bg-mobile="{% if slide.image_mobile %}{{ slide.image_mobile.url }}{% elif slide.image_desktop %}{{ slide.image_desktop.url }}{% endif %}"
+         aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}">
+
+      <!-- Background image layer with Ken Burns -->
+      <div class="hs__bg"></div>
+
+      <!-- Cinematic overlay layers -->
+      <div class="hs__overlay hs__overlay--scrim"></div>
+      <div class="hs__overlay hs__overlay--vignette"></div>
+
+      <!-- Content -->
+      <div class="hs__content-wrap">
+        <div class="hs__content">
+
+          <!-- Eyebrow tag -->
+          <div class="hs__eyebrow">
+            <span class="hs__eyebrow-line"></span>
+            <span class="hs__eyebrow-text">Al Ameen Optics</span>
+          </div>
+
+          <!-- Heading -->
+          {% if slide.slide_heading %}
+          <h2 class="hs__heading">{{ slide.slide_heading }}</h2>
+          {% else %}
+          <h2 class="hs__heading">Your Vision<br>Matters More</h2>
+          {% endif %}
+
+          <!-- Description -->
+          {% if slide.slide_description %}
+          <p class="hs__desc">{{ slide.slide_description }}</p>
+          {% endif %}
+
+          <!-- CTA -->
+          <div class="hs__actions">
+            {% if slide.link_url %}
+            <a href="{{ slide.link_url }}" class="hs__btn hs__btn--primary">
+              <span class="hs__btn-text">{{ slide.cta_text|default:"Shop Now" }}</span>
+              <span class="hs__btn-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </span>
+            </a>
+            {% else %}
+            <a href="{% url 'catalog:product_list' 'eyeglasses' %}" class="hs__btn hs__btn--primary">
+              <span class="hs__btn-text">{{ slide.cta_text|default:"Explore Collection" }}</span>
+              <span class="hs__btn-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </span>
+            </a>
+            {% endif %}
+            <a href="{% url 'content:eye_test_booking' %}" class="hs__btn hs__btn--ghost">
+              Book Eye Test
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+    {% empty %}
+    <!-- Fallback when no banners exist -->
+    <div class="hs__slide is-active" data-bg="" data-bg-mobile="">
+      <div class="hs__bg" style="background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);"></div>
+      <div class="hs__overlay hs__overlay--scrim"></div>
+      <div class="hs__overlay hs__overlay--vignette"></div>
+      <div class="hs__content-wrap">
+        <div class="hs__content">
+          <div class="hs__eyebrow"><span class="hs__eyebrow-line"></span><span class="hs__eyebrow-text">Est. 1927 · Kerala, India</span></div>
+          <h2 class="hs__heading">Your Vision<br>Matters More</h2>
+          <p class="hs__desc">Premium eyewear curated for those who see the world differently. Add slides from Admin → Banners.</p>
+          <div class="hs__actions">
+            <a href="{% url 'catalog:eyeglasses_list' %}" class="hs__btn hs__btn--primary"><span class="hs__btn-text">Shop Now</span><span class="hs__btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
+            <a href="{% url 'content:eye_test_booking' %}" class="hs__btn hs__btn--ghost">Book Eye Test</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Navigation arrows -->
+  <button class="hs__arrow hs__arrow--prev" aria-label="Previous slide">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <button class="hs__arrow hs__arrow--next" aria-label="Next slide">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+
+  <!-- Bottom bar: slide counter + progress + dots -->
+  <div class="hs__bar">
+    <div class="hs__counter">
+      <span class="hs__counter-current">01</span>
+      <span class="hs__counter-sep"></span>
+      <span class="hs__counter-total">01</span>
+    </div>
+
+    <div class="hs__progress-track">
+      <div class="hs__progress-fill"></div>
+    </div>
+
+    <div class="hs__dots">
+      {% for slide in hero_slides %}
+      <button class="hs__dot {% if forloop.first %}is-active{% endif %}" data-index="{{ forloop.counter0 }}" aria-label="Go to slide {{ forloop.counter }}"></button>
+      {% empty %}
+      <button class="hs__dot is-active" data-index="0" aria-label="Slide 1"></button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Scroll hint -->
+  <div class="hs__scroll-hint">
+    <div class="hs__scroll-line"></div>
+    <span class="hs__scroll-text">Scroll</span>
+  </div>
+
 </section>
 
 <!-- FEATURED PRODUCTS -->
