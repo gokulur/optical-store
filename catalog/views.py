@@ -21,13 +21,13 @@ def home_view(request):
         placement='main_slider',
         is_active=True,
     ).filter(
- 
-        models.Q(start_date__isnull=True) | models.Q(start_date__lte=now)
+        Q(start_date__isnull=True) | Q(start_date__lte=now)   # ← Q not models.Q
     ).filter(
-        
-        models.Q(end_date__isnull=True) | models.Q(end_date__gte=now)
+        Q(end_date__isnull=True)   | Q(end_date__gte=now)     # ← Q not models.Q
     ).order_by('display_order')
 
+ 
+    from catalog.models import Product, Brand
 
     featured_products   = Product.objects.filter(is_featured=True, is_active=True).select_related('brand').prefetch_related('images')[:8]
     new_arrivals        = Product.objects.filter(is_active=True).select_related('brand').prefetch_related('images').order_by('-created_at')[:8]
