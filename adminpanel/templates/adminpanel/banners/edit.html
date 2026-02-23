@@ -1,47 +1,58 @@
 {% extends 'admin-dashboard.html' %}
 {% load static %}
 {% block content %}
+
 <style>
   .form-control:focus { border-color: #b66dff; box-shadow: 0 0 0 0.2rem rgba(182,109,255,0.25); }
   .card { box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); }
   .btn-gradient-primary { background: linear-gradient(to right, #da8cff, #9a55ff); border: 0; color: white; }
   .btn-gradient-primary:hover { background: linear-gradient(to right, #9a55ff, #da8cff); color: white; }
-  .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
-  .info-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+  .page-header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+  .info-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 18px 20px; border-radius: 8px; margin-bottom: 20px; }
+  .section-card { border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+  .section-card.purple { background: #f3eeff; border: 1px solid #c9a8ff; }
+  .section-card.yellow { background: #fff8e1; border: 1px solid #ffe082; }
+  .section-card.green  { background: #e8f5e9; border: 1px solid #a5d6a7; }
+  .section-card.blue   { background: #e3f2fd; border: 1px solid #90caf9; }
+  .section-title { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px; }
+  .image-preview-box { border: 2px dashed #dee2e6; border-radius: 8px; padding: 12px; background: #f8f9fa; min-height: 100px; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+  .image-preview-box img { max-width: 100%; max-height: 150px; border-radius: 6px; }
+  .current-img { max-width: 100%; max-height: 150px; border-radius: 6px; border: 2px solid #e0e0e0; }
   .custom-file-label::after { content: "Browse"; }
-  .section-card { border-radius: 10px; padding: 20px; margin-bottom: 20px; }
-  .section-card.blue   { background: #e8f0fe; border: 1px solid #c5d5fb; }
-  .section-card.orange { background: #fff3e0; border: 1px solid #ffcc80; }
-  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
-  .image-drop-zone { border: 2px dashed #c5d5fb; border-radius: 10px; padding: 15px; background: #f8fbff; min-height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; transition: border-color 0.2s; }
-  .image-drop-zone:hover { border-color: #9a55ff; }
-  .current-img { max-width: 100%; max-height: 150px; border-radius: 8px; border: 2px solid #e0e0e0; }
-  .img-remove-btn { background: #dc3545; color: #fff; border: none; border-radius: 20px; padding: 3px 12px; font-size: 12px; cursor: pointer; margin-top: 6px; }
-  .slide-preview-box { border-radius: 10px; padding: 30px 25px; color: #fff; min-height: 180px; position: relative; overflow: hidden; transition: all 0.3s; }
-  .slide-preview-box .preview-title { font-size: 1.6rem; font-weight: 600; margin-bottom: 8px; text-shadow: 1px 1px 4px rgba(0,0,0,0.3); }
-  .slide-preview-box .preview-desc { font-size: 0.85rem; opacity: 0.9; margin-bottom: 16px; }
-  .slide-preview-box .preview-btn { display: inline-block; background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.7); border-radius: 8px; padding: 7px 18px; font-size: 0.8rem; font-weight: 600; color: #fff; }
-  .slide-preview-box .preview-label { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.2); border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
-  .gradient-presets { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-  .gradient-chip { width: 36px; height: 36px; border-radius: 8px; cursor: pointer; border: 3px solid transparent; transition: all 0.2s; }
-  .gradient-chip:hover, .gradient-chip.active { border-color: #333; transform: scale(1.1); }
+  .remove-btn { font-size: 11px; margin-top: 6px; }
 </style>
 
 <div class="main-panel">
   <div class="content-wrapper">
 
     <div class="page-header">
-      <h3 class="mb-2"><i class="mdi mdi-image-edit"></i> Edit Slide</h3>
-      <p class="mb-0">Editing — <strong>{{ banner.title }}</strong></p>
+      <h3 class="mb-2"><i class="mdi mdi-pencil"></i> Edit Banner</h3>
+      <p class="mb-0">Updating: <strong>{{ banner.title }}</strong></p>
     </div>
 
     <nav aria-label="breadcrumb">
-      <ol class="breadcrumb bg-transparent p-0 mb-4">
+      <ol class="breadcrumb bg-transparent p-0 mb-3">
         <li class="breadcrumb-item"><a href="{% url 'adminpanel:dashboard' %}">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'adminpanel:banner_list' %}">Hero Banners</a></li>
-        <li class="breadcrumb-item active">Edit Slide</li>
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:banner_list' %}">Banners</a></li>
+        <li class="breadcrumb-item active">Edit Banner</li>
       </ol>
     </nav>
+
+    <!-- Info bar -->
+    <div class="info-card d-flex justify-content-between align-items-center">
+      <div>
+        <p class="mb-1"><i class="mdi mdi-tag-outline"></i> <strong>ID:</strong> #{{ banner.id }} &nbsp;|&nbsp;
+           <i class="mdi mdi-clock-outline"></i> <strong>Updated:</strong> {{ banner.updated_at|date:"d M Y, h:i A" }}
+        </p>
+        <p class="mb-0">
+          <span class="badge badge-light text-dark mr-1">{{ banner.get_banner_type_display }}</span>
+          <span class="badge badge-light text-dark">{{ banner.get_placement_display }}</span>
+        </p>
+      </div>
+      <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">
+        <i class="mdi mdi-delete"></i> Delete
+      </button>
+    </div>
 
     {% if messages %}
     {% for message in messages %}
@@ -52,89 +63,27 @@
     {% endfor %}
     {% endif %}
 
-    <!-- Info bar -->
-    <div class="info-card">
-      <div class="row align-items-center">
-        <div class="col-md-8">
-          <h5 class="mb-1"><i class="mdi mdi-information"></i> Slide Info</h5>
-          <p class="mb-1"><strong>ID:</strong> #{{ banner.id }} &nbsp;|&nbsp; <strong>Order:</strong> {{ banner.display_order }}</p>
-          <p class="mb-0"><strong>Last Updated:</strong> {{ banner.updated_at|date:"d M Y, h:i A" }}</p>
-        </div>
-        <div class="col-md-4 text-right">
-          <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#deleteModal">
-            <i class="mdi mdi-delete"></i> Delete Slide
-          </button>
-        </div>
-      </div>
-    </div>
-
     <form method="POST" enctype="multipart/form-data" id="bannerForm">
       {% csrf_token %}
-      <input type="hidden" name="remove_image_mobile" id="remove_image_mobile" value="0">
-      <input type="hidden" name="remove_image_tablet" id="remove_image_tablet" value="0">
-
       <div class="row">
 
         <!-- ── LEFT COLUMN ── -->
-        <div class="col-md-7">
+        <div class="col-md-6">
+
           <div class="card mb-4">
             <div class="card-body">
-              <h5 class="card-title mb-4"><i class="mdi mdi-text"></i> Slide Content</h5>
+              <h5 class="card-title mb-4"><i class="mdi mdi-information-outline text-primary"></i> Basic Info</h5>
 
               <div class="form-group">
-                <label class="font-weight-bold">Internal Title (Admin Only) <span class="text-danger">*</span></label>
-                <input type="text" class="form-control form-control-lg" name="title" id="title"
-                       value="{{ banner.title }}" required oninput="updatePreview()">
-              </div>
-
-              <div class="section-card blue">
-                <p class="section-label text-primary"><i class="mdi mdi-format-title"></i> Slide Text (shown on homepage)</p>
-                <div class="form-group mb-3">
-                  <label class="font-weight-bold">Heading</label>
-                  <input type="text" class="form-control" name="slide_heading" id="slide_heading"
-                         value="{{ banner.slide_heading|default:'' }}"
-                         placeholder="e.g. Your Vision Matters More" oninput="updatePreview()">
-                  <small class="text-muted">Maps to <code>slideshow-v56__title</code></small>
-                </div>
-                <div class="form-group mb-3">
-                  <label class="font-weight-bold">Description</label>
-                  <textarea class="form-control" name="slide_description" id="slide_description" rows="3"
-                            placeholder="Slide sub-text..." oninput="updatePreview()">{{ banner.slide_description|default:'' }}</textarea>
-                  <small class="text-muted">Maps to <code>slideshow-v56__description</code></small>
-                </div>
-                <div class="row">
-                  <div class="col-md-6">
-                    <div class="form-group mb-0">
-                      <label class="font-weight-bold">CTA Button Text</label>
-                      <input type="text" class="form-control" name="cta_text" id="cta_text"
-                             value="{{ banner.cta_text|default:'' }}" placeholder="Read More" oninput="updatePreview()">
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-group mb-0">
-                      <label class="font-weight-bold">CTA Button URL</label>
-                      <input type="text" class="form-control" name="link_url" id="link_url"
-                             value="{{ banner.link_url }}" placeholder="/about/">
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-group mt-3">
-                <label class="font-weight-bold">Link Type</label>
-                <select class="form-control" name="link_type">
-                  <option value="">-- None --</option>
-                  {% for value, label in link_type_choices %}
-                  <option value="{{ value }}" {% if banner.link_type == value %}selected{% endif %}>{{ label }}</option>
-                  {% endfor %}
-                </select>
+                <label class="font-weight-bold">Banner Title <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-lg" name="title" value="{{ banner.title }}" required>
               </div>
 
               <div class="row">
                 <div class="col-md-6">
                   <div class="form-group">
                     <label class="font-weight-bold">Banner Type <span class="text-danger">*</span></label>
-                    <select class="form-control" name="banner_type" required>
+                    <select class="form-control form-control-lg" name="banner_type" required>
                       {% for value, label in banner_types %}
                       <option value="{{ value }}" {% if banner.banner_type == value %}selected{% endif %}>{{ label }}</option>
                       {% endfor %}
@@ -144,140 +93,189 @@
                 <div class="col-md-6">
                   <div class="form-group">
                     <label class="font-weight-bold">Placement <span class="text-danger">*</span></label>
-                    <select class="form-control" name="placement" required>
+                    <select class="form-control form-control-lg" name="placement" required>
                       {% for value, label in placement_choices %}
                       <option value="{{ value }}" {% if banner.placement == value %}selected{% endif %}>{{ label }}</option>
                       {% endfor %}
                     </select>
+                    <small class="text-muted">Use <strong>Main Slider</strong> to show on homepage hero</small>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Settings -->
-          <div class="card mb-4">
-            <div class="card-body">
-              <h5 class="card-title mb-4"><i class="mdi mdi-cog"></i> Settings & Schedule</h5>
               <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-6">
                   <div class="form-group">
                     <label class="font-weight-bold">Display Order</label>
                     <input type="number" class="form-control" name="display_order" value="{{ banner.display_order }}" min="0">
                   </div>
                 </div>
-                <div class="col-md-4">
-                  <div class="form-group">
-                    <label class="font-weight-bold">Slide Duration (sec)</label>
-                    <input type="number" class="form-control" name="slide_duration" value="{{ banner.slide_duration }}" min="1" max="30">
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group">
-                    <label class="font-weight-bold d-block">Options</label>
-                    <div class="form-check mt-2">
-                      <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" name="is_active" {% if banner.is_active %}checked{% endif %}>
-                        <span>Active (Live)</span><i class="input-helper"></i>
-                      </label>
-                    </div>
-                    <div class="form-check mt-1">
-                      <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" name="auto_slide" {% if banner.auto_slide %}checked{% endif %}>
-                        <span>Auto-slide</span><i class="input-helper"></i>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="section-card orange">
-                <p class="section-label" style="color:#e65100;"><i class="mdi mdi-calendar-clock"></i> Schedule</p>
-                <div class="row">
-                  <div class="col-md-6">
-                    <label class="font-weight-bold small">Start Date & Time</label>
-                    <input type="datetime-local" class="form-control" name="start_date"
-                           value="{% if banner.start_date %}{{ banner.start_date|date:'Y-m-d' }}T{{ banner.start_date|date:'H:i' }}{% endif %}">
-                  </div>
-                  <div class="col-md-6">
-                    <label class="font-weight-bold small">End Date & Time</label>
-                    <input type="datetime-local" class="form-control" name="end_date"
-                           value="{% if banner.end_date %}{{ banner.end_date|date:'Y-m-d' }}T{{ banner.end_date|date:'H:i' }}{% endif %}">
+                <div class="col-md-6 d-flex align-items-center">
+                  <div class="form-check form-check-flat form-check-primary mt-3">
+                    <label class="form-check-label">
+                      <input type="checkbox" class="form-check-input" name="is_active" {% if banner.is_active %}checked{% endif %}>
+                      <span class="font-weight-bold">Active</span>
+                      <i class="input-helper"></i>
+                    </label>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
+          <!-- Slide Text -->
+          <div class="section-card purple">
+            <p class="section-title"><i class="mdi mdi-text-box-outline"></i> Slide Text Content</p>
+            <div class="form-group">
+              <label class="font-weight-bold">Slide Heading</label>
+              <input type="text" class="form-control" name="slide_heading" value="{{ banner.slide_heading }}">
+            </div>
+            <div class="form-group">
+              <label class="font-weight-bold">Slide Description</label>
+              <textarea class="form-control" name="slide_description" rows="2">{{ banner.slide_description }}</textarea>
+            </div>
+            <div class="form-group mb-0">
+              <label class="font-weight-bold">CTA Button Text</label>
+              <input type="text" class="form-control" name="cta_text" value="{{ banner.cta_text }}">
+            </div>
+          </div>
+
+          <!-- Link Settings -->
+          <div class="section-card blue mt-3">
+            <p class="section-title"><i class="mdi mdi-link-variant"></i> Link Settings</p>
+            <div class="form-group">
+              <label class="font-weight-bold">Link Type</label>
+              <select class="form-control" name="link_type">
+                <option value="">-- No Link --</option>
+                {% for value, label in link_type_choices %}
+                <option value="{{ value }}" {% if banner.link_type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="font-weight-bold">Link URL</label>
+              <input type="text" class="form-control" name="link_url" value="{{ banner.link_url }}">
+            </div>
+            <div class="form-group mb-0">
+              <label class="font-weight-bold">Linked Product ID</label>
+              <input type="number" class="form-control" name="linked_product_id" value="{{ banner.linked_product_id|default:'' }}">
+            </div>
+          </div>
+
         </div>
 
         <!-- ── RIGHT COLUMN ── -->
-        <div class="col-md-5">
+        <div class="col-md-6">
 
-          <!-- Live Preview -->
           <div class="card mb-4">
             <div class="card-body">
-              <h5 class="card-title mb-3"><i class="mdi mdi-eye"></i> Live Preview</h5>
-              <div class="slide-preview-box" id="slidePreviewBox" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
-                <span class="preview-label" id="previewLabel">{{ banner.title }}</span>
-                <div class="preview-title" id="previewTitle">{{ banner.slide_heading|default:'Your slide heading' }}</div>
-                <div class="preview-desc" id="previewDesc">{{ banner.slide_description|default:'Slide description...' }}</div>
-                <span class="preview-btn" id="previewBtn">{{ banner.cta_text|default:'Read More' }}</span>
-              </div>
-              <p class="text-muted mt-2 mb-1" style="font-size:12px;">Gradient fallback colour:</p>
-              <div class="gradient-presets">
-                <div class="gradient-chip active" style="background:linear-gradient(135deg,#667eea,#764ba2);" data-gradient="linear-gradient(135deg,#667eea 0%,#764ba2 100%)"></div>
-                <div class="gradient-chip" style="background:linear-gradient(135deg,#f093fb,#f5576c);" data-gradient="linear-gradient(135deg,#f093fb 0%,#f5576c 100%)"></div>
-                <div class="gradient-chip" style="background:linear-gradient(135deg,#4facfe,#00f2fe);" data-gradient="linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)"></div>
-                <div class="gradient-chip" style="background:linear-gradient(135deg,#43e97b,#38f9d7);" data-gradient="linear-gradient(135deg,#43e97b 0%,#38f9d7 100%)"></div>
-                <div class="gradient-chip" style="background:linear-gradient(135deg,#fa709a,#fee140);" data-gradient="linear-gradient(135deg,#fa709a 0%,#fee140 100%)"></div>
-                <div class="gradient-chip" style="background:linear-gradient(135deg,#2c3e50,#34495e);" data-gradient="linear-gradient(135deg,#2c3e50 0%,#34495e 100%)"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Images -->
-          <div class="card mb-4">
-            <div class="card-body">
-              <h5 class="card-title mb-3"><i class="mdi mdi-image"></i> Slide Images</h5>
+              <h5 class="card-title mb-4"><i class="mdi mdi-image-multiple text-success"></i> Banner Images</h5>
 
               <!-- Desktop -->
               <div class="form-group">
-                <label class="font-weight-bold">Desktop Image</label>
+                <label class="font-weight-bold">Desktop Image <span class="text-danger">*</span></label>
                 {% if banner.image_desktop %}
-                <div class="text-center mb-2">
+                <div class="mb-2 text-center">
                   <img src="{{ banner.image_desktop.url }}" class="current-img" alt="Current desktop">
-                  <br><small class="text-success"><i class="mdi mdi-check-circle"></i> Current image</small>
+                  <br><small class="text-muted">Current image</small>
                 </div>
                 {% endif %}
-                <div class="image-drop-zone" style="min-height:80px;" onclick="document.getElementById('image_desktop').click()">
-                  <img id="desktopPreview" alt="" style="max-height:100px;display:none;">
-                  <i class="mdi mdi-monitor-screenshot" style="font-size:28px;color:#ccc;" id="desktopIcon"></i>
-                  <small class="text-muted" id="desktopHint">{% if banner.image_desktop %}Replace desktop image{% else %}Upload desktop image (1920×700){% endif %}</small>
+                <div class="custom-file">
+                  <input type="file" class="custom-file-input" name="image_desktop" id="image_desktop" accept="image/*"
+                    onchange="previewImg(event,'desktopPreview','desktopPreviewBox','desktopLabel')">
+                  <label class="custom-file-label" id="desktopLabel" for="image_desktop">
+                    {% if banner.image_desktop %}Replace image...{% else %}Choose desktop image...{% endif %}
+                  </label>
                 </div>
-                <input type="file" id="image_desktop" name="image_desktop" accept="image/*" style="display:none"
-                       onchange="previewImg(event,'desktopPreview','desktopIcon','desktopHint')">
+                <div class="image-preview-box mt-2" id="desktopPreviewBox" style="display:none;">
+                  <img id="desktopPreview" alt="New preview">
+                  <small class="text-muted mt-1">New image preview</small>
+                </div>
               </div>
 
               <!-- Mobile -->
               <div class="form-group">
                 <label class="font-weight-bold">Mobile Image <small class="text-muted">(optional)</small></label>
                 {% if banner.image_mobile %}
-                <div class="text-center mb-2" id="mobileCurrentWrapper">
+                <div class="mb-2 text-center">
                   <img src="{{ banner.image_mobile.url }}" class="current-img" style="max-height:80px;" alt="Current mobile">
                   <br>
-                  <button type="button" class="img-remove-btn" onclick="removeImg('remove_image_mobile','mobileCurrentWrapper')">
-                    <i class="mdi mdi-close"></i> Remove
+                  <button type="button" class="btn btn-outline-danger btn-sm remove-btn" onclick="removeImg('remove_image_mobile', this)">
+                    <i class="mdi mdi-close"></i> Remove mobile image
                   </button>
+                  <input type="hidden" name="remove_image_mobile" id="remove_image_mobile" value="0">
                 </div>
                 {% endif %}
-                <div class="image-drop-zone" style="min-height:70px;" onclick="document.getElementById('image_mobile').click()">
-                  <img id="mobilePreview" alt="" style="max-height:70px;display:none;">
-                  <i class="mdi mdi-cellphone" style="font-size:22px;color:#ccc;" id="mobileIcon"></i>
-                  <small class="text-muted" id="mobileHint">768×500px</small>
+                <div class="custom-file">
+                  <input type="file" class="custom-file-input" name="image_mobile" id="image_mobile" accept="image/*"
+                    onchange="previewImg(event,'mobilePreview','mobilePreviewBox','mobileLabel')">
+                  <label class="custom-file-label" id="mobileLabel" for="image_mobile">Choose mobile image...</label>
                 </div>
-                <input type="file" id="image_mobile" name="image_mobile" accept="image/*" style="display:none"
-                       onchange="previewImg(event,'mobilePreview','mobileIcon','mobileHint')">
+                <div class="image-preview-box mt-2" id="mobilePreviewBox" style="display:none;">
+                  <img id="mobilePreview" alt="Preview" style="max-height:80px;">
+                </div>
               </div>
 
+              <!-- Tablet -->
+              <div class="form-group mb-0">
+                <label class="font-weight-bold">Tablet Image <small class="text-muted">(optional)</small></label>
+                {% if banner.image_tablet %}
+                <div class="mb-2 text-center">
+                  <img src="{{ banner.image_tablet.url }}" class="current-img" style="max-height:80px;" alt="Current tablet">
+                  <br>
+                  <button type="button" class="btn btn-outline-danger btn-sm remove-btn" onclick="removeImg('remove_image_tablet', this)">
+                    <i class="mdi mdi-close"></i> Remove tablet image
+                  </button>
+                  <input type="hidden" name="remove_image_tablet" id="remove_image_tablet" value="0">
+                </div>
+                {% endif %}
+                <div class="custom-file">
+                  <input type="file" class="custom-file-input" name="image_tablet" id="image_tablet" accept="image/*"
+                    onchange="previewImg(event,'tabletPreview','tabletPreviewBox','tabletLabel')">
+                  <label class="custom-file-label" id="tabletLabel" for="image_tablet">Choose tablet image...</label>
+                </div>
+                <div class="image-preview-box mt-2" id="tabletPreviewBox" style="display:none;">
+                  <img id="tabletPreview" alt="Preview" style="max-height:80px;">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schedule -->
+          <div class="section-card yellow">
+            <p class="section-title text-warning"><i class="mdi mdi-calendar-clock"></i> Schedule</p>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group mb-0">
+                  <label class="font-weight-bold small">Start Date & Time</label>
+                  <input type="datetime-local" class="form-control" name="start_date"
+                    value="{% if banner.start_date %}{{ banner.start_date|date:'Y-m-d' }}T{{ banner.start_date|date:'H:i' }}{% endif %}">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group mb-0">
+                  <label class="font-weight-bold small">End Date & Time</label>
+                  <input type="datetime-local" class="form-control" name="end_date"
+                    value="{% if banner.end_date %}{{ banner.end_date|date:'Y-m-d' }}T{{ banner.end_date|date:'H:i' }}{% endif %}">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slider Settings -->
+          <div class="section-card green mt-3">
+            <p class="section-title text-success"><i class="mdi mdi-play-circle-outline"></i> Slider Settings</p>
+            <div class="form-check form-check-flat form-check-primary mb-2">
+              <label class="form-check-label">
+                <input type="checkbox" class="form-check-input" name="auto_slide" id="auto_slide"
+                  {% if banner.auto_slide %}checked{% endif %} onchange="toggleDuration()">
+                <span class="font-weight-bold">Enable Auto-Slide</span>
+                <i class="input-helper"></i>
+              </label>
+            </div>
+            <div id="durationGroup" {% if not banner.auto_slide %}style="display:none;"{% endif %}>
+              <label class="font-weight-bold small">Slide Duration (seconds)</label>
+              <input type="number" class="form-control" name="slide_duration" value="{{ banner.slide_duration }}" min="1" max="60">
             </div>
           </div>
 
@@ -285,19 +283,19 @@
       </div>
 
       <!-- Submit -->
-      <div class="row">
+      <div class="row mt-3">
         <div class="col-12">
           <hr>
           <button type="submit" class="btn btn-gradient-primary btn-lg mr-2">
-            <i class="mdi mdi-check"></i> Update Slide
+            <i class="mdi mdi-check"></i> Update Banner
           </button>
           <a href="{% url 'adminpanel:banner_list' %}" class="btn btn-light btn-lg">
             <i class="mdi mdi-close"></i> Cancel
           </a>
         </div>
       </div>
-    </form>
 
+    </form>
   </div>
 </div>
 
@@ -306,17 +304,18 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title"><i class="mdi mdi-alert"></i> Delete Slide?</h5>
+        <h5 class="modal-title"><i class="mdi mdi-alert"></i> Confirm Delete</h5>
         <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
       </div>
       <div class="modal-body">
-        <p>Delete <strong>{{ banner.title }}</strong>? This cannot be undone.</p>
+        <p>Are you sure you want to delete <strong>{{ banner.title }}</strong>?</p>
+        <p class="text-danger mb-0"><small><i class="mdi mdi-alert"></i> This cannot be undone!</small></p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
-        <form action="{% url 'adminpanel:banner_delete' banner.id %}" method="POST">
+        <form action="{% url 'adminpanel:banner_delete' banner.id %}" method="POST" style="display:inline;">
           {% csrf_token %}
-          <button type="submit" class="btn btn-danger"><i class="mdi mdi-delete"></i> Delete</button>
+          <button type="submit" class="btn btn-danger"><i class="mdi mdi-delete"></i> Yes, Delete</button>
         </form>
       </div>
     </div>
@@ -324,40 +323,27 @@
 </div>
 
 <script>
-  function updatePreview() {
-    document.getElementById('previewTitle').textContent = document.getElementById('slide_heading').value || 'Your slide heading';
-    document.getElementById('previewDesc').textContent  = document.getElementById('slide_description').value || 'Slide description...';
-    document.getElementById('previewBtn').textContent   = document.getElementById('cta_text').value || 'Read More';
-    document.getElementById('previewLabel').textContent = document.getElementById('title').value || 'Slide';
-  }
-
-  document.querySelectorAll('.gradient-chip').forEach(chip => {
-    chip.addEventListener('click', function() {
-      document.querySelectorAll('.gradient-chip').forEach(c => c.classList.remove('active'));
-      this.classList.add('active');
-      document.getElementById('slidePreviewBox').style.background = this.dataset.gradient;
-    });
-  });
-
-  function previewImg(event, previewId, iconId, hintId) {
-    const file = event.target.files[0];
+  function previewImg(event, previewId, boxId, labelId) {
+    var file = event.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = document.getElementById(previewId);
-      img.src = e.target.result;
-      img.style.display = 'block';
-      document.getElementById(iconId).style.display = 'none';
-      document.getElementById(hintId).textContent = file.name;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById(previewId).src = e.target.result;
+      document.getElementById(boxId).style.display = 'flex';
     };
     reader.readAsDataURL(file);
+    document.getElementById(labelId).textContent = file.name;
   }
 
-  function removeImg(hiddenFieldId, wrapperId) {
-    if (confirm('Remove this image?')) {
-      document.getElementById(hiddenFieldId).value = '1';
-      document.getElementById(wrapperId).style.display = 'none';
-    }
+  function removeImg(fieldId, btn) {
+    document.getElementById(fieldId).value = '1';
+    btn.closest('div').style.display = 'none';
+  }
+
+  function toggleDuration() {
+    document.getElementById('durationGroup').style.display =
+      document.getElementById('auto_slide').checked ? 'block' : 'none';
   }
 </script>
+
 {% endblock %}
