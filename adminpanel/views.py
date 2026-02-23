@@ -1665,6 +1665,10 @@ def banner_add(request):
                 is_active          = request.POST.get('is_active') == 'on',
                 auto_slide         = request.POST.get('auto_slide') == 'on',
                 slide_duration     = request.POST.get('slide_duration', 5),
+             
+                slide_heading      = request.POST.get('slide_heading', ''),
+                slide_description  = request.POST.get('slide_description', ''),
+                cta_text           = request.POST.get('cta_text', 'Read More'),
             )
             messages.success(request, 'Banner (slide) created successfully!')
             return redirect('adminpanel:banner_list')
