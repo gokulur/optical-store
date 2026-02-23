@@ -222,6 +222,55 @@
 @media (max-width:480px) { .categories-grid { grid-template-columns:1fr; gap:20px; } .blog-card-title { font-size:1.15rem; } .stores-benefits-grid { grid-template-columns:1fr; gap:25px; } }
 * { box-sizing:border-box; }
 </style>
+<style>
+/* ── Fix: apply CSS-variable background images set by Django template ── */
+.xo-background-lazyload {
+  position: absolute;
+  inset: 0;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Desktop: use --img-desktop variable from the parent xo-animate element */
+.slideshow-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.slideshow-bg-image__item {
+  position: absolute;
+  inset: 0;
+}
+
+/* The real fix: pull --img-desktop from parent into background-image */
+.slideshow-bg[style*="--img-desktop"] .xo-background-lazyload {
+  background-image: var(--img-desktop) !important;
+}
+
+@media (max-width: 768px) {
+  .slideshow-bg[style*="--img-mobile"] .xo-background-lazyload {
+    background-image: var(--img-mobile) !important;
+  }
+}
+
+/* Ensure the slideshow section is positioned correctly */
+.xo-slideshow {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+xo-carousel-slide {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+</style>
 {% endblock %}
 
 {% block content %}
