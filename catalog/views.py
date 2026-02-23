@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView
 from django.db.models import Q, Min, Max
 from django.contrib.auth.decorators import login_required
+
+from optical_project.cart import models
 from .models import (
     Product, Category, Brand, ProductVariant, 
     ContactLensProduct, ContactLensColor, LensBrand, 
@@ -16,12 +18,16 @@ def home_view(request):
     now = timezone.now()
 
     hero_slides = Banner.objects.filter(
-        banner_type='homepage', placement='main_slider', is_active=True,
+        placement='main_slider',
+        is_active=True,
     ).filter(
-        db_models.Q(start_date__isnull=True) | db_models.Q(start_date__lte=now)
+ 
+        models.Q(start_date__isnull=True) | models.Q(start_date__lte=now)
     ).filter(
-        db_models.Q(end_date__isnull=True) | db_models.Q(end_date__gte=now)
+        
+        models.Q(end_date__isnull=True) | models.Q(end_date__gte=now)
     ).order_by('display_order')
+
 
     featured_products   = Product.objects.filter(is_featured=True, is_active=True).select_related('brand').prefetch_related('images')[:8]
     new_arrivals        = Product.objects.filter(is_active=True).select_related('brand').prefetch_related('images').order_by('-created_at')[:8]
