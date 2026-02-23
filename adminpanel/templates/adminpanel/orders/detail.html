@@ -3,7 +3,12 @@
 {% block content %}
 {% load custom_filters %}
 <style>
- 
+
+/* ══════════════════════════════════════════
+   ORDER DETAIL — FULL DESIGN SYSTEM
+══════════════════════════════════════════ */
+
+/* ── Header ── */
 .od-header {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   color: white;
@@ -20,6 +25,7 @@
   width: 200px; height: 200px;
   border-radius: 50%;
   background: rgba(182,109,255,0.12);
+  pointer-events: none;
 }
 .od-header::after {
   content: '';
@@ -28,38 +34,63 @@
   width: 280px; height: 280px;
   border-radius: 50%;
   background: rgba(25,138,227,0.08);
+  pointer-events: none;
 }
 .od-header-content { position: relative; z-index: 2; }
-.od-order-id {
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: #fff;
-}
-.od-order-id span {
-  color: #b66dff;
-}
-.od-header-meta {
-  font-size: 0.82rem;
-  color: rgba(255,255,255,0.6);
-  letter-spacing: 0.04em;
-  margin-top: 4px;
-}
+.od-order-id { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; color: #fff; }
+.od-order-id span { color: #b66dff; }
+.od-header-meta { font-size: 0.82rem; color: rgba(255,255,255,0.6); letter-spacing: 0.04em; margin-top: 4px; }
 .od-header-badges { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
 .od-chip {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 5px 14px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  padding: 5px 14px; border-radius: 20px;
+  font-size: 0.75rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
 }
-.od-chip--status { background: rgba(182,109,255,0.2); color: #da8cff; border: 1px solid rgba(182,109,255,0.3); }
-.od-chip--payment { background: rgba(27,207,180,0.15); color: #1bcfb4; border: 1px solid rgba(27,207,180,0.25); }
-.od-chip--method { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.15); }
+.od-chip--status  { background: rgba(182,109,255,0.2);  color: #da8cff; border: 1px solid rgba(182,109,255,0.3); }
+.od-chip--payment { background: rgba(27,207,180,0.15);  color: #1bcfb4; border: 1px solid rgba(27,207,180,0.25); }
+.od-chip--method  { background: rgba(255,255,255,0.1);  color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.15); }
 
-/* Cards */
+/* ── Back button in header ── */
+.od-back-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px; border-radius: 8px;
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.9);
+  font-size: 0.83rem; font-weight: 600;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  text-decoration: none;
+  transition: all 0.2s;
+  align-self: flex-start;
+  white-space: nowrap;
+}
+.od-back-btn:hover { background: rgba(255,255,255,0.22); color: #fff; text-decoration: none; }
+
+/* ── Quick Stats ── */
+.od-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.od-stat {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px 18px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  border-left: 3px solid;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.od-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.09); }
+.od-stat.purple { border-left-color: #b66dff; }
+.od-stat.blue   { border-left-color: #198ae3; }
+.od-stat.green  { border-left-color: #1bcfb4; }
+.od-stat.orange { border-left-color: #f97316; }
+.od-stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #aaa; font-weight: 600; margin-bottom: 6px; }
+.od-stat-value { font-size: 1.25rem; font-weight: 800; color: #1a1a2e; line-height: 1.2; }
+.od-stat-sub   { font-size: 0.72rem; color: #999; margin-top: 3px; }
+
+/* ── Cards ── */
 .od-card {
   background: #fff;
   border-radius: 12px;
@@ -71,45 +102,33 @@
 .od-card:hover { box-shadow: 0 6px 28px rgba(0,0,0,0.1); }
 .od-card-header {
   display: flex; align-items: center; gap: 12px;
-  padding: 18px 24px 0;
+  padding: 18px 24px 16px;
   border-bottom: 1px solid #f0f0f5;
-  padding-bottom: 16px;
-  margin-bottom: 0;
 }
 .od-card-header-icon {
-  width: 38px; height: 38px;
-  border-radius: 10px;
+  width: 38px; height: 38px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem;
-  flex-shrink: 0;
+  font-size: 1.1rem; flex-shrink: 0;
 }
 .od-card-header-icon.purple { background: rgba(182,109,255,0.12); color: #b66dff; }
 .od-card-header-icon.blue   { background: rgba(25,138,227,0.12);   color: #198ae3; }
 .od-card-header-icon.green  { background: rgba(27,207,180,0.12);   color: #1bcfb4; }
 .od-card-header-icon.orange { background: rgba(249,115,22,0.12);   color: #f97316; }
 .od-card-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #1a1a2e;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  margin: 0;
+  font-size: 0.95rem; font-weight: 700;
+  color: #1a1a2e; letter-spacing: 0.02em;
+  text-transform: uppercase; margin: 0;
 }
 .od-card-body { padding: 20px 24px; }
 
-/* ── Order Items Table ── */
+/* ── Items Table ── */
 .od-items-table { width: 100%; border-collapse: collapse; }
-.od-items-table thead tr {
-  background: #f8f7ff;
-}
+.od-items-table thead tr { background: #f8f7ff; }
 .od-items-table thead th {
   padding: 11px 14px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-  color: #888;
-  border: none;
+  font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.09em;
+  color: #888; border: none;
 }
 .od-items-table tbody tr {
   border-bottom: 1px solid #f4f4f8;
@@ -117,23 +136,16 @@
 }
 .od-items-table tbody tr:hover { background: #faf9ff; }
 .od-items-table tbody tr:last-child { border-bottom: none; }
-.od-items-table td { padding: 14px 14px; vertical-align: middle; }
+.od-items-table td { padding: 14px; vertical-align: middle; }
 
 .od-product-img {
-  width: 56px; height: 56px;
-  border-radius: 10px;
-  object-fit: cover;
-  border: 1px solid #eee;
-  flex-shrink: 0;
+  width: 56px; height: 56px; border-radius: 10px;
+  object-fit: cover; border: 1px solid #eee; flex-shrink: 0;
 }
 .od-product-img-placeholder {
-  width: 56px; height: 56px;
-  border-radius: 10px;
-  background: #f0eeff;
-  display: flex; align-items: center; justify-content: center;
-  color: #c9b6ff;
-  flex-shrink: 0;
-  font-size: 1.3rem;
+  width: 56px; height: 56px; border-radius: 10px;
+  background: #f0eeff; display: flex; align-items: center; justify-content: center;
+  color: #c9b6ff; flex-shrink: 0; font-size: 1.3rem;
 }
 .od-product-name { font-weight: 600; color: #1a1a2e; font-size: 0.9rem; margin-bottom: 3px; }
 .od-product-sku  { font-size: 0.75rem; color: #aaa; font-family: monospace; }
@@ -141,22 +153,18 @@
   display: inline-block;
   background: #f0eeff; color: #8b5cf6;
   padding: 2px 9px; border-radius: 10px;
-  font-size: 0.7rem; font-weight: 600;
-  margin-top: 4px;
+  font-size: 0.7rem; font-weight: 600; margin-top: 4px;
 }
 .od-qty-badge {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  background: #f0eeff;
-  color: #7c3aed;
-  font-weight: 700;
-  font-size: 0.85rem;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #f0eeff; color: #7c3aed;
+  font-weight: 700; font-size: 0.85rem;
 }
 .od-price { font-weight: 600; color: #333; font-size: 0.9rem; }
 .od-total { font-weight: 700; color: #1a1a2e; font-size: 0.95rem; }
 
-/* ── Order Summary ── */
+/* ── Order Summary Box ── */
 .od-summary {
   background: linear-gradient(135deg, #f8f7ff 0%, #fff 100%);
   border: 1px solid #ede9ff;
@@ -167,98 +175,76 @@
 }
 .od-summary-row {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 8px 0;
-  font-size: 0.88rem;
-  color: #666;
+  padding: 8px 0; font-size: 0.88rem; color: #666;
 }
 .od-summary-row + .od-summary-row { border-top: 1px solid #f0ecff; }
 .od-summary-total {
   display: flex; justify-content: space-between; align-items: center;
-  padding-top: 14px;
-  margin-top: 4px;
+  padding-top: 14px; margin-top: 4px;
   border-top: 2px solid #b66dff;
 }
 .od-summary-total-label { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
 .od-summary-total-value { font-size: 1.25rem; font-weight: 800; color: #b66dff; }
 .od-free-badge {
-  background: rgba(27,207,180,0.1);
-  color: #1bcfb4;
-  padding: 2px 10px;
-  border-radius: 10px;
-  font-size: 0.75rem;
-  font-weight: 700;
+  background: rgba(27,207,180,0.1); color: #1bcfb4;
+  padding: 2px 10px; border-radius: 10px;
+  font-size: 0.75rem; font-weight: 700;
 }
 
-/* ── Info Grid (customer + address) ── */
+/* ── Customer / Address Grid ── */
 .od-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .od-info-box {
-  background: #f9f8ff;
-  border: 1px solid #ede9ff;
-  border-radius: 10px;
-  padding: 18px;
+  background: #f9f8ff; border: 1px solid #ede9ff;
+  border-radius: 10px; padding: 18px;
 }
 .od-info-box-title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #b66dff;
-  margin-bottom: 12px;
+  font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: #b66dff; margin-bottom: 12px;
   display: flex; align-items: center; gap: 6px;
 }
 .od-info-row { display: flex; gap: 8px; margin-bottom: 7px; font-size: 0.85rem; }
 .od-info-label { color: #aaa; min-width: 55px; font-weight: 500; }
 .od-info-value { color: #1a1a2e; font-weight: 600; }
-.od-address { font-size: 0.85rem; color: #444; line-height: 1.8; }
+.od-address    { font-size: 0.85rem; color: #444; line-height: 1.8; }
 
-/* ── Status Timeline ── */
+/* ── Timeline ── */
 .od-timeline { position: relative; padding: 8px 0; }
 .od-timeline-step {
   display: flex; align-items: flex-start; gap: 14px;
-  padding: 10px 0;
-  position: relative;
+  padding: 10px 0; position: relative;
 }
 .od-timeline-step::before {
   content: '';
   position: absolute;
-  left: 14px;
-  top: 36px;
-  bottom: -10px;
-  width: 1.5px;
-  background: #e8e4ff;
+  left: 14px; top: 36px; bottom: -10px;
+  width: 1.5px; background: #e8e4ff;
 }
 .od-timeline-step:last-child::before { display: none; }
 .od-timeline-dot {
-  width: 30px; height: 30px;
-  border-radius: 50%;
+  width: 30px; height: 30px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  font-size: 0.75rem;
-  transition: all 0.3s;
-  position: relative;
-  z-index: 1;
+  flex-shrink: 0; font-size: 0.75rem;
+  transition: all 0.3s; position: relative; z-index: 1;
 }
-.od-timeline-dot.done { background: linear-gradient(135deg, #b66dff, #9a55ff); color: #fff; box-shadow: 0 3px 10px rgba(182,109,255,0.4); }
+.od-timeline-dot.done    { background: linear-gradient(135deg, #b66dff, #9a55ff); color: #fff; box-shadow: 0 3px 10px rgba(182,109,255,0.4); }
 .od-timeline-dot.current { background: #fff; color: #b66dff; border: 2px solid #b66dff; box-shadow: 0 0 0 4px rgba(182,109,255,0.12); }
 .od-timeline-dot.pending { background: #f4f4f8; color: #ccc; border: 1.5px solid #e8e4f0; }
-.od-timeline-label { font-size: 0.82rem; font-weight: 600; color: #1a1a2e; margin-top: 5px; }
+.od-timeline-label         { font-size: 0.82rem; font-weight: 600; color: #1a1a2e; margin-top: 5px; }
 .od-timeline-label.pending { color: #ccc; }
-.od-timeline-sub { font-size: 0.72rem; color: #b66dff; margin-top: 1px; }
+.od-timeline-sub           { font-size: 0.72rem; color: #b66dff; margin-top: 1px; }
 
-/* ── Status Form ── */
+/* ── Status / Payment Forms ── */
 .od-status-select {
   width: 100%;
   border: 1.5px solid #e0d9ff;
   border-radius: 8px;
   padding: 10px 14px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: #1a1a2e;
-  background: #faf8ff;
+  font-size: 0.88rem; font-weight: 600;
+  color: #1a1a2e; background: #faf8ff;
   cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.2s;
-  appearance: none;
-  -webkit-appearance: none;
+  appearance: none; -webkit-appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23b66dff' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
@@ -268,21 +254,13 @@
 
 .od-update-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  width: 100%;
-  padding: 11px;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  transition: all 0.3s;
-  margin-top: 10px;
+  width: 100%; padding: 11px; border: none; border-radius: 8px;
+  font-size: 0.85rem; font-weight: 700; letter-spacing: 0.04em;
+  cursor: pointer; transition: all 0.3s; margin-top: 10px;
 }
 .od-update-btn.purple {
   background: linear-gradient(135deg, #da8cff, #9a55ff);
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(154,85,255,0.3);
+  color: #fff; box-shadow: 0 4px 14px rgba(154,85,255,0.3);
 }
 .od-update-btn.purple:hover {
   background: linear-gradient(135deg, #9a55ff, #da8cff);
@@ -291,43 +269,52 @@
 }
 .od-update-btn.green {
   background: linear-gradient(135deg, #1bcfb4, #0fa595);
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(27,207,180,0.3);
+  color: #fff; box-shadow: 0 4px 14px rgba(27,207,180,0.3);
 }
 .od-update-btn.green:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(27,207,180,0.4);
 }
 
-/* ── Quick stats row ── */
-.od-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
-.od-stat {
-  background: #fff;
-  border-radius: 10px;
-  padding: 16px 18px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-  border-left: 3px solid;
-  transition: transform 0.2s;
+/* ── Payment info box ── */
+.od-payment-box {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; padding: 12px 14px;
+  background: #f0faf8; border-radius: 8px;
+  border: 1px solid #b2f0e8;
 }
-.od-stat:hover { transform: translateY(-2px); }
-.od-stat.purple { border-left-color: #b66dff; }
-.od-stat.blue   { border-left-color: #198ae3; }
-.od-stat.green  { border-left-color: #1bcfb4; }
-.od-stat.orange { border-left-color: #f97316; }
-.od-stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #aaa; font-weight: 600; margin-bottom: 6px; }
-.od-stat-value { font-size: 1.3rem; font-weight: 800; color: #1a1a2e; }
-.od-stat-sub { font-size: 0.72rem; color: #999; margin-top: 2px; }
+.od-payment-box-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888; font-weight: 600; }
+.od-payment-box-val   { font-weight: 700; color: #1a1a2e; margin-top: 2px; }
+.od-payment-box-amt   { font-weight: 800; color: #1bcfb4; font-size: 1.1rem; margin-top: 2px; }
+
+/* ── Quick Actions ── */
+.od-action-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; border-radius: 8px;
+  font-size: 0.83rem; font-weight: 600;
+  text-decoration: none; transition: all 0.2s;
+  border: 1.5px solid #e8e4f0; color: #444; background: #fafafa;
+}
+.od-action-link:hover { border-color: #b66dff; color: #b66dff; background: #f8f4ff; text-decoration: none; }
+.od-action-link i { font-size: 1rem; }
 
 /* ── Divider ── */
 .od-divider { height: 1px; background: #f0ecff; margin: 16px 0; }
 
+/* ── Section label ── */
+.od-section-label {
+  font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: #aaa; margin-bottom: 6px; display: block;
+}
+
 /* ── Responsive ── */
 @media (max-width: 991px) {
   .od-info-grid { grid-template-columns: 1fr; }
-  .od-stats { grid-template-columns: repeat(2, 1fr); }
+  .od-stats     { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 600px) {
-  .od-stats { grid-template-columns: 1fr 1fr; }
+  .od-stats   { grid-template-columns: 1fr 1fr; }
   .od-summary { max-width: 100%; }
 }
 </style>
@@ -338,7 +325,7 @@
     <!-- ══ Header ══ -->
     <div class="od-header">
       <div class="od-header-content">
-        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div class="d-flex justify-content-between align-items-start flex-wrap" style="gap:16px;">
           <div>
             <div class="od-order-id">Order <span>#{{ order.id }}</span></div>
             <div class="od-header-meta">
@@ -347,20 +334,17 @@
             </div>
             <div class="od-header-badges">
               <span class="od-chip od-chip--status">
-                <i class="mdi mdi-list-status"></i>
-                {{ order.get_status_display }}
+                <i class="mdi mdi-list-status"></i>{{ order.get_status_display }}
               </span>
               <span class="od-chip od-chip--payment">
-                <i class="mdi mdi-cash-check"></i>
-                {{ order.get_payment_status_display }}
+                <i class="mdi mdi-cash-check"></i>{{ order.get_payment_status_display }}
               </span>
               <span class="od-chip od-chip--method">
-                <i class="mdi mdi-credit-card-outline"></i>
-                {{ order.payment_method|upper }}
+                <i class="mdi mdi-credit-card-outline"></i>{{ order.payment_method|upper }}
               </span>
             </div>
           </div>
-          <a href="{% url 'adminpanel:order_list' %}" class="btn btn-light" style="align-self:flex-start;">
+          <a href="{% url 'adminpanel:order_list' %}" class="od-back-btn">
             <i class="mdi mdi-arrow-left"></i> Orders
           </a>
         </div>
@@ -369,13 +353,13 @@
 
     <!-- ══ Messages ══ -->
     {% if messages %}
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-      <i class="mdi mdi-{% if message.tags == 'success' %}check-circle{% else %}alert-circle{% endif %}"></i>
-      {{ message }}
-      <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-    </div>
-    {% endfor %}
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        <i class="mdi mdi-{% if message.tags == 'success' %}check-circle{% else %}alert-circle{% endif %}"></i>
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+      </div>
+      {% endfor %}
     {% endif %}
 
     <!-- ══ Quick Stats ══ -->
@@ -405,16 +389,17 @@
     <!-- ══ Main Grid ══ -->
     <div class="row">
 
-      <!-- LEFT: Items + Customer/Address -->
+      <!-- ── LEFT col ── -->
       <div class="col-lg-8">
 
-        <!-- Order Items -->
+        <!-- Ordered Items -->
         <div class="od-card">
           <div class="od-card-header">
             <div class="od-card-header-icon purple"><i class="mdi mdi-shopping"></i></div>
             <h5 class="od-card-title">Ordered Items</h5>
           </div>
-          <div class="od-card-body" style="padding: 0;">
+          <!-- table: no extra padding wrapper so it bleeds to edges -->
+          <div style="padding:0;">
             <table class="od-items-table">
               <thead>
                 <tr>
@@ -428,17 +413,17 @@
                 {% for item in order.items.all %}
                 <tr>
                   <td style="padding-left:24px;">
-                    <div class="d-flex align-items-center gap-3" style="gap:14px;">
+                    <div style="display:flex; align-items:center; gap:14px;">
                       {% if item.product.images.first %}
-                      <img src="{{ item.product.images.first.image.url }}" class="od-product-img" alt="{{ item.product.name }}">
+                        <img src="{{ item.product.images.first.image.url }}" class="od-product-img" alt="{{ item.product.name }}">
                       {% else %}
-                      <div class="od-product-img-placeholder"><i class="mdi mdi-image-outline"></i></div>
+                        <div class="od-product-img-placeholder"><i class="mdi mdi-image-outline"></i></div>
                       {% endif %}
                       <div>
                         <div class="od-product-name">{{ item.product.name }}</div>
                         <div class="od-product-sku">SKU: {{ item.product.sku }}</div>
                         {% if item.variant %}
-                        <span class="od-variant-tag">{{ item.variant.color_name }} / {{ item.variant.size }}</span>
+                          <span class="od-variant-tag">{{ item.variant.color_name }} / {{ item.variant.size }}</span>
                         {% endif %}
                       </div>
                     </div>
@@ -477,18 +462,16 @@
           </div>
         </div>
 
-        <!-- Customer + Shipping -->
+        <!-- Customer & Delivery -->
         <div class="od-card">
           <div class="od-card-header">
             <div class="od-card-header-icon blue"><i class="mdi mdi-account-circle"></i></div>
-            <h5 class="od-card-title">Customer & Delivery</h5>
+            <h5 class="od-card-title">Customer &amp; Delivery</h5>
           </div>
           <div class="od-card-body">
             <div class="od-info-grid">
               <div class="od-info-box">
-                <div class="od-info-box-title">
-                  <i class="mdi mdi-account"></i> Customer
-                </div>
+                <div class="od-info-box-title"><i class="mdi mdi-account"></i> Customer</div>
                 <div class="od-info-row">
                   <span class="od-info-label">Name</span>
                   <span class="od-info-value">{{ order.user.first_name }} {{ order.user.last_name }}</span>
@@ -502,14 +485,14 @@
                   <span class="od-info-value">{{ order.user.phone_number|default:"—" }}</span>
                 </div>
                 <div class="od-divider"></div>
-                <a href="{% url 'adminpanel:user_detail' order.customer.id %}" class="btn btn-sm btn-outline-primary" style="font-size:0.78rem;">
+                <a href="{% url 'adminpanel:user_detail' order.customer.id %}"
+                   style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;border:1.5px solid #c9b6ff;color:#9a55ff;font-size:0.78rem;font-weight:600;text-decoration:none;transition:all 0.2s;"
+                   onmouseover="this.style.background='#f5f0ff'" onmouseout="this.style.background='transparent'">
                   <i class="mdi mdi-eye"></i> View Profile
                 </a>
               </div>
               <div class="od-info-box">
-                <div class="od-info-box-title">
-                  <i class="mdi mdi-truck-delivery"></i> Shipping Address
-                </div>
+                <div class="od-info-box-title"><i class="mdi mdi-truck-delivery"></i> Shipping Address</div>
                 <div class="od-address">
                   {{ order.shipping_address.street_address }}<br>
                   {{ order.shipping_address.city }}, {{ order.shipping_address.state }}<br>
@@ -520,12 +503,12 @@
           </div>
         </div>
 
-      </div>
+      </div><!-- /col-lg-8 -->
 
-      <!-- RIGHT: Status + Payment + Timeline -->
+      <!-- ── RIGHT col ── -->
       <div class="col-lg-4">
 
-        <!-- Order Status -->
+        <!-- Order Status Card -->
         <div class="od-card">
           <div class="od-card-header">
             <div class="od-card-header-icon purple"><i class="mdi mdi-list-status"></i></div>
@@ -534,14 +517,9 @@
           <div class="od-card-body">
 
             <!-- Timeline -->
-            <div class="od-timeline mb-4">
-              {% with statuses="pending,confirmed,processing,shipped,delivered" %}
-              {% for step in "pending confirmed processing shipped delivered"|split:" " %}
-              {% comment %}Django doesn't have split filter, so we use a workaround below{% endcomment %}
-              {% endfor %}
-              {% endwith %}
-
+            <div class="od-timeline" style="margin-bottom:20px;">
               {% with s=order.status %}
+
               <div class="od-timeline-step">
                 <div class="od-timeline-dot {% if s == 'pending' %}current{% elif s == 'confirmed' or s == 'processing' or s == 'shipped' or s == 'delivered' %}done{% else %}pending{% endif %}">
                   <i class="mdi mdi-clock-outline"></i>
@@ -551,6 +529,7 @@
                   {% if s == 'pending' %}<div class="od-timeline-sub">Current stage</div>{% endif %}
                 </div>
               </div>
+
               <div class="od-timeline-step">
                 <div class="od-timeline-dot {% if s == 'confirmed' %}current{% elif s == 'processing' or s == 'shipped' or s == 'delivered' %}done{% else %}pending{% endif %}">
                   <i class="mdi mdi-check"></i>
@@ -560,6 +539,7 @@
                   {% if s == 'confirmed' %}<div class="od-timeline-sub">Current stage</div>{% endif %}
                 </div>
               </div>
+
               <div class="od-timeline-step">
                 <div class="od-timeline-dot {% if s == 'processing' %}current{% elif s == 'shipped' or s == 'delivered' %}done{% else %}pending{% endif %}">
                   <i class="mdi mdi-cog-outline"></i>
@@ -569,6 +549,7 @@
                   {% if s == 'processing' %}<div class="od-timeline-sub">Current stage</div>{% endif %}
                 </div>
               </div>
+
               <div class="od-timeline-step">
                 <div class="od-timeline-dot {% if s == 'shipped' %}current{% elif s == 'delivered' %}done{% else %}pending{% endif %}">
                   <i class="mdi mdi-truck-fast"></i>
@@ -578,6 +559,7 @@
                   {% if s == 'shipped' %}<div class="od-timeline-sub">Current stage</div>{% endif %}
                 </div>
               </div>
+
               <div class="od-timeline-step">
                 <div class="od-timeline-dot {% if s == 'delivered' %}done{% else %}pending{% endif %}">
                   <i class="mdi mdi-package-variant-closed-check"></i>
@@ -587,6 +569,7 @@
                   {% if s == 'delivered' %}<div class="od-timeline-sub">Order complete</div>{% endif %}
                 </div>
               </div>
+
               {% if s == 'cancelled' %}
               <div class="od-timeline-step">
                 <div class="od-timeline-dot" style="background:#fee2e2;color:#dc2626;border:1.5px solid #fca5a5;">
@@ -598,15 +581,16 @@
                 </div>
               </div>
               {% endif %}
+
               {% endwith %}
             </div>
 
             <div class="od-divider"></div>
 
-            <!-- Update form -->
+            <!-- Update Status Form -->
             <form method="POST" action="{% url 'adminpanel:order_update_status' order.id %}">
               {% csrf_token %}
-              <label style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:6px;display:block;">Change Status</label>
+              <label class="od-section-label">Change Status</label>
               <select class="od-status-select" name="status">
                 <option value="pending"    {% if order.status == 'pending'    %}selected{% endif %}>⏳  Pending</option>
                 <option value="confirmed"  {% if order.status == 'confirmed'  %}selected{% endif %}>✅  Confirmed</option>
@@ -619,30 +603,31 @@
                 <i class="mdi mdi-check-circle"></i> Update Order Status
               </button>
             </form>
+
           </div>
         </div>
 
-        <!-- Payment Info -->
+        <!-- Payment Card -->
         <div class="od-card">
           <div class="od-card-header">
             <div class="od-card-header-icon green"><i class="mdi mdi-cash-multiple"></i></div>
             <h5 class="od-card-title">Payment</h5>
           </div>
           <div class="od-card-body">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:12px 14px;background:#f0faf8;border-radius:8px;border:1px solid #b2f0e8;">
+            <div class="od-payment-box">
               <div>
-                <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:#888;font-weight:600;">Method</div>
-                <div style="font-weight:700;color:#1a1a2e;margin-top:2px;">{{ order.payment_method|upper }}</div>
+                <div class="od-payment-box-label">Method</div>
+                <div class="od-payment-box-val">{{ order.payment_method|upper }}</div>
               </div>
               <div style="text-align:right;">
-                <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:#888;font-weight:600;">Amount</div>
-                <div style="font-weight:800;color:#1bcfb4;font-size:1.1rem;margin-top:2px;">QAR {{ order.total_amount }}</div>
+                <div class="od-payment-box-label">Amount</div>
+                <div class="od-payment-box-amt">QAR {{ order.total_amount }}</div>
               </div>
             </div>
 
             <form method="POST" action="{% url 'adminpanel:order_update_payment_status' order.id %}">
               {% csrf_token %}
-              <label style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:6px;display:block;">Payment Status</label>
+              <label class="od-section-label">Payment Status</label>
               <select class="od-status-select" name="payment_status" style="border-color:#b2f0e8;">
                 <option value="pending" {% if order.payment_status == 'pending' %}selected{% endif %}>⏳  Unpaid / Pending</option>
                 <option value="paid"    {% if order.payment_status == 'paid'    %}selected{% endif %}>✅  Paid</option>
@@ -655,29 +640,28 @@
           </div>
         </div>
 
-        <!-- Actions Card -->
+        <!-- Quick Actions Card -->
         <div class="od-card">
           <div class="od-card-header">
             <div class="od-card-header-icon orange"><i class="mdi mdi-lightning-bolt"></i></div>
             <h5 class="od-card-title">Quick Actions</h5>
           </div>
-          <div class="od-card-body" style="display:flex;flex-direction:column;gap:8px;">
-            <a href="#" onclick="window.print()" class="btn btn-outline-secondary btn-block text-left" style="border-radius:8px;font-size:0.82rem;font-weight:600;">
+          <div class="od-card-body" style="display:flex; flex-direction:column; gap:8px;">
+            <a href="#" onclick="window.print(); return false;" class="od-action-link">
               <i class="mdi mdi-printer"></i> Print Invoice
             </a>
-            <a href="mailto:{{ order.user.email }}" class="btn btn-outline-primary btn-block text-left" style="border-radius:8px;font-size:0.82rem;font-weight:600;">
+            <a href="mailto:{{ order.user.email }}" class="od-action-link">
               <i class="mdi mdi-email-outline"></i> Email Customer
             </a>
-            <a href="{% url 'adminpanel:order_list' %}" class="btn btn-outline-secondary btn-block text-left" style="border-radius:8px;font-size:0.82rem;font-weight:600;">
+            <a href="{% url 'adminpanel:order_list' %}" class="od-action-link">
               <i class="mdi mdi-arrow-left"></i> Back to Orders
             </a>
           </div>
         </div>
 
-      </div>
-    </div>
+      </div><!-- /col-lg-4 -->
+    </div><!-- /row -->
 
   </div>
 </div>
-
 {% endblock %}
