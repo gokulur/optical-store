@@ -3,45 +3,50 @@
 {% block content %}
 
 <style>
-  /* Reuse your existing styles */
+  .white-logo { filter: brightness(0) invert(1); transition: 0.3s ease; }
+  .white-logo:hover { filter: brightness(0) invert(0.9); }
   .form-control:focus { border-color: #b66dff; box-shadow: 0 0 0 0.2rem rgba(182, 109, 255, 0.25); }
   .card { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); transition: all 0.3s ease; }
   .image-preview { max-width: 200px; max-height: 200px; margin-top: 10px; border-radius: 8px; }
-  .current-logo { max-width: 150px; max-height: 80px; object-fit: contain; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 5px; }
   .custom-file-label::after { content: "Browse"; }
   .btn-gradient-primary { background: linear-gradient(to right, #da8cff, #9a55ff); border: 0; color: white; }
   .btn-gradient-primary:hover { background: linear-gradient(to right, #9a55ff, #da8cff); color: white; }
   .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
-  
-  /* Availability Checkbox Cards */
+
   .availability-section { background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 2px solid #e9ecef; }
-  .checkbox-card { background: white; padding: 15px; border-radius: 8px; border: 2px solid #e9ecef; transition: all 0.3s ease; cursor: pointer; height: 100%; }
+  .checkbox-card { background: white; padding: 15px 10px; border-radius: 8px; border: 2px solid #e9ecef; transition: all 0.3s ease; cursor: pointer; height: 100%; }
   .checkbox-card:hover { border-color: #b66dff; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(182, 109, 255, 0.2); }
   .checkbox-card.checked { border-color: #b66dff; background-color: rgba(182, 109, 255, 0.1); }
   .checkbox-card input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
   .checkbox-card label { cursor: pointer; margin-bottom: 0; }
-  .icon-box { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 10px; }
-  
-  .icon-box.sunglasses { background-color: rgba(255, 193, 7, 0.2); color: #ffc107; }
-  .icon-box.eyeglasses { background-color: rgba(0, 123, 255, 0.2); color: #007bff; }
-  .icon-box.kids { background-color: rgba(40, 167, 69, 0.2); color: #28a745; }
-  .icon-box.contact-lenses { background-color: rgba(23, 162, 184, 0.2); color: #17a2b8; }
+
+  .icon-box { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 8px; }
+  .icon-box.sunglasses    { background-color: rgba(255, 193,   7, 0.2); color: #ffc107; }
+  .icon-box.eyeglasses    { background-color: rgba(  0, 123, 255, 0.2); color: #007bff; }
+  .icon-box.kids          { background-color: rgba( 40, 167,  69, 0.2); color: #28a745; }
+  .icon-box.contact-lenses{ background-color: rgba( 23, 162, 184, 0.2); color: #17a2b8; }
+  .icon-box.medical-lens  { background-color: rgba(220,  53,  69, 0.2); color: #dc3545; }
+  .icon-box.reading       { background-color: rgba(111,  66, 193, 0.2); color: #6f42c1; }
+  .icon-box.accessories   { background-color: rgba(253, 126,  20, 0.2); color: #fd7e14; }
+
+  .section-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9a55ff; border-bottom: 1px solid #e0d4ff; padding-bottom: 6px; margin-bottom: 12px; margin-top: 4px; }
+
+  .current-logo-wrap { display: inline-flex; align-items: center; gap: 12px; background: #f8f6ff; border: 1px dashed #b66dff; border-radius: 8px; padding: 10px 16px; margin-bottom: 10px; }
 </style>
 
 <div class="main-panel">
   <div class="content-wrapper">
 
     <div class="page-header">
-      <h3 class="mb-2"><i class="mdi mdi-pencil"></i> Edit Brand</h3>
-      <p class="mb-0">Update brand details - <strong>{{ brand.name }}</strong></p>
+      <h3 class="mb-2"><i class="mdi mdi-tag-edit"></i> Edit Brand — {{ brand.name }}</h3>
+      <p class="mb-0">Update brand details and availability</p>
     </div>
 
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb bg-transparent p-0 mb-4">
         <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="#">Catalog</a></li>
         <li class="breadcrumb-item"><a href="{% url 'adminpanel:brand_list' %}">Brands</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Edit Brand</li>
+        <li class="breadcrumb-item active">Edit — {{ brand.name }}</li>
       </ol>
     </nav>
 
@@ -49,14 +54,12 @@
     {% for message in messages %}
     <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
       <strong>
-        {% if message.tags == 'success' %} <i class="mdi mdi-check-circle"></i>
-        {% elif message.tags == 'error' %} <i class="mdi mdi-alert-circle"></i>
-        {% else %} <i class="mdi mdi-information"></i> {% endif %}
+        {% if message.tags == 'success' %}<i class="mdi mdi-check-circle"></i>
+        {% elif message.tags == 'error' %}<i class="mdi mdi-alert-circle"></i>
+        {% else %}<i class="mdi mdi-information"></i>{% endif %}
       </strong>
       {{ message }}
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
+      <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
     </div>
     {% endfor %}
     {% endif %}
@@ -71,61 +74,78 @@
               {% csrf_token %}
 
               <div class="row">
+                <!-- ── LEFT: Basic Info ── -->
                 <div class="col-md-6">
-                  
+
                   <div class="form-group">
-                    <label for="name" class="font-weight-bold">Brand Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control form-control-lg" id="name" name="name" 
-                           placeholder="Enter brand name" value="{{ brand.name }}" required>
+                    <label class="font-weight-bold">Brand Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-lg" id="name" name="name"
+                      value="{{ brand.name }}" required>
                   </div>
 
                   <div class="form-group">
-                    <label for="slug" class="font-weight-bold">Slug <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control form-control-lg" id="slug" name="slug" 
-                           placeholder="brand-slug" value="{{ brand.slug }}" required>
+                    <label class="font-weight-bold">Slug <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-lg" id="slug" name="slug"
+                      value="{{ brand.slug }}" required>
+                    <small class="form-text text-muted">Changing the slug may break existing URLs</small>
                   </div>
 
                   <div class="form-group">
                     <label class="font-weight-bold">Brand Logo</label>
-                    
+
                     {% if brand.logo %}
-                    <div class="mb-2">
-                        <label class="d-block text-muted small">Current Logo:</label>
-                        <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" class="current-logo">
+                    <div class="current-logo-wrap">
+                      <img src="{{ brand.logo.url }}" style="height:40px; max-width:120px; object-fit:contain;" alt="{{ brand.name }}">
+                      <small class="text-muted">Current logo</small>
                     </div>
                     {% endif %}
 
                     <div class="custom-file">
-                      <input type="file" class="custom-file-input" id="logo" name="logo" accept="image/*" onchange="previewImage(event)">
-                      <label class="custom-file-label" for="logo">{% if brand.logo %}Change Logo...{% else %}Choose Logo...{% endif %}</label>
+                      <input type="file" class="custom-file-input" id="logo" name="logo"
+                        accept="image/*" onchange="previewImage(event)">
+                      <label class="custom-file-label" for="logo">
+                        {% if brand.logo %}Replace logo...{% else %}Choose logo...{% endif %}
+                      </label>
                     </div>
-                    <small class="form-text text-muted">Recommended: 400x200px (PNG)</small>
-                    <img id="imagePreview" class="image-preview" style="display: none;" alt="New Logo Preview">
+                    <small class="form-text text-muted">Leave empty to keep current logo. Recommended: 400x200px (PNG)</small>
+                    <img id="imagePreview" class="image-preview" alt="Logo Preview" style="display:none; margin-top:8px;">
                   </div>
 
                   <div class="form-group">
-                    <label for="description" class="font-weight-bold">Description</label>
-                    <textarea class="form-control" id="description" name="description" rows="5">{{ brand.description }}</textarea>
+                    <label class="font-weight-bold">Description</label>
+                    <textarea class="form-control" name="description" rows="5"
+                      placeholder="Enter brand description...">{{ brand.description }}</textarea>
                   </div>
 
                 </div>
 
+                <!-- ── RIGHT: Availability ── -->
                 <div class="col-md-6">
 
                   <div class="form-group">
-                    <label class="font-weight-bold mb-3"><i class="mdi mdi-checkbox-multiple-marked"></i> Brand Availability</label>
-                    
+                    <label class="font-weight-bold mb-1">
+                      <i class="mdi mdi-checkbox-multiple-marked"></i>
+                      Brand Availability <span class="text-danger">*</span>
+                    </label>
+                    <p class="text-muted small mb-3">Select all product types this brand applies to</p>
+
                     <div class="availability-section">
-                      <div class="row">
-                        <div class="col-md-6 mb-3">
-                          <div class="checkbox-card {% if brand.available_for_sunglasses %}checked{% endif %}" onclick="toggleCheckbox('sunglasses', event)">
+
+                      <!-- Eyewear Frames -->
+                      <div class="section-label"><i class="mdi mdi-glasses mr-1"></i>Eyewear Frames</div>
+                      <div class="row mb-2">
+
+                        <div class="col-6 mb-3">
+                          <div class="checkbox-card {% if brand.available_for_sunglasses %}checked{% endif %}"
+                               onclick="toggleCheckbox('sunglasses', event)">
                             <div class="text-center">
                               <div class="icon-box sunglasses mx-auto"><i class="mdi mdi-sunglasses"></i></div>
                               <div class="form-check">
                                 <label class="form-check-label">
-                                  <input type="checkbox" class="form-check-input" name="available_for_sunglasses" id="sunglasses"
-                                         {% if brand.available_for_sunglasses %}checked{% endif %}>
-                                  <span class="font-weight-bold">Sunglasses</span>
+                                  <input type="checkbox" class="form-check-input"
+                                    name="available_for_sunglasses" id="sunglasses"
+                                    {% if brand.available_for_sunglasses %}checked{% endif %}>
+                                  <span class="font-weight-bold" style="font-size:0.85rem;">Sunglasses</span>
                                   <i class="input-helper"></i>
                                 </label>
                               </div>
@@ -133,15 +153,17 @@
                           </div>
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                          <div class="checkbox-card {% if brand.available_for_eyeglasses %}checked{% endif %}" onclick="toggleCheckbox('eyeglasses', event)">
+                        <div class="col-6 mb-3">
+                          <div class="checkbox-card {% if brand.available_for_eyeglasses %}checked{% endif %}"
+                               onclick="toggleCheckbox('eyeglasses', event)">
                             <div class="text-center">
                               <div class="icon-box eyeglasses mx-auto"><i class="mdi mdi-glasses"></i></div>
                               <div class="form-check">
                                 <label class="form-check-label">
-                                  <input type="checkbox" class="form-check-input" name="available_for_eyeglasses" id="eyeglasses"
-                                         {% if brand.available_for_eyeglasses %}checked{% endif %}>
-                                  <span class="font-weight-bold">Eyeglasses</span>
+                                  <input type="checkbox" class="form-check-input"
+                                    name="available_for_eyeglasses" id="eyeglasses"
+                                    {% if brand.available_for_eyeglasses %}checked{% endif %}>
+                                  <span class="font-weight-bold" style="font-size:0.85rem;">Eyeglasses</span>
                                   <i class="input-helper"></i>
                                 </label>
                               </div>
@@ -149,15 +171,17 @@
                           </div>
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                          <div class="checkbox-card {% if brand.available_for_kids %}checked{% endif %}" onclick="toggleCheckbox('kids', event)">
+                        <div class="col-6 mb-3">
+                          <div class="checkbox-card {% if brand.available_for_kids %}checked{% endif %}"
+                               onclick="toggleCheckbox('kids', event)">
                             <div class="text-center">
                               <div class="icon-box kids mx-auto"><i class="mdi mdi-human-child"></i></div>
                               <div class="form-check">
                                 <label class="form-check-label">
-                                  <input type="checkbox" class="form-check-input" name="available_for_kids" id="kids"
-                                         {% if brand.available_for_kids %}checked{% endif %}>
-                                  <span class="font-weight-bold">Kids</span>
+                                  <input type="checkbox" class="form-check-input"
+                                    name="available_for_kids" id="kids"
+                                    {% if brand.available_for_kids %}checked{% endif %}>
+                                  <span class="font-weight-bold" style="font-size:0.85rem;">Kids</span>
                                   <i class="input-helper"></i>
                                 </label>
                               </div>
@@ -165,34 +189,106 @@
                           </div>
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                          <div class="checkbox-card {% if brand.available_for_contact_lenses %}checked{% endif %}" onclick="toggleCheckbox('contact_lenses', event)">
+                        <div class="col-6 mb-3">
+                          <div class="checkbox-card {% if brand.available_for_reading_glasses %}checked{% endif %}"
+                               onclick="toggleCheckbox('reading', event)">
                             <div class="text-center">
-                              <div class="icon-box contact-lenses mx-auto"><i class="mdi mdi-eye"></i></div>
+                              <div class="icon-box reading mx-auto"><i class="mdi mdi-book-open-variant"></i></div>
                               <div class="form-check">
                                 <label class="form-check-label">
-                                  <input type="checkbox" class="form-check-input" name="available_for_contact_lenses" id="contact_lenses"
-                                         {% if brand.available_for_contact_lenses %}checked{% endif %}>
-                                  <span class="font-weight-bold">Contact Lenses</span>
+                                  <input type="checkbox" class="form-check-input"
+                                    name="available_for_reading_glasses" id="reading"
+                                    {% if brand.available_for_reading_glasses %}checked{% endif %}>
+                                  <span class="font-weight-bold" style="font-size:0.85rem;">Reading Glasses</span>
                                   <i class="input-helper"></i>
                                 </label>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
+
+                      </div><!-- /eyewear row -->
+
+                      <!-- Lenses -->
+                      <div class="section-label"><i class="mdi mdi-eye mr-1"></i>Lenses</div>
+                      <div class="row mb-2">
+
+                        <div class="col-6 mb-3">
+                          <div class="checkbox-card {% if brand.available_for_contact_lenses %}checked{% endif %}"
+                               onclick="toggleCheckbox('contact_lenses', event)">
+                            <div class="text-center">
+                              <div class="icon-box contact-lenses mx-auto"><i class="mdi mdi-eye-circle"></i></div>
+                              <div class="form-check">
+                                <label class="form-check-label">
+                                  <input type="checkbox" class="form-check-input"
+                                    name="available_for_contact_lenses" id="contact_lenses"
+                                    {% if brand.available_for_contact_lenses %}checked{% endif %}>
+                                  <span class="font-weight-bold" style="font-size:0.85rem;">Contact Lenses</span>
+                                  <i class="input-helper"></i>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="col-6 mb-3">
+                          <div class="checkbox-card {% if brand.available_for_medical_lenses %}checked{% endif %}"
+                               onclick="toggleCheckbox('medical_lenses', event)">
+                            <div class="text-center">
+                              <div class="icon-box medical-lens mx-auto"><i class="mdi mdi-medical-bag"></i></div>
+                              <div class="form-check">
+                                <label class="form-check-label">
+                                  <input type="checkbox" class="form-check-input"
+                                    name="available_for_medical_lenses" id="medical_lenses"
+                                    {% if brand.available_for_medical_lenses %}checked{% endif %}>
+                                  <span class="font-weight-bold" style="font-size:0.85rem;">Medical Lenses</span>
+                                  <i class="input-helper"></i>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div><!-- /lenses row -->
+
+                      <!-- Other -->
+                      <div class="section-label"><i class="mdi mdi-dots-horizontal mr-1"></i>Other</div>
+                      <div class="row">
+
+                        <div class="col-6 mb-1">
+                          <div class="checkbox-card {% if brand.available_for_accessories %}checked{% endif %}"
+                               onclick="toggleCheckbox('accessories', event)">
+                            <div class="text-center">
+                              <div class="icon-box accessories mx-auto"><i class="mdi mdi-bag-personal"></i></div>
+                              <div class="form-check">
+                                <label class="form-check-label">
+                                  <input type="checkbox" class="form-check-input"
+                                    name="available_for_accessories" id="accessories"
+                                    {% if brand.available_for_accessories %}checked{% endif %}>
+                                  <span class="font-weight-bold" style="font-size:0.85rem;">Accessories</span>
+                                  <i class="input-helper"></i>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div><!-- /other row -->
+
+                    </div><!-- /availability-section -->
                   </div>
 
                   <div class="form-group mt-3">
-                    <label for="display_order" class="font-weight-bold">Display Order</label>
-                    <input type="number" class="form-control form-control-lg" id="display_order" name="display_order" value="{{ brand.display_order }}" min="0">
+                    <label class="font-weight-bold">Display Order</label>
+                    <input type="number" class="form-control form-control-lg" name="display_order"
+                      value="{{ brand.display_order }}" min="0">
                   </div>
 
                   <div class="form-group">
                     <div class="form-check form-check-success">
                       <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" name="is_active" {% if brand.is_active %}checked{% endif %}>
+                        <input type="checkbox" class="form-check-input" name="is_active"
+                          {% if brand.is_active %}checked{% endif %}>
                         <span class="font-weight-bold">Active</span>
                         <i class="input-helper"></i>
                       </label>
@@ -200,7 +296,7 @@
                   </div>
 
                 </div>
-              </div>
+              </div><!-- /row -->
 
               <div class="row mt-4">
                 <div class="col-12">
@@ -215,7 +311,6 @@
               </div>
 
             </form>
-
           </div>
         </div>
       </div>
@@ -225,52 +320,52 @@
 </div>
 
 <script>
-  // 1. Slug Generator
-  document.getElementById('name').addEventListener('input', function(e) {
-    const slug = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    document.getElementById('slug').value = slug;
+  document.getElementById('name').addEventListener('input', function (e) {
+    document.getElementById('slug').value = e.target.value
+      .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   });
 
-  // 2. Image Preview
   function previewImage(event) {
-    const reader = new FileReader();
-    const imagePreview = document.getElementById('imagePreview');
     const file = event.target.files[0];
     if (file) {
-      reader.onload = function(e) {
-        imagePreview.src = e.target.result;
-        imagePreview.style.display = 'block';
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = document.getElementById('imagePreview');
+        img.src = e.target.result;
+        img.style.display = 'block';
       };
       reader.readAsDataURL(file);
       event.target.nextElementSibling.textContent = file.name;
     }
   }
 
-  // 3. ✅ FIXED: Toggle Checkbox logic
   function toggleCheckbox(id, event) {
-    // If user clicked the actual checkbox input or label, let browser handle it
-    // We only manually toggle if they clicked the 'card' background
     if (event.target.type === 'checkbox' || event.target.tagName === 'LABEL') {
-       // Just update style based on new state
-       const checkbox = document.getElementById(id);
-       const card = checkbox.closest('.checkbox-card');
-       if (checkbox.checked) card.classList.add('checked');
-       else card.classList.remove('checked');
-       return;
+      const checkbox = document.getElementById(id);
+      const card = checkbox.closest('.checkbox-card');
+      card.classList.toggle('checked', checkbox.checked);
+      return;
     }
-
-    // Manual toggle for card click
     const checkbox = document.getElementById(id);
-    const card = checkbox.closest('.checkbox-card');
-    
     checkbox.checked = !checkbox.checked;
-    
-    if (checkbox.checked) {
-      card.classList.add('checked');
-    } else {
-      card.classList.remove('checked');
-    }
+    checkbox.closest('.checkbox-card').classList.toggle('checked', checkbox.checked);
   }
+
+  document.getElementById('brandForm').addEventListener('submit', function (e) {
+    const name = document.getElementById('name').value.trim();
+    const slug = document.getElementById('slug').value.trim();
+    if (!name || !slug) {
+      e.preventDefault();
+      alert('Please fill in Name and Slug!');
+      return false;
+    }
+    const checkboxes = document.querySelectorAll('input[type="checkbox"][name^="available_for_"]');
+    if (!Array.from(checkboxes).some(cb => cb.checked)) {
+      e.preventDefault();
+      alert('Please select at least one availability option.');
+      return false;
+    }
+  });
 </script>
 
 {% endblock %}
