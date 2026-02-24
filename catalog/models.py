@@ -52,6 +52,10 @@ class Brand(models.Model):
     available_for_eyeglasses = models.BooleanField(default=False)
     available_for_kids = models.BooleanField(default=False)
     available_for_contact_lenses = models.BooleanField(default=False)
+    
+    available_for_reading_glasses = models.BooleanField(default=False)
+    available_for_medical_lenses  = models.BooleanField(default=False)
+    available_for_accessories     = models.BooleanField(default=False)
 
     display_order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
