@@ -3,7 +3,6 @@
 {% block content %}
 
 <style>
-  /* Your existing styles are good, keeping them as is */
   .white-logo { filter: brightness(0) invert(1); transition: 0.3s ease; }
   .white-logo:hover { filter: brightness(0) invert(0.9); }
   .form-control:focus { border-color: #b66dff; box-shadow: 0 0 0 0.2rem rgba(182, 109, 255, 0.25); }
@@ -13,21 +12,37 @@
   .btn-gradient-primary { background: linear-gradient(to right, #da8cff, #9a55ff); border: 0; color: white; }
   .btn-gradient-primary:hover { background: linear-gradient(to right, #9a55ff, #da8cff); color: white; }
   .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
-  
-  /* Availability Card Styles */
+
+  /* ── Availability Card Styles ── */
   .availability-section { background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 2px solid #e9ecef; }
-  .checkbox-card { background: white; padding: 15px; border-radius: 8px; border: 2px solid #e9ecef; transition: all 0.3s ease; cursor: pointer; height: 100%; }
+  .checkbox-card { background: white; padding: 15px 10px; border-radius: 8px; border: 2px solid #e9ecef; transition: all 0.3s ease; cursor: pointer; height: 100%; }
   .checkbox-card:hover { border-color: #b66dff; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(182, 109, 255, 0.2); }
   .checkbox-card.checked { border-color: #b66dff; background-color: rgba(182, 109, 255, 0.1); }
   .checkbox-card input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
   .checkbox-card label { cursor: pointer; margin-bottom: 0; }
-  
-  /* Icons */
-  .icon-box { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 10px; }
-  .icon-box.sunglasses { background-color: rgba(255, 193, 7, 0.2); color: #ffc107; }
-  .icon-box.eyeglasses { background-color: rgba(0, 123, 255, 0.2); color: #007bff; }
-  .icon-box.kids { background-color: rgba(40, 167, 69, 0.2); color: #28a745; }
-  .icon-box.contact-lenses { background-color: rgba(23, 162, 184, 0.2); color: #17a2b8; }
+
+  /* ── Icon Boxes ── */
+  .icon-box { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 8px; }
+  .icon-box.sunglasses    { background-color: rgba(255, 193,   7, 0.2); color: #ffc107; }
+  .icon-box.eyeglasses    { background-color: rgba(  0, 123, 255, 0.2); color: #007bff; }
+  .icon-box.kids          { background-color: rgba( 40, 167,  69, 0.2); color: #28a745; }
+  .icon-box.contact-lenses{ background-color: rgba( 23, 162, 184, 0.2); color: #17a2b8; }
+  .icon-box.medical-lens  { background-color: rgba(220,  53,  69, 0.2); color: #dc3545; }
+  .icon-box.reading       { background-color: rgba(111,  66, 193, 0.2); color: #6f42c1; }
+  .icon-box.accessories   { background-color: rgba(253, 126,  20, 0.2); color: #fd7e14; }
+
+  /* ── Section divider label ── */
+  .section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #9a55ff;
+    border-bottom: 1px solid #e0d4ff;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+    margin-top: 4px;
+  }
 </style>
 
 <div class="main-panel">
@@ -50,9 +65,9 @@
     {% for message in messages %}
     <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
       <strong>
-        {% if message.tags == 'success' %} <i class="mdi mdi-check-circle"></i>
-        {% elif message.tags == 'error' %} <i class="mdi mdi-alert-circle"></i>
-        {% else %} <i class="mdi mdi-information"></i> {% endif %}
+        {% if message.tags == 'success' %}<i class="mdi mdi-check-circle"></i>
+        {% elif message.tags == 'error' %}<i class="mdi mdi-alert-circle"></i>
+        {% else %}<i class="mdi mdi-information"></i>{% endif %}
       </strong>
       {{ message }}
       <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -72,24 +87,28 @@
               {% csrf_token %}
 
               <div class="row">
+                <!-- ───────────────── LEFT: Basic Info ───────────────── -->
                 <div class="col-md-6">
-                  
+
                   <div class="form-group">
                     <label for="name" class="font-weight-bold">Brand Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control form-control-lg" id="name" name="name" placeholder="Enter brand name (e.g., Ray-Ban)" required>
+                    <input type="text" class="form-control form-control-lg" id="name" name="name"
+                      placeholder="Enter brand name (e.g., Ray-Ban)" required>
                     <small class="form-text text-muted"><i class="mdi mdi-information"></i> Enter the official brand name</small>
                   </div>
 
                   <div class="form-group">
                     <label for="slug" class="font-weight-bold">Slug <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control form-control-lg" id="slug" name="slug" placeholder="brand-slug" required>
+                    <input type="text" class="form-control form-control-lg" id="slug" name="slug"
+                      placeholder="brand-slug" required>
                     <small class="form-text text-muted"><i class="mdi mdi-information"></i> URL-friendly version (auto-generated)</small>
                   </div>
 
                   <div class="form-group">
                     <label for="logo" class="font-weight-bold">Brand Logo <span class="text-danger">*</span></label>
                     <div class="custom-file">
-                      <input type="file" class="custom-file-input" id="logo" name="logo" accept="image/*" onchange="previewImage(event)" required>
+                      <input type="file" class="custom-file-input" id="logo" name="logo"
+                        accept="image/*" onchange="previewImage(event)" required>
                       <label class="custom-file-label" for="logo">Choose logo...</label>
                     </div>
                     <small class="form-text text-muted"><i class="mdi mdi-information"></i> Recommended: 400x200px (PNG)</small>
@@ -98,29 +117,37 @@
 
                   <div class="form-group">
                     <label for="description" class="font-weight-bold">Description</label>
-                    <textarea class="form-control" id="description" name="description" rows="5" placeholder="Enter brand description..."></textarea>
+                    <textarea class="form-control" id="description" name="description" rows="5"
+                      placeholder="Enter brand description..."></textarea>
                   </div>
 
                 </div>
 
+                <!-- ───────────────── RIGHT: Availability ───────────────── -->
                 <div class="col-md-6">
 
                   <div class="form-group">
-                    <label class="font-weight-bold mb-3">
-                      <i class="mdi mdi-checkbox-multiple-marked"></i> Brand Availability <span class="text-danger">*</span>
+                    <label class="font-weight-bold mb-1">
+                      <i class="mdi mdi-checkbox-multiple-marked"></i>
+                      Brand Availability <span class="text-danger">*</span>
                     </label>
-                    <p class="text-muted small mb-3">Select where this brand will be available</p>
-                    
+                    <p class="text-muted small mb-3">Select all product types this brand applies to</p>
+
                     <div class="availability-section">
-                      <div class="row">
-                        <div class="col-md-6 mb-3">
+
+                      <!-- ── Eyewear ── -->
+                      <div class="section-label"><i class="mdi mdi-glasses mr-1"></i>Eyewear Frames</div>
+                      <div class="row mb-2">
+
+                        <div class="col-6 mb-3">
                           <div class="checkbox-card" onclick="toggleCheckbox('sunglasses', event)">
                             <div class="text-center">
                               <div class="icon-box sunglasses mx-auto"><i class="mdi mdi-sunglasses"></i></div>
                               <div class="form-check">
                                 <label class="form-check-label">
-                                  <input type="checkbox" class="form-check-input" name="available_for_sunglasses" id="sunglasses">
-                                  <span class="font-weight-bold">Sunglasses</span>
+                                  <input type="checkbox" class="form-check-input"
+                                    name="available_for_sunglasses" id="sunglasses">
+                                  <span class="font-weight-bold" style="font-size:0.85rem;">Sunglasses</span>
                                   <i class="input-helper"></i>
                                 </label>
                               </div>
@@ -128,14 +155,15 @@
                           </div>
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-6 mb-3">
                           <div class="checkbox-card" onclick="toggleCheckbox('eyeglasses', event)">
                             <div class="text-center">
                               <div class="icon-box eyeglasses mx-auto"><i class="mdi mdi-glasses"></i></div>
                               <div class="form-check">
                                 <label class="form-check-label">
-                                  <input type="checkbox" class="form-check-input" name="available_for_eyeglasses" id="eyeglasses">
-                                  <span class="font-weight-bold">Eyeglasses</span>
+                                  <input type="checkbox" class="form-check-input"
+                                    name="available_for_eyeglasses" id="eyeglasses">
+                                  <span class="font-weight-bold" style="font-size:0.85rem;">Eyeglasses</span>
                                   <i class="input-helper"></i>
                                 </label>
                               </div>
@@ -143,14 +171,15 @@
                           </div>
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-6 mb-3">
                           <div class="checkbox-card" onclick="toggleCheckbox('kids', event)">
                             <div class="text-center">
                               <div class="icon-box kids mx-auto"><i class="mdi mdi-human-child"></i></div>
                               <div class="form-check">
                                 <label class="form-check-label">
-                                  <input type="checkbox" class="form-check-input" name="available_for_kids" id="kids">
-                                  <span class="font-weight-bold">Kids</span>
+                                  <input type="checkbox" class="form-check-input"
+                                    name="available_for_kids" id="kids">
+                                  <span class="font-weight-bold" style="font-size:0.85rem;">Kids</span>
                                   <i class="input-helper"></i>
                                 </label>
                               </div>
@@ -158,27 +187,91 @@
                           </div>
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                          <div class="checkbox-card" onclick="toggleCheckbox('contact_lenses', event)">
+                        <div class="col-6 mb-3">
+                          <div class="checkbox-card" onclick="toggleCheckbox('reading', event)">
                             <div class="text-center">
-                              <div class="icon-box contact-lenses mx-auto"><i class="mdi mdi-eye"></i></div>
+                              <div class="icon-box reading mx-auto"><i class="mdi mdi-book-open-variant"></i></div>
                               <div class="form-check">
                                 <label class="form-check-label">
-                                  <input type="checkbox" class="form-check-input" name="available_for_contact_lenses" id="contact_lenses">
-                                  <span class="font-weight-bold">Contact Lenses</span>
+                                  <input type="checkbox" class="form-check-input"
+                                    name="available_for_reading_glasses" id="reading">
+                                  <span class="font-weight-bold" style="font-size:0.85rem;">Reading Glasses</span>
                                   <i class="input-helper"></i>
                                 </label>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
+
+                      </div><!-- /eyewear row -->
+
+                      <!-- ── Lenses ── -->
+                      <div class="section-label"><i class="mdi mdi-eye mr-1"></i>Lenses</div>
+                      <div class="row mb-2">
+
+                        <div class="col-6 mb-3">
+                          <div class="checkbox-card" onclick="toggleCheckbox('contact_lenses', event)">
+                            <div class="text-center">
+                              <div class="icon-box contact-lenses mx-auto"><i class="mdi mdi-eye-circle"></i></div>
+                              <div class="form-check">
+                                <label class="form-check-label">
+                                  <input type="checkbox" class="form-check-input"
+                                    name="available_for_contact_lenses" id="contact_lenses">
+                                  <span class="font-weight-bold" style="font-size:0.85rem;">Contact Lenses</span>
+                                  <i class="input-helper"></i>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="col-6 mb-3">
+                          <div class="checkbox-card" onclick="toggleCheckbox('medical_lenses', event)">
+                            <div class="text-center">
+                              <div class="icon-box medical-lens mx-auto"><i class="mdi mdi-medical-bag"></i></div>
+                              <div class="form-check">
+                                <label class="form-check-label">
+                                  <input type="checkbox" class="form-check-input"
+                                    name="available_for_medical_lenses" id="medical_lenses">
+                                  <span class="font-weight-bold" style="font-size:0.85rem;">Medical Lenses</span>
+                                  <i class="input-helper"></i>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div><!-- /lenses row -->
+
+                      <!-- ── Other ── -->
+                      <div class="section-label"><i class="mdi mdi-dots-horizontal mr-1"></i>Other</div>
+                      <div class="row">
+
+                        <div class="col-6 mb-1">
+                          <div class="checkbox-card" onclick="toggleCheckbox('accessories', event)">
+                            <div class="text-center">
+                              <div class="icon-box accessories mx-auto"><i class="mdi mdi-bag-personal"></i></div>
+                              <div class="form-check">
+                                <label class="form-check-label">
+                                  <input type="checkbox" class="form-check-input"
+                                    name="available_for_accessories" id="accessories">
+                                  <span class="font-weight-bold" style="font-size:0.85rem;">Accessories</span>
+                                  <i class="input-helper"></i>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div><!-- /other row -->
+
+                    </div><!-- /availability-section -->
                   </div>
 
                   <div class="form-group mt-3">
                     <label for="display_order" class="font-weight-bold">Display Order</label>
-                    <input type="number" class="form-control form-control-lg" id="display_order" name="display_order" value="0" min="0">
+                    <input type="number" class="form-control form-control-lg" id="display_order"
+                      name="display_order" value="0" min="0">
                   </div>
 
                   <div class="form-group">
@@ -192,7 +285,7 @@
                   </div>
 
                 </div>
-              </div>
+              </div><!-- /row -->
 
               <div class="row mt-4">
                 <div class="col-12">
@@ -207,7 +300,6 @@
               </div>
 
             </form>
-
           </div>
         </div>
       </div>
@@ -218,9 +310,9 @@
 
 <script>
   // 1. Auto-generate slug
-  document.getElementById('name').addEventListener('input', function(e) {
-    const slug = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    document.getElementById('slug').value = slug;
+  document.getElementById('name').addEventListener('input', function (e) {
+    document.getElementById('slug').value = e.target.value
+      .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   });
 
   // 2. Image Preview
@@ -228,9 +320,8 @@
     const reader = new FileReader();
     const imagePreview = document.getElementById('imagePreview');
     const file = event.target.files[0];
-    
     if (file) {
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         imagePreview.src = e.target.result;
         imagePreview.style.display = 'block';
       };
@@ -239,32 +330,23 @@
     }
   }
 
-  // 3. ✅ FIXED: Robust Checkbox Toggling
+  // 3. Checkbox card toggle (robust — works for both click-on-card and click-on-input)
   function toggleCheckbox(id, event) {
-    // Prevent double toggling if user clicked the actual input or label
     if (event.target.type === 'checkbox' || event.target.tagName === 'LABEL') {
-       const checkbox = document.getElementById(id);
-       const card = checkbox.closest('.checkbox-card');
-       if (checkbox.checked) card.classList.add('checked');
-       else card.classList.remove('checked');
-       return;
+      const checkbox = document.getElementById(id);
+      const card = checkbox.closest('.checkbox-card');
+      if (checkbox.checked) card.classList.add('checked');
+      else card.classList.remove('checked');
+      return;
     }
-
-    // Manual toggle if user clicked the Card background
     const checkbox = document.getElementById(id);
     const card = checkbox.closest('.checkbox-card');
-    
     checkbox.checked = !checkbox.checked;
-    
-    if (checkbox.checked) {
-      card.classList.add('checked');
-    } else {
-      card.classList.remove('checked');
-    }
+    card.classList.toggle('checked', checkbox.checked);
   }
 
-  // 4. Form Validation
-  document.getElementById('brandForm').addEventListener('submit', function(e) {
+  // 4. Form validation
+  document.getElementById('brandForm').addEventListener('submit', function (e) {
     const name = document.getElementById('name').value.trim();
     const slug = document.getElementById('slug').value.trim();
     const logo = document.getElementById('logo').files.length;
@@ -275,13 +357,11 @@
       return false;
     }
 
-    // Check Availability
     const checkboxes = document.querySelectorAll('input[type="checkbox"][name^="available_for_"]');
     const isAnyChecked = Array.from(checkboxes).some(cb => cb.checked);
-    
     if (!isAnyChecked) {
       e.preventDefault();
-      alert('Please select at least one availability option (Sunglasses, Eyeglasses, etc.)');
+      alert('Please select at least one availability option.');
       return false;
     }
   });
