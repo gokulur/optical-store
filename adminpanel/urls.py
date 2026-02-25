@@ -133,4 +133,10 @@ urlpatterns = [
     path("promotions/<int:coupon_id>/edit/",         views.coupon_edit,          name="coupon_edit"),
     path("promotions/<int:coupon_id>/delete/",       views.coupon_delete,        name="coupon_delete"),
     path("promotions/usage/",                        views.coupon_usage_history, name="coupon_usage_history"),
+
+
+    path('orders/<int:order_id>/update-tracking/', views.order_update_tracking, name='order_update_tracking'),
+    path('orders/<int:order_id>/update-notes/',    views.order_update_notes,    name='order_update_notes'),
 ]
+
+
