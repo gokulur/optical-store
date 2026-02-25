@@ -1,0 +1,274 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+  .form-control:focus { border-color: #b66dff; box-shadow: 0 0 0 .2rem rgba(182,109,255,.25); }
+  .section-card { border-left: 4px solid #b66dff; margin-bottom: 24px; }
+  .section-card .card-header { background: linear-gradient(90deg, rgba(182,109,255,.1), transparent); font-weight: 700; }
+  .rx-table input { text-align: center; }
+  .btn-gradient-primary { background: linear-gradient(to right, #da8cff, #9a55ff); border: 0; color: white; }
+  .btn-gradient-primary:hover { background: linear-gradient(to right, #9a55ff, #da8cff); color: white; }
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <h3 class="mb-1"><i class="mdi mdi-pencil"></i> Edit Job — {{ job.job_number }}</h3>
+      <p class="mb-0">Update job details for {{ job.customer_name }}</p>
+    </div>
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-transparent p-0 mb-4">
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:job_list' %}">Jobs</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:job_detail' job.id %}">{{ job.job_number }}</a></li>
+        <li class="breadcrumb-item active">Edit</li>
+      </ol>
+    </nav>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}<button class="close" data-dismiss="alert"><span>&times;</span></button></div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="row">
+        <div class="col-md-8">
+
+          <!-- Customer Info -->
+          <div class="card section-card">
+            <div class="card-header"><i class="mdi mdi-account-outline"></i> Customer Information</div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6 form-group">
+                  <label class="font-weight-bold">Customer Name <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" name="customer_name" value="{{ job.customer_name }}" required>
+                  <input type="hidden" name="customer_id" value="{{ job.customer.id|default:'' }}">
+                </div>
+                <div class="col-md-3 form-group">
+                  <label class="font-weight-bold">Phone <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" name="customer_phone" value="{{ job.customer_phone }}" required>
+                </div>
+                <div class="col-md-3 form-group">
+                  <label class="font-weight-bold">Email</label>
+                  <input type="email" class="form-control" name="customer_email" value="{{ job.customer_email }}">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Job Details -->
+          <div class="card section-card">
+            <div class="card-header"><i class="mdi mdi-clipboard-text-outline"></i> Job Details</div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-4 form-group">
+                  <label class="font-weight-bold">Job Type</label>
+                  <select class="form-control" name="job_type">
+                    {% for val, label in type_choices %}
+                    <option value="{{ val }}" {% if job.job_type == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-4 form-group">
+                  <label class="font-weight-bold">Source</label>
+                  <select class="form-control" name="source">
+                    {% for val, label in source_choices %}
+                    <option value="{{ val }}" {% if job.source == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-4 form-group">
+                  <label class="font-weight-bold">Priority</label>
+                  <select class="form-control" name="priority">
+                    {% for val, label in priority_choices %}
+                    <option value="{{ val }}" {% if job.priority == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-6 form-group">
+                  <label class="font-weight-bold">Frame Description</label>
+                  <input type="text" class="form-control" name="frame_description" value="{{ job.frame_description }}">
+                </div>
+                <div class="col-md-3 form-group">
+                  <label class="font-weight-bold">Promised Date</label>
+                  <input type="date" class="form-control" name="promised_date" value="{{ job.promised_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-3 form-group">
+                  <label class="font-weight-bold">Assigned To</label>
+                  <select class="form-control" name="assigned_to">
+                    <option value="">— Unassigned —</option>
+                    {% for staff in staff_users %}
+                    <option value="{{ staff.id }}" {% if job.assigned_to and job.assigned_to.id == staff.id %}selected{% endif %}>{{ staff.get_full_name|default:staff.email }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Prescription -->
+          <div class="card section-card">
+            <div class="card-header"><i class="mdi mdi-glasses"></i> Prescription (Rx)</div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered rx-table">
+                  <thead class="bg-light"><tr><th></th><th>Sphere</th><th>Cylinder</th><th>Axis</th><th>Add</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-weight-bold bg-light">Right Eye (OD)</td>
+                      <td><input type="number" step="0.25" class="form-control form-control-sm" name="re_sphere" value="{{ job.re_sphere }}"></td>
+                      <td><input type="number" step="0.25" class="form-control form-control-sm" name="re_cylinder" value="{{ job.re_cylinder }}"></td>
+                      <td><input type="number" class="form-control form-control-sm" name="re_axis" value="{{ job.re_axis }}"></td>
+                      <td><input type="number" step="0.25" class="form-control form-control-sm" name="re_add" value="{{ job.re_add }}"></td>
+                    </tr>
+                    <tr>
+                      <td class="font-weight-bold bg-light">Left Eye (OS)</td>
+                      <td><input type="number" step="0.25" class="form-control form-control-sm" name="le_sphere" value="{{ job.le_sphere }}"></td>
+                      <td><input type="number" step="0.25" class="form-control form-control-sm" name="le_cylinder" value="{{ job.le_cylinder }}"></td>
+                      <td><input type="number" class="form-control form-control-sm" name="le_axis" value="{{ job.le_axis }}"></td>
+                      <td><input type="number" step="0.25" class="form-control form-control-sm" name="le_add" value="{{ job.le_add }}"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-3 form-group">
+                  <label class="font-weight-bold small">PD Distance</label>
+                  <input type="number" step="0.5" class="form-control form-control-sm" name="pd_distance" value="{{ job.pd_distance }}">
+                </div>
+                <div class="col-md-3 form-group">
+                  <label class="font-weight-bold small">PD Near</label>
+                  <input type="number" step="0.5" class="form-control form-control-sm" name="pd_near" value="{{ job.pd_near }}">
+                </div>
+                <div class="col-md-6 form-group">
+                  <label class="font-weight-bold small">New Prescription File</label>
+                  <input type="file" class="form-control-file" name="prescription_file" accept=".pdf,.jpg,.jpeg,.png">
+                  {% if job.prescription_file %}<small class="text-muted">Current: <a href="{{ job.prescription_file.url }}" target="_blank">View file</a></small>{% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lens Details -->
+          <div class="card section-card">
+            <div class="card-header"><i class="mdi mdi-eye-outline"></i> Lens Details</div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-4 form-group">
+                  <label class="font-weight-bold small">Lens Brand</label>
+                  <input type="text" class="form-control" name="lens_brand" value="{{ job.lens_brand }}">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label class="font-weight-bold small">Lens Type</label>
+                  <input type="text" class="form-control" name="lens_type" value="{{ job.lens_type }}">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label class="font-weight-bold small">Index</label>
+                  <input type="text" class="form-control" name="lens_index" value="{{ job.lens_index }}">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label class="font-weight-bold small">Coating</label>
+                  <input type="text" class="form-control" name="lens_coating" value="{{ job.lens_coating }}">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label class="font-weight-bold small">Colour/Tint</label>
+                  <input type="text" class="form-control" name="lens_color" value="{{ job.lens_color }}">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="card section-card">
+            <div class="card-header"><i class="mdi mdi-note-text-outline"></i> Notes</div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6 form-group">
+                  <label class="font-weight-bold small">Internal Notes</label>
+                  <textarea class="form-control" name="internal_notes" rows="3">{{ job.internal_notes }}</textarea>
+                </div>
+                <div class="col-md-6 form-group">
+                  <label class="font-weight-bold small">Customer Notes</label>
+                  <textarea class="form-control" name="customer_notes" rows="3">{{ job.customer_notes }}</textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="col-md-4">
+          <div class="card section-card sticky-top" style="top:80px;">
+            <div class="card-header"><i class="mdi mdi-cash-multiple"></i> Payment Summary</div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="font-weight-bold small">Frame Price (QAR)</label>
+                <input type="number" step="0.01" class="form-control calc-input" name="frame_price" id="framePrice" value="{{ job.frame_price }}" oninput="calcTotal()">
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold small">Lens Price (QAR)</label>
+                <input type="number" step="0.01" class="form-control calc-input" name="lens_price" id="lensPrice" value="{{ job.lens_price }}" oninput="calcTotal()">
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold small">Add-ons (QAR)</label>
+                <input type="number" step="0.01" class="form-control calc-input" name="addon_price" id="addonPrice" value="{{ job.addon_price }}" oninput="calcTotal()">
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold small">Discount (QAR)</label>
+                <input type="number" step="0.01" class="form-control calc-input" name="discount" id="discountVal" value="{{ job.discount }}" oninput="calcTotal()">
+              </div>
+              <hr>
+              <div class="form-group">
+                <label class="font-weight-bold">Total Amount (QAR)</label>
+                <input type="number" step="0.01" class="form-control font-weight-bold" name="total_amount" id="totalAmount" value="{{ job.total_amount }}" readonly style="background:#f8f9fa;font-size:1.2rem;">
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold small">Advance Paid (QAR)</label>
+                <input type="number" step="0.01" class="form-control" name="advance_paid" id="advancePaid" value="{{ job.advance_paid }}" oninput="calcBalance()">
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold small">Balance Due</label>
+                <input type="number" step="0.01" class="form-control font-weight-bold text-danger" id="balanceDue" value="{{ job.balance_due }}" readonly style="background:#fff3cd;">
+              </div>
+              <hr>
+              <button type="submit" class="btn btn-gradient-primary btn-lg btn-block">
+                <i class="mdi mdi-check"></i> Save Changes
+              </button>
+              <a href="{% url 'adminpanel:job_detail' job.id %}" class="btn btn-light btn-block mt-2">
+                <i class="mdi mdi-close"></i> Cancel
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function calcTotal() {
+  var total = Math.max(0,
+    (parseFloat(document.getElementById('framePrice').value)  || 0) +
+    (parseFloat(document.getElementById('lensPrice').value)   || 0) +
+    (parseFloat(document.getElementById('addonPrice').value)  || 0) -
+    (parseFloat(document.getElementById('discountVal').value) || 0)
+  );
+  document.getElementById('totalAmount').value = total.toFixed(2);
+  calcBalance();
+}
+function calcBalance() {
+  var bal = Math.max(0,
+    (parseFloat(document.getElementById('totalAmount').value) || 0) -
+    (parseFloat(document.getElementById('advancePaid').value) || 0)
+  );
+  document.getElementById('balanceDue').value = bal.toFixed(2);
+}
+</script>
+{% endblock %}
