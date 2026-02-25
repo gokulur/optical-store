@@ -137,6 +137,16 @@ urlpatterns = [
 
     path('orders/<int:order_id>/update-tracking/', views.order_update_tracking, name='order_update_tracking'),
     path('orders/<int:order_id>/update-notes/',    views.order_update_notes,    name='order_update_notes'),
+
+
+    path('jobs/',                       views.job_list,           name='job_list'),
+    path('jobs/add/',                   views.job_add,            name='job_add'),
+    path('jobs/<int:job_id>/',          views.job_detail,         name='job_detail'),
+    path('jobs/<int:job_id>/edit/',     views.job_edit,           name='job_edit'),
+    path('jobs/<int:job_id>/status/',   views.job_update_status,  name='job_update_status'),
+    path('jobs/<int:job_id>/document/', views.job_upload_documentcument,name='job_upload_document'),
+    path('jobs/<int:job_id>/delete/',   views.job_deletedelete,         name='job_delete'),
+    path('jobs/customer-search/',       views.job_customer_search,name='job_customer_search'),
 ]
 
 
