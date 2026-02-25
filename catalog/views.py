@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView
 from django.db.models import Q, Min, Max
 from django.contrib.auth.decorators import login_required
-
+from reviews.reviews_context import get_review_context
 from cart import models
 from .models import (
     Product, Category, Brand, ProductVariant, 
@@ -303,9 +303,10 @@ def accessory_detail(request, slug):
             category=product.category, product_type='accessories', is_active=True
         ).exclude(id=product.id).prefetch_related('images')[:4]
     }
+    context.update(get_review_context(request, product))
     return render(request, 'accessory_detail.html', context)
 
-from reviews.reviews_context import get_review_context
+
 
 # Sunglass Detail
 def sunglass_detail(request, slug):
