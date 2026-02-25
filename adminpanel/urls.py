@@ -144,8 +144,8 @@ urlpatterns = [
     path('jobs/<int:job_id>/',          views.job_detail,         name='job_detail'),
     path('jobs/<int:job_id>/edit/',     views.job_edit,           name='job_edit'),
     path('jobs/<int:job_id>/status/',   views.job_update_status,  name='job_update_status'),
-    path('jobs/<int:job_id>/document/', views.job_upload_documentcument,name='job_upload_document'),
-    path('jobs/<int:job_id>/delete/',   views.job_deletedelete,         name='job_delete'),
+    # path('jobs/<int:job_id>/document/', views.job_upload_documentcument,name='job_upload_document'),
+    # path('jobs/<int:job_id>/delete/',   views.job_deletedelete,         name='job_delete'),
     path('jobs/customer-search/',       views.job_customer_search,name='job_customer_search'),
 ]
 
