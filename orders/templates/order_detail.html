@@ -277,6 +277,17 @@
         Track Shipment
       </a>
       <a href="{% url 'orders:order_list' %}" class="od-btn od-btn-outline">← All Orders</a>
+      {% with item=order.items.first %}
+      <a href="{% url 'reviews:write_review' item.product.slug %}" class="od-btn od-btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+      
+          <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V5a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+      
+        </svg>
+        Write Review
+      </a>
+      {% endwith %}
     </div>
 
     <div class="od-help">

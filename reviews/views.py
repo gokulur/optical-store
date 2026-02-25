@@ -95,7 +95,7 @@ def product_reviews(request, product_slug):
         'sort_by': sort_by,
     }
     
-    return render(request, 'reviews/product_reviews.html', context)
+    return render(request, 'product_reviews.html', context)
 
 
 @login_required
@@ -156,7 +156,7 @@ def write_review(request, product_slug):
         'product': product,
     }
     
-    return render(request, 'reviews/write_review.html', context)
+    return render(request, 'write_review.html', context)
 
 
 @login_required
@@ -213,7 +213,7 @@ def edit_review(request, review_id):
         'is_edit': True,
     }
     
-    return render(request, 'reviews/write_review.html', context)
+    return render(request, 'write_review.html', context)
 
 
 @login_required
@@ -245,7 +245,7 @@ def my_reviews(request):
         'reviews': page_obj,
     }
     
-    return render(request, 'reviews/my_reviews.html', context)
+    return render(request, 'my_reviews.html', context)
 
 
 @login_required
@@ -377,7 +377,7 @@ def reviews_pending_moderation(request):
         'reviews': page_obj,
     }
     
-    return render(request, 'reviews/pending_moderation.html', context)
+    return render(request, 'pending_moderation.html', context)
 
 
 @require_POST
