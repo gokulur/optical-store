@@ -14,7 +14,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from django.db import models
-
+from jobs.models import JobOrder, JobStatusHistory, JobDocument
 # Models - Consolidated Imports
 from catalog.models import (
     Category, Brand, Product, ProductVariant, ProductImage,
@@ -31,7 +31,7 @@ from orders.models import Order, OrderItem
 from users.models import User
 from reviews.models import Review
 from django.db.models import Count, Max
-
+from django.http import JsonResponse
 # Helper: Check if admin
 def is_admin(user):
     return (
@@ -2224,3 +2224,326 @@ def order_update_notes(request, order_id):
     order.save(update_fields=['internal_notes'])
     messages.success(request, 'Internal note saved.')
     return redirect('adminpanel:order_detail', order_id)
+
+
+
+
+# ──────────────────────────────────────────────
+#  LIST
+# ──────────────────────────────────────────────
+@login_required
+@user_passes_test(is_admin)
+def job_list(request):
+    search     = request.GET.get('search', '').strip()
+    status     = request.GET.get('status', '')
+    job_type   = request.GET.get('job_type', '')
+    priority   = request.GET.get('priority', '')
+    date_from  = request.GET.get('date_from', '')
+    date_to    = request.GET.get('date_to', '')
+
+    jobs = JobOrder.objects.select_related('customer', 'assigned_to').order_by('-created_at')
+
+    if search:
+        jobs = jobs.filter(
+            Q(job_number__icontains=search) |
+            Q(customer_name__icontains=search) |
+            Q(customer_phone__icontains=search) |
+            Q(customer_email__icontains=search)
+        )
+    if status:
+        jobs = jobs.filter(status=status)
+    if job_type:
+        jobs = jobs.filter(job_type=job_type)
+    if priority:
+        jobs = jobs.filter(priority=priority)
+    if date_from:
+        jobs = jobs.filter(created_at__date__gte=date_from)
+    if date_to:
+        jobs = jobs.filter(created_at__date__lte=date_to)
+
+    # Stats for header cards
+    total       = JobOrder.objects.count()
+    pending     = JobOrder.objects.filter(status__in=['received', 'processing', 'lens_order', 'fitting', 'qa']).count()
+    ready       = JobOrder.objects.filter(status='ready').count()
+    delivered   = JobOrder.objects.filter(status='delivered').count()
+    urgent      = JobOrder.objects.filter(priority='urgent', status__in=['received','processing','lens_order','fitting','qa']).count()
+
+    paginator = Paginator(jobs, 20)
+    jobs_page = paginator.get_page(request.GET.get('page', 1))
+
+    return render(request, 'adminpanel/jobs/list.html', {
+        'jobs':       jobs_page,
+        'search':     search,
+        'status':     status,
+        'job_type':   job_type,
+        'priority':   priority,
+        'date_from':  date_from,
+        'date_to':    date_to,
+        'total':      total,
+        'pending':    pending,
+        'ready':      ready,
+        'delivered':  delivered,
+        'urgent':     urgent,
+        'status_choices':   JobOrder.STATUS_CHOICES,
+        'type_choices':     JobOrder.JOB_TYPE_CHOICES,
+        'priority_choices': JobOrder.PRIORITY_CHOICES,
+    })
+
+
+# ──────────────────────────────────────────────
+#  ADD
+# ──────────────────────────────────────────────
+@login_required
+@user_passes_test(is_admin)
+def job_add(request):
+    from users.models import User
+
+    if request.method == 'POST':
+        try:
+            # Customer info
+            customer_id = request.POST.get('customer_id') or None
+            customer    = User.objects.get(id=customer_id) if customer_id else None
+
+            job = JobOrder.objects.create(
+                job_type        = request.POST.get('job_type', 'in_store'),
+                source          = request.POST.get('source', 'walk_in'),
+                priority        = request.POST.get('priority', 'normal'),
+                customer        = customer,
+                customer_name   = request.POST.get('customer_name', ''),
+                customer_phone  = request.POST.get('customer_phone', ''),
+                customer_email  = request.POST.get('customer_email', ''),
+
+                # Prescription
+                re_sphere   = request.POST.get('re_sphere')   or None,
+                re_cylinder = request.POST.get('re_cylinder') or None,
+                re_axis     = request.POST.get('re_axis')     or None,
+                re_add      = request.POST.get('re_add')      or None,
+                le_sphere   = request.POST.get('le_sphere')   or None,
+                le_cylinder = request.POST.get('le_cylinder') or None,
+                le_axis     = request.POST.get('le_axis')     or None,
+                le_add      = request.POST.get('le_add')      or None,
+                pd_distance = request.POST.get('pd_distance') or None,
+                pd_near     = request.POST.get('pd_near')     or None,
+
+                # Products
+                frame_description = request.POST.get('frame_description', ''),
+                lens_brand        = request.POST.get('lens_brand', ''),
+                lens_type         = request.POST.get('lens_type', ''),
+                lens_index        = request.POST.get('lens_index', ''),
+                lens_coating      = request.POST.get('lens_coating', ''),
+                lens_color        = request.POST.get('lens_color', ''),
+
+                # Financials
+                frame_price  = request.POST.get('frame_price')  or 0,
+                lens_price   = request.POST.get('lens_price')   or 0,
+                addon_price  = request.POST.get('addon_price')  or 0,
+                discount     = request.POST.get('discount')     or 0,
+                total_amount = request.POST.get('total_amount') or 0,
+                advance_paid = request.POST.get('advance_paid') or 0,
+
+                promised_date  = request.POST.get('promised_date') or None,
+                internal_notes = request.POST.get('internal_notes', ''),
+                customer_notes = request.POST.get('customer_notes', ''),
+                assigned_to    = User.objects.get(id=request.POST['assigned_to']) if request.POST.get('assigned_to') else None,
+                created_by     = request.user,
+                prescription_file = request.FILES.get('prescription_file'),
+            )
+
+            # Initial history entry
+            JobStatusHistory.objects.create(
+                job=job, old_status='', new_status='received',
+                note='Job created', changed_by=request.user
+            )
+
+            messages.success(request, f'Job #{job.job_number} created successfully!')
+            return redirect('adminpanel:job_detail', job_id=job.id)
+
+        except Exception as e:
+            messages.error(request, f'Error creating job: {str(e)}')
+
+    from users.models import User
+    staff_users = User.objects.filter(is_staff=True)
+    return render(request, 'adminpanel/jobs/add.html', {
+        'status_choices':   JobOrder.STATUS_CHOICES,
+        'type_choices':     JobOrder.JOB_TYPE_CHOICES,
+        'source_choices':   JobOrder.SOURCE_CHOICES,
+        'priority_choices': JobOrder.PRIORITY_CHOICES,
+        'staff_users':      staff_users,
+    })
+
+
+# ──────────────────────────────────────────────
+#  DETAIL / EDIT
+# ──────────────────────────────────────────────
+@login_required
+@user_passes_test(is_admin)
+def job_detail(request, job_id):
+    job      = get_object_or_404(JobOrder, id=job_id)
+    history  = job.history.select_related('changed_by').order_by('-created_at')
+    docs     = job.documents.all()
+
+    return render(request, 'adminpanel/jobs/detail.html', {
+        'job':              job,
+        'history':          history,
+        'docs':             docs,
+        'status_choices':   JobOrder.STATUS_CHOICES,
+        'priority_choices': JobOrder.PRIORITY_CHOICES,
+    })
+
+
+@login_required
+@user_passes_test(is_admin)
+def job_edit(request, job_id):
+    job = get_object_or_404(JobOrder, id=job_id)
+    from users.models import User
+
+    if request.method == 'POST':
+        try:
+            customer_id = request.POST.get('customer_id') or None
+
+            job.job_type        = request.POST.get('job_type', job.job_type)
+            job.source          = request.POST.get('source', job.source)
+            job.priority        = request.POST.get('priority', job.priority)
+            job.customer_name   = request.POST.get('customer_name', job.customer_name)
+            job.customer_phone  = request.POST.get('customer_phone', job.customer_phone)
+            job.customer_email  = request.POST.get('customer_email', job.customer_email)
+
+            job.re_sphere   = request.POST.get('re_sphere')   or None
+            job.re_cylinder = request.POST.get('re_cylinder') or None
+            job.re_axis     = request.POST.get('re_axis')     or None
+            job.re_add      = request.POST.get('re_add')      or None
+            job.le_sphere   = request.POST.get('le_sphere')   or None
+            job.le_cylinder = request.POST.get('le_cylinder') or None
+            job.le_axis     = request.POST.get('le_axis')     or None
+            job.le_add      = request.POST.get('le_add')      or None
+            job.pd_distance = request.POST.get('pd_distance') or None
+            job.pd_near     = request.POST.get('pd_near')     or None
+
+            job.frame_description = request.POST.get('frame_description', job.frame_description)
+            job.lens_brand        = request.POST.get('lens_brand', job.lens_brand)
+            job.lens_type         = request.POST.get('lens_type', job.lens_type)
+            job.lens_index        = request.POST.get('lens_index', job.lens_index)
+            job.lens_coating      = request.POST.get('lens_coating', job.lens_coating)
+            job.lens_color        = request.POST.get('lens_color', job.lens_color)
+
+            job.frame_price  = request.POST.get('frame_price')  or 0
+            job.lens_price   = request.POST.get('lens_price')   or 0
+            job.addon_price  = request.POST.get('addon_price')  or 0
+            job.discount     = request.POST.get('discount')     or 0
+            job.total_amount = request.POST.get('total_amount') or 0
+            job.advance_paid = request.POST.get('advance_paid') or 0
+
+            job.promised_date  = request.POST.get('promised_date') or None
+            job.internal_notes = request.POST.get('internal_notes', job.internal_notes)
+            job.customer_notes = request.POST.get('customer_notes', job.customer_notes)
+
+            if request.POST.get('assigned_to'):
+                job.assigned_to = User.objects.get(id=request.POST['assigned_to'])
+            if request.FILES.get('prescription_file'):
+                job.prescription_file = request.FILES['prescription_file']
+
+            job.save()
+            messages.success(request, f'Job #{job.job_number} updated!')
+            return redirect('adminpanel:job_detail', job_id=job.id)
+
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+
+    staff_users = User.objects.filter(is_staff=True)
+    return render(request, 'adminpanel/jobs/edit.html', {
+        'job':              job,
+        'type_choices':     JobOrder.JOB_TYPE_CHOICES,
+        'source_choices':   JobOrder.SOURCE_CHOICES,
+        'priority_choices': JobOrder.PRIORITY_CHOICES,
+        'staff_users':      staff_users,
+    })
+
+
+# ──────────────────────────────────────────────
+#  STATUS UPDATE
+# ──────────────────────────────────────────────
+@login_required
+@user_passes_test(is_admin)
+@require_POST
+def job_update_status(request, job_id):
+    job        = get_object_or_404(JobOrder, id=job_id)
+    new_status = request.POST.get('status')
+    note       = request.POST.get('note', '').strip()
+
+    if new_status and new_status != job.status:
+        JobStatusHistory.objects.create(
+            job=job, old_status=job.status,
+            new_status=new_status,
+            note=note, changed_by=request.user
+        )
+        old = job.status
+        job.status = new_status
+        if new_status == 'delivered':
+            job.completed_date = timezone.now()
+        job.save()
+        messages.success(request, f'Status updated: {old} → {new_status}')
+    else:
+        messages.warning(request, 'No status change made.')
+
+    return redirect('adminpanel:job_detail', job_id=job.id)
+
+
+# ──────────────────────────────────────────────
+#  DOCUMENT UPLOAD
+# ──────────────────────────────────────────────
+@login_required
+@user_passes_test(is_admin)
+@require_POST
+def job_upload_document(request, job_id):
+    job = get_object_or_404(JobOrder, id=job_id)
+    f   = request.FILES.get('file')
+    if f:
+        JobDocument.objects.create(
+            job=job,
+            doc_type    = request.POST.get('doc_type', 'other'),
+            file        = f,
+            description = request.POST.get('description', ''),
+            uploaded_by = request.user,
+        )
+        messages.success(request, 'Document uploaded.')
+    else:
+        messages.error(request, 'No file selected.')
+    return redirect('adminpanel:job_detail', job_id=job.id)
+
+
+# ──────────────────────────────────────────────
+#  DELETE
+# ──────────────────────────────────────────────
+@login_required
+@user_passes_test(is_admin)
+def job_delete(request, job_id):
+    job = get_object_or_404(JobOrder, id=job_id)
+    if request.method == 'POST':
+        num = job.job_number
+        job.delete()
+        messages.success(request, f'Job #{num} deleted.')
+        return redirect('adminpanel:job_list')
+    return render(request, 'adminpanel/jobs/delete_confirm.html', {'job': job})
+
+
+# ──────────────────────────────────────────────
+#  AJAX: Customer search autocomplete
+# ──────────────────────────────────────────────
+@login_required
+@user_passes_test(is_admin)
+def job_customer_search(request):
+    q = request.GET.get('q', '').strip()
+    from users.models import User
+    if len(q) >= 2:
+        users = User.objects.filter(
+            Q(first_name__icontains=q) |
+            Q(last_name__icontains=q)  |
+            Q(email__icontains=q)      |
+            Q(phone__icontains=q)
+        )[:10]
+        data = [{'id': u.id, 'name': u.get_full_name() or u.email,
+                 'email': u.email,
+                 'phone': getattr(u, 'phone', '')} for u in users]
+    else:
+        data = []
+    return JsonResponse({'results': data})
