@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Confirmed — Al Ameen Optics</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f4f4f0; font-family: 'Plus Jakarta Sans', Arial, sans-serif; color: #1f2937; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 620px; margin: 0 auto; padding: 32px 16px 64px; }
+
+  /* Header */
+  .hd { background: #1f2937; border-radius: 16px 16px 0 0; padding: 36px 40px; text-align: center; }
+  .hd-logo { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: #fff; letter-spacing: .08em; margin-bottom: 4px; }
+  .hd-tagline { font-size: 11px; color: rgba(255,255,255,.5); letter-spacing: .15em; text-transform: uppercase; }
+
+  /* Hero green band */
+  .hero { background: #d1fae5; padding: 32px 40px; text-align: center; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; }
+  .hero-icon { font-size: 48px; margin-bottom: 12px; }
+  .hero-title { font-size: 24px; font-weight: 800; color: #065f46; margin-bottom: 6px; }
+  .hero-sub { font-size: 14px; color: #047857; }
+
+  /* Body card */
+  .card { background: #fff; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; padding: 36px 40px; }
+  .card + .card { border-top: 1px solid #f3f4f6; }
+
+  /* Section label */
+  .sec-lbl { font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: #9ca3af; margin-bottom: 16px; }
+
+  /* Order meta row */
+  .meta-grid { display: table; width: 100%; border-collapse: collapse; }
+  .meta-row { display: table-row; }
+  .meta-cell { display: table-cell; padding: 8px 0; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+  .meta-cell:last-child { text-align: right; }
+  .meta-lbl { font-size: 12px; color: #9ca3af; font-weight: 600; }
+  .meta-val { font-size: 13px; color: #1f2937; font-weight: 700; font-family: 'DM Mono', monospace; }
+
+  /* Order number pill */
+  .order-num-pill { display: inline-block; background: #e8dff5; color: #5b21b6; font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; padding: 8px 18px; border-radius: 100px; margin-bottom: 24px; }
+
+  /* Items */
+  .item { display: table; width: 100%; border-collapse: collapse; padding: 16px 0; border-bottom: 1px solid #f3f4f6; }
+  .item:last-child { border-bottom: none; }
+  .item-img-cell { display: table-cell; width: 64px; vertical-align: middle; padding-right: 16px; }
+  .item-img { width: 60px; height: 60px; background: #f4f4f0; border-radius: 10px; display: block; object-fit: contain; border: 1px solid #e5e7eb; }
+  .item-img-placeholder { width: 60px; height: 60px; background: #f4f4f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 1px solid #e5e7eb; }
+  .item-body-cell { display: table-cell; vertical-align: middle; }
+  .item-name { font-size: 14px; font-weight: 700; color: #1f2937; margin-bottom: 3px; }
+  .item-meta { font-size: 12px; color: #9ca3af; }
+  .item-price-cell { display: table-cell; vertical-align: middle; text-align: right; white-space: nowrap; }
+  .item-qty { font-size: 11px; color: #9ca3af; margin-bottom: 2px; }
+  .item-total { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: #1f2937; }
+
+  /* Lens pill */
+  .lens-pill { display: inline-block; background: #fce7f3; color: #9f1239; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-top: 4px; }
+
+  /* Totals */
+  .totals { margin-top: 16px; }
+  .tot-row { display: table; width: 100%; padding: 7px 0; }
+  .tot-lbl { display: table-cell; font-size: 13px; color: #6b7280; }
+  .tot-val { display: table-cell; text-align: right; font-size: 13px; color: #1f2937; font-family: 'DM Mono', monospace; font-weight: 500; }
+  .tot-div { border-top: 2px solid #f3f4f6; margin: 8px 0; }
+  .tot-final { background: #e8dff5; border-radius: 10px; padding: 14px 18px; display: table; width: 100%; margin-top: 8px; }
+  .tot-final-lbl { display: table-cell; font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: #5b21b6; }
+  .tot-final-val { display: table-cell; text-align: right; font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: #1f2937; }
+
+  /* Address block */
+  .addr-block { background: #f9fafb; border-radius: 10px; padding: 16px 18px; line-height: 1.8; }
+  .addr-name { font-size: 14px; font-weight: 700; color: #1f2937; }
+  .addr-line { font-size: 13px; color: #374151; }
+  .addr-phone { font-size: 12px; color: #9ca3af; margin-top: 6px; }
+
+  /* Payment badge */
+  .pay-row { display: table; width: 100%; }
+  .pay-lbl { display: table-cell; font-size: 13px; color: #6b7280; font-weight: 600; vertical-align: middle; }
+  .pay-val { display: table-cell; text-align: right; font-size: 13px; font-weight: 700; color: #1f2937; }
+  .pay-badge { display: inline-block; background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 100px; }
+  .pay-badge.paid { background: #d1fae5; color: #065f46; }
+
+  /* CTA button */
+  .cta-wrap { text-align: center; padding: 32px 0 8px; }
+  .cta-btn { display: inline-block; background: #1f2937; color: #fff; text-decoration: none; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 16px 36px; border-radius: 100px; }
+
+  /* Help */
+  .help { background: #d1fae5; border-radius: 0 0 16px 16px; padding: 28px 40px; text-align: center; border: 1px solid #a7f3d0; border-top: none; }
+  .help-title { font-size: 13px; font-weight: 800; color: #065f46; margin-bottom: 6px; letter-spacing: .05em; text-transform: uppercase; }
+  .help-text { font-size: 13px; color: #047857; line-height: 1.6; }
+  .help-link { color: #10b981; font-weight: 700; text-decoration: none; }
+
+  /* Footer */
+  .foot { text-align: center; padding: 24px 0 0; }
+  .foot p { font-size: 11px; color: #9ca3af; line-height: 1.8; }
+  .foot a { color: #6b7280; text-decoration: none; }
+
+  /* Status timeline mini */
+  .timeline { padding: 4px 0; }
+  .tl-step { display: table; width: 100%; padding: 10px 0; position: relative; }
+  .tl-dot-cell { display: table-cell; width: 32px; vertical-align: top; padding-top: 3px; }
+  .tl-dot { width: 14px; height: 14px; border-radius: 50%; border: 3px solid #d1d5db; background: #fff; display: inline-block; }
+  .tl-dot.active { border-color: #10b981; background: #10b981; }
+  .tl-dot.done { border-color: #10b981; background: #d1fae5; }
+  .tl-body-cell { display: table-cell; vertical-align: top; }
+  .tl-label { font-size: 13px; font-weight: 700; color: #1f2937; }
+  .tl-label.muted { color: #d1d5db; font-weight: 500; }
+  .tl-sub { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+  @media (max-width: 480px) {
+    .hd, .hero, .card, .help { padding-left: 20px; padding-right: 20px; }
+    .tot-final-val { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="hd">
+    <div class="hd-logo">👓 AL AMEEN OPTICS</div>
+    <div class="hd-tagline">Your Vision Matters More</div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-icon">🎉</div>
+    <div class="hero-title">Order Confirmed!</div>
+    <div class="hero-sub">Thank you {{ customer_name }}. Your order has been received and is being processed.</div>
+  </div>
+
+  <!-- Order meta -->
+  <div class="card">
+    <div class="sec-lbl">Order Details</div>
+    <div style="text-align:center;margin-bottom:20px;">
+      <span class="order-num-pill">#{{ order_number }}</span>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-row">
+        <div class="meta-cell"><div class="meta-lbl">Order Date</div></div>
+        <div class="meta-cell"><div class="meta-val">{{ order_date }}</div></div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-cell"><div class="meta-lbl">Payment Method</div></div>
+        <div class="meta-cell"><div class="meta-val">{{ payment_method_display }}</div></div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-cell"><div class="meta-lbl">Estimated Delivery</div></div>
+        <div class="meta-cell"><div class="meta-val">{{ estimated_delivery }}</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Items -->
+  <div class="card">
+    <div class="sec-lbl">Items Ordered</div>
+    {% for item in order_items %}
+    <div class="item">
+      <div class="item-img-cell">
+        {% if item.image_url %}
+          <img src="{{ item.image_url }}" alt="{{ item.product_name }}" class="item-img">
+        {% else %}
+          <div class="item-img-placeholder">👓</div>
+        {% endif %}
+      </div>
+      <div class="item-body-cell">
+        <div class="item-name">{{ item.product_name }}</div>
+        <div class="item-meta">Qty: {{ item.quantity }} &middot; {{ item.currency }} {{ item.unit_price }} each</div>
+        {% if item.lens_option_name %}
+          <div><span class="lens-pill">🔍 {{ item.lens_option_name }}</span></div>
+        {% endif %}
+      </div>
+      <div class="item-price-cell">
+        <div class="item-qty">×{{ item.quantity }}</div>
+        <div class="item-total">{{ item.currency }} {{ item.subtotal }}</div>
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- Totals -->
+    <div class="totals">
+      <div class="tot-row">
+        <div class="tot-lbl">Subtotal</div>
+        <div class="tot-val">{{ currency }} {{ subtotal }}</div>
+      </div>
+      {% if discount_amount and discount_amount != '0.00' %}
+      <div class="tot-row">
+        <div class="tot-lbl">Discount</div>
+        <div class="tot-val" style="color:#10b981;">-{{ currency }} {{ discount_amount }}</div>
+      </div>
+      {% endif %}
+      <div class="tot-row">
+        <div class="tot-lbl">Shipping</div>
+        <div class="tot-val">{% if shipping_amount == '0.00' %}FREE{% else %}{{ currency }} {{ shipping_amount }}{% endif %}</div>
+      </div>
+      {% if tax_amount and tax_amount != '0.00' %}
+      <div class="tot-row">
+        <div class="tot-lbl">Tax</div>
+        <div class="tot-val">{{ currency }} {{ tax_amount }}</div>
+      </div>
+      {% endif %}
+      <div class="tot-div"></div>
+      <div class="tot-final">
+        <div class="tot-final-lbl">Total</div>
+        <div class="tot-final-val">{{ currency }} {{ total_amount }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shipping Address -->
+  <div class="card">
+    <div class="sec-lbl">Delivering To</div>
+    <div class="addr-block">
+      <div class="addr-name">{{ shipping_name }}</div>
+      <div class="addr-line">{{ shipping_line1 }}{% if shipping_line2 %}, {{ shipping_line2 }}{% endif %}</div>
+      <div class="addr-line">{{ shipping_city }}{% if shipping_state %}, {{ shipping_state }}{% endif %}{% if shipping_postal %} {{ shipping_postal }}{% endif %}</div>
+      <div class="addr-line">{{ shipping_country }}</div>
+      {% if shipping_phone %}<div class="addr-phone">📞 {{ shipping_phone }}</div>{% endif %}
+    </div>
+  </div>
+
+  <!-- Payment status -->
+  <div class="card">
+    <div class="sec-lbl">Payment</div>
+    <div class="pay-row">
+      <div class="pay-lbl">{{ payment_method_display }}</div>
+      <div class="pay-val">
+        {% if payment_status == 'completed' %}
+          <span class="pay-badge paid">✓ Paid</span>
+        {% else %}
+          <span class="pay-badge">Pending</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Mini order timeline -->
+  <div class="card">
+    <div class="sec-lbl">What Happens Next</div>
+    <div class="timeline">
+      <div class="tl-step">
+        <div class="tl-dot-cell"><span class="tl-dot active"></span></div>
+        <div class="tl-body-cell">
+          <div class="tl-label">Order Confirmed ✓</div>
+          <div class="tl-sub">We've received your order and payment</div>
+        </div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot-cell"><span class="tl-dot done"></span></div>
+        <div class="tl-body-cell">
+          <div class="tl-label">Processing</div>
+          <div class="tl-sub">Our team prepares your eyewear</div>
+        </div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot-cell"><span class="tl-dot"></span></div>
+        <div class="tl-body-cell">
+          <div class="tl-label muted">Shipped</div>
+          <div class="tl-sub">Tracking number will be emailed to you</div>
+        </div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot-cell"><span class="tl-dot"></span></div>
+        <div class="tl-body-cell">
+          <div class="tl-label muted">Delivered 🎉</div>
+          <div class="tl-sub">Enjoy your new eyewear!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-wrap">
+      <a href="{{ order_detail_url }}" class="cta-btn">Track My Order →</a>
+    </div>
+  </div>
+
+  <!-- Help -->
+  <div class="help">
+    <div class="help-title">Need Help?</div>
+    <div class="help-text">
+      Questions about your order? Contact us at
+      <a href="mailto:{{ support_email }}" class="help-link">{{ support_email }}</a><br>
+      or visit any of our stores.
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="foot">
+    <p>
+      Al Ameen Optics &mdash; Your Vision Matters More<br>
+      You received this email because you placed an order with us.<br>
+      <a href="{{ site_url }}">{{ site_url }}</a>
+    </p>
+  </div>
+
+</div>
+</body>
+</html>
