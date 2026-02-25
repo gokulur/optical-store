@@ -305,6 +305,7 @@ def accessory_detail(request, slug):
     }
     return render(request, 'accessory_detail.html', context)
 
+from reviews.reviews_context import get_review_context
 
 # Sunglass Detail
 def sunglass_detail(request, slug):
@@ -321,16 +322,17 @@ def sunglass_detail(request, slug):
 
     context = {
         'product': product,
-        'primary_image': primary_image,         
-        'images': extra_images,                  
+        'primary_image': primary_image,
+        'images': extra_images,
         'variants': product.variants.filter(is_active=True),
         'specifications': product.specifications.all(),
         'related_products': Product.objects.filter(
             category=product.category,
             product_type='sunglasses',
             is_active=True
-        ).exclude(id=product.id)[:4]
+        ).exclude(id=product.id).prefetch_related('images')[:4]
     }
+    context.update(get_review_context(request, product))
     return render(request, 'sunglass_detail.html', context)
 
 
