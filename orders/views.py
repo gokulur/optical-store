@@ -21,7 +21,7 @@ from .payment_services import (
     StripePaymentService, RazorpayPaymentService, PayPalPaymentService,
     PaymentGatewayError,
 )
-
+from .email_service import send_order_confirmation_email
 logger = logging.getLogger(__name__)
 
 
@@ -231,6 +231,7 @@ def place_order(request):
             order.status       = 'confirmed'
             order.confirmed_at = timezone.now()
             order.save(update_fields=['status','confirmed_at'])
+            send_order_confirmation_email(order)
             OrderStatusHistory.objects.create(order=order, from_status='pending', to_status='confirmed', notes='COD confirmed', changed_by=request.user)
             messages.success(request, f'✅ Order {order.order_number} placed!')
             return redirect('orders:order_confirmation', order_number=order.order_number)
