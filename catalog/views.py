@@ -395,6 +395,7 @@ def contact_lens_detail(request, slug):
             product_type='contact_lenses', is_active=True
         ).exclude(id=product.id).prefetch_related('images')[:4]
     }
+    context.update(get_review_context(request, product))
     return render(request, 'contact_lens_detail.html', context)
 
 
