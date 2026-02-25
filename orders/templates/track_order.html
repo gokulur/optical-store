@@ -1,27 +1,467 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Track Order #{{ order.order_number }}{% endblock %}
 {% block content %}
-<div class="track-order-page">
-    <div class="container">
-        <h1>Track Order</h1>
-        <p class="order-number">Order #{{ order.order_number }}</p>
-        <div class="tracking-timeline">{% for status in status_progression %}<div
-                class="timeline-step {% if forloop.counter0 <= current_status_index %}completed{% endif %} {% if status == order.status %}current{% endif %}">
-                <div class="step-icon">{% if forloop.counter0 <= current_status_index %}✓{% else %}○{% endif %}</div>
-                        <div class="step-info">
-                            <h3>{{ status|title }}</h3>
-                        </div>
-                </div>{% endfor %}
-            </div>{% if order.tracking_number %}<div class="tracking-info">
-                <h2>Tracking Information</h2>
-                <p><strong>Tracking Number:</strong> {{ order.tracking_number }}</p>
-                <p><strong>Carrier:</strong> {{ order.carrier }}</p>
-            </div>{% endif %}<div class="status-history">
-                <h2>Status History</h2>{% for history in status_history %}<div class="history-item"><span
-                        class="history-date">{{ history.created_at|date:"M j, Y H:i" }}</span><span
-                        class="history-status">{{ history.to_status|title }}</span>{% if history.notes %}<p>{{
-                        history.notes }}</p>{% endif %}</div>{% endfor %}
-            </div><a href="{% url 'orders:order_detail' order.order_number %}" class="btn btn-primary">Back to Order
-                Details</a></div>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --lav:#e8dff5; --amber:#fef3c7; --mint:#d1fae5; --pink:#fce7f3;
+  --bg:#fafaf9; --white:#fff; --ink:#1f2937; --ink2:#374151; --muted:#6b7280;
+  --rule:#e5e7eb; --green:#10b981; --red:#ef4444; --purple:#8b5cf6;
+  --r:12px; --r-lg:18px; --sh:0 2px 12px rgba(0,0,0,.04); --sh-lg:0 8px 32px rgba(0,0,0,.08);
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+.to {
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  min-height:100vh;
+  padding:40px 20px 80px;
+}
+.to-con { max-width:960px; margin:0 auto; }
+
+/* ── Breadcrumb ── */
+.to-bc { display:flex; align-items:center; gap:8px; margin-bottom:24px; }
+.to-bc a, .to-bc span { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); text-decoration:none; }
+.to-bc a:hover { color:var(--ink); }
+.to-bc__sep { font-size:10px; color:var(--muted); }
+.to-bc span:last-child { color:var(--ink); }
+
+/* ── Header ── */
+.to-hd { margin-bottom:40px; }
+.to-lbl { font-size:10px; font-weight:800; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; display:block; }
+.to-title { font-family:'DM Mono',monospace; font-size:clamp(1.8rem,4vw,2.8rem); font-weight:500; color:var(--ink); letter-spacing:.02em; line-height:1.1; margin-bottom:6px; }
+.to-date { font-size:13px; color:var(--muted); }
+
+/* ── Status badge ── */
+.to-badge { display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:100px; font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; box-shadow:var(--sh); margin-top:12px; }
+.to-badge__dot { width:8px; height:8px; border-radius:50%; animation:pulse 2s ease-in-out infinite; }
+.b-pending   { background:var(--amber); color:#92400e; } .b-pending   .to-badge__dot { background:#f59e0b; }
+.b-confirmed { background:var(--mint);  color:#065f46; } .b-confirmed .to-badge__dot { background:var(--green); }
+.b-processing{ background:var(--lav);   color:#5b21b6; } .b-processing .to-badge__dot { background:var(--purple); }
+.b-shipped   { background:var(--pink);  color:#9f1239; } .b-shipped   .to-badge__dot { background:#ec4899; }
+.b-delivered { background:var(--mint);  color:#065f46; } .b-delivered .to-badge__dot { background:var(--green); }
+.b-cancelled { background:#fee2e2;      color:#991b1b; } .b-cancelled .to-badge__dot { background:var(--red); }
+
+/* ── Tracking number card ── */
+.to-tracking-card {
+  background:var(--white);
+  border-radius:var(--r-lg);
+  padding:24px 28px;
+  box-shadow:var(--sh);
+  margin-bottom:32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:16px;
+  border-left:4px solid var(--green);
+}
+.to-tracking-label { font-size:10px; font-weight:800; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+.to-tracking-num { font-family:'DM Mono',monospace; font-size:1.1rem; font-weight:500; color:var(--ink); }
+.to-tracking-carrier { font-size:12px; color:var(--muted); margin-top:2px; }
+.to-copy-btn {
+  display:inline-flex; align-items:center; gap:6px; padding:9px 16px;
+  background:var(--mint); color:#065f46; border:none; border-radius:100px;
+  font-family:inherit; font-size:11px; font-weight:700; letter-spacing:.1em;
+  text-transform:uppercase; cursor:pointer; transition:.2s;
+}
+.to-copy-btn:hover { background:#a7f3d0; transform:translateY(-1px); }
+
+/* ── PROGRESS STEPS ── */
+.to-progress {
+  background:var(--white);
+  border-radius:var(--r-lg);
+  padding:40px 32px;
+  box-shadow:var(--sh);
+  margin-bottom:32px;
+  overflow:hidden;
+}
+.to-progress-title {
+  font-size:12px; font-weight:800; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--ink); margin-bottom:36px; padding-bottom:16px; border-bottom:2px solid var(--rule);
+}
+
+.to-steps {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  position:relative;
+  padding:0 0 8px;
+}
+
+/* ── Connector line ── */
+.to-steps::before {
+  content:'';
+  position:absolute;
+  top:28px;
+  left:calc(14% + 28px);
+  right:calc(14% + 28px);
+  height:3px;
+  background:var(--rule);
+  z-index:0;
+  border-radius:2px;
+}
+.to-steps-progress-line {
+  position:absolute;
+  top:28px;
+  left:calc(14% + 28px);
+  height:3px;
+  background:linear-gradient(90deg,var(--green),#6ee7b7);
+  z-index:1;
+  border-radius:2px;
+  transition:width 1s cubic-bezier(.4,0,.2,1);
+  width:0%;
+}
+
+/* ── Each step ── */
+.to-step {
+  display:flex; flex-direction:column; align-items:center;
+  flex:1; position:relative; z-index:2;
+  opacity:0; transform:translateY(16px);
+  transition:opacity .5s, transform .5s;
+}
+.to-step.in { opacity:1; transform:none; }
+
+.to-step-icon-wrap {
+  width:56px; height:56px; border-radius:50%;
+  background:var(--bg);
+  border:3px solid var(--rule);
+  display:flex; align-items:center; justify-content:center;
+  transition:all .4s cubic-bezier(.34,1.56,.64,1);
+  position:relative;
+  font-size:22px;
+  margin-bottom:14px;
+}
+.to-step.done .to-step-icon-wrap,
+.to-step.current .to-step-icon-wrap {
+  border-color:var(--green);
+  background:var(--mint);
+  box-shadow:0 0 0 6px rgba(16,185,129,.1);
+}
+.to-step.current .to-step-icon-wrap {
+  animation:stepPulse 2.5s ease-in-out infinite;
+}
+.to-step.cancelled .to-step-icon-wrap {
+  border-color:var(--red);
+  background:#fee2e2;
+  box-shadow:0 0 0 6px rgba(239,68,68,.08);
+}
+
+/* Checkmark overlay for done */
+.to-step-check {
+  position:absolute; top:-4px; right:-4px;
+  width:20px; height:20px; border-radius:50%;
+  background:var(--green); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:900;
+  border:2px solid var(--white);
+  opacity:0; transform:scale(0);
+  transition:opacity .3s, transform .4s cubic-bezier(.34,1.56,.64,1);
+}
+.to-step.done .to-step-check { opacity:1; transform:scale(1); }
+
+.to-step-name {
+  font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); text-align:center; line-height:1.4;
+  transition:color .3s;
+}
+.to-step.done .to-step-name,
+.to-step.current .to-step-name { color:var(--ink); }
+.to-step.cancelled .to-step-name { color:var(--red); }
+
+.to-step-time {
+  font-size:10px; color:var(--muted); text-align:center;
+  margin-top:4px; font-family:'DM Mono',monospace;
+}
+
+/* ── Status history cards ── */
+.to-history {
+  background:var(--white);
+  border-radius:var(--r-lg);
+  padding:32px;
+  box-shadow:var(--sh);
+  margin-bottom:32px;
+}
+.to-history-title {
+  font-size:12px; font-weight:800; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--ink); margin-bottom:24px; padding-bottom:16px; border-bottom:2px solid var(--rule);
+}
+
+.to-timeline { display:flex; flex-direction:column; position:relative; }
+.to-timeline::before {
+  content:''; position:absolute; top:20px; bottom:20px; left:11px;
+  width:2px; background:linear-gradient(to bottom,var(--green),var(--rule));
+  border-radius:2px;
+}
+.to-tl-item {
+  display:flex; gap:20px; padding:16px 0; position:relative;
+  opacity:0; transform:translateX(-12px);
+  transition:opacity .5s, transform .5s;
+}
+.to-tl-item.in { opacity:1; transform:none; }
+
+.to-tl-dot-wrap { flex-shrink:0; z-index:2; position:relative; padding-top:2px; }
+.to-tl-dot {
+  width:24px; height:24px; border-radius:50%;
+  background:var(--white); border:3px solid var(--rule);
+  display:flex; align-items:center; justify-content:center;
+  transition:.3s; font-size:10px;
+}
+.to-tl-item:first-child .to-tl-dot {
+  border-color:var(--green); background:var(--green); color:#fff;
+  box-shadow:0 0 0 4px rgba(16,185,129,.15);
+}
+
+.to-tl-body { flex:1; }
+.to-tl-status { font-size:14px; font-weight:700; color:var(--ink); margin-bottom:3px; }
+.to-tl-time { font-size:12px; color:var(--muted); margin-bottom:4px; font-family:'DM Mono',monospace; }
+.to-tl-notes {
+  font-size:13px; color:var(--ink2); line-height:1.6;
+  background:var(--lav); padding:10px 14px; border-radius:var(--r);
+  margin-top:6px; border-left:3px solid var(--purple);
+}
+
+/* ── Back button ── */
+.to-back {
+  display:inline-flex; align-items:center; gap:10px;
+  padding:14px 28px; background:var(--ink); color:#fff;
+  border-radius:100px; font-family:inherit; font-size:11px;
+  font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  text-decoration:none; transition:.25s; box-shadow:var(--sh);
+}
+.to-back:hover { opacity:.85; transform:translateY(-2px); color:#fff; text-decoration:none; }
+.to-back svg { transition:transform .25s; }
+.to-back:hover svg { transform:translateX(-3px); }
+
+/* ── Empty state ── */
+.to-empty {
+  text-align:center; padding:60px 20px;
+  background:var(--white); border-radius:var(--r-lg); box-shadow:var(--sh);
+}
+.to-empty-icon { font-size:48px; margin-bottom:16px; }
+.to-empty-text { font-size:15px; color:var(--muted); }
+
+/* ── Animations ── */
+@keyframes pulse { 0%,100%{opacity:.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.2)} }
+@keyframes stepPulse { 0%,100%{box-shadow:0 0 0 6px rgba(16,185,129,.1)} 50%{box-shadow:0 0 0 12px rgba(16,185,129,.18)} }
+
+/* ── Responsive ── */
+@media(max-width:700px) {
+  .to-progress { padding:28px 16px; }
+  .to-steps { gap:0; }
+  .to-step-icon-wrap { width:44px; height:44px; font-size:18px; }
+  .to-step-name { font-size:9px; }
+  .to-tracking-card { flex-direction:column; align-items:flex-start; }
+  .to-steps::before { top:22px; }
+  .to-steps-progress-line { top:22px; }
+}
+</style>
+
+<div class="to">
+<div class="to-con">
+
+  <!-- Breadcrumb -->
+  <nav class="to-bc">
+    <a href="/">Home</a><span class="to-bc__sep">/</span>
+    <a href="{% url 'orders:order_list' %}">Orders</a><span class="to-bc__sep">/</span>
+    <a href="{% url 'orders:order_detail' order.order_number %}">#{{ order.order_number }}</a><span class="to-bc__sep">/</span>
+    <span>Track</span>
+  </nav>
+
+  <!-- Header -->
+  <div class="to-hd">
+    <span class="to-lbl">Live Tracking</span>
+    <h1 class="to-title">#{{ order.order_number }}</h1>
+    <p class="to-date">Placed {{ order.created_at|date:"F j, Y" }}</p>
+    <span class="to-badge b-{{ order.status }}">
+      <span class="to-badge__dot"></span>{{ order.get_status_display }}
+    </span>
+  </div>
+
+  <!-- Tracking number (if available) -->
+  {% if order.tracking_number %}
+  <div class="to-tracking-card" id="trackingCard">
+    <div>
+      <div class="to-tracking-label">Tracking Number</div>
+      <div class="to-tracking-num">{{ order.tracking_number }}</div>
+      {% if order.carrier %}<div class="to-tracking-carrier">📦 Carrier: {{ order.carrier }}</div>{% endif %}
     </div>
-    {% endblock %}
+    <button class="to-copy-btn" onclick="copyTracking('{{ order.tracking_number }}')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      Copy
+    </button>
+  </div>
+  {% endif %}
+
+  <!-- ══ PROGRESS STEPPER ══ -->
+  <div class="to-progress" id="progressCard">
+    <div class="to-progress-title">Order Progress</div>
+    <div class="to-steps" id="stepsContainer">
+
+      <!-- Animated progress line (filled by JS) -->
+      <div class="to-steps-progress-line" id="progressLine"></div>
+
+      {% for status in status_progression %}
+      {% with step_index=forloop.counter0 %}
+      <div class="to-step
+        {% if step_index < current_status_index %}done{% elif step_index == current_status_index %}current{% elif order.status == 'cancelled' and status == 'cancelled' %}cancelled{% endif %}"
+        data-index="{{ step_index }}"
+        id="step-{{ step_index }}">
+
+        <div class="to-step-icon-wrap">
+          <!-- Step emoji icons -->
+          {% if status == 'pending' %}⏳
+          {% elif status == 'confirmed' %}✅
+          {% elif status == 'processing' %}⚙️
+          {% elif status == 'shipped' %}🚚
+          {% elif status == 'delivered' %}🎉
+          {% elif status == 'cancelled' %}❌
+          {% else %}📦{% endif %}
+          <span class="to-step-check">✓</span>
+        </div>
+
+        <div class="to-step-name">{{ status|title }}</div>
+
+        <!-- Show timestamp from history if available -->
+        {% for h in status_history %}
+          {% if h.to_status == status %}
+            <div class="to-step-time">{{ h.created_at|date:"M j" }}</div>
+          {% endif %}
+        {% endfor %}
+
+      </div>
+      {% endwith %}
+      {% endfor %}
+
+    </div>
+  </div>
+
+  <!-- ══ STATUS HISTORY ══ -->
+  {% if status_history %}
+  <div class="to-history" id="historyCard">
+    <div class="to-history-title">Status History</div>
+    <div class="to-timeline">
+      {% for h in status_history %}
+      <div class="to-tl-item" style="transition-delay:{{ forloop.counter0|add:0 }}00ms">
+        <div class="to-tl-dot-wrap">
+          <div class="to-tl-dot">
+            {% if forloop.first %}✓{% endif %}
+          </div>
+        </div>
+        <div class="to-tl-body">
+          <div class="to-tl-status">
+            {% if h.from_status %}<span style="color:var(--muted);">{{ h.from_status|title }}</span> → {% endif %}{{ h.to_status|title }}
+          </div>
+          <div class="to-tl-time">{{ h.created_at|date:"M j, Y" }} at {{ h.created_at|time:"g:i A" }}</div>
+          {% if h.notes %}
+          <div class="to-tl-notes">{{ h.notes }}</div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="to-empty">
+    <div class="to-empty-icon">📋</div>
+    <p class="to-empty-text">No status updates available yet.</p>
+  </div>
+  {% endif %}
+
+  <!-- Back button -->
+  <a href="{% url 'orders:order_detail' order.order_number %}" class="to-back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back to Order Details
+  </a>
+
+</div>
+</div>
+
+<script>
+(function () {
+  /* ── Scroll-reveal helper ── */
+  function reveal(selector, delay) {
+    var els = document.querySelectorAll(selector);
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e, i) {
+          if (e.isIntersecting) {
+            setTimeout(function () { e.target.classList.add('in'); }, (delay || 0) + i * 100);
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.05 });
+      els.forEach(function (el) { io.observe(el); });
+    } else {
+      els.forEach(function (el) { el.classList.add('in'); });
+    }
+  }
+
+  reveal('.to-step', 80);
+  reveal('.to-tl-item', 60);
+
+  /* ── Animate progress line ── */
+  var steps = document.querySelectorAll('.to-step');
+  var progressLine = document.getElementById('progressLine');
+  var total = steps.length;
+  var doneCount = 0;
+
+  steps.forEach(function (s) {
+    if (s.classList.contains('done') || s.classList.contains('current')) doneCount++;
+  });
+
+  if (progressLine && total > 1) {
+    // Line spans from step 0 center to step (total-1) center
+    // Each step takes 1/(total-1) of the track
+    var pct = doneCount > 0 ? Math.min(((doneCount - 0.5) / (total - 1)) * 100, 100) : 0;
+    setTimeout(function () {
+      progressLine.style.width = pct + '%';
+    }, 600);
+  }
+
+  /* ── Copy tracking number ── */
+  window.copyTracking = function (num) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(num).then(function () {
+        showToast('📋 Tracking number copied!');
+      }).catch(function () { fallbackCopy(num); });
+    } else {
+      fallbackCopy(num);
+    }
+  };
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); showToast('📋 Copied!'); } catch (e) { showToast('Could not copy.'); }
+    document.body.removeChild(ta);
+  }
+
+  function showToast(msg) {
+    if (window.showToast) { window.showToast(msg, 'ok'); return; }
+    var t = document.createElement('div');
+    t.textContent = msg;
+    Object.assign(t.style, {
+      position:'fixed', bottom:'28px', right:'28px', zIndex:'99999',
+      background:'#1f2937', color:'#fff', padding:'12px 20px',
+      borderRadius:'100px', fontSize:'13px', fontWeight:'600',
+      boxShadow:'0 8px 32px rgba(0,0,0,.2)', fontFamily:'Plus Jakarta Sans,sans-serif',
+      transform:'translateY(20px)', opacity:'0', transition:'all .3s'
+    });
+    document.body.appendChild(t);
+    requestAnimationFrame(function () { t.style.opacity='1'; t.style.transform='translateY(0)'; });
+    setTimeout(function () {
+      t.style.opacity='0'; t.style.transform='translateY(20px)';
+      setTimeout(function () { t.remove(); }, 350);
+    }, 3000);
+  }
+})();
+</script>
+
+{% endblock %}
