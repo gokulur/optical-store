@@ -2201,3 +2201,26 @@ def coupon_usage_history(request):
         'search': search,
         'total_discount': total_discount,
     })
+
+
+from django.views.decorators.http import require_POST
+
+@require_POST
+def order_update_tracking(request, order_id):
+    """Save tracking number + carrier for an order."""
+    order = get_object_or_404(Order, id=order_id)
+    order.tracking_number = request.POST.get('tracking_number', '').strip()
+    order.carrier         = request.POST.get('carrier', '').strip()
+    order.save(update_fields=['tracking_number', 'carrier'])
+    messages.success(request, 'Tracking information updated.')
+    return redirect('adminpanel:order_detail', order_id)
+
+
+@require_POST
+def order_update_notes(request, order_id):
+    """Save internal staff note on an order."""
+    order = get_object_or_404(Order, id=order_id)
+    order.internal_notes = request.POST.get('internal_notes', '').strip()
+    order.save(update_fields=['internal_notes'])
+    messages.success(request, 'Internal note saved.')
+    return redirect('adminpanel:order_detail', order_id)
