@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'search',
     'chat_support',
     'wishlist', 
+    'jobs',
     
 ]
 
