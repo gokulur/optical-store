@@ -110,7 +110,7 @@ def send_order_confirmation_email(order):
         }
 
         # ── Render HTML ───────────────────────────────────────
-        html_body = render_to_string('emails/order_confirmation_email.html', context)
+        html_body = render_to_string('order_confirmation_email.html', context)
 
         # ── Send ──────────────────────────────────────────────
         subject = f"✅ Order Confirmed — #{order.order_number} | Al Ameen Optics"
