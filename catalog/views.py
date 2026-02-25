@@ -361,6 +361,7 @@ def eyeglass_detail(request, slug):
             category=product.category, product_type='eyeglasses', is_active=True
         ).exclude(id=product.id).prefetch_related('images')[:4]
     }
+    context.update(get_review_context(request, product))
     return render(request, 'eyeglass_detail.html', context)
 
 
