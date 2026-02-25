@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Job {{ job.job_number }} — Al Ameen Optics{% endblock %}
+
+{% block extra_styles %}
+<style>
+:root {
+  --aa-gold: #c8a96e; --aa-dark: #1a2a3a; --aa-sand: #f5f0eb;
+  --aa-border: #e0e8ef; --aa-mid: #6b7c8d; --aa-radius: 12px;
+}
+.detail-hero { background: linear-gradient(135deg, var(--aa-dark) 0%, #2c3e50 100%); padding: 60px 20px 80px; color: #fff; text-align: center; }
+.detail-hero h1 { font-size: clamp(1.6rem, 4vw, 2.8rem); font-weight: 300; letter-spacing: .05em; }
+
+.detail-wrap { max-width: 860px; margin: -50px auto 80px; padding: 0 20px; position: relative; z-index: 10; }
+
+.status-pill { display: inline-block; padding: 6px 18px; border-radius: 50px; font-size: .85rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.status-received   { background: #fff3cd; color: #856404; }
+.status-processing { background: #cff4fc; color: #055160; }
+.status-lens_order { background: #cfe2ff; color: #084298; }
+.status-fitting    { background: #cff4fc; color: #055160; }
+.status-qa         { background: #cfe2ff; color: #084298; }
+.status-ready      { background: #d1e7dd; color: #0a3622; }
+.status-dispatched { background: #d1e7dd; color: #0a3622; }
+.status-delivered  { background: #d1e7dd; color: #0a3622; }
+.status-on_hold    { background: #e2e3e5; color: #41464b; }
+.status-cancelled  { background: #f8d7da; color: #842029; }
+
+.detail-card { background: #fff; border-radius: var(--aa-radius); box-shadow: 0 4px 24px rgba(0,0,0,.09); overflow: hidden; margin-bottom: 24px; }
+.detail-card-header { padding: 18px 24px; background: var(--aa-sand); border-bottom: 1px solid var(--aa-border); font-weight: 700; color: var(--aa-dark); display: flex; align-items: center; gap: 10px; font-size: 1rem; letter-spacing: .03em; }
+.detail-card-body { padding: 24px; }
+
+.progress-bar-wrap { height: 10px; background: var(--aa-border); border-radius: 10px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--aa-gold); border-radius: 10px; transition: width .6s; }
+
+.steps-row { display: flex; justify-content: space-between; overflow-x: auto; gap: 0; margin-top: 16px; }
+.step-it { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; min-width: 70px; position: relative; }
+.step-it:not(:last-child)::after { content:''; position:absolute; left:calc(50% + 18px); right:calc(-50% + 18px); top:15px; height:2px; background:var(--aa-border); z-index:0; }
+.step-it.done::after { background: var(--aa-gold); }
+.step-c { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; position: relative; z-index: 1; }
+.step-c.done    { background: var(--aa-gold); color: #fff; }
+.step-c.active  { background: var(--aa-dark); color: #fff; box-shadow: 0 0 0 3px rgba(26,42,58,.2); }
+.step-c.pending { background: var(--aa-border); color: var(--aa-mid); }
+.step-lbl { font-size: .65rem; font-weight: 600; text-align: center; color: var(--aa-mid); line-height: 1.3; }
+.step-it.done .step-lbl, .step-it.active .step-lbl { color: var(--aa-dark); }
+
+.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 16px; }
+.info-cell .lbl { font-size: .73rem; text-transform: uppercase; letter-spacing: .07em; color: var(--aa-mid); }
+.info-cell .val { font-weight: 600; color: var(--aa-dark); margin-top: 2px; }
+
+.rx-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.rx-table th, .rx-table td { padding: 10px 14px; border: 1px solid var(--aa-border); text-align: center; }
+.rx-table th { background: var(--aa-sand); font-weight: 700; color: var(--aa-dark); }
+.rx-table td:first-child { text-align: left; font-weight: 600; background: rgba(200,169,110,.07); }
+
+.payment-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--aa-border); }
+.payment-row:last-child { border-bottom: none; font-weight: 700; font-size: 1.05rem; }
+
+.tl { position: relative; padding-left: 28px; }
+.tl::before { content:''; position:absolute; left:8px; top:0; bottom:0; width:2px; background:var(--aa-border); }
+.tl-item { position: relative; margin-bottom: 18px; }
+.tl-dot { position: absolute; left: -24px; width: 16px; height: 16px; border-radius: 50%; background: var(--aa-gold); border: 2px solid #fff; box-shadow: 0 0 0 2px var(--aa-gold); }
+.tl-box { background: var(--aa-sand); border-radius: 8px; padding: 12px 16px; }
+.tl-status { font-weight: 700; color: var(--aa-dark); }
+.tl-date { font-size: .78rem; color: var(--aa-mid); margin-top: 4px; }
+
+.note-box { background: #e8f4fd; border-left: 4px solid #1a6fa8; border-radius: 0 8px 8px 0; padding: 14px 18px; color: var(--aa-dark); }
+.btn-back { display: inline-flex; align-items: center; gap: 6px; padding: 10px 24px; border-radius: 50px; background: var(--aa-dark); color: #fff; font-size: .9rem; font-weight: 600; text-decoration: none; transition: background .2s; }
+.btn-back:hover { background: var(--aa-gold); color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="detail-hero">
+  <p style="color:rgba(200,169,110,.8);font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px;">Job Order</p>
+  <h1>{{ job.job_number }}</h1>
+  <div class="mt-3"><span class="status-pill status-{{ job.status }}">{{ job.get_status_display }}</span></div>
+</div>
+
+<div class="detail-wrap">
+
+  <!-- Progress -->
+  <div class="detail-card">
+    <div class="detail-card-header">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--aa-gold)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Job Progress — {{ job.progress_percent }}%
+    </div>
+    <div class="detail-card-body">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" style="width:{{ job.progress_percent }}%"></div>
+      </div>
+      <div class="steps-row">
+        {% for step_name, step_label, step_state in progress_steps %}
+        <div class="step-it {{ step_state }}">
+          <div class="step-c {{ step_state }}">
+            {% if step_state == 'done' %}✓{% else %}{{ forloop.counter }}{% endif %}
+          </div>
+          <div class="step-lbl">{{ step_label }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% if job.promised_date %}
+      <p class="text-center mt-3 mb-0" style="font-size:.85rem;color:var(--aa-mid);">
+        Estimated ready by <strong style="color:var(--aa-dark)">{{ job.promised_date|date:"d F Y" }}</strong>
+      </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Info -->
+  <div class="detail-card">
+    <div class="detail-card-header">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--aa-gold)" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Order Information
+    </div>
+    <div class="detail-card-body">
+      <div class="info-grid">
+        <div class="info-cell"><div class="lbl">Customer</div><div class="val">{{ job.customer_name }}</div></div>
+        <div class="info-cell"><div class="lbl">Job Type</div><div class="val">{{ job.get_job_type_display }}</div></div>
+        <div class="info-cell"><div class="lbl">Created</div><div class="val">{{ job.created_at|date:"d M Y" }}</div></div>
+        {% if job.frame_description %}<div class="info-cell"><div class="lbl">Frame</div><div class="val">{{ job.frame_description }}</div></div>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Prescription -->
+  {% if job.re_sphere or job.le_sphere %}
+  <div class="detail-card">
+    <div class="detail-card-header">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--aa-gold)" stroke-width="2"><circle cx="9" cy="12" r="4"/><circle cx="15" cy="12" r="4"/><path d="M5 12H3M21 12h-2"/></svg>
+      Prescription
+    </div>
+    <div class="detail-card-body">
+      <div class="table-responsive">
+        <table class="rx-table">
+          <thead><tr><th></th><th>Sphere</th><th>Cylinder</th><th>Axis</th><th>Add</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Right Eye (OD)</td>
+              <td>{{ job.re_sphere|default:"—" }}</td>
+              <td>{{ job.re_cylinder|default:"—" }}</td>
+              <td>{{ job.re_axis|default:"—" }}</td>
+              <td>{{ job.re_add|default:"—" }}</td>
+            </tr>
+            <tr>
+              <td>Left Eye (OS)</td>
+              <td>{{ job.le_sphere|default:"—" }}</td>
+              <td>{{ job.le_cylinder|default:"—" }}</td>
+              <td>{{ job.le_axis|default:"—" }}</td>
+              <td>{{ job.le_add|default:"—" }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Payment -->
+  <div class="detail-card">
+    <div class="detail-card-header">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--aa-gold)" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Payment
+    </div>
+    <div class="detail-card-body">
+      {% if job.frame_price > 0 %}<div class="payment-row"><span>Frame</span><span>QAR {{ job.frame_price }}</span></div>{% endif %}
+      {% if job.lens_price > 0 %}<div class="payment-row"><span>Lens</span><span>QAR {{ job.lens_price }}</span></div>{% endif %}
+      {% if job.addon_price > 0 %}<div class="payment-row"><span>Add-ons</span><span>QAR {{ job.addon_price }}</span></div>{% endif %}
+      {% if job.discount > 0 %}<div class="payment-row" style="color:green"><span>Discount</span><span>- QAR {{ job.discount }}</span></div>{% endif %}
+      <div class="payment-row"><span>Total</span><span>QAR {{ job.total_amount }}</span></div>
+      <div class="payment-row" style="color:green"><span>Paid</span><span>QAR {{ job.advance_paid }}</span></div>
+      <div class="payment-row {% if job.balance_due > 0 %}text-danger{% else %}text-success{% endif %}">
+        <span>Balance Due</span>
+        <span>{% if job.balance_due > 0 %}QAR {{ job.balance_due }}{% else %}✓ Fully Paid{% endif %}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Note -->
+  {% if job.customer_notes %}
+  <div class="note-box mb-4">
+    <strong>Note from our team:</strong><br>{{ job.customer_notes }}
+  </div>
+  {% endif %}
+
+  <!-- History -->
+  {% if history %}
+  <div class="detail-card">
+    <div class="detail-card-header">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--aa-gold)" stroke-width="2"><polyline points="12 8 12 12 14 14"/><circle cx="12" cy="12" r="10"/></svg>
+      Status History
+    </div>
+    <div class="detail-card-body">
+      <div class="tl">
+        {% for h in history %}
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-box">
+            <div class="tl-status">{{ h.new_status|title }}</div>
+            {% if h.note %}<div class="small mt-1" style="color:var(--aa-mid)">{{ h.note }}</div>{% endif %}
+            <div class="tl-date">{{ h.created_at|date:"d M Y, H:i" }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Actions -->
+  <div class="text-center mt-4">
+    <a href="{% url 'jobs:my_jobs' %}" class="btn-back"><i class="mdi mdi-arrow-left"></i> All My Jobs</a>
+    <a href="{% url 'content:contact' %}" class="btn-back ml-3" style="background:transparent;border:2px solid var(--aa-dark);color:var(--aa-dark);">
+      <i class="mdi mdi-phone"></i> Contact Us
+    </a>
+  </div>
+
+</div>
+{% endblock %}
