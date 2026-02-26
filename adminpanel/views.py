@@ -2067,14 +2067,15 @@ def banner_toggle_active(request, banner_id):
 # ==================== PROMOTIONS / COUPONS ====================
 
 from promotions.models import Coupon, CouponUsage
+from django.utils.dateparse import parse_datetime
 
 
 @login_required
 @user_passes_test(is_admin)
 def coupon_list(request):
-    search = request.GET.get('search', '')
+    search        = request.GET.get('search', '')
     discount_type = request.GET.get('discount_type', '')
-    status = request.GET.get('status', '')
+    status        = request.GET.get('status', '')
 
     coupons = Coupon.objects.all().order_by('-created_at')
 
@@ -2091,18 +2092,24 @@ def coupon_list(request):
     elif status == 'inactive':
         coupons = coupons.filter(is_active=False)
 
-    total_count = Coupon.objects.count()
+    total_count  = Coupon.objects.count()
     active_count = Coupon.objects.filter(is_active=True, valid_until__gte=now).count()
-    expired_count = Coupon.objects.filter(valid_until__lt=now).count()
-    total_uses = Coupon.objects.aggregate(t=Sum('times_used'))['t'] or 0
+    expired_count= Coupon.objects.filter(valid_until__lt=now).count()
+    total_uses   = Coupon.objects.aggregate(t=Sum('times_used'))['t'] or 0
 
     paginator = Paginator(coupons, 20)
-    coupons = paginator.get_page(request.GET.get('page', 1))
+    coupons   = paginator.get_page(request.GET.get('page', 1))
 
     return render(request, 'adminpanel/promotions/list.html', {
-        'coupons': coupons, 'search': search, 'discount_type': discount_type, 'status': status,
-        'total_count': total_count, 'active_count': active_count,
-        'expired_count': expired_count, 'total_uses': total_uses, 'today': now.date(),
+        'coupons':        coupons,
+        'search':         search,
+        'discount_type':  discount_type,
+        'status':         status,
+        'total_count':    total_count,
+        'active_count':   active_count,
+        'expired_count':  expired_count,
+        'total_uses':     total_uses,
+        'today':          now.date(),
     })
 
 
@@ -2111,23 +2118,58 @@ def coupon_list(request):
 def coupon_add(request):
     if request.method == 'POST':
         try:
+            # ── FIX: datetime-local sends "YYYY-MM-DDTHH:MM" — Django's DateTimeField
+            #    needs a timezone-aware datetime. We parse it and make it aware.
+            def parse_dt(val):
+                """Convert datetime-local string to timezone-aware datetime."""
+                if not val:
+                    return None
+                # datetime-local format: "2025-06-01T00:00"
+                dt = parse_datetime(val)
+                if dt is None:
+                    # fallback: try with seconds appended
+                    try:
+                        from datetime import datetime
+                        dt = datetime.strptime(val, '%Y-%m-%dT%H:%M')
+                    except ValueError:
+                        return None
+                if timezone.is_naive(dt):
+                    dt = timezone.make_aware(dt)
+                return dt
+
+            valid_from  = parse_dt(request.POST.get('valid_from'))
+            valid_until = parse_dt(request.POST.get('valid_until'))
+
+            if not valid_from or not valid_until:
+                raise ValueError("Please provide both Valid From and Valid Until dates.")
+
+            if valid_until <= valid_from:
+                raise ValueError("Valid Until must be after Valid From.")
+
+            discount_type = request.POST.get('discount_type', 'percentage')
+            # free_shipping has no meaningful discount_value
+            discount_value = request.POST.get('discount_value') or 0
+            if discount_type == 'free_shipping':
+                discount_value = 0
+
             Coupon.objects.create(
-                code=request.POST.get('code', '').strip().upper(),
-                name=request.POST.get('name'),
-                description=request.POST.get('description', ''),
-                discount_type=request.POST.get('discount_type'),
-                discount_value=request.POST.get('discount_value') or 0,
-                minimum_order_amount=request.POST.get('minimum_order_amount') or None,
-                maximum_discount_amount=request.POST.get('maximum_discount_amount') or None,
-                usage_limit=request.POST.get('usage_limit') or None,
-                usage_limit_per_customer=request.POST.get('usage_limit_per_customer') or None,
-                valid_from=request.POST.get('valid_from'),
-                valid_until=request.POST.get('valid_until'),
-                applicable_to_all=request.POST.get('applicable_to_all') == 'on',
-                is_active=request.POST.get('is_active') == 'on',
+                code                    = request.POST.get('code', '').strip().upper(),
+                name                    = request.POST.get('name'),
+                description             = request.POST.get('description', ''),
+                discount_type           = discount_type,
+                discount_value          = discount_value,
+                minimum_order_amount    = request.POST.get('minimum_order_amount') or None,
+                maximum_discount_amount = request.POST.get('maximum_discount_amount') or None,
+                usage_limit             = request.POST.get('usage_limit') or None,
+                usage_limit_per_customer= request.POST.get('usage_limit_per_customer') or None,
+                valid_from              = valid_from,
+                valid_until             = valid_until,
+                applicable_to_all       = request.POST.get('applicable_to_all') == 'on',
+                is_active               = request.POST.get('is_active') == 'on',
             )
-            messages.success(request, f'Coupon "{request.POST.get("code").upper()}" created successfully!')
+            messages.success(request, f'Coupon "{request.POST.get("code", "").upper()}" created successfully!')
             return redirect('adminpanel:coupon_list')
+
         except Exception as e:
             messages.error(request, f'Error: {str(e)}')
             return render(request, 'adminpanel/promotions/add.html', {'form_data': request.POST})
@@ -2142,22 +2184,51 @@ def coupon_edit(request, coupon_id):
 
     if request.method == 'POST':
         try:
-            coupon.code = request.POST.get('code', '').strip().upper()
-            coupon.name = request.POST.get('name')
-            coupon.description = request.POST.get('description', '')
-            coupon.discount_type = request.POST.get('discount_type')
-            coupon.discount_value = request.POST.get('discount_value') or 0
-            coupon.minimum_order_amount = request.POST.get('minimum_order_amount') or None
-            coupon.maximum_discount_amount = request.POST.get('maximum_discount_amount') or None
-            coupon.usage_limit = request.POST.get('usage_limit') or None
+            def parse_dt(val):
+                if not val:
+                    return None
+                dt = parse_datetime(val)
+                if dt is None:
+                    try:
+                        from datetime import datetime
+                        dt = datetime.strptime(val, '%Y-%m-%dT%H:%M')
+                    except ValueError:
+                        return None
+                if timezone.is_naive(dt):
+                    dt = timezone.make_aware(dt)
+                return dt
+
+            valid_from  = parse_dt(request.POST.get('valid_from'))
+            valid_until = parse_dt(request.POST.get('valid_until'))
+
+            if not valid_from or not valid_until:
+                raise ValueError("Please provide both Valid From and Valid Until dates.")
+            if valid_until <= valid_from:
+                raise ValueError("Valid Until must be after Valid From.")
+
+            discount_type  = request.POST.get('discount_type', coupon.discount_type)
+            discount_value = request.POST.get('discount_value') or 0
+            if discount_type == 'free_shipping':
+                discount_value = 0
+
+            coupon.code                     = request.POST.get('code', '').strip().upper()
+            coupon.name                     = request.POST.get('name')
+            coupon.description              = request.POST.get('description', '')
+            coupon.discount_type            = discount_type
+            coupon.discount_value           = discount_value
+            coupon.minimum_order_amount     = request.POST.get('minimum_order_amount') or None
+            coupon.maximum_discount_amount  = request.POST.get('maximum_discount_amount') or None
+            coupon.usage_limit              = request.POST.get('usage_limit') or None
             coupon.usage_limit_per_customer = request.POST.get('usage_limit_per_customer') or None
-            coupon.valid_from = request.POST.get('valid_from')
-            coupon.valid_until = request.POST.get('valid_until')
-            coupon.applicable_to_all = request.POST.get('applicable_to_all') == 'on'
-            coupon.is_active = request.POST.get('is_active') == 'on'
+            coupon.valid_from               = valid_from
+            coupon.valid_until              = valid_until
+            coupon.applicable_to_all        = request.POST.get('applicable_to_all') == 'on'
+            coupon.is_active                = request.POST.get('is_active') == 'on'
             coupon.save()
+
             messages.success(request, f'Coupon "{coupon.code}" updated!')
             return redirect('adminpanel:coupon_list')
+
         except Exception as e:
             messages.error(request, f'Error: {str(e)}')
 
@@ -2180,27 +2251,32 @@ def coupon_delete(request, coupon_id):
 @user_passes_test(is_admin)
 def coupon_usage_history(request):
     search = request.GET.get('search', '')
-    usage = CouponUsage.objects.select_related('coupon', 'order', 'user').order_by('-created_at')
+    usage  = CouponUsage.objects.select_related('coupon', 'order', 'user').order_by('-created_at')
 
     if search:
         usage = usage.filter(
             Q(coupon__code__icontains=search) |
-            Q(user__email__icontains=search) |
+            Q(user__email__icontains=search)  |
             Q(order__order_number__icontains=search)
         )
 
-    paginator = Paginator(usage, 25)
-    usage = paginator.get_page(request.GET.get('page', 1))
+ 
+    unique_customers = CouponUsage.objects.values('user').distinct().count()
 
     total_discount = CouponUsage.objects.aggregate(
         total=Sum('discount_amount')
     )['total'] or Decimal('0.00')
 
+    paginator = Paginator(usage, 25)
+    usage     = paginator.get_page(request.GET.get('page', 1))
+
     return render(request, 'adminpanel/promotions/usage.html', {
-        'usage': usage,
-        'search': search,
-        'total_discount': total_discount,
+        'usage':            usage,
+        'search':           search,
+        'total_discount':   total_discount,
+        'unique_customers': unique_customers,   
     })
+
 
 
 from django.views.decorators.http import require_POST
