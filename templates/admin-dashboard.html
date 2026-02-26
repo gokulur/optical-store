@@ -390,6 +390,23 @@
       </ul>
     </div>
   </li>
+
+    <!-- Promotions -->
+  <li class="nav-item menu-items">
+    <a class="nav-link" data-toggle="collapse" href="#promotionMenu">
+      <span class="menu-icon"><i class="mdi mdi-gift"></i></span>
+      <span class="menu-title">Promotions</span>
+      <i class="menu-arrow"></i>
+    </a>
+    <div class="collapse" id="promotionMenu">
+      <ul class="nav flex-column sub-menu">
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:coupon_list' %}">All Promotions</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:coupon_add' %}">Add Promotion</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:coupon_edit' %}">Edit Promotion</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:coupon_usage' %}">Usage Promotion</a></li>
+      </ul>
+    </div>
+  </li>
   <!-- Job Orders -->
 <li class="nav-item menu-items">
   <a class="nav-link" data-toggle="collapse" href="#jobOrdersMenu">
