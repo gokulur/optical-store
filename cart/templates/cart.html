@@ -483,7 +483,7 @@ body { font-family: var(--font-body); }
              COUPON BLOCK
         ═══════════════════════════════════════════ -->
         <div class="coupon-block">
-          <button class="coupon-header" id="couponToggle" onclick="couponToggle()" type="button">
+          <button class="coupon-header" id="cpToggleBtn" type="button">
             <div class="coupon-header-left">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
@@ -501,7 +501,7 @@ body { font-family: var(--font-body); }
               <div class="coupon-row">
                 <input type="text" class="coupon-field" id="couponField"
                        placeholder="Enter promo code" maxlength="50" autocomplete="off">
-                <button class="coupon-submit" id="couponBtn" type="button">Apply</button>
+                <button class="coupon-submit" id="cpApplyBtn" type="button">Apply</button>
               </div>
               <div class="coupon-feedback" id="couponFeedback"></div>
             </div>
@@ -517,7 +517,7 @@ body { font-family: var(--font-body); }
                   </div>
                 </div>
               </div>
-              <button class="coupon-remove" type="button" onclick="couponRemove()">Remove</button>
+              <button class="coupon-remove" type="button" id="cpRemoveBtn">Remove</button>
             </div>
 
           </div>
@@ -666,13 +666,12 @@ function updateSummary(d) {
 /* ═══════════════════════════════════════════
    COUPON FUNCTIONS
 ═══════════════════════════════════════════ */
-function couponToggle() {
+function cpToggle() {
   const body=document.getElementById("couponBody");
   const chev=document.getElementById("couponChevron");
   const open=body.classList.toggle("open");
   if(chev) chev.classList.toggle("open", open);
 }
-window.couponToggle = couponToggle;
 
 function showFeedback(msg, type) {
   const el=document.getElementById("couponFeedback");
@@ -685,13 +684,13 @@ function hideFeedback() {
   if(el) el.classList.remove("show");
 }
 
-function couponApply() {
+function cpApply() {
   {% if not request.user.is_authenticated %}
   showFeedback("Please log in to use coupon codes.", "err");
   return;
   {% endif %}
   const field=document.getElementById("couponField");
-  const btn  =document.getElementById("couponBtn");
+  const btn  =document.getElementById("cpApplyBtn");
   const code =(field?field.value.trim():"");
   if (!code) { showFeedback("Please enter a coupon code.", "err"); return; }
 
@@ -730,7 +729,7 @@ function couponApply() {
   .finally(()=>{ btn.disabled=false; btn.textContent="Apply"; });
 }
 
-function couponRemove() {
+function cpRemove() {
   fetch(REMOVE_URL, {
     method:"POST",
     headers:{"X-Requested-With":"XMLHttpRequest","X-CSRFToken":CSRF}
@@ -749,20 +748,27 @@ function couponRemove() {
   })
   .catch(()=>toast("Could not remove coupon. Try again.","err"));
 }
-window.couponRemove = couponRemove;
+window.cpRemove = cpRemove;
 
-/* ── BIND COUPON EVENTS ── */
+/* ── BIND ALL COUPON EVENTS via addEventListener (no inline onclick) ── */
 document.addEventListener("DOMContentLoaded", function(){
+  // Toggle open/close
+  const toggleBtn = document.getElementById("cpToggleBtn");
+  if(toggleBtn) toggleBtn.addEventListener("click", cpToggle);
+
+  // Apply button
+  const applyBtn = document.getElementById("cpApplyBtn");
+  if(applyBtn) applyBtn.addEventListener("click", cpApply);
+
+  // Remove button
+  const removeBtn = document.getElementById("cpRemoveBtn");
+  if(removeBtn) removeBtn.addEventListener("click", cpRemove);
+
+  // Input: Enter key + auto-uppercase
   const field=document.getElementById("couponField");
-  const btn  =document.getElementById("couponBtn");
-  if(btn) btn.addEventListener("click", couponApply);
   if(field){
-    field.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); couponApply(); } });
-    field.addEventListener("input", function(){
-      this.value=this.value.toUpperCase();
-      this.classList.remove("is-err","is-ok");
-      hideFeedback();
-    });
+    field.addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); cpApply(); } });
+    field.addEventListener("input", function(){ this.value=this.value.toUpperCase(); this.classList.remove("is-err","is-ok"); hideFeedback(); });
   }
   // Init qty buttons
   document.querySelectorAll(".ci-card").forEach(card=>{
