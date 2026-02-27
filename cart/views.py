@@ -11,6 +11,10 @@ from catalog.models import Product, ProductVariant, ContactLensColor
 from lenses.models import LensOption, LensAddOn, SunglassLensOption
 
 
+FREE_SHIPPING_THRESHOLD = Decimal('200.00')
+SHIPPING_COST           = Decimal('20.00')
+
+
 # ============================================
 # HELPER FUNCTIONS
 # ============================================
@@ -47,9 +51,36 @@ def calculate_item_total(cart_item):
     return total
 
 
-def get_cart_totals(cart):
+def get_coupon_discount(request, subtotal):
+    """
+    Read the applied coupon from session and return the discount amount.
+    Returns (discount_amount, free_shipping_flag).
+    """
+    applied = request.session.get('applied_coupon')
+    if not applied:
+        return Decimal('0.00'), False
+
+    discount    = Decimal('0.00')
+    free_ship   = False
+    disc_type   = applied.get('discount_type', '')
+
+    if disc_type == 'free_shipping':
+        free_ship = True
+    else:
+        try:
+            discount = Decimal(str(applied.get('discount_amount', '0')))
+            # Never discount more than the subtotal
+            discount = min(discount, subtotal)
+        except Exception:
+            discount = Decimal('0.00')
+
+    return discount, free_ship
+
+
+def get_cart_totals(cart, request=None):
     """
     Calculate all cart totals.
+    Pass `request` to apply any active session coupon.
     cart_count = total QUANTITY (sum of all item quantities).
     """
     cart_items = cart.items.select_related(
@@ -60,25 +91,32 @@ def get_cart_totals(cart):
     for item in cart_items:
         subtotal += calculate_item_total(item)
 
-    tax_rate = Decimal('0.00')
-    tax = subtotal * tax_rate
+    # Coupon
+    coupon_discount = Decimal('0.00')
+    free_shipping   = False
+    if request is not None:
+        coupon_discount, free_shipping = get_coupon_discount(request, subtotal)
 
-    # Free shipping over QAR 200
-    shipping = Decimal('0.00')
-    if Decimal('0.00') < subtotal < Decimal('200.00'):
-        shipping = Decimal('20.00')
+    discounted = max(subtotal - coupon_discount, Decimal('0.00'))
 
-    total = subtotal + tax + shipping
+    # Shipping
+    if free_shipping or discounted >= FREE_SHIPPING_THRESHOLD:
+        shipping = Decimal('0.00')
+    elif discounted > Decimal('0.00'):
+        shipping = SHIPPING_COST
+    else:
+        shipping = Decimal('0.00')
 
-    # Sum all quantities — 1 product with qty=3 counts as 3
+    total     = discounted + shipping
     total_qty = cart_items.aggregate(total=Sum('quantity'))['total'] or 0
 
     return {
-        'subtotal': subtotal,
-        'tax': tax,
-        'shipping': shipping,
-        'total': total,
-        'item_count': total_qty,   # ← always total quantity
+        'subtotal':        subtotal,
+        'coupon_discount': coupon_discount,
+        'tax':             Decimal('0.00'),
+        'shipping':        shipping,
+        'total':           total,
+        'item_count':      total_qty,
     }
 
 
@@ -127,47 +165,53 @@ def merge_guest_cart_on_login(user, session_key):
 # ============================================
 
 def cart_view(request):
-    """Display cart contents."""
-    cart = get_or_create_cart(request)
+    """Display cart contents with coupon discount applied."""
+    cart       = get_or_create_cart(request)
     cart_items = cart.items.select_related(
         'product', 'variant', 'lens_option', 'sunglass_lens_option'
     ).prefetch_related('lens_addons', 'product__images')
 
+    # ── Per-item totals ───────────────────────────────────────────────────────
     subtotal = Decimal('0.00')
     for item in cart_items:
         item.item_total = calculate_item_total(item)
         subtotal += item.item_total
 
-    tax_rate = Decimal('0.00')
-    tax = subtotal * tax_rate
+    # ── Coupon ────────────────────────────────────────────────────────────────
+    coupon_discount, free_shipping = get_coupon_discount(request, subtotal)
+    discounted = max(subtotal - coupon_discount, Decimal('0.00'))
 
-    shipping = Decimal('0.00')
-    if Decimal('0.00') < subtotal < Decimal('200.00'):
-        shipping = Decimal('20.00')
+    # ── Shipping ──────────────────────────────────────────────────────────────
+    if free_shipping or discounted >= FREE_SHIPPING_THRESHOLD:
+        shipping = Decimal('0.00')
+    elif discounted > Decimal('0.00'):
+        shipping = SHIPPING_COST
+    else:
+        shipping = Decimal('0.00')
 
-    total = subtotal + tax + shipping
+    total = discounted + shipping
 
-    free_shipping_threshold = Decimal('200.00')
-    free_shipping_remaining = max(Decimal('0.00'), free_shipping_threshold - subtotal)
+    # ── Free-shipping progress bar (based on discounted subtotal) ─────────────
+    free_shipping_remaining = max(Decimal('0.00'), FREE_SHIPPING_THRESHOLD - discounted)
     shipping_progress = (
-        min(100, float(subtotal / free_shipping_threshold * 100))
-        if subtotal > 0 else 0
+        min(100, float(discounted / FREE_SHIPPING_THRESHOLD * 100))
+        if discounted > 0 else 0
     )
 
-    # ← FIXED: use sum of quantities, not count of rows
     total_qty = cart_items.aggregate(total=Sum('quantity'))['total'] or 0
 
     context = {
-        'cart': cart,
-        'cart_items': cart_items,
-        'subtotal': subtotal,
-        'tax': tax,
-        'shipping': shipping,
-        'total': total,
-        'item_count': total_qty,           # sum of quantities
-        'cart_count': total_qty,           # for header badge consistency
+        'cart':                    cart,
+        'cart_items':              cart_items,
+        'subtotal':                subtotal,
+        'coupon_discount':         coupon_discount,
+        'tax':                     Decimal('0.00'),
+        'shipping':                shipping,
+        'total':                   total,
+        'item_count':              total_qty,
+        'cart_count':              total_qty,
         'free_shipping_remaining': free_shipping_remaining,
-        'shipping_progress': shipping_progress,
+        'shipping_progress':       shipping_progress,
     }
 
     return render(request, 'cart.html', context)
@@ -180,26 +224,26 @@ def cart_view(request):
 def update_cart_quantity(request, item_id, action):
     """Update cart item quantity via AJAX. Accepts GET and POST."""
     try:
-        cart = get_or_create_cart(request)
+        cart      = get_or_create_cart(request)
         cart_item = get_object_or_404(CartItem, id=item_id, cart=cart)
 
-        product = cart_item.product
+        product     = cart_item.product
         stock_limit = get_product_stock(product)
 
         if action == 'increase':
             if cart_item.quantity >= stock_limit:
-                totals = get_cart_totals(cart)
+                totals = get_cart_totals(cart, request)
                 return JsonResponse({
-                    'success': False,
+                    'success':      False,
                     'limit_reached': True,
-                    'quantity': cart_item.quantity,
-                    'message': f'Only {stock_limit} unit(s) available in stock.',
-                    'item_total': str(calculate_item_total(cart_item)),
-                    'subtotal': str(totals['subtotal']),
-                    'shipping': str(totals['shipping']),
-                    'tax': str(totals['tax']),
-                    'cart_total': str(totals['total']),
-                    'cart_count': totals['item_count'],
+                    'quantity':     cart_item.quantity,
+                    'message':      f'Only {stock_limit} unit(s) available in stock.',
+                    'item_total':   str(calculate_item_total(cart_item)),
+                    'subtotal':     str(totals['subtotal']),
+                    'shipping':     str(totals['shipping']),
+                    'tax':          str(totals['tax']),
+                    'cart_total':   str(totals['total']),
+                    'cart_count':   totals['item_count'],
                 })
 
             cart_item.quantity += 1
@@ -207,16 +251,16 @@ def update_cart_quantity(request, item_id, action):
 
         elif action == 'decrease':
             if cart_item.quantity <= 1:
-                totals = get_cart_totals(cart)
+                totals = get_cart_totals(cart, request)
                 return JsonResponse({
-                    'success': False,
-                    'block': True,
-                    'quantity': cart_item.quantity,
-                    'message': 'Minimum quantity is 1. Use the Remove button to delete.',
+                    'success':    False,
+                    'block':      True,
+                    'quantity':   cart_item.quantity,
+                    'message':    'Minimum quantity is 1. Use the Remove button to delete.',
                     'item_total': str(calculate_item_total(cart_item)),
-                    'subtotal': str(totals['subtotal']),
-                    'shipping': str(totals['shipping']),
-                    'tax': str(totals['tax']),
+                    'subtotal':   str(totals['subtotal']),
+                    'shipping':   str(totals['shipping']),
+                    'tax':        str(totals['tax']),
                     'cart_total': str(totals['total']),
                     'cart_count': totals['item_count'],
                 })
@@ -228,17 +272,17 @@ def update_cart_quantity(request, item_id, action):
             return JsonResponse({'success': False, 'message': 'Invalid action.'}, status=400)
 
         item_total = calculate_item_total(cart_item)
-        totals = get_cart_totals(cart)
+        totals     = get_cart_totals(cart, request)   # ← pass request for coupon
 
         return JsonResponse({
-            'success': True,
-            'quantity': cart_item.quantity,
-            'item_total': str(item_total),
-            'subtotal': str(totals['subtotal']),
-            'shipping': str(totals['shipping']),
-            'tax': str(totals['tax']),
-            'cart_total': str(totals['total']),
-            'cart_count': totals['item_count'],   # total quantity
+            'success':     True,
+            'quantity':    cart_item.quantity,
+            'item_total':  str(item_total),
+            'subtotal':    str(totals['subtotal']),
+            'shipping':    str(totals['shipping']),
+            'tax':         str(totals['tax']),
+            'cart_total':  str(totals['total']),
+            'cart_count':  totals['item_count'],
             'stock_limit': stock_limit,
         })
 
@@ -257,21 +301,21 @@ def update_cart_quantity(request, item_id, action):
 def remove_from_cart(request, item_id):
     """Remove item from cart via AJAX."""
     try:
-        cart = get_or_create_cart(request)
+        cart      = get_or_create_cart(request)
         cart_item = get_object_or_404(CartItem, id=item_id, cart=cart)
 
         product_name = cart_item.product.name
         cart_item.delete()
 
-        totals = get_cart_totals(cart)
+        totals = get_cart_totals(cart, request)   # ← pass request for coupon
 
         return JsonResponse({
-            'success': True,
-            'message': f'{product_name} removed from cart.',
-            'cart_count': totals['item_count'],   # total quantity after removal
-            'subtotal': str(totals['subtotal']),
-            'shipping': str(totals['shipping']),
-            'tax': str(totals['tax']),
+            'success':    True,
+            'message':    f'{product_name} removed from cart.',
+            'cart_count': totals['item_count'],
+            'subtotal':   str(totals['subtotal']),
+            'shipping':   str(totals['shipping']),
+            'tax':        str(totals['tax']),
             'cart_total': str(totals['total']),
         })
 
@@ -329,12 +373,12 @@ def add_to_cart(request):
                 requires_prescription=False,
             )
 
-        totals = get_cart_totals(cart)
+        totals = get_cart_totals(cart, request)
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
-                'success': True,
-                'message': f'{product.name} added to cart!',
+                'success':    True,
+                'message':    f'{product.name} added to cart!',
                 'cart_count': totals['item_count'],
                 'cart_total': str(totals['total']),
             })
@@ -426,12 +470,12 @@ def add_eyeglass_to_cart(request):
             except LensAddOn.DoesNotExist:
                 pass
 
-        totals = get_cart_totals(cart)
+        totals = get_cart_totals(cart, request)
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
-                'success': True,
-                'message': f'{product.name} with lenses added to cart!',
+                'success':    True,
+                'message':    f'{product.name} with lenses added to cart!',
                 'cart_count': totals['item_count'],
                 'cart_total': str(totals['total']),
             })
@@ -500,12 +544,12 @@ def add_sunglass_to_cart(request):
             prescription_data=prescription_data,
         )
 
-        totals = get_cart_totals(cart)
+        totals = get_cart_totals(cart, request)
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
-                'success': True,
-                'message': f'{product.name} added to cart!',
+                'success':    True,
+                'message':    f'{product.name} added to cart!',
                 'cart_count': totals['item_count'],
                 'cart_total': str(totals['total']),
             })
@@ -561,12 +605,12 @@ def add_contact_lens_to_cart(request):
             prescription_data=prescription_data,
         )
 
-        totals = get_cart_totals(cart)
+        totals = get_cart_totals(cart, request)
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
-                'success': True,
-                'message': f'{product.name} added to cart!',
+                'success':    True,
+                'message':    f'{product.name} added to cart!',
                 'cart_count': totals['item_count'],
                 'cart_total': str(totals['total']),
             })
@@ -602,7 +646,7 @@ def update_cart_item(request, item_id):
             cart_item.save()
             messages.success(request, 'Cart updated.')
 
-        totals = get_cart_totals(cart)
+        totals = get_cart_totals(cart, request)
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': True, 'cart_count': totals['item_count']})
