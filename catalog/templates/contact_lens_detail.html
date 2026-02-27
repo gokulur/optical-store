@@ -173,6 +173,369 @@
 .pm__foot{padding:18px 28px 24px;border-top:1px solid var(--aa-border);background:#fff;position:sticky;bottom:0;}
 .pm__confirm{width:100%;padding:15px;background:var(--aa-ink);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:800;cursor:pointer;transition:background var(--aa-t);letter-spacing:.04em;}
 .pm__confirm:hover{background:#2a2a2a;}
+
+
+/* ══════════════════════════════════════════
+   REVIEWS SECTION —  
+══════════════════════════════════════════ */
+
+/* Summary grid inside section */
+.rv-summary-grid {
+  display:grid;
+  grid-template-columns:220px 1fr;
+  gap:0;
+  background:var(--aa-sand);
+  border:1px solid var(--aa-border);
+  border-radius:var(--aa-radius);
+  overflow:hidden;
+  margin-bottom:28px;
+}
+@media(max-width:640px){.rv-summary-grid{grid-template-columns:1fr;}}
+
+.rv-avg-col {
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:28px 24px;
+  border-right:1px solid var(--aa-border);
+  background:#fff;
+}
+@media(max-width:640px){.rv-avg-col{border-right:none;border-bottom:1px solid var(--aa-border);padding:22px;}}
+
+.rv-avg-number {
+  font-size:64px;font-weight:900;color:var(--aa-ink);
+  line-height:1;letter-spacing:-.05em;
+}
+.rv-avg-stars { display:flex;gap:3px;margin:10px 0 5px; }
+.rv-avg-stars .s { font-size:18px; }
+.rv-avg-stars .s.on { color:#f59e0b; }
+.rv-avg-stars .s.off { color:#d4cfc7; }
+.rv-avg-meta { font-size:12px;color:var(--aa-muted);font-weight:500; }
+
+.rv-bars-col { padding:20px 24px;display:flex;flex-direction:column;justify-content:center;gap:9px; }
+
+.rv-bar-row {
+  display:grid;grid-template-columns:46px 1fr 26px;
+  align-items:center;gap:10px;
+  cursor:pointer;padding:3px 5px;border-radius:6px;transition:background .15s;
+}
+.rv-bar-row:hover { background:rgba(184,151,106,.08); }
+.rv-bar-lbl { font-size:12px;font-weight:600;color:var(--aa-muted);display:flex;align-items:center;gap:3px; }
+.rv-bar-lbl .s { color:#f59e0b;font-size:11px; }
+.rv-bar-track { height:6px;background:rgba(0,0,0,.07);border-radius:99px;overflow:hidden; }
+.rv-bar-fill {
+  height:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--aa-gold),#e8975a);
+  width:0%;transition:width 1s cubic-bezier(.34,1.2,.64,1);
+}
+.rv-bar-cnt { font-size:11px;color:var(--aa-muted);text-align:right; }
+
+/* write review / login bar */
+.rv-action-bar {
+  display:flex;align-items:center;justify-content:space-between;
+  gap:14px;flex-wrap:wrap;
+  padding:16px 20px;
+  background:var(--aa-sand);
+  border:1px solid var(--aa-border);
+  border-radius:var(--aa-radius);
+  margin-bottom:22px;
+}
+.rv-action-bar p { font-size:13px;color:var(--aa-ink-soft);margin:0; }
+.rv-action-bar p strong { color:var(--aa-ink); }
+.rv-action-btn {
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--aa-ink);color:#fff;
+  border:none;padding:11px 22px;border-radius:50px;
+  font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  text-decoration:none;cursor:pointer;transition:background .25s;
+  font-family:inherit;white-space:nowrap;
+}
+.rv-action-btn:hover { background:#2a2a2a;color:#fff; }
+
+/* controls */
+.rv-controls {
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;margin-bottom:16px;
+}
+.rv-controls-left { display:flex;align-items:center;gap:8px;flex-wrap:wrap; }
+.rv-chip {
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 14px;border-radius:50px;
+  font-size:12px;font-weight:600;
+  border:1.5px solid var(--aa-border);
+  background:#fff;color:var(--aa-muted);
+  cursor:pointer;transition:all .2s;
+  font-family:inherit;
+}
+.rv-chip:hover,.rv-chip.on {
+  border-color:var(--aa-ink);background:var(--aa-ink);color:#fff;
+}
+.rv-sort {
+  border:1.5px solid var(--aa-border);
+  border-radius:8px;padding:7px 28px 7px 11px;
+  font-size:12px;font-weight:600;color:var(--aa-ink);
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238a8580' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 8px center #fff;
+  appearance:none;cursor:pointer;font-family:inherit;outline:none;
+  transition:border-color .2s;
+}
+.rv-sort:focus { border-color:var(--aa-gold); }
+
+/* cards */
+.rv-list { display:flex;flex-direction:column;gap:14px; }
+
+.rv-card {
+  background:#fff;
+  border-radius:var(--aa-radius);
+  border:1px solid var(--aa-border);
+  padding:22px;
+  transition:box-shadow .25s,border-color .25s;
+  position:relative;
+}
+.rv-card:hover {
+  box-shadow:var(--aa-shadow);
+  border-color:var(--aa-gold-lt);
+}
+.rv-card--featured {
+  border-color:rgba(184,151,106,.4);
+  background:linear-gradient(160deg,#fffcf7 0%,#fff 60%);
+}
+.rv-card--featured::after {
+  content:'✦ Featured';
+  position:absolute;top:0;right:0;
+  background:var(--aa-gold);color:#fff;
+  font-size:9px;font-weight:700;letter-spacing:.1em;
+  padding:4px 11px;border-radius:0 var(--aa-radius) 0 7px;
+}
+
+.rv-card-top {
+  display:flex;align-items:flex-start;
+  justify-content:space-between;gap:12px;
+  margin-bottom:13px;flex-wrap:wrap;
+}
+.rv-card-left { display:flex;align-items:center;gap:11px; }
+
+.rv-avatar {
+  width:42px;height:42px;border-radius:50%;
+  background:var(--aa-ink);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:800;flex-shrink:0;
+  text-transform:uppercase;letter-spacing:.04em;
+}
+/* subtle palette per index */
+.rv-avatar[data-c="1"]{background:linear-gradient(135deg,#1a4060,#2d6090);}
+.rv-avatar[data-c="2"]{background:linear-gradient(135deg,#3d1a1a,#7a3030);}
+.rv-avatar[data-c="3"]{background:linear-gradient(135deg,#1a3d20,#2d6a35);}
+.rv-avatar[data-c="4"]{background:linear-gradient(135deg,#3d2e10,#7a5a20);}
+.rv-avatar[data-c="5"]{background:linear-gradient(135deg,#261a3d,#4a2d7a);}
+
+.rv-name { font-size:14px;font-weight:700;color:var(--aa-ink);margin-bottom:4px; }
+.rv-badges { display:flex;gap:5px;flex-wrap:wrap; }
+.rv-badge {
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:10px;font-weight:700;letter-spacing:.05em;
+  padding:2px 8px;border-radius:99px;
+}
+.rv-badge--verified { background:var(--aa-green-bg);color:var(--aa-green); }
+.rv-badge--pending  { background:#fff7ed;color:#b45309; }
+
+.rv-card-right { text-align:right;flex-shrink:0; }
+.rv-stars { display:flex;gap:2px;justify-content:flex-end;margin-bottom:4px; }
+.rv-stars .s { font-size:15px; }
+.rv-stars .s.on { color:#f59e0b; }
+.rv-stars .s.off { color:#e0dbd2; }
+.rv-date { font-size:11px;color:var(--aa-muted); }
+
+.rv-title {
+  font-size:15px;font-weight:700;color:var(--aa-ink);
+  margin:0 0 7px;letter-spacing:-.01em;
+}
+.rv-comment {
+  font-size:13px;line-height:1.75;color:var(--aa-ink-soft);
+}
+.rv-readmore {
+  display:inline-block;margin-top:5px;
+  color:var(--aa-gold);font-size:12px;font-weight:600;
+  cursor:pointer;border:none;background:none;padding:0;
+  font-family:inherit;text-decoration:underline;text-underline-offset:2px;
+}
+
+.rv-imgs { display:flex;gap:7px;flex-wrap:wrap;margin-top:12px; }
+.rv-img-thumb {
+  width:68px;height:68px;border-radius:8px;overflow:hidden;
+  border:1.5px solid var(--aa-border);cursor:pointer;
+  flex-shrink:0;transition:border-color .2s,transform .2s;
+}
+.rv-img-thumb:hover { border-color:var(--aa-gold);transform:scale(1.04); }
+.rv-img-thumb img { width:100%;height:100%;object-fit:cover;display:block; }
+
+.rv-card-foot {
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:13px;margin-top:14px;
+  border-top:1px solid var(--aa-sand);
+  flex-wrap:wrap;gap:10px;
+}
+.rv-helpful-lbl { font-size:12px;color:var(--aa-muted); }
+.rv-helpful-btns { display:flex;gap:7px; }
+
+.rv-hbtn {
+  display:inline-flex;align-items:center;gap:5px;
+  padding:6px 13px;border-radius:50px;
+  border:1.5px solid var(--aa-border);background:#fff;
+  font-size:12px;font-weight:600;color:var(--aa-muted);
+  cursor:pointer;transition:all .2s;font-family:inherit;
+}
+.rv-hbtn.yes:hover { border-color:var(--aa-green);color:var(--aa-green);background:var(--aa-green-bg); }
+.rv-hbtn.no:hover  { border-color:#c03020;color:#c03020;background:#fff5f5; }
+
+.rv-owner-btns { display:flex;gap:7px; }
+.rv-btn-edit {
+  font-size:12px;font-weight:700;color:#5a58cc;
+  text-decoration:none;padding:6px 13px;
+  border:1.5px solid #5a58cc;border-radius:50px;transition:all .2s;
+}
+.rv-btn-edit:hover { background:#5a58cc;color:#fff; }
+.rv-btn-del {
+  font-size:12px;font-weight:700;color:#c03020;
+  border:1.5px solid #c03020;border-radius:50px;
+  padding:6px 13px;background:#fff;cursor:pointer;
+  transition:all .2s;font-family:inherit;
+}
+.rv-btn-del:hover { background:#c03020;color:#fff; }
+
+/* empty state */
+.rv-empty {
+  text-align:center;padding:56px 30px;
+  background:var(--aa-sand);border-radius:var(--aa-radius);
+  border:1px dashed var(--aa-border);
+}
+.rv-empty svg { color:var(--aa-gold);opacity:.5;margin-bottom:14px; }
+.rv-empty h3 { font-size:19px;font-weight:700;color:var(--aa-ink);margin:0 0 7px; }
+.rv-empty p  { font-size:13px;color:var(--aa-muted);margin:0 0 22px; }
+.rv-empty-btn {
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--aa-ink);color:#fff;text-decoration:none;
+  padding:12px 26px;border-radius:50px;
+  font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  transition:all .25s;
+}
+.rv-empty-btn:hover { background:#2a2a2a;transform:translateY(-2px); }
+
+/* filter tags */
+.rv-active-tags { display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px; }
+.rv-tag {
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--aa-sand);border:1.5px solid var(--aa-border);
+  border-radius:50px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--aa-muted);
+}
+.rv-tag button {
+  background:none;border:none;color:var(--aa-muted);cursor:pointer;
+  font-size:14px;padding:0;line-height:1;transition:color .2s;
+}
+.rv-tag button:hover { color:var(--aa-ink); }
+
+/* no results msg */
+#rvNoResults {
+  text-align:center;padding:32px;
+  font-size:13px;color:var(--aa-muted);
+  background:var(--aa-sand);border-radius:var(--aa-radius);
+  border:1px dashed var(--aa-border);
+}
+#rvNoResults button {
+  color:var(--aa-gold);background:none;border:none;
+  cursor:pointer;font-weight:700;text-decoration:underline;
+  font-family:inherit;font-size:inherit;
+}
+
+/* review lightbox */
+.rv-lb {
+  display:none;position:fixed;inset:0;z-index:99998;
+  background:rgba(5,5,10,.94);backdrop-filter:blur(14px);
+  align-items:center;justify-content:center;flex-direction:column;
+}
+.rv-lb.open { display:flex; }
+.rv-lb-img { max-width:90vw;max-height:82vh;object-fit:contain;border-radius:10px; }
+.rv-lb-close {
+  position:fixed;top:20px;right:22px;
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:22px;line-height:1;
+}
+
+/* delete modal */
+.rv-del-modal {
+  display:none;position:fixed;inset:0;z-index:99997;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(3px);
+  align-items:center;justify-content:center;padding:20px;
+}
+.rv-del-modal.open { display:flex; }
+.rv-del-box {
+  background:#fff;border-radius:16px;
+  padding:32px 28px;max-width:340px;width:100%;
+  text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.2);
+}
+.rv-del-icon {
+  width:56px;height:56px;border-radius:50%;
+  background:#fff5f5;display:flex;align-items:center;
+  justify-content:center;margin:0 auto 14px;font-size:24px;
+}
+.rv-del-box h3 { font-size:18px;font-weight:800;color:var(--aa-ink);margin:0 0 7px; }
+.rv-del-box p  { font-size:13px;color:var(--aa-muted);margin:0 0 22px; }
+.rv-del-btns   { display:flex;gap:10px; }
+.rv-del-cancel,.rv-del-confirm {
+  flex:1;padding:12px;border-radius:10px;
+  font-size:13px;font-weight:700;cursor:pointer;
+  font-family:inherit;transition:all .2s;
+}
+.rv-del-cancel  { border:1.5px solid var(--aa-border);background:#fff;color:var(--aa-muted); }
+.rv-del-cancel:hover  { border-color:var(--aa-ink);color:var(--aa-ink); }
+.rv-del-confirm { border:none;background:#c03020;color:#fff; }
+.rv-del-confirm:hover { background:#a02010; }
+
+/* lens modal */
+.lm{display:none;position:fixed;inset:0;z-index:8888;background:rgba(13,13,13,.55);backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+.lm.is-open{display:flex;}
+.lm__box{background:#fff;width:100%;max-width:640px;border-radius:20px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.2);animation:lmIn .3s var(--aa-ease);margin:auto;}
+@keyframes lmIn{from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:none}}
+.lm__head{padding:22px 28px 18px;border-bottom:1px solid var(--aa-border);display:flex;align-items:center;justify-content:space-between;}
+.lm__head h3{margin:0;font-size:18px;font-weight:800;}
+.lm__close{background:none;border:none;font-size:26px;cursor:pointer;color:var(--aa-muted);padding:0;line-height:1;}
+.lm__body{padding:22px 28px;max-height:68vh;overflow-y:auto;}
+.lm__step{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--aa-muted);margin-bottom:12px;}
+.lm__colors{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px;}
+.lm__color-chip{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 14px;border:2px solid var(--aa-border);border-radius:var(--aa-radius);cursor:pointer;transition:all var(--aa-t);min-width:72px;text-align:center;}
+.lm__color-chip:hover,.lm__color-chip.is-on{border-color:var(--aa-ink);background:var(--aa-sand);}
+.lm__color-dot{width:30px;height:30px;border-radius:50%;border:2px solid rgba(0,0,0,.07);}
+.lm__color-name{font-size:12px;font-weight:600;color:var(--aa-ink);}
+.lm__opt{border:2px solid var(--aa-border);border-radius:var(--aa-radius);padding:16px 20px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:14px;transition:all var(--aa-t);}
+.lm__opt:hover{border-color:#aaa;box-shadow:var(--aa-shadow);}
+.lm__opt.is-on{border-color:var(--aa-ink);background:var(--aa-sand);}
+.lm__opt-left{display:flex;align-items:center;gap:12px;}
+.lm__radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--aa-border);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--aa-t);}
+.lm__opt.is-on .lm__radio{border-color:var(--aa-ink);background:var(--aa-ink);}
+.lm__radio::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff;display:none;}
+.lm__opt.is-on .lm__radio::after{display:block;}
+.lm__opt-name{font-size:14px;font-weight:700;}
+.lm__opt-desc{font-size:12px;color:var(--aa-muted);margin-top:2px;}
+.lm__opt-price{font-size:17px;font-weight:800;white-space:nowrap;}
+.lm__rx{background:var(--aa-sand);border-radius:var(--aa-radius);padding:18px;margin:18px 0 0;}
+.lm__rx-table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;}
+.lm__rx-table th{background:var(--aa-ink);color:#fff;padding:9px 12px;font-size:13px;font-weight:600;text-align:left;}
+.lm__rx-table td{padding:9px 12px;border-bottom:1px solid var(--aa-border);}
+.lm__rx-table tr:last-child td{border-bottom:none;}
+.lm__rx-table td:first-child{font-weight:600;font-size:13px;white-space:nowrap;}
+.lm__rx-input{width:100%;padding:7px 10px;border:1.5px solid var(--aa-border);border-radius:6px;font-size:13px;min-width:65px;transition:border-color var(--aa-t);}
+.lm__rx-input:focus{border-color:var(--aa-gold);outline:none;}
+.lm__foot{padding:18px 28px 24px;border-top:1px solid var(--aa-border);background:#fff;position:sticky;bottom:0;}
+.lm__total{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.lm__total-lbl{font-size:14px;font-weight:600;}
+.lm__total-val{font-size:24px;font-weight:900;letter-spacing:-.03em;}
+.lm__confirm{width:100%;padding:15px;background:var(--aa-ink);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:800;cursor:pointer;transition:background var(--aa-t);letter-spacing:.04em;}
+.lm__confirm:hover{background:#2a2a2a;}
+
+/* toast */
+.pd-toast{position:fixed;bottom:28px;right:28px;z-index:99999;padding:14px 22px;border-radius:var(--aa-radius);font-size:14px;font-weight:700;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,.2);pointer-events:none;transform:translateY(70px);opacity:0;transition:all .32s var(--aa-ease);max-width:320px;background:var(--aa-ink);}
+.pd-toast.is-show{transform:translateY(0);opacity:1;}
+.pd-toast--ok{background:var(--aa-green)!important;}
+.pd-toast--err{background:#c03020!important;}
 </style>
 
 <div class="pd-page">
@@ -309,6 +672,229 @@
   {% if product.description %}
   <div class="pd-section"><h2 class="pd-section__h">About This Product</h2><div class="pd-section__body">{{ product.description|linebreaksbr }}</div></div>
   {% endif %}
+
+   <!-- ════════════════════════════════════════
+       CUSTOMER REVIEWS — blended section
+  ════════════════════════════════════════ -->
+  <div class="pd-section" id="rvSection">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px;">
+      <div>
+        <h2 class="pd-section__h" style="margin-bottom:4px;">Customer Reviews</h2>
+        <p style="font-size:13px;color:var(--aa-muted);margin:0;">
+          {% if rating_stats.total_reviews %}{{ rating_stats.total_reviews }} review{{ rating_stats.total_reviews|pluralize }} · {{ rating_stats.average_rating|floatformat:1 }} out of 5{% else %}No reviews yet — be the first!{% endif %}
+        </p>
+      </div>
+      {% if request.user.is_authenticated and can_review %}
+      <a href="{% url 'reviews:write_review' product.slug %}" class="rv-action-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4z"/></svg>
+        Write a Review
+      </a>
+      {% elif request.user.is_authenticated and user_review %}
+      <a href="{% url 'reviews:edit_review' user_review.id %}" class="rv-action-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z"/></svg>
+        Edit Your Review
+      </a>
+      {% endif %}
+    </div>
+
+    {% if rating_stats.total_reviews %}
+    <!-- Rating Summary -->
+    <div class="rv-summary-grid">
+      <div class="rv-avg-col">
+        <div class="rv-avg-number">{{ rating_stats.average_rating|floatformat:1 }}</div>
+        <div class="rv-avg-stars">
+          {% for i in "12345" %}
+            {% if forloop.counter <= rating_stats.average_rating|floatformat:0|add:"0" %}
+              <span class="s on">★</span>
+            {% else %}
+              <span class="s off">★</span>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <div class="rv-avg-meta">{{ rating_stats.total_reviews }} review{{ rating_stats.total_reviews|pluralize }}</div>
+      </div>
+      <div class="rv-bars-col">
+        <div class="rv-bar-row" onclick="rvFilterChip('5')">
+          <span class="rv-bar-lbl">5 <span class="s">★</span></span>
+          <div class="rv-bar-track"><div class="rv-bar-fill" data-pct="{{ rating_percentages.5|floatformat:0 }}"></div></div>
+          <span class="rv-bar-cnt">{{ rating_stats.five_star }}</span>
+        </div>
+        <div class="rv-bar-row" onclick="rvFilterChip('4')">
+          <span class="rv-bar-lbl">4 <span class="s">★</span></span>
+          <div class="rv-bar-track"><div class="rv-bar-fill" data-pct="{{ rating_percentages.4|floatformat:0 }}"></div></div>
+          <span class="rv-bar-cnt">{{ rating_stats.four_star }}</span>
+        </div>
+        <div class="rv-bar-row" onclick="rvFilterChip('3')">
+          <span class="rv-bar-lbl">3 <span class="s">★</span></span>
+          <div class="rv-bar-track"><div class="rv-bar-fill" data-pct="{{ rating_percentages.3|floatformat:0 }}"></div></div>
+          <span class="rv-bar-cnt">{{ rating_stats.three_star }}</span>
+        </div>
+        <div class="rv-bar-row" onclick="rvFilterChip('2')">
+          <span class="rv-bar-lbl">2 <span class="s">★</span></span>
+          <div class="rv-bar-track"><div class="rv-bar-fill" data-pct="{{ rating_percentages.2|floatformat:0 }}"></div></div>
+          <span class="rv-bar-cnt">{{ rating_stats.two_star }}</span>
+        </div>
+        <div class="rv-bar-row" onclick="rvFilterChip('1')">
+          <span class="rv-bar-lbl">1 <span class="s">★</span></span>
+          <div class="rv-bar-track"><div class="rv-bar-fill" data-pct="{{ rating_percentages.1|floatformat:0 }}"></div></div>
+          <span class="rv-bar-cnt">{{ rating_stats.one_star }}</span>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Login nudge -->
+    {% if not request.user.is_authenticated %}
+    <div class="rv-action-bar">
+      <p>Have this product? <strong>Share your experience</strong></p>
+      <a href="{% url 'users:login' %}?next={{ request.path }}" class="rv-action-btn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Login to Review
+      </a>
+    </div>
+    {% endif %}
+
+    <!-- Review list or empty -->
+    {% with approved=product.reviews.all %}
+    {% if approved %}
+
+    <!-- Controls -->
+    <div class="rv-controls">
+      <div class="rv-controls-left">
+        <button class="rv-chip on" data-f="all"   onclick="rvFilter('all',this)">All</button>
+        <button class="rv-chip"    data-f="5"     onclick="rvFilter('5',this)">★ 5 Star</button>
+        <button class="rv-chip"    data-f="4"     onclick="rvFilter('4',this)">★ 4 Star</button>
+        <button class="rv-chip"    data-f="ver"   onclick="rvFilter('ver',this)">✓ Verified</button>
+        <button class="rv-chip"    data-f="imgs"  onclick="rvFilter('imgs',this)">📷 With Photos</button>
+      </div>
+      <select class="rv-sort" onchange="rvSort(this.value)">
+        <option value="newest">Most Recent</option>
+        <option value="helpful">Most Helpful</option>
+        <option value="high">Highest Rating</option>
+        <option value="low">Lowest Rating</option>
+      </select>
+    </div>
+
+    <!-- No results msg -->
+    <div id="rvNoResults" style="display:none;">
+      No reviews match this filter.
+      <button onclick="rvFilter('all', document.querySelector('[data-f=all]'))">Show all</button>
+    </div>
+
+    <!-- Cards -->
+    <div class="rv-list" id="rvList">
+      {% for review in approved %}
+      {% if review.is_approved %}
+      <div class="rv-card {% if review.is_featured %}rv-card--featured{% endif %}"
+           data-r="{{ review.rating }}"
+           data-v="{{ review.is_verified_purchase|yesno:'1,0' }}"
+           data-i="{{ review.images.all|length|yesno:'1,0' }}"
+           data-h="{{ review.helpful_count }}"
+           data-d="{{ review.created_at|date:'U' }}">
+
+        <div class="rv-card-top">
+          <div class="rv-card-left">
+            <div class="rv-avatar" data-c="{% cycle '1' '2' '3' '4' '5' %}">
+              {{ review.customer.first_name|first|upper|default:review.customer.username|first|upper }}
+            </div>
+            <div>
+              <div class="rv-name">{{ review.customer.get_full_name|default:review.customer.username }}</div>
+              <div class="rv-badges">
+                {% if review.is_verified_purchase %}
+                <span class="rv-badge rv-badge--verified">
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  Verified Purchase
+                </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="rv-card-right">
+            <div class="rv-stars">
+              {% for i in "12345" %}{% if forloop.counter <= review.rating %}<span class="s on">★</span>{% else %}<span class="s off">★</span>{% endif %}{% endfor %}
+            </div>
+            <div class="rv-date">{{ review.created_at|date:"d M Y" }}</div>
+          </div>
+        </div>
+
+        {% if review.title %}<div class="rv-title">{{ review.title }}</div>{% endif %}
+
+        <div class="rv-comment" id="rvc-{{ review.id }}">
+          {% if review.comment|length > 280 %}
+            <span class="s-short">{{ review.comment|truncatechars:280 }}</span>
+            <span class="s-full" style="display:none">{{ review.comment }}</span>
+            <button class="rv-readmore" onclick="rvToggle({{ review.id }},this)">Read more ↓</button>
+          {% else %}
+            {{ review.comment }}
+          {% endif %}
+        </div>
+
+        {% if review.images.all %}
+        <div class="rv-imgs">
+          {% for img in review.images.all %}
+          <div class="rv-img-thumb" onclick="rvLbOpen('{{ img.image.url }}')">
+            <img src="{{ img.image.url }}" alt="" loading="lazy">
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="rv-card-foot">
+          <span class="rv-helpful-lbl">Was this helpful?</span>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            {% if request.user.is_authenticated %}
+            <div class="rv-helpful-btns">
+              <form method="post" action="{% url 'reviews:mark_helpful' review.id %}" style="display:inline">
+                {% csrf_token %}<input type="hidden" name="is_helpful" value="true">
+                <button type="submit" class="rv-hbtn yes">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>
+                  Yes ({{ review.helpful_count }})
+                </button>
+              </form>
+              <form method="post" action="{% url 'reviews:mark_helpful' review.id %}" style="display:inline">
+                {% csrf_token %}<input type="hidden" name="is_helpful" value="false">
+                <button type="submit" class="rv-hbtn no">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg>
+                  No ({{ review.not_helpful_count }})
+                </button>
+              </form>
+            </div>
+            {% else %}
+            <a href="{% url 'users:login' %}?next={{ request.path }}" style="font-size:12px;color:var(--aa-gold);text-decoration:underline;">Login to vote</a>
+            {% endif %}
+            {% if request.user == review.customer %}
+            <div class="rv-owner-btns">
+              <a href="{% url 'reviews:edit_review' review.id %}" class="rv-btn-edit">Edit</a>
+              <button class="rv-btn-del" onclick="rvDelShow({{ review.id }})">Delete</button>
+              <form id="rvdf-{{ review.id }}" method="post" action="{% url 'reviews:delete_review' review.id %}" style="display:none">{% csrf_token %}</form>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="rv-empty">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+      </svg>
+      <h3>No Reviews Yet</h3>
+      <p>Be the first to share your experience with this product</p>
+      {% if request.user.is_authenticated and can_review %}
+      <a href="{% url 'reviews:write_review' product.slug %}" class="rv-empty-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4z"/></svg>
+        Write the First Review
+      </a>
+      {% elif not request.user.is_authenticated %}
+      <a href="{% url 'users:login' %}?next={{ request.path }}" class="rv-empty-btn">Login to Review</a>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% endwith %}
+  </div><!-- /reviews section -->
 
   {% if related_products %}
   <div class="pd-section">
