@@ -14,6 +14,7 @@ class Banner(models.Model):
         ('main_slider', 'Main Slider'),
         ('secondary', 'Secondary Banner'),
         ('sidebar', 'Sidebar'),
+        ('sale_banner',     'Sale Banner (Homepage)'),
     ]
     
     title = models.CharField(max_length=200)
