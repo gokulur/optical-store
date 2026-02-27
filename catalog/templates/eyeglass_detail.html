@@ -731,6 +731,229 @@
   </div>
   {% endif %}
 
+   <!-- ════════════════════════════════════════
+       CUSTOMER REVIEWS — blended section
+  ════════════════════════════════════════ -->
+  <div class="pd-section" id="rvSection">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px;">
+      <div>
+        <h2 class="pd-section__h" style="margin-bottom:4px;">Customer Reviews</h2>
+        <p style="font-size:13px;color:var(--aa-muted);margin:0;">
+          {% if rating_stats.total_reviews %}{{ rating_stats.total_reviews }} review{{ rating_stats.total_reviews|pluralize }} · {{ rating_stats.average_rating|floatformat:1 }} out of 5{% else %}No reviews yet — be the first!{% endif %}
+        </p>
+      </div>
+      {% if request.user.is_authenticated and can_review %}
+      <a href="{% url 'reviews:write_review' product.slug %}" class="rv-action-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4z"/></svg>
+        Write a Review
+      </a>
+      {% elif request.user.is_authenticated and user_review %}
+      <a href="{% url 'reviews:edit_review' user_review.id %}" class="rv-action-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z"/></svg>
+        Edit Your Review
+      </a>
+      {% endif %}
+    </div>
+
+    {% if rating_stats.total_reviews %}
+    <!-- Rating Summary -->
+    <div class="rv-summary-grid">
+      <div class="rv-avg-col">
+        <div class="rv-avg-number">{{ rating_stats.average_rating|floatformat:1 }}</div>
+        <div class="rv-avg-stars">
+          {% for i in "12345" %}
+            {% if forloop.counter <= rating_stats.average_rating|floatformat:0|add:"0" %}
+              <span class="s on">★</span>
+            {% else %}
+              <span class="s off">★</span>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <div class="rv-avg-meta">{{ rating_stats.total_reviews }} review{{ rating_stats.total_reviews|pluralize }}</div>
+      </div>
+      <div class="rv-bars-col">
+        <div class="rv-bar-row" onclick="rvFilterChip('5')">
+          <span class="rv-bar-lbl">5 <span class="s">★</span></span>
+          <div class="rv-bar-track"><div class="rv-bar-fill" data-pct="{{ rating_percentages.5|floatformat:0 }}"></div></div>
+          <span class="rv-bar-cnt">{{ rating_stats.five_star }}</span>
+        </div>
+        <div class="rv-bar-row" onclick="rvFilterChip('4')">
+          <span class="rv-bar-lbl">4 <span class="s">★</span></span>
+          <div class="rv-bar-track"><div class="rv-bar-fill" data-pct="{{ rating_percentages.4|floatformat:0 }}"></div></div>
+          <span class="rv-bar-cnt">{{ rating_stats.four_star }}</span>
+        </div>
+        <div class="rv-bar-row" onclick="rvFilterChip('3')">
+          <span class="rv-bar-lbl">3 <span class="s">★</span></span>
+          <div class="rv-bar-track"><div class="rv-bar-fill" data-pct="{{ rating_percentages.3|floatformat:0 }}"></div></div>
+          <span class="rv-bar-cnt">{{ rating_stats.three_star }}</span>
+        </div>
+        <div class="rv-bar-row" onclick="rvFilterChip('2')">
+          <span class="rv-bar-lbl">2 <span class="s">★</span></span>
+          <div class="rv-bar-track"><div class="rv-bar-fill" data-pct="{{ rating_percentages.2|floatformat:0 }}"></div></div>
+          <span class="rv-bar-cnt">{{ rating_stats.two_star }}</span>
+        </div>
+        <div class="rv-bar-row" onclick="rvFilterChip('1')">
+          <span class="rv-bar-lbl">1 <span class="s">★</span></span>
+          <div class="rv-bar-track"><div class="rv-bar-fill" data-pct="{{ rating_percentages.1|floatformat:0 }}"></div></div>
+          <span class="rv-bar-cnt">{{ rating_stats.one_star }}</span>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Login nudge -->
+    {% if not request.user.is_authenticated %}
+    <div class="rv-action-bar">
+      <p>Have this product? <strong>Share your experience</strong></p>
+      <a href="{% url 'users:login' %}?next={{ request.path }}" class="rv-action-btn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Login to Review
+      </a>
+    </div>
+    {% endif %}
+
+    <!-- Review list or empty -->
+    {% with approved=product.reviews.all %}
+    {% if approved %}
+
+    <!-- Controls -->
+    <div class="rv-controls">
+      <div class="rv-controls-left">
+        <button class="rv-chip on" data-f="all"   onclick="rvFilter('all',this)">All</button>
+        <button class="rv-chip"    data-f="5"     onclick="rvFilter('5',this)">★ 5 Star</button>
+        <button class="rv-chip"    data-f="4"     onclick="rvFilter('4',this)">★ 4 Star</button>
+        <button class="rv-chip"    data-f="ver"   onclick="rvFilter('ver',this)">✓ Verified</button>
+        <button class="rv-chip"    data-f="imgs"  onclick="rvFilter('imgs',this)">📷 With Photos</button>
+      </div>
+      <select class="rv-sort" onchange="rvSort(this.value)">
+        <option value="newest">Most Recent</option>
+        <option value="helpful">Most Helpful</option>
+        <option value="high">Highest Rating</option>
+        <option value="low">Lowest Rating</option>
+      </select>
+    </div>
+
+    <!-- No results msg -->
+    <div id="rvNoResults" style="display:none;">
+      No reviews match this filter.
+      <button onclick="rvFilter('all', document.querySelector('[data-f=all]'))">Show all</button>
+    </div>
+
+    <!-- Cards -->
+    <div class="rv-list" id="rvList">
+      {% for review in approved %}
+      {% if review.is_approved %}
+      <div class="rv-card {% if review.is_featured %}rv-card--featured{% endif %}"
+           data-r="{{ review.rating }}"
+           data-v="{{ review.is_verified_purchase|yesno:'1,0' }}"
+           data-i="{{ review.images.all|length|yesno:'1,0' }}"
+           data-h="{{ review.helpful_count }}"
+           data-d="{{ review.created_at|date:'U' }}">
+
+        <div class="rv-card-top">
+          <div class="rv-card-left">
+            <div class="rv-avatar" data-c="{% cycle '1' '2' '3' '4' '5' %}">
+              {{ review.customer.first_name|first|upper|default:review.customer.username|first|upper }}
+            </div>
+            <div>
+              <div class="rv-name">{{ review.customer.get_full_name|default:review.customer.username }}</div>
+              <div class="rv-badges">
+                {% if review.is_verified_purchase %}
+                <span class="rv-badge rv-badge--verified">
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  Verified Purchase
+                </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="rv-card-right">
+            <div class="rv-stars">
+              {% for i in "12345" %}{% if forloop.counter <= review.rating %}<span class="s on">★</span>{% else %}<span class="s off">★</span>{% endif %}{% endfor %}
+            </div>
+            <div class="rv-date">{{ review.created_at|date:"d M Y" }}</div>
+          </div>
+        </div>
+
+        {% if review.title %}<div class="rv-title">{{ review.title }}</div>{% endif %}
+
+        <div class="rv-comment" id="rvc-{{ review.id }}">
+          {% if review.comment|length > 280 %}
+            <span class="s-short">{{ review.comment|truncatechars:280 }}</span>
+            <span class="s-full" style="display:none">{{ review.comment }}</span>
+            <button class="rv-readmore" onclick="rvToggle({{ review.id }},this)">Read more ↓</button>
+          {% else %}
+            {{ review.comment }}
+          {% endif %}
+        </div>
+
+        {% if review.images.all %}
+        <div class="rv-imgs">
+          {% for img in review.images.all %}
+          <div class="rv-img-thumb" onclick="rvLbOpen('{{ img.image.url }}')">
+            <img src="{{ img.image.url }}" alt="" loading="lazy">
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="rv-card-foot">
+          <span class="rv-helpful-lbl">Was this helpful?</span>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            {% if request.user.is_authenticated %}
+            <div class="rv-helpful-btns">
+              <form method="post" action="{% url 'reviews:mark_helpful' review.id %}" style="display:inline">
+                {% csrf_token %}<input type="hidden" name="is_helpful" value="true">
+                <button type="submit" class="rv-hbtn yes">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>
+                  Yes ({{ review.helpful_count }})
+                </button>
+              </form>
+              <form method="post" action="{% url 'reviews:mark_helpful' review.id %}" style="display:inline">
+                {% csrf_token %}<input type="hidden" name="is_helpful" value="false">
+                <button type="submit" class="rv-hbtn no">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg>
+                  No ({{ review.not_helpful_count }})
+                </button>
+              </form>
+            </div>
+            {% else %}
+            <a href="{% url 'users:login' %}?next={{ request.path }}" style="font-size:12px;color:var(--aa-gold);text-decoration:underline;">Login to vote</a>
+            {% endif %}
+            {% if request.user == review.customer %}
+            <div class="rv-owner-btns">
+              <a href="{% url 'reviews:edit_review' review.id %}" class="rv-btn-edit">Edit</a>
+              <button class="rv-btn-del" onclick="rvDelShow({{ review.id }})">Delete</button>
+              <form id="rvdf-{{ review.id }}" method="post" action="{% url 'reviews:delete_review' review.id %}" style="display:none">{% csrf_token %}</form>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="rv-empty">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+      </svg>
+      <h3>No Reviews Yet</h3>
+      <p>Be the first to share your experience with this product</p>
+      {% if request.user.is_authenticated and can_review %}
+      <a href="{% url 'reviews:write_review' product.slug %}" class="rv-empty-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4z"/></svg>
+        Write the First Review
+      </a>
+      {% elif not request.user.is_authenticated %}
+      <a href="{% url 'users:login' %}?next={{ request.path }}" class="rv-empty-btn">Login to Review</a>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% endwith %}
+  </div><!-- /reviews section -->
+
   {% if related_products %}
   <div class="pd-section">
     <h2 class="pd-section__h">You May Also Like</h2>
