@@ -30,6 +30,16 @@ def home_view(request):
         Q(end_date__isnull=True)   | Q(end_date__gte=now)     # ← Q not models.Q
     ).order_by('display_order')
 
+    # Sale banner
+    sale_banner = Banner.objects.filter(
+        placement='sale_banner',
+        is_active=True,
+    ).filter(
+        Q(start_date__isnull=True) | Q(start_date__lte=now)
+    ).filter(
+        Q(end_date__isnull=True) | Q(end_date__gte=now)
+    ).order_by('display_order').first()
+
  
     from catalog.models import Product, Brand
 
@@ -46,6 +56,7 @@ def home_view(request):
         'eyeglasses_preview': eyeglasses_preview,
         'top_brands':         top_brands,
         'brands':             brands,
+        'sale_banner':       sale_banner,
     })
 
 
