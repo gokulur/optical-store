@@ -1,176 +1,280 @@
 {% extends 'base.html' %}
+{% block title %}Verify Email — Al Ameen Optics{% endblock %}
 
-{% block title %}Email Verification{% endblock %}
+{% block extra_styles %}
+<style>
+:root {
+  --auth-accent: #1a6fa8; --auth-accent-dark: #155f90;
+  --auth-gold: #c8a96e; --auth-border: #c5d8e8;
+  --auth-muted: #6b8299; --auth-dark: #1a2a3a;
+  --font-display: 'Playfair Display', serif; --font-body: 'Jost', sans-serif;
+}
+.auth-page {
+  min-height: calc(100vh - 160px);
+  display: grid; grid-template-columns: 1fr 1fr;
+  background: #0d1a27;
+}
+.auth-visual {
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 60px 56px;
+}
+.auth-visual__bg {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(160deg, rgba(26,111,168,0.2) 0%, rgba(13,26,39,0.9) 65%),
+    url('https://images.unsplash.com/photo-1577803645773-f96470509666?w=900&h=1200&fit=crop') center/cover no-repeat;
+  animation: panZoom 14s ease-in-out infinite alternate;
+}
+@keyframes panZoom { from { transform:scale(1.04); } to { transform:scale(1.1) translateY(-12px); } }
+.auth-visual__overlay { position:absolute;inset:0;background:linear-gradient(to top,rgba(13,26,39,.93) 0%,rgba(13,26,39,.25) 55%,transparent 100%); }
+.auth-visual__content { position:relative;z-index:2; }
+.auth-visual__eyebrow { display:inline-flex;align-items:center;gap:10px;margin-bottom:20px; }
+.auth-visual__eyebrow-line { display:block;width:32px;height:1.5px;background:var(--auth-gold); }
+.auth-visual__eyebrow-text { font-size:.72rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--auth-gold);font-family:var(--font-body); }
+.auth-visual__title { font-family:var(--font-display);font-size:clamp(2.4rem,3.5vw,4rem);font-weight:400;color:#fff;line-height:1.15;margin:0 0 16px; }
+.auth-visual__title em { color:var(--auth-gold);font-style:italic; }
+.auth-visual__sub { font-size:.93rem;font-weight:300;color:rgba(255,255,255,.65);line-height:1.65;margin:0 0 36px;max-width:320px;font-family:var(--font-body); }
+
+/* Animated lock icon */
+.auth-visual__lock {
+  width: 80px; height: 80px; margin-bottom: 32px;
+  background: rgba(26,111,168,0.15); border: 1.5px solid rgba(26,111,168,0.3);
+  border-radius: 20px; display: flex; align-items: center; justify-content: center;
+  animation: lockPulse 3s ease-in-out infinite;
+}
+@keyframes lockPulse { 0%,100%{box-shadow:0 0 0 0 rgba(200,169,110,0)} 50%{box-shadow:0 0 0 12px rgba(200,169,110,0.12)} }
+.auth-visual__lock svg { width:36px;height:36px;stroke:var(--auth-gold);fill:none;stroke-width:1.8; }
+
+/* RIGHT */
+.auth-form-panel { display:flex;align-items:center;justify-content:center;background:#f4f8fb;padding:60px 40px; }
+.auth-form-card { width:100%;max-width:420px; }
+.auth-form-card__logo { display:flex;align-items:center;gap:12px;margin-bottom:36px; }
+.auth-form-card__logo-icon { width:44px;height:44px;background:var(--auth-accent);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.auth-form-card__logo-icon svg { width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2; }
+.auth-form-card__logo-text h2 { font-family:var(--font-display);font-size:1.4rem;font-weight:600;color:var(--auth-dark);margin:0;line-height:1.2; }
+.auth-form-card__logo-text span { font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--auth-muted);font-family:var(--font-body); }
+
+/* OTP illustration */
+.auth-otp-header { text-align:center;margin-bottom:36px; }
+.auth-otp-header__icon {
+  width:72px;height:72px;margin:0 auto 20px;
+  background:linear-gradient(135deg, rgba(26,111,168,.12) 0%, rgba(26,111,168,.06) 100%);
+  border:2px solid rgba(26,111,168,.2);border-radius:20px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.auth-otp-header__icon::before {
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 30% 30%, rgba(200,169,110,.15) 0%, transparent 70%);
+}
+.auth-otp-header__icon svg { width:34px;height:34px;stroke:var(--auth-accent);fill:none;stroke-width:1.8;position:relative;z-index:1; }
+.auth-otp-header h1 { font-family:var(--font-display);font-size:2rem;font-weight:500;color:var(--auth-dark);margin:0 0 8px; }
+.auth-otp-header p { font-size:.88rem;color:var(--auth-muted);margin:0;font-family:var(--font-body);line-height:1.6; }
+.auth-otp-header p strong { color:var(--auth-accent); }
+
+/* OTP boxes */
+.otp-inputs { display:flex;gap:12px;justify-content:center;margin:32px 0 8px; }
+.otp-box {
+  width:56px;height:64px;
+  border:2px solid var(--auth-border);border-radius:12px;
+  font-family:var(--font-display);font-size:1.8rem;font-weight:600;
+  color:var(--auth-dark);text-align:center;
+  background:#fff;outline:none;
+  transition:border-color .25s,box-shadow .25s,transform .2s;
+  -webkit-appearance:none; appearance:none;
+}
+.otp-box:focus {
+  border-color:var(--auth-accent);
+  box-shadow:0 0 0 4px rgba(26,111,168,.12);
+  transform:translateY(-3px);
+}
+.otp-box.filled { border-color:var(--auth-accent); background:rgba(26,111,168,.04); }
+
+/* Hidden full input (submits the actual value) */
+#otpFull { display:none; }
+
+.auth-otp-hint { text-align:center;font-size:.8rem;color:var(--auth-muted);font-family:var(--font-body);margin-bottom:28px; }
+
+/* Timer */
+.auth-otp-timer { text-align:center;margin-bottom:24px;font-size:.84rem;font-family:var(--font-body); }
+.auth-otp-timer .timer-count { color:var(--auth-accent);font-weight:700; }
+.auth-otp-timer .resend-link { color:var(--auth-accent);font-weight:700;text-decoration:none;display:none; }
+.auth-otp-timer .resend-link:hover { text-decoration:underline; }
+.auth-otp-timer .resend-link.visible { display:inline; }
+
+/* Submit */
+.auth-submit {
+  width:100%;height:52px;background:var(--auth-dark);color:#fff;
+  border:none;border-radius:10px;font-size:.88rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .3s;
+  font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:10px;
+  position:relative;overflow:hidden;
+}
+.auth-submit::before { content:'';position:absolute;inset:0;background:var(--auth-accent);transform:translateX(-101%);transition:transform .4s cubic-bezier(.76,0,.24,1); }
+.auth-submit:hover::before { transform:translateX(0); }
+.auth-submit span, .auth-submit svg { position:relative;z-index:1; }
+.auth-submit svg { width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;transition:transform .3s; }
+.auth-submit:hover svg { transform:translateX(4px); }
+.auth-submit:disabled { opacity:.5;cursor:not-allowed; }
+.auth-submit:disabled::before { display:none; }
+
+.auth-messages { margin-bottom:16px; }
+.auth-alert { display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:8px;font-size:.84rem;font-family:var(--font-body);margin-bottom:8px; }
+.auth-alert--error   { background:#fff0f0;border:1px solid #ffd0d0;color:#8a1c1c; }
+.auth-alert--success { background:#f0fdf4;border:1px solid #bbf0cc;color:#166534; }
+.auth-alert svg { width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2; }
+.auth-alt { text-align:center;font-size:.88rem;color:var(--auth-muted);font-family:var(--font-body);margin-top:20px; }
+.auth-alt a { color:var(--auth-accent);font-weight:700;text-decoration:none; }
+.auth-alt a:hover { text-decoration:underline; }
+
+@media (max-width:900px) { .auth-page { grid-template-columns:1fr; } .auth-visual { display:none; } }
+@media (max-width:480px) { .auth-form-panel { padding:28px 16px; } .otp-box { width:46px;height:56px;font-size:1.5rem; } }
+</style>
+{% endblock %}
 
 {% block content %}
+<div class="auth-page">
 
-<style>
-  @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap");
-
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  body {
-    background-color: #f5f5f5; /* light gray background */
-    font-family: "Open Sans", sans-serif;
-    color: #111; /* dark text */
-  }
-
-  img {
-    width: 100%;
-    border-bottom-left-radius: 10px;
-    border-top-left-radius: 10px;
-    display: block;
-  }
-
-  a {
-     
-    color: #111;
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  a:hover {
-    color: #444;
-  }
-
-  .modernForm {
-    max-width: 1200px;
-    display: flex;
-    margin: 30px auto;
-    background-color: #fff; /* white form background */
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  }
-
-  .imageSection {
-    flex-basis: 50%;
-    position: relative;
-    color: white;
- 
-  }
-
-  .overlay {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.4); /* dark overlay */
-    border-bottom-left-radius: 10px;
-    border-top-left-radius: 10px;
-    z-index: 0;
-  }
-
-  .textInside {
-    position: absolute;
-    bottom: 200px;
-    right: 50px;
-    color: #fff;
-  }
-
-  .textInside h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #fff;
-  }
-
-  .textInside .tagLine {
-    font-size: 1.2rem;
-    font-weight: 600;
-  }
-
-  .contactForm {
-    flex-basis: 45%;
-    margin: auto;
-    color: #111;
-    padding: 40px 30px;
-  }
-
-  .contactForm h1 {
-    margin-bottom: 20px;
-    font-weight: 700;
-  }
-
-  input[type="email"],
-  input[type="text"],
-  input[type="password"],
-  input[type="number"] {
-    width: 100%;
-    padding: 12px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    margin-bottom: 15px;
-    font-size: 1rem;
-  }
-
-  input[type="checkbox"] {
-    margin-right: 10px;
-  }
-
-  input[type="submit"] {
-    background-color: #111; /* black button */
-    font-size: 1rem;
-    border: none;
-    color: white;
-    padding: 12px 50px;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-
-  input[type="submit"]:hover {
-    background-color: #444; /* dark gray hover */
-  }
-
-  @media only screen and (max-width: 768px) {
-    .modernForm {
-      flex-wrap: wrap;
-    }
-
-    .imageSection,
-    .contactForm {
-      flex-basis: 100%;
-    }
-
-    .overlay,
-    img {
-      border-radius: 10px 10px 0 0;
-    }
-
-    .contactForm {
-      padding: 30px;
-    }
-  }
-</style>
-
-<div class="modernForm">
-  <div class="imageSection">
-    <div class="image">
-      <div class="overlay"></div>
-      <img src="https://images.pexels.com/photos/1895015/pexels-photo-1895015.jpeg" alt="pexels-yuri-manei-2272854">
-    </div>
-    <div class="textInside">
-      <h1>Smell Good, Feel Great</h1>
-      <p class="tagLine">Explore Fragrances That Define You</p>
+  <!-- LEFT -->
+  <div class="auth-visual">
+    <div class="auth-visual__bg"></div>
+    <div class="auth-visual__overlay"></div>
+    <div class="auth-visual__content">
+      <div class="auth-visual__lock">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none"/></svg>
+      </div>
+      <div class="auth-visual__eyebrow">
+        <span class="auth-visual__eyebrow-line"></span>
+        <span class="auth-visual__eyebrow-text">Secure Verification</span>
+      </div>
+      <h2 class="auth-visual__title">
+        One Step<br><em>Closer.</em>
+      </h2>
+      <p class="auth-visual__sub">
+        We sent a 6-digit verification code to your email. This keeps your Al Ameen Optics account secure and confirms your identity.
+      </p>
     </div>
   </div>
 
-  <div class="contactForm">
-    <h1>Email Verification</h1>
-    <form method="POST" >
-      {% csrf_token %}
-      <label for="otp">Enter OTP sent to your email:</label>
-      <input type="text" name="otp" id="otp" placeholder="Ex: 123456" required />
-      <input type="submit" value="Verify">
-    </form>
-    <p>Didn't receive the OTP? <a href="{% url 'users:resend_otp' %}">Resend OTP</a></p>
+  <!-- RIGHT -->
+  <div class="auth-form-panel">
+    <div class="auth-form-card">
+
+      <div class="auth-form-card__logo">
+        <div class="auth-form-card__logo-icon">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div class="auth-form-card__logo-text">
+          <h2>Al Ameen Optics</h2>
+          <span>Your Vision Matters More</span>
+        </div>
+      </div>
+
+      <div class="auth-otp-header">
+        <div class="auth-otp-header__icon">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <h1>Verify your email</h1>
+        <p>Enter the 6-digit code we sent to your inbox.<br>Check your spam folder if you don't see it.</p>
+      </div>
+
+      {% if messages %}
+      <div class="auth-messages">
+        {% for message in messages %}
+        <div class="auth-alert auth-alert--{{ message.tags }}">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="POST" id="otpForm">
+        {% csrf_token %}
+        <input type="hidden" name="otp" id="otpFull">
+
+        <div class="otp-inputs" id="otpBoxes">
+          <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Digit 1">
+          <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Digit 2">
+          <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Digit 3">
+          <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Digit 4">
+          <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Digit 5">
+          <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Digit 6">
+        </div>
+
+        <p class="auth-otp-hint">Didn't receive a code?</p>
+
+        <div class="auth-otp-timer">
+          <span id="timerText">Resend in <span class="timer-count" id="timerCount">60</span>s</span>
+          <a href="{% url 'users:resend_otp' %}" class="resend-link" id="resendLink">Resend OTP</a>
+        </div>
+
+        <button type="submit" class="auth-submit" id="verifyBtn" disabled>
+          <span>Verify Account</span>
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </button>
+      </form>
+
+      <div class="auth-alt">
+        <a href="{% url 'users:register' %}">← Back to registration</a>
+      </div>
+
+    </div>
   </div>
 </div>
-
 {% endblock %}
-{% for message in messages %}
-<p>{{ message }}</p>
-{% endfor %}
 
- 
+{% block extra_scripts %}
+<script>
+(function() {
+  var boxes = Array.from(document.querySelectorAll('.otp-box'));
+  var fullInput = document.getElementById('otpFull');
+  var verifyBtn = document.getElementById('verifyBtn');
+
+  function syncOtp() {
+    var val = boxes.map(function(b) { return b.value; }).join('');
+    fullInput.value = val;
+    verifyBtn.disabled = val.length !== 6;
+    boxes.forEach(function(b) { b.classList.toggle('filled', b.value !== ''); });
+  }
+
+  boxes.forEach(function(box, idx) {
+    box.addEventListener('input', function(e) {
+      var v = e.target.value.replace(/[^0-9]/g,'');
+      e.target.value = v.slice(-1);
+      if (v && idx < boxes.length - 1) boxes[idx+1].focus();
+      syncOtp();
+    });
+    box.addEventListener('keydown', function(e) {
+      if (e.key === 'Backspace' && !this.value && idx > 0) boxes[idx-1].focus();
+    });
+    box.addEventListener('paste', function(e) {
+      e.preventDefault();
+      var pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g,'');
+      pasted.split('').forEach(function(ch, i) { if (boxes[i]) boxes[i].value = ch; });
+      var last = Math.min(pasted.length, boxes.length - 1);
+      boxes[last].focus();
+      syncOtp();
+    });
+  });
+
+  boxes[0].focus();
+
+  // Countdown timer
+  var sec = 60;
+  var timerText = document.getElementById('timerText');
+  var timerCount = document.getElementById('timerCount');
+  var resendLink = document.getElementById('resendLink');
+  var interval = setInterval(function() {
+    sec--;
+    timerCount.textContent = sec;
+    if (sec <= 0) {
+      clearInterval(interval);
+      timerText.style.display = 'none';
+      resendLink.classList.add('visible');
+    }
+  }, 1000);
+})();
+</script>
+{% endblock %}
