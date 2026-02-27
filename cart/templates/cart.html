@@ -37,6 +37,8 @@
   --danger-border: #f0b0b0;
   --purple: #5e3a8a;
   --purple-bg: #f3edfb;
+  --teal: #0e9b8a;
+  --teal-bg: #e6faf7;
   --radius-sm: 6px;
   --radius: 12px;
   --radius-lg: 18px;
@@ -245,12 +247,96 @@ body { font-family: var(--font-body); }
 .fs-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
 .fs-fill  { height: 100%; background: linear-gradient(90deg, var(--gold), #7cb342); border-radius: 3px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
 
-.promo-wrap { display: flex; gap: 8px; margin-bottom: 20px; }
-.promo-input { flex: 1; height: 40px; padding: 0 14px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 12px; font-family: var(--font-body); color: var(--obsidian); background: var(--white); transition: border-color 0.2s; outline: none; }
+/* ── COUPON SECTION ── */
+.coupon-section {
+  background: var(--sand);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.coupon-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.promo-wrap { display: flex; gap: 8px; }
+.promo-input {
+  flex: 1; height: 40px; padding: 0 14px;
+  border: 1.5px solid var(--border); border-radius: var(--radius);
+  font-size: 12px; font-family: var(--font-body); color: var(--obsidian);
+  background: var(--white); transition: border-color 0.2s; outline: none;
+  text-transform: uppercase;
+}
 .promo-input:focus { border-color: var(--gold); }
-.promo-input::placeholder { color: var(--muted); }
-.promo-btn { height: 40px; padding: 0 16px; background: var(--obsidian); color: var(--white); border: none; border-radius: var(--radius); font-size: 12px; font-weight: 700; cursor: pointer; font-family: var(--font-body); letter-spacing: 0.04em; transition: var(--transition); white-space: nowrap; }
+.promo-input::placeholder { color: var(--muted); text-transform: none; }
+.promo-btn {
+  height: 40px; padding: 0 16px; background: var(--obsidian); color: var(--white);
+  border: none; border-radius: var(--radius); font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: var(--font-body); letter-spacing: 0.04em;
+  transition: var(--transition); white-space: nowrap;
+}
 .promo-btn:hover { background: var(--graphite); }
+.promo-btn:disabled { opacity: 0.5; cursor: wait; }
+
+/* Applied coupon badge */
+.applied-coupon-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-top: 10px;
+  font-size: 12px;
+}
+.applied-coupon-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--success);
+}
+.applied-coupon-code {
+  font-family: 'Courier New', monospace;
+  background: var(--success);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+.applied-coupon-saving {
+  font-size: 11px;
+  color: var(--success);
+  font-weight: 600;
+}
+.btn-remove-coupon {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 16px; padding: 0 2px;
+  transition: color 0.2s; line-height: 1;
+}
+.btn-remove-coupon:hover { color: var(--danger); }
+
+/* Coupon message */
+.coupon-msg {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 8px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  display: none;
+}
+.coupon-msg.show { display: block; }
+.coupon-msg.ok  { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.coupon-msg.err { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
 
 .op-divider { height: 1px; background: var(--border); margin: 16px 0; }
 
@@ -259,6 +345,8 @@ body { font-family: var(--font-body); }
 .sr--total { margin-top: 14px; padding-top: 14px; border-top: 2px solid var(--obsidian); font-size: 19px; font-weight: 700; color: var(--obsidian); font-family: var(--font-display); }
 .sr-free { color: var(--success); font-weight: 700; font-size: 12px; }
 .sr-note { font-size: 10px; color: var(--muted); margin: 8px 0 20px; text-align: center; }
+.sr--discount { color: var(--success); }
+.sr--discount span:last-child { font-weight: 700; color: var(--success); }
 
 .btn-checkout { width: 100%; padding: 16px; background: var(--obsidian); color: var(--white); border: 2px solid var(--obsidian); border-radius: var(--radius); font-size: 14px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; cursor: pointer; transition: var(--transition); text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; font-family: var(--font-body); position: relative; overflow: hidden; }
 .btn-checkout::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, transparent 30%, rgba(184,151,106,0.15) 100%); pointer-events: none; }
@@ -642,17 +730,54 @@ body { font-family: var(--font-body); }
           </div>
         </div>
 
-        <!-- Promo code -->
-        <div class="promo-wrap">
-          <input type="text" class="promo-input" placeholder="Enter promo code" id="promo-input">
-          <button class="promo-btn" onclick="applyPromo()">Apply</button>
+        <!-- ══ COUPON SECTION ══ -->
+        <div class="coupon-section">
+          <div class="coupon-section-title">🏷 Have a Coupon Code?</div>
+
+          {% if request.session.applied_coupon %}
+            <!-- Coupon already applied — show badge, hide input -->
+            <div class="applied-coupon-badge" id="applied-coupon-badge">
+              <div class="applied-coupon-left">
+                <span>✓ Applied:</span>
+                <span class="applied-coupon-code">{{ request.session.applied_coupon.code }}</span>
+                <span class="applied-coupon-saving">
+                  −QAR {{ request.session.applied_coupon.discount_amount }}
+                  {% if request.session.applied_coupon.discount_type == 'free_shipping' %}+ Free Shipping{% endif %}
+                </span>
+              </div>
+              <button class="btn-remove-coupon" onclick="removeCoupon()" title="Remove coupon">×</button>
+            </div>
+          {% else %}
+            <!-- Input form -->
+            <div class="promo-wrap" id="coupon-form-wrap">
+              <input type="text" class="promo-input" id="couponCode"
+                     placeholder="Enter promo code" maxlength="50"
+                     onkeydown="if(event.key==='Enter') applyCoupon()">
+              <button class="promo-btn" id="coupon-apply-btn" onclick="applyCoupon()">Apply</button>
+            </div>
+            <div class="coupon-msg" id="coupon-msg"></div>
+          {% endif %}
         </div>
+        <!-- ══ END COUPON ══ -->
 
         <!-- Subtotal -->
         <div class="sr">
           <span class="sr-label">Subtotal (<span id="sum-count">{{ item_count }}</span> items)</span>
           <span id="sum-subtotal"><strong>QAR {{ subtotal }}</strong></span>
         </div>
+
+        <!-- Coupon Discount Row (shown when coupon applied) -->
+        {% if request.session.applied_coupon and request.session.applied_coupon.discount_amount != '0.00' %}
+        <div class="sr sr--discount" id="sum-discount-row">
+          <span class="sr-label">🏷 Coupon Discount</span>
+          <span id="sum-discount">−QAR {{ request.session.applied_coupon.discount_amount }}</span>
+        </div>
+        {% else %}
+        <div class="sr sr--discount" id="sum-discount-row" style="display:none;">
+          <span class="sr-label">🏷 Coupon Discount</span>
+          <span id="sum-discount">−QAR 0.00</span>
+        </div>
+        {% endif %}
 
         <!-- Shipping -->
         <div class="sr" id="sum-shipping-row" style="{% if shipping == 0 %}display:none;{% endif %}">
@@ -739,6 +864,8 @@ body { font-family: var(--font-body); }
 "use strict";
 
 const FREE_SHIP_THRESHOLD = 200;
+const APPLY_URL  = "{% url 'promotions:apply_coupon' %}";
+const REMOVE_URL = "{% url 'promotions:remove_coupon' %}";
 
 /* ── CSRF ── */
 function csrf() {
@@ -758,32 +885,85 @@ function toast(msg, type) {
   _tt = setTimeout(() => el.classList.remove("show"), 3800);
 }
 
-/* ── PROMO ── */
-function applyPromo() {
-  const val = (document.getElementById("promo-input") || {}).value || "";
-  if (!val.trim()) { toast("Enter a promo code first.", "warn"); return; }
-  toast("Promo codes coming soon!", "warn");
+/* ── COUPON MESSAGE ── */
+function showCouponMsg(msg, type) {
+  const el = document.getElementById("coupon-msg");
+  if (!el) return;
+  el.textContent = msg;
+  el.className = "coupon-msg show " + (type === "ok" ? "ok" : "err");
 }
-window.applyPromo = applyPromo;
+function hideCouponMsg() {
+  const el = document.getElementById("coupon-msg");
+  if (el) el.className = "coupon-msg";
+}
+
+/* ════════════════════════════
+   APPLY COUPON — real AJAX call
+════════════════════════════ */
+window.applyCoupon = function () {
+  const input = document.getElementById("couponCode");
+  const btn   = document.getElementById("coupon-apply-btn");
+  if (!input) return;
+
+  const code = input.value.trim().toUpperCase();
+  if (!code) { showCouponMsg("Please enter a coupon code.", "err"); return; }
+
+  hideCouponMsg();
+  if (btn) { btn.disabled = true; btn.textContent = "Checking…"; }
+
+  fetch(APPLY_URL, {
+    method: "POST",
+    headers: {
+      "X-Requested-With": "XMLHttpRequest",
+      "X-CSRFToken": csrf(),
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: "coupon_code=" + encodeURIComponent(code)
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      toast("✓ Coupon applied!", "ok");
+      // Reload page so session is fresh and totals recalculate server-side
+      location.reload();
+    } else {
+      showCouponMsg(data.error || "Invalid coupon code.", "err");
+      if (btn) { btn.disabled = false; btn.textContent = "Apply"; }
+    }
+  })
+  .catch(() => {
+    showCouponMsg("Network error. Please try again.", "err");
+    if (btn) { btn.disabled = false; btn.textContent = "Apply"; }
+  });
+};
+
+/* ════════════════════════════
+   REMOVE COUPON
+════════════════════════════ */
+window.removeCoupon = function () {
+  fetch(REMOVE_URL, {
+    method: "POST",
+    headers: {
+      "X-Requested-With": "XMLHttpRequest",
+      "X-CSRFToken": csrf()
+    }
+  })
+  .then(r => r.json())
+  .then(() => { location.reload(); })
+  .catch(() => toast("Could not remove coupon.", "err"));
+};
 
 /* ════════════════════════════════════════════
-   UPDATE HEADER BADGE — syncs the bag icon
-   in the site header on every cart change.
-   Works with both #aa-cart-count (base.html)
-   and any other badge selector used.
+   UPDATE HEADER BADGE
 ════════════════════════════════════════════ */
 function syncHeaderBadge(count) {
   const n = parseInt(count) || 0;
-
-  // Primary badge from base.html
   const primary = document.getElementById("aa-cart-count");
   if (primary) {
     primary.textContent = n;
     primary.style.transform = "scale(1.4)";
     setTimeout(() => { primary.style.transform = "scale(1)"; }, 300);
   }
-
-  // Any other badge elements sites might use
   document.querySelectorAll(
     "#cart-count, #cart-items-count, .cart-badge, " +
     ".header-v24__cart-count, [data-cart-count]"
@@ -792,11 +972,7 @@ function syncHeaderBadge(count) {
     el.style.transform = "scale(1.35)";
     setTimeout(() => { el.style.transform = ""; }, 300);
   });
-
-  // window.updateCartBadge is exposed by base.html as well
-  if (typeof window.updateCartBadge === "function") {
-    window.updateCartBadge(n);
-  }
+  if (typeof window.updateCartBadge === "function") window.updateCartBadge(n);
 }
 
 /* ── FREE-SHIP BAR ── */
@@ -824,11 +1000,9 @@ function updateSummary(data) {
   const tot   = parseFloat(data.cart_total) || 0;
   const cnt   = parseInt(data.cart_count)   || 0;
 
-  // Subtotal
   const subEl = document.getElementById("sum-subtotal");
   if (subEl) subEl.innerHTML = "<strong>QAR " + sub.toFixed(2) + "</strong>";
 
-  // Shipping row / free badge
   const shipRow   = document.getElementById("sum-shipping-row");
   const shipEl    = document.getElementById("sum-shipping");
   const freeBadge = document.getElementById("sum-free-badge");
@@ -836,11 +1010,9 @@ function updateSummary(data) {
   if (freeBadge) freeBadge.style.display = ship === 0 ? "flex" : "none";
   if (shipEl)    shipEl.textContent      = "QAR " + ship.toFixed(2);
 
-  // Grand total
   const totEl = document.getElementById("sum-total");
   if (totEl) totEl.textContent = "QAR " + tot.toFixed(2);
 
-  // Item counts in summary + header text
   const cntEl = document.getElementById("sum-count");
   if (cntEl) cntEl.textContent = cnt;
 
@@ -850,14 +1022,10 @@ function updateSummary(data) {
   const sideEl = document.getElementById("cart-head-label-side");
   if (sideEl) sideEl.textContent = cnt + " item" + (cnt !== 1 ? "s" : "") + " in your cart";
 
-  // Checkout button
   const btn = document.getElementById("btn-checkout");
   if (btn) { tot <= 0 ? btn.classList.add("disabled") : btn.classList.remove("disabled"); }
 
-  // Free-ship progress bar
   updateFsBar(sub);
-
-  // ★ Always sync the header bag badge
   syncHeaderBadge(cnt);
 }
 
@@ -880,7 +1048,7 @@ function applyItemUpdate(itemId, data) {
   const warn = document.getElementById("stock-warn-" + itemId);
   if (warn) { qty >= stock ? warn.classList.add("visible") : warn.classList.remove("visible"); }
 
-  updateSummary(data);   // ← summary + header badge
+  updateSummary(data);
 }
 
 function getStock(id) {
@@ -902,7 +1070,7 @@ function removeRow(itemId, data) {
     row.classList.add("removing");
     setTimeout(() => {
       row.remove();
-      updateSummary(data);   // ← updates badge after removal
+      updateSummary(data);
       if (parseInt(data.cart_count) === 0) setTimeout(() => location.reload(), 400);
     }, 370);
   } else {
