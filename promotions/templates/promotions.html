@@ -1,262 +1,272 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Active Promotions - Al Ameen Optics{% endblock %}
+{% block title %}Active Promotions — Al Ameen Optics{% endblock %}
 
 {% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+
 <style>
-/* ── Breadcrumb ── */
-.breadcrumb__list { display:flex; gap:6px; list-style:none; margin:0; padding:0; }
-.breadcrumb__link { color:#666; text-decoration:none; font-size:.85rem; }
-.breadcrumb__separator { color:#ccc; }
-.breadcrumb__item--current .breadcrumb__link { color:#1a1a1a; font-weight:600; }
-
-/* ── Hero Banner (reuses sale-banner pattern) ── */
-.promo-hero {
-    background:#1a1a1a; padding:70px 20px; text-align:center;
-    position:relative; overflow:hidden;
+:root {
+  --obsidian: #0d0d0f; --charcoal: #1a1a1f; --graphite: #2e2e36;
+  --gold: #b8976a; --gold-light: #d4b896; --gold-pale: #f5ede0;
+  --sand: #f7f3ed; --ivory: #faf8f5; --white: #ffffff;
+  --muted: #8a8a95; --border: #e8e4dc; --border-dark: #d4cfc5;
+  --success: #2a6b2e; --success-bg: #edf7ee; --success-border: #b2d9b5;
+  --teal: #0e9b8a; --orange: #c4560a; --purple: #5e3a8a;
+  --radius: 12px; --radius-lg: 18px; --radius-xl: 24px;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.05); --shadow: 0 4px 24px rgba(0,0,0,0.09);
+  --transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+  --font-display: 'Cormorant Garamond', serif; --font-body: 'DM Sans', sans-serif;
 }
-.promo-hero::before {
-    content:'DEALS'; position:absolute; top:50%; left:50%;
-    transform:translate(-50%,-50%); font-size:20rem; font-weight:900;
-    color:rgba(255,255,255,.03); letter-spacing:.2em; pointer-events:none; white-space:nowrap;
-}
-.promo-hero-title { font-size:clamp(2.5rem,6vw,8rem); font-weight:900; color:#fff; text-transform:uppercase; letter-spacing:1.2rem; margin:0 0 10px; position:relative; }
-.promo-hero-title span { color:#f97316; }
-.promo-hero-sub { color:rgba(255,255,255,.55); font-size:1.05rem; position:relative; }
+*, *::before, *::after { box-sizing: border-box; }
+body { font-family: var(--font-body); background: var(--sand); }
 
-/* ── Filter row ── */
-.promo-filter-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:48px; }
-.promo-filter-btn {
-    padding:9px 22px; border-radius:30px; font-size:.8rem; font-weight:700;
-    text-transform:uppercase; letter-spacing:.07em;
-    border:2px solid #e0e0e0; background:#fff; color:#888; cursor:pointer; transition:all .25s;
-}
-.promo-filter-btn:hover, .promo-filter-btn.active {
-    background:#1a1a1a; border-color:#1a1a1a; color:#fff;
-}
+/* ── BREADCRUMB ── */
+.pr-breadcrumb { background: var(--white); border-bottom: 1px solid var(--border); padding: 14px 0; }
+.pr-breadcrumb-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.pr-breadcrumb a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+.pr-breadcrumb a:hover { color: var(--gold); }
 
-/* ── Promo Grid ── */
-.promotions-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:26px; }
+/* ── HERO ── */
+.pr-hero { background: var(--obsidian); padding: 90px 32px 80px; position: relative; overflow: hidden; text-align: center; }
+.pr-hero::before { content: 'DEALS'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 22rem; font-weight: 900; color: rgba(255,255,255,0.02); pointer-events: none; white-space: nowrap; font-family: var(--font-display); }
+/* Decorative circles */
+.pr-hero::after { content: ''; position: absolute; top: -80px; right: -80px; width: 320px; height: 320px; border-radius: 50%; border: 1px solid rgba(184,151,106,0.1); pointer-events: none; }
+.pr-hero-inner { position: relative; z-index: 1; }
+.pr-hero-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.26em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+.pr-hero-title { font-family: var(--font-display); font-size: clamp(3rem, 7vw, 8rem); font-weight: 600; color: var(--white); margin: 0 0 14px; line-height: 0.95; letter-spacing: -0.01em; }
+.pr-hero-title em { font-style: italic; color: var(--gold-light); }
+.pr-hero-sub { font-size: 15px; color: rgba(255,255,255,0.4); margin: 0 0 36px; }
 
-/* ── Promo Card (styled like product-card + coupon card fusion) ── */
-.promo-card-wrap {
-    background:#fff; border-radius:12px; overflow:hidden;
-    box-shadow:0 2px 12px rgba(0,0,0,.07); display:flex; flex-direction:column;
-    transition:transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .3s;
-    animation:fadeUp .5s ease both;
-}
-.promo-card-wrap:hover { transform:translateY(-6px); box-shadow:0 12px 32px rgba(0,0,0,.13); }
+/* Filter pills in hero */
+.pr-filters { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.pr-filter { padding: 9px 22px; border-radius: 30px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; border: 1.5px solid rgba(255,255,255,0.18); background: transparent; color: rgba(255,255,255,0.5); cursor: pointer; transition: var(--transition); font-family: var(--font-body); }
+.pr-filter:hover { border-color: rgba(255,255,255,0.45); color: rgba(255,255,255,0.9); }
+.pr-filter.active { background: var(--white); border-color: var(--white); color: var(--obsidian); }
 
-@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+/* ── MAIN ── */
+.pr-main { max-width: 1280px; margin: 0 auto; padding: 56px 32px 80px; }
 
-/* Coloured top by type */
-.promo-card-wrap.type-percentage   .promo-card-top { background:linear-gradient(135deg,#f97316,#ff5858); }
-.promo-card-wrap.type-fixed_amount .promo-card-top { background:linear-gradient(135deg,#1bcfb4,#0ea5e9); }
-.promo-card-wrap.type-free_shipping .promo-card-top { background:linear-gradient(135deg,#667eea,#764ba2); }
+/* ── PROMO GRID ── */
+.pr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 28px; }
+@media (max-width: 560px) { .pr-grid { grid-template-columns: 1fr; } }
 
-.promo-card-top { padding:28px 24px 22px; position:relative; overflow:hidden; display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
-.promo-card-top::after { content:''; position:absolute; top:-30px; right:-30px; width:130px; height:130px; border-radius:50%; background:rgba(255,255,255,.08); }
+/* ── PROMO CARD ── */
+.pc { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; display: flex; flex-direction: column; transition: var(--transition); box-shadow: var(--shadow-sm); animation: fadeUp 0.5s ease both; }
+.pc:hover { transform: translateY(-5px); box-shadow: var(--shadow); border-color: var(--gold); }
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 
-.promo-val-number { font-size:3rem; font-weight:900; color:#fff; line-height:1; letter-spacing:-.02em; }
-.promo-val-unit   { font-size:1.2rem; font-weight:700; color:rgba(255,255,255,.85); }
-.promo-val-label  { font-size:.68rem; color:rgba(255,255,255,.65); text-transform:uppercase; letter-spacing:.1em; margin-top:4px; }
-.promo-top-icon { width:50px; height:50px; border-radius:12px; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.promo-top-icon svg { color:#fff; }
+/* Top gradient panel */
+.pc-top { padding: 30px 28px 24px; position: relative; overflow: hidden; }
+.pc-top::before { content: ''; position: absolute; top: -40px; right: -40px; width: 150px; height: 150px; border-radius: 50%; background: rgba(255,255,255,0.07); }
+.pc-top::after  { content: ''; position: absolute; bottom: -20px; left: -20px; width: 90px; height: 90px; border-radius: 50%; background: rgba(255,255,255,0.04); }
+.pc.type-percentage    .pc-top { background: linear-gradient(135deg, #c4560a 0%, #f97316 60%, #fb923c 100%); }
+.pc.type-fixed_amount  .pc-top { background: linear-gradient(135deg, #0e9b8a 0%, #0ea5e9 60%, #38bdf8 100%); }
+.pc.type-free_shipping .pc-top { background: linear-gradient(135deg, #5e3a8a 0%, #667eea 60%, #818cf8 100%); }
 
-/* notch */
-.promo-notch { display:flex; align-items:center; background:#f8f9fa; }
-.promo-notch::before,.promo-notch::after { content:''; width:16px; height:16px; border-radius:50%; background:#fff; flex-shrink:0; }
-.promo-notch-dash { flex:1; border-top:2px dashed #e0e0e0; margin:0 4px; }
+.pc-top-inner { position: relative; z-index: 1; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.pc-val-big  { font-size: 4rem; font-weight: 900; color: var(--white); line-height: 1; letter-spacing: -0.03em; }
+.pc-val-unit { font-size: 1.5rem; font-weight: 700; color: rgba(255,255,255,0.75); }
+.pc-val-lbl  { font-size: 10px; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.14em; margin-top: 6px; }
+.pc-icon-wrap { width: 54px; height: 54px; border-radius: 14px; background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pc-icon-wrap svg { color: var(--white); }
 
-.promo-card-body { padding:18px 24px 10px; flex:1; background:#fff; }
-.promo-card-name { font-size:1rem; font-weight:700; color:#1a1a1a; margin-bottom:6px; }
-.promo-card-desc { font-size:.83rem; color:#888; line-height:1.55; margin-bottom:12px; }
-.promo-card-pills { display:flex; flex-wrap:wrap; gap:7px; }
-.promo-card-pill { font-size:.7rem; font-weight:600; color:#555; background:#f5f5f5; padding:4px 11px; border-radius:20px; display:inline-flex; align-items:center; gap:4px; }
+/* Ticket notch */
+.pc-notch { display: flex; align-items: center; background: var(--sand); }
+.pc-notch::before, .pc-notch::after { content: ''; width: 20px; height: 20px; border-radius: 50%; background: var(--white); flex-shrink: 0; }
+.pc-notch-line { flex: 1; border-top: 2px dashed var(--border-dark); margin: 0 6px; }
+
+/* Body */
+.pc-body { padding: 20px 28px 14px; flex: 1; }
+.pc-name { font-size: 16px; font-weight: 700; color: var(--obsidian); margin-bottom: 6px; }
+.pc-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+.pc-pills { display: flex; flex-wrap: wrap; gap: 7px; }
+.pc-pill { font-size: 10px; font-weight: 600; color: #555; background: var(--sand); padding: 5px 11px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--border); }
+.pc-pill.pill-gold { background: var(--gold-pale); color: #7a5a30; border-color: var(--gold-light); }
 
 /* Code row */
-.promo-code-row { padding:14px 24px 20px; background:#fff; display:flex; align-items:center; gap:10px; }
-.promo-code-box { flex:1; background:#f5f5f5; border:2px dashed #e0e0e0; border-radius:8px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; }
-.promo-code-val { font-family:'Courier New',monospace; font-size:1rem; font-weight:900; color:#1a1a1a; letter-spacing:.12em; text-transform:uppercase; }
-.btn-copy-promo { flex-shrink:0; background:#1a1a1a; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; cursor:pointer; transition:all .25s; display:flex; align-items:center; gap:6px; }
-.btn-copy-promo:hover { background:#333; }
-.btn-copy-promo.copied { background:#1bcfb4; }
+.pc-code-row { padding: 16px 28px 22px; display: flex; align-items: center; gap: 10px; }
+.pc-code-box { flex: 1; background: var(--sand); border: 1.5px dashed var(--border-dark); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; transition: var(--transition); cursor: pointer; }
+.pc-code-box:hover { border-color: var(--gold); background: var(--gold-pale); }
+.pc-code-val { font-family: 'Courier New', monospace; font-size: 1.05rem; font-weight: 900; color: var(--obsidian); letter-spacing: 0.12em; text-transform: uppercase; }
+.pc-code-hint { font-size: 10px; color: var(--muted); font-weight: 600; white-space: nowrap; margin-left: 8px; }
+.btn-copy-promo {
+  flex-shrink: 0; background: var(--obsidian); color: var(--white); border: none;
+  padding: 12px 20px; border-radius: 10px; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.07em; cursor: pointer;
+  font-family: var(--font-body); transition: var(--transition);
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-copy-promo:hover  { background: var(--charcoal); transform: translateY(-1px); }
+.btn-copy-promo.copied { background: var(--teal); }
 
-/* ── Empty ── */
-.promo-empty { text-align:center; padding:80px 20px; color:#ccc; }
-.promo-empty svg { margin-bottom:16px; }
-.promo-empty h3 { font-size:1.2rem; font-weight:600; color:#888; }
-.promo-empty p  { color:#bbb; margin-top:6px; }
+/* ── EMPTY ── */
+.pr-empty { text-align: center; padding: 80px 40px; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-xl); }
+.pr-empty-icon { width: 80px; height: 80px; border-radius: 50%; background: var(--sand); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; }
+.pr-empty h3 { font-family: var(--font-display); font-size: 2rem; font-weight: 600; color: var(--obsidian); margin: 0 0 10px; }
+.pr-empty p  { font-size: 14px; color: var(--muted); margin: 0; }
 
-/* ── Toast ── */
-.promo-toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px); background:#1a1a1a; color:#fff; padding:12px 24px; border-radius:40px; font-size:.85rem; font-weight:600; display:flex; align-items:center; gap:9px; box-shadow:0 6px 20px rgba(0,0,0,.25); z-index:9999; transition:transform .35s cubic-bezier(.34,1.56,.64,1); white-space:nowrap; }
-.promo-toast.show { transform:translateX(-50%) translateY(0); }
-.promo-toast-tick { color:#1bcfb4; }
+/* ── TOAST ── */
+.pr-toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--obsidian); color: var(--white); padding: 13px 26px; border-radius: 40px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 9px; box-shadow: 0 6px 24px rgba(0,0,0,0.22); z-index: 9999; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; pointer-events: none; }
+.pr-toast.show { transform: translateX(-50%) translateY(0); }
+.pr-toast-ok { color: #1bcfb4; }
 
-@media(max-width:768px){
-    .promotions-grid { grid-template-columns:1fr; }
-    .promo-hero-title { font-size:3rem; letter-spacing:.3rem; }
+@media (max-width: 768px) {
+  .pr-hero { padding: 60px 20px 50px; }
+  .pr-main { padding: 36px 20px 60px; }
+  .pr-hero-title { font-size: 3.5rem; }
 }
 </style>
 
-<!-- Breadcrumb -->
-<div class="xo-section color-background-1" style="--margin:0;--pt:15;--pb:15;">
-    <xo-container class="xo-container--box">
-        <nav aria-label="breadcrumb" class="breadcrumb" role="navigation">
-            <ol class="breadcrumb__list" style="--justify:flex-start">
-                <li class="breadcrumb__item">
-                    <a class="breadcrumb__link" href="{% url 'home' %}">Home</a>
-                    <span class="breadcrumb__separator">/</span>
-                </li>
-                <li class="breadcrumb__item breadcrumb__item--current">
-                    <a aria-current="page" class="breadcrumb__link breadcrumb--current">Promotions</a>
-                </li>
-            </ol>
-        </nav>
-    </xo-container>
+<!-- BREADCRUMB -->
+<div class="pr-breadcrumb">
+  <div class="pr-breadcrumb-inner">
+    <a href="{% url 'home' %}">Home</a>
+    <span style="opacity:0.35">›</span>
+    <span>Promotions</span>
+  </div>
 </div>
 
-<!-- Hero Banner (matches site's SALE banner style) -->
-<div class="banner-v270" style="--bg_custom:#1a1a1a;--height-bg:50%">
-    <div class="xo-section xo-section--sale-banner color-inverse promo-hero" style="--margin:0;--pt:70;--pb:70;">
-        <xo-container class="xo-container--wide">
-            <div style="text-align:center;">
-                <xo-animate xo-duration="700" xo-order="1" xo-strength="3" xo-type="fade-up">
-                    <h2 class="promo-hero-title">ACTIVE <span>DEALS</span></h2>
-                </xo-animate>
-                <xo-animate xo-duration="700" xo-order="3" xo-strength="3" xo-type="fade-up">
-                    <p class="promo-hero-sub">Exclusive offers on premium eyewear — limited time only</p>
-                </xo-animate>
-            </div>
-        </xo-container>
+<!-- HERO -->
+<div class="pr-hero">
+  <div class="pr-hero-inner">
+    <div class="pr-hero-eyebrow">Al Ameen Optics — Exclusive Offers</div>
+    <h1 class="pr-hero-title">Active <em>Deals</em></h1>
+    <p class="pr-hero-sub">Premium eyewear at exceptional value — limited time offers</p>
+
+    <!-- Filter buttons inside hero -->
+    <div class="pr-filters">
+      <button class="pr-filter active" onclick="filterDeals(this,'all')">All Deals</button>
+      <button class="pr-filter" onclick="filterDeals(this,'percentage')">% Off</button>
+      <button class="pr-filter" onclick="filterDeals(this,'fixed_amount')">Fixed Amount</button>
+      <button class="pr-filter" onclick="filterDeals(this,'free_shipping')">Free Shipping</button>
     </div>
+  </div>
 </div>
 
-<!-- Promotions Content -->
-<div class="xo-section color-background-1" style="--margin:0;--pt:60;--pb:80;background:#f8f9fa;">
-    <xo-container class="xo-container--wide">
+<!-- MAIN -->
+<div class="pr-main">
 
-        <!-- Filter Tabs -->
-        <div class="promo-filter-row">
-            <button class="promo-filter-btn active" onclick="filterPromos(this,'all')">All Deals</button>
-            <button class="promo-filter-btn" onclick="filterPromos(this,'percentage')">% Discount</button>
-            <button class="promo-filter-btn" onclick="filterPromos(this,'fixed_amount')">Fixed Off</button>
-            <button class="promo-filter-btn" onclick="filterPromos(this,'free_shipping')">Free Shipping</button>
+  {% if promotions %}
+  <div class="pr-grid" id="prGrid">
+    {% for promo in promotions %}
+    <div class="pc type-{{ promo.discount_type }}" data-type="{{ promo.discount_type }}"
+         style="animation-delay:{{ forloop.counter0 }}0ms">
+
+      <div class="pc-top">
+        <div class="pc-top-inner">
+          <div>
+            {% if promo.discount_type == 'percentage' %}
+              <div><span class="pc-val-big">{{ promo.discount_value|floatformat:0 }}</span><span class="pc-val-unit">%</span></div>
+              <div class="pc-val-lbl">Percentage Off</div>
+            {% elif promo.discount_type == 'fixed_amount' %}
+              <div><span class="pc-val-big">{{ promo.discount_value|floatformat:0 }}</span><span class="pc-val-unit"> QAR</span></div>
+              <div class="pc-val-lbl">Fixed Discount</div>
+            {% else %}
+              <div class="pc-val-big" style="font-size:2.6rem;">FREE</div>
+              <div class="pc-val-lbl">Shipping</div>
+            {% endif %}
+          </div>
+          <div class="pc-icon-wrap">
+            {% if promo.discount_type == 'percentage' %}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1" fill="currentColor"/></svg>
+            {% elif promo.discount_type == 'fixed_amount' %}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            {% else %}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><path d="M12 12v4m-2-2h4"/></svg>
+            {% endif %}
+          </div>
         </div>
+      </div>
 
-        {% if promotions %}
-        <div class="promotions-grid" id="promoGrid">
-            {% for promo in promotions %}
-            <div class="promo-card-wrap type-{{ promo.discount_type }}" data-type="{{ promo.discount_type }}" style="animation-delay:{{ forloop.counter0 }}00ms;">
+      <div class="pc-notch"><div class="pc-notch-line"></div></div>
 
-                <!-- Coloured top -->
-                <div class="promo-card-top">
-                    <div>
-                        {% if promo.discount_type == 'percentage' %}
-                        <div class="promo-val-number">{{ promo.discount_value|floatformat:0 }}<span class="promo-val-unit">%</span></div>
-                        <div class="promo-val-label">Percentage Off</div>
-                        {% elif promo.discount_type == 'fixed_amount' %}
-                        <div class="promo-val-number">{{ promo.discount_value|floatformat:0 }}<span class="promo-val-unit"> QAR</span></div>
-                        <div class="promo-val-label">Fixed Discount</div>
-                        {% else %}
-                        <div class="promo-val-number" style="font-size:2rem;">FREE</div>
-                        <div class="promo-val-label">Shipping Included</div>
-                        {% endif %}
-                    </div>
-                    <div class="promo-top-icon">
-                        {% if promo.discount_type == 'percentage' %}
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1"/></svg>
-                        {% elif promo.discount_type == 'fixed_amount' %}
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-                        {% else %}
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Notch divider -->
-                <div class="promo-notch"><div class="promo-notch-dash"></div></div>
-
-                <!-- Body -->
-                <div class="promo-card-body">
-                    <div class="promo-card-name">{{ promo.name }}</div>
-                    {% if promo.description %}
-                    <div class="promo-card-desc">{{ promo.description|truncatewords:20 }}</div>
-                    {% endif %}
-                    <div class="promo-card-pills">
-                        {% if promo.minimum_order_amount %}
-                        <span class="promo-card-pill">
-                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-                            Min. {{ promo.minimum_order_amount }} QAR
-                        </span>
-                        {% endif %}
-                        <span class="promo-card-pill">
-                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                            Until {{ promo.valid_until|date:"d M Y" }}
-                        </span>
-                        {% if promo.maximum_discount_amount %}
-                        <span class="promo-card-pill">Max: {{ promo.maximum_discount_amount }} QAR</span>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Code row -->
-                <div class="promo-code-row">
-                    <div class="promo-code-box">
-                        <span class="promo-code-val">{{ promo.code }}</span>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                    </div>
-                    <button class="btn-copy-promo" onclick="copyPromo(this,'{{ promo.code }}')">Copy</button>
-                </div>
-
-            </div>
-            {% endfor %}
+      <div class="pc-body">
+        <div class="pc-name">{{ promo.name }}</div>
+        {% if promo.description %}<div class="pc-desc">{{ promo.description|truncatewords:22 }}</div>{% endif %}
+        <div class="pc-pills">
+          <span class="pc-pill">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            Until {{ promo.valid_until|date:"d M Y" }}
+          </span>
+          {% if promo.minimum_order_amount %}
+          <span class="pc-pill">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            Min. QAR {{ promo.minimum_order_amount }}
+          </span>
+          {% endif %}
+          {% if promo.maximum_discount_amount %}
+          <span class="pc-pill pill-gold">Max: QAR {{ promo.maximum_discount_amount }}</span>
+          {% endif %}
         </div>
+      </div>
 
-        {% else %}
-        <div class="promo-empty">
-            <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1"/></svg>
-            <h3>No Active Promotions</h3>
-            <p>Check back soon — new deals drop regularly!</p>
+      <div class="pc-code-row">
+        <div class="pc-code-box" onclick="copyDeal('{{ promo.code }}', document.querySelector('.btn-copy-promo[data-code=\'{{ promo.code }}\']'))">
+          <span class="pc-code-val">{{ promo.code }}</span>
+          <span class="pc-code-hint">Click to copy</span>
         </div>
-        {% endif %}
+        <button class="btn-copy-promo" data-code="{{ promo.code }}" onclick="copyDeal('{{ promo.code }}', this)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
 
-    </xo-container>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="pr-empty">
+    <div class="pr-empty-icon">🏷</div>
+    <h3>No Active Promotions</h3>
+    <p>Check back soon — new deals drop regularly!</p>
+  </div>
+  {% endif %}
+
 </div>
 
-<!-- Toast -->
-<div class="promo-toast" id="promoToast">
-    <span class="promo-toast-tick">✓</span>
-    <span id="promoToastMsg">Code copied!</span>
+<!-- TOAST -->
+<div class="pr-toast" id="prToast">
+  <span class="pr-toast-ok">✓</span>
+  <span id="prToastMsg">Code copied!</span>
 </div>
 
 <script>
-function copyPromo(btn, code) {
-    navigator.clipboard.writeText(code).then(() => {
-        btn.classList.add('copied');
-        btn.textContent = '✓ Copied';
-        showPromoToast('Code "' + code + '" copied!');
-        setTimeout(() => { btn.classList.remove('copied'); btn.textContent = 'Copy'; }, 2500);
-    }).catch(() => {
-        const ta = document.createElement('textarea'); ta.value = code;
-        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-        document.body.removeChild(ta); showPromoToast('Code "' + code + '" copied!');
-    });
+function copyDeal(code, btn) {
+  navigator.clipboard.writeText(code).then(() => {
+    if (btn) {
+      btn.classList.add('copied');
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied';
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy';
+      }, 2500);
+    }
+    showPrToast('"' + code + '" copied to clipboard!');
+  }).catch(() => {
+    const t = document.createElement('textarea'); t.value = code;
+    document.body.appendChild(t); t.select(); document.execCommand('copy');
+    document.body.removeChild(t); showPrToast('"' + code + '" copied!');
+  });
 }
-function showPromoToast(msg) {
-    const t = document.getElementById('promoToast');
-    document.getElementById('promoToastMsg').textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
+
+function showPrToast(msg) {
+  const t = document.getElementById('prToast');
+  document.getElementById('prToastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
-function filterPromos(btn, type) {
-    document.querySelectorAll('.promo-filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.promo-card-wrap').forEach(card => {
-        const show = type === 'all' || card.dataset.type === type;
-        card.style.display = show ? '' : 'none';
-        if (show) { card.style.animation = 'none'; void card.offsetHeight; card.style.animation = 'fadeUp .4s ease'; }
-    });
+
+function filterDeals(btn, type) {
+  document.querySelectorAll('.pr-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.pc').forEach(card => {
+    const show = type === 'all' || card.dataset.type === type;
+    card.style.display = show ? '' : 'none';
+    if (show) { card.style.animation = 'none'; void card.offsetHeight; card.style.animation = 'fadeUp .4s ease'; }
+  });
 }
 </script>
 {% endblock %}
