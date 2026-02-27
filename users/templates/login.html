@@ -1,192 +1,508 @@
 {% extends 'base.html' %}
+{% block title %}Login — Al Ameen Optics{% endblock %}
 
-{% block title %}Login{% endblock %}
+{% block extra_styles %}
+<style>
+/* ── AUTH PAGE SHARED VARIABLES ── */
+:root {
+  --auth-bg: #0d1a27;
+  --auth-card: #ffffff;
+  --auth-accent: #1a6fa8;
+  --auth-accent-dark: #155f90;
+  --auth-gold: #c8a96e;
+  --auth-border: #c5d8e8;
+  --auth-muted: #6b8299;
+  --auth-dark: #1a2a3a;
+  --auth-error: #e03030;
+  --auth-success: #2a8a3a;
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Jost', sans-serif;
+}
+
+/* ── LAYOUT ── */
+.auth-page {
+  min-height: calc(100vh - 160px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--auth-bg);
+}
+
+/* ── LEFT PANEL ── */
+.auth-visual {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 60px 56px;
+}
+
+.auth-visual__bg {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(160deg, rgba(26,111,168,0.25) 0%, rgba(13,26,39,0.85) 60%),
+    url('https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=900&h=1200&fit=crop&q=90') center/cover no-repeat;
+  transform: scale(1.04);
+  animation: panZoom 14s ease-in-out infinite alternate;
+}
+
+@keyframes panZoom {
+  from { transform: scale(1.04) translateY(0); }
+  to   { transform: scale(1.1) translateY(-20px); }
+}
+
+.auth-visual__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(13,26,39,0.92) 0%, rgba(13,26,39,0.3) 55%, transparent 100%);
+}
+
+.auth-visual__content { position: relative; z-index: 2; }
+
+.auth-visual__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.auth-visual__eyebrow-line {
+  display: block;
+  width: 32px;
+  height: 1.5px;
+  background: var(--auth-gold);
+}
+.auth-visual__eyebrow-text {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--auth-gold);
+  font-family: var(--font-body);
+}
+
+.auth-visual__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 3.5vw, 4rem);
+  font-weight: 400;
+  color: #ffffff;
+  line-height: 1.15;
+  margin: 0 0 16px;
+  letter-spacing: -0.01em;
+}
+
+.auth-visual__title em {
+  color: var(--auth-gold);
+  font-style: italic;
+}
+
+.auth-visual__sub {
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.6;
+  margin: 0 0 40px;
+  max-width: 320px;
+  font-family: var(--font-body);
+}
+
+.auth-visual__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.auth-visual__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.85);
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 7px 14px;
+  border-radius: 30px;
+  font-family: var(--font-body);
+}
+.auth-visual__badge svg {
+  width: 14px; height: 14px;
+  stroke: var(--auth-gold); fill: none; stroke-width: 2;
+}
+
+/* ── RIGHT PANEL ── */
+.auth-form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f4f8fb;
+  padding: 60px 40px;
+}
+
+.auth-form-card {
+  width: 100%;
+  max-width: 440px;
+}
+
+.auth-form-card__logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.auth-form-card__logo-icon {
+  width: 44px; height: 44px;
+  background: var(--auth-accent);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.auth-form-card__logo-icon svg {
+  width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 2;
+}
+.auth-form-card__logo-text h2 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--auth-dark);
+  margin: 0;
+  line-height: 1.2;
+}
+.auth-form-card__logo-text span {
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--auth-muted);
+  font-family: var(--font-body);
+}
+
+.auth-form-card__heading {
+  margin-bottom: 8px;
+}
+.auth-form-card__heading h1 {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 500;
+  color: var(--auth-dark);
+  margin: 0;
+  line-height: 1.2;
+}
+.auth-form-card__heading p {
+  font-size: 0.92rem;
+  color: var(--auth-muted);
+  margin: 8px 0 32px;
+  font-family: var(--font-body);
+}
+
+/* ── FORM FIELDS ── */
+.auth-field {
+  margin-bottom: 20px;
+  position: relative;
+}
+.auth-field label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--auth-dark);
+  margin-bottom: 8px;
+  font-family: var(--font-body);
+}
+.auth-field__input-wrap {
+  position: relative;
+}
+.auth-field__input-wrap svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 17px; height: 17px;
+  stroke: var(--auth-muted); fill: none; stroke-width: 2;
+  pointer-events: none;
+  transition: stroke 0.25s;
+}
+.auth-field input {
+  width: 100%;
+  padding: 13px 16px 13px 44px;
+  border: 1.5px solid var(--auth-border);
+  border-radius: 10px;
+  font-size: 0.93rem;
+  color: var(--auth-dark);
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  font-family: var(--font-body);
+  box-sizing: border-box;
+}
+.auth-field input:focus {
+  border-color: var(--auth-accent);
+  box-shadow: 0 0 0 3px rgba(26,111,168,0.1);
+}
+.auth-field input:focus + svg,
+.auth-field input:focus ~ svg {
+  stroke: var(--auth-accent);
+}
+.auth-field__input-wrap svg { left: 14px; }
+
+/* Password toggle */
+.auth-field__eye {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--auth-muted);
+  display: flex; align-items: center;
+  padding: 4px;
+  transition: color 0.2s;
+}
+.auth-field__eye:hover { color: var(--auth-accent); }
+.auth-field__eye svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* Remember + Forgot row */
+.auth-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+.auth-checkbox {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.84rem; color: var(--auth-muted);
+  font-family: var(--font-body); cursor: pointer;
+}
+.auth-checkbox input[type="checkbox"] {
+  width: 16px; height: 16px;
+  accent-color: var(--auth-accent);
+  cursor: pointer;
+}
+.auth-forgot {
+  font-size: 0.84rem;
+  color: var(--auth-accent);
+  font-weight: 600;
+  font-family: var(--font-body);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.auth-forgot:hover { color: var(--auth-accent-dark); text-decoration: underline; }
+
+/* Submit button */
+.auth-submit {
+  width: 100%;
+  height: 52px;
+  background: var(--auth-dark);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: var(--font-body);
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.auth-submit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--auth-accent);
+  transform: translateX(-101%);
+  transition: transform 0.4s cubic-bezier(0.76,0,0.24,1);
+}
+.auth-submit:hover::before { transform: translateX(0); }
+.auth-submit span, .auth-submit svg { position: relative; z-index: 1; }
+.auth-submit svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.5; transition: transform 0.3s; }
+.auth-submit:hover svg { transform: translateX(4px); }
+
+/* Divider */
+.auth-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 24px 0;
+}
+.auth-divider::before, .auth-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--auth-border);
+}
+.auth-divider span {
+  font-size: 0.75rem; color: var(--auth-muted); font-family: var(--font-body);
+  text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;
+}
+
+/* Alt link */
+.auth-alt {
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--auth-muted);
+  font-family: var(--font-body);
+}
+.auth-alt a {
+  color: var(--auth-accent);
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.auth-alt a:hover { color: var(--auth-accent-dark); text-decoration: underline; }
+
+/* Messages */
+.auth-messages { margin-bottom: 20px; }
+.auth-alert {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 16px;
+  border-radius: 9px;
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  margin-bottom: 8px;
+}
+.auth-alert--error   { background: #fff0f0; border: 1px solid #ffd0d0; color: #8a1c1c; }
+.auth-alert--success { background: #f0fdf4; border: 1px solid #bbf0cc; color: #166534; }
+.auth-alert--info    { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+.auth-alert svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .auth-page { grid-template-columns: 1fr; }
+  .auth-visual { display: none; }
+  .auth-form-panel { min-height: calc(100vh - 160px); background: #f4f8fb; }
+}
+@media (max-width: 480px) {
+  .auth-form-panel { padding: 32px 20px; }
+}
+</style>
+{% endblock %}
 
 {% block content %}
+<div class="auth-page">
 
-<style>
-  @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap");
-
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  body {
-    background-color: #f5f5f5;
-    font-family: "Open Sans", sans-serif;
-    color: #111;
-  }
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-bottom-left-radius: 10px;
-    border-top-left-radius: 10px;
-    display: block;
-  }
-
-  a {
-    color: #111;
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  a:hover {
-    color: #444;
-  }
-
-  .modernForm {
-    max-width: 1200px;
-    display: flex;
-    margin: 30px auto;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  }
-
-  .imageSection {
-    flex-basis: 50%;
-    position: relative;
-  }
-
-  .imageSection .image {
-    width: 100%;
-    height: 100%;
-    position: relative;
-  }
-
-  .overlay {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.4);
-    border-bottom-left-radius: 10px;
-    border-top-left-radius: 10px;
-  }
-
-  .textInside {
-    position: absolute;
-    bottom: 200px;
-    right: 50px;
-    color: #fff;
-    z-index: 2;
-  }
-
-  .textInside h1 {
-    font-size: 2rem;
-    font-weight: 700;
-  }
-
-  .textInside .tagLine {
-    font-size: 1.2rem;
-    font-weight: 600;
-  }
-
-  .contactForm {
-    flex-basis: 45%;
-    margin: auto;
-    padding: 40px 30px;
-  }
-
-  .contactForm h1 {
-    margin-bottom: 20px;
-  }
-
-  input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    margin-bottom: 15px;
-    font-size: 1rem;
-  }
-
-  input[type="submit"] {
-    background-color: #111;
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-
-  input[type="submit"]:hover {
-    background-color: #444;
-  }
-
-  .messages {
-    margin-bottom: 15px;
-  }
-
-  .alert {
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 14px;
-  }
-
-  .alert-error { background: #ffe0e0; color: #900; }
-  .alert-success { background: #e0ffe0; color: #060; }
-
-  @media (max-width: 768px) {
-    .modernForm {
-      flex-direction: column;
-    }
-
-    .imageSection img,
-    .overlay {
-      border-radius: 10px 10px 0 0;
-    }
-  }
-</style>
-
-<div class="modernForm">
-
-  <!-- LEFT IMAGE -->
-  <div class="imageSection">
-    <div class="image">
-      <div class="overlay"></div>
-      <img src="https://images.pexels.com/photos/1895015/pexels-photo-1895015.jpeg">
-    </div>
-    <div class="textInside">
-      <h1>See Better. Look Better.</h1>
-      <p class="tagLine">Premium Eyewear Experience</p>
+  <!-- LEFT: Visual Panel -->
+  <div class="auth-visual">
+    <div class="auth-visual__bg"></div>
+    <div class="auth-visual__overlay"></div>
+    <div class="auth-visual__content">
+      <div class="auth-visual__eyebrow">
+        <span class="auth-visual__eyebrow-line"></span>
+        <span class="auth-visual__eyebrow-text">Al Ameen Optics · Est. 1927</span>
+      </div>
+      <h2 class="auth-visual__title">
+        See Better.<br><em>Look Better.</em>
+      </h2>
+      <p class="auth-visual__sub">
+        Premium eyewear curated for those who see the world differently. Access your account to manage orders, prescriptions and more.
+      </p>
+      <div class="auth-visual__badges">
+        <div class="auth-visual__badge">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          100% Authentic
+        </div>
+        <div class="auth-visual__badge">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Secure Account
+        </div>
+        <div class="auth-visual__badge">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Free Eye Test
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- RIGHT FORM -->
-  <div class="contactForm">
-    <h1>Login</h1>
+  <!-- RIGHT: Form Panel -->
+  <div class="auth-form-panel">
+    <div class="auth-form-card">
 
-    {% if messages %}
-    <div class="messages">
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-      {% endfor %}
-    </div>
-    {% endif %}
+      <!-- Logo -->
+      <div class="auth-form-card__logo">
+        <div class="auth-form-card__logo-icon">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div class="auth-form-card__logo-text">
+          <h2>Al Ameen Optics</h2>
+          <span>Your Vision Matters More</span>
+        </div>
+      </div>
 
-    <form method="POST" action="{% url 'users:login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">
-      {% csrf_token %}
+      <!-- Heading -->
+      <div class="auth-form-card__heading">
+        <h1>Welcome back</h1>
+        <p>Sign in to your account to continue</p>
+      </div>
 
-      {% if request.GET.next %}
-        <input type="hidden" name="next" value="{{ request.GET.next }}">
+      <!-- Messages -->
+      {% if messages %}
+      <div class="auth-messages">
+        {% for message in messages %}
+        <div class="auth-alert auth-alert--{{ message.tags }}">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
       {% endif %}
 
-      <label>Email</label>
-      <input type="email" name="email" placeholder="you@example.com" required>
+      <!-- Form -->
+      <form method="POST" action="{% url 'users:login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">
+        {% csrf_token %}
+        {% if request.GET.next %}
+          <input type="hidden" name="next" value="{{ request.GET.next }}">
+        {% endif %}
 
-      <label>Password</label>
-      <input type="password" name="password" placeholder="Enter password" required>
+        <div class="auth-field">
+          <label for="email">Email Address</label>
+          <div class="auth-field__input-wrap">
+            <input type="email" name="email" id="email" placeholder="you@example.com" required autocomplete="email">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+        </div>
 
-      <a href="{% url 'users:register' %}">Don't have an account? Register</a><br>
-      <a href="{% url 'users:forgot_password' %}">Forgot Password?</a><br><br>
+        <div class="auth-field">
+          <label for="password">Password</label>
+          <div class="auth-field__input-wrap" style="position:relative;">
+            <input type="password" name="password" id="password" placeholder="Enter your password" required autocomplete="current-password" style="padding-right:48px;">
+            <svg viewBox="0 0 24 24" style="left:14px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <button type="button" class="auth-field__eye" onclick="togglePwd('password',this)" aria-label="Toggle password">
+              <svg id="eye-password" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
 
-      <input type="submit" value="Login">
-    </form>
+        <div class="auth-row">
+          <label class="auth-checkbox">
+            <input type="checkbox" name="remember_me"> Remember me
+          </label>
+          <a href="{% url 'users:forgot_password' %}" class="auth-forgot">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="auth-submit">
+          <span>Sign In</span>
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </form>
+
+      <div class="auth-divider"><span>Don't have an account?</span></div>
+      <div class="auth-alt">
+        New to Al Ameen Optics? <a href="{% url 'users:register' %}">Create your account →</a>
+      </div>
+
+    </div>
   </div>
-</div>
 
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function togglePwd(fieldId, btn) {
+  var input = document.getElementById(fieldId);
+  var isText = input.type === 'text';
+  input.type = isText ? 'password' : 'text';
+  btn.querySelector('svg').innerHTML = isText
+    ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+    : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+}
+</script>
 {% endblock %}
