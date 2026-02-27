@@ -964,6 +964,66 @@
   .hs__progress-track { display: none; }
   .hs__counter { display: none; }
 }
+
+/* ============================================
+   SALE BANNER — dynamic admin-managed
+   ============================================ */
+.sale-banner-section { width:100%; position:relative; }
+
+.sale-banner-with-image {
+  position:relative; width:100%; min-height:420px;
+  background-size:cover; background-position:center; background-repeat:no-repeat;
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+}
+.sale-banner-overlay {
+  position:absolute; inset:0; z-index:1;
+  background:linear-gradient(135deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.28) 50%,rgba(0,0,0,.55) 100%);
+}
+.sale-banner-content {
+  position:relative; z-index:2; text-align:center; padding:70px 20px; color:#fff;
+}
+.sale-banner-title {
+  font-size:clamp(3.5rem,10vw,8rem); font-weight:900;
+  letter-spacing:1.2rem; color:#fff; margin:0 0 1rem;
+  text-shadow:0 4px 24px rgba(0,0,0,.45); text-transform:uppercase;
+}
+.sale-banner-subtitle {
+  font-size:clamp(1.3rem,3vw,2.8rem); font-weight:600;
+  color:rgba(255,255,255,.92); margin:0 0 2.5rem;
+}
+.sale-banner-btn {
+  display:inline-flex; align-items:center; gap:10px;
+  background:#fff; color:#1a1a1a;
+  padding:14px 38px; border-radius:50px;
+  font-size:1rem; font-weight:700; text-decoration:none;
+  text-transform:uppercase; letter-spacing:.08em;
+  transition:all .3s; box-shadow:0 4px 20px rgba(0,0,0,.25);
+}
+.sale-banner-btn:hover {
+  background:#f97316; color:#fff;
+  transform:translateY(-3px); box-shadow:0 8px 30px rgba(249,115,22,.5);
+}
+.sale-banner-btn svg { flex-shrink:0; transition:transform .3s; }
+.sale-banner-btn:hover svg { transform:translateX(4px); }
+
+/* Fallback — no image in DB */
+.sale-banner-fallback { background:#f97316; text-align:center; padding:60px 20px; color:#fff; }
+.sale-banner-fallback h2 { font-size:clamp(3.5rem,10vw,8rem); font-weight:900; letter-spacing:1.2rem; margin:0 0 1rem; }
+.sale-banner-fallback p  { font-size:clamp(1.3rem,3vw,2.8rem); font-weight:600; margin:0 0 2rem; }
+.sale-banner-fallback a  {
+  display:inline-block; background:#fff; color:#f97316;
+  padding:12px 32px; border-radius:50px; font-weight:700;
+  font-size:.95rem; text-decoration:none; text-transform:uppercase; letter-spacing:.06em;
+  transition:all .3s;
+}
+.sale-banner-fallback a:hover { background:#1a1a1a; color:#fff; transform:translateY(-2px); }
+
+/* Responsive */
+@media (max-width:600px) {
+  .sale-banner-with-image { min-height:260px; }
+  .sale-banner-title { letter-spacing:.3rem; }
+  .sale-banner-content { padding:40px 16px; }
+}
 </style>
 {% endblock %}
 
@@ -1270,11 +1330,56 @@
 </section>
 
 <!-- SALE BANNER -->
+{% if sale_banner %}
+<section class="sale-banner-section">
+
+  {% if sale_banner.image_desktop %}
+  <div class="sale-banner-with-image"
+       style="background-image:url('{{ sale_banner.image_desktop.url }}');">
+    <div class="sale-banner-overlay"></div>
+    <div class="sale-banner-content">
+
+      <h2 class="sale-banner-title">
+        {{ sale_banner.slide_heading|default:"SALE" }}
+      </h2>
+      <p class="sale-banner-subtitle">
+        {{ sale_banner.slide_description|default:"Up to 50% OFF on Selected Items" }}
+      </p>
+
+      {% if sale_banner.link_url %}
+      <a href="{{ sale_banner.link_url }}" class="sale-banner-btn">
+        <span>{{ sale_banner.cta_text|default:"Shop Sale" }}</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      {% endif %}
+
+    </div>
+  </div>
+
+  {% else %}
+  <div class="sale-banner-fallback">
+    <h2>{{ sale_banner.slide_heading|default:"SALE" }}</h2>
+    <p>{{ sale_banner.slide_description|default:"Up to 50% OFF on Selected Items" }}</p>
+    {% if sale_banner.link_url %}
+    <a href="{{ sale_banner.link_url }}">{{ sale_banner.cta_text|default:"Shop Sale" }}</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</section>
+
+{% else %}
 <div class="banner-v270" style="--bg_custom:#f97316;--height-bg:50%">
   <div class="xo-section xo-section--sale-banner color-inverse" style="--margin:0;--pt:60;--pb:60;">
-    <xo-container class="xo-container--wide"><div style="text-align:center;"><h2 style="font-size:8rem;font-weight:900;letter-spacing:1.2rem;color:white;margin-bottom:1rem;">{% trans "SALE" %}</h2><div style="font-size:2.8rem;color:white;font-weight:600;">{% trans "Up to 50% OFF on Selected Items" %}</div></div></xo-container>
+    <xo-container class="xo-container--wide">
+      <div style="text-align:center;">
+        <h2 style="font-size:8rem;font-weight:900;letter-spacing:1.2rem;color:white;margin-bottom:1rem;">{% trans "SALE" %}</h2>
+        <div style="font-size:2.8rem;color:white;font-weight:600;">{% trans "Up to 50% OFF on Selected Items" %}</div>
+      </div>
+    </xo-container>
   </div>
 </div>
+{% endif %}
 
 <!-- BRANDS CAROUSEL -->
 <section class="shopify-section section">
