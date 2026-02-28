@@ -1,0 +1,1014 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ product.name }} – Al Ameen Optics{% endblock %}
+
+{% block content %}
+<style>
+:root {
+  --aa-ink:#0d0d0d;--aa-ink-soft:#555;--aa-gold:#b8976a;--aa-gold-lt:#d4b896;
+  --aa-sand:#f7f3ed;--aa-muted:#8a8580;--aa-border:#e8e2d8;
+  --aa-green:#2a7a2a;--aa-green-bg:#f0f7ee;
+  --aa-kids:#5a7fd4;--aa-kids-lt:#eef1fc;
+  --aa-radius:12px;--aa-shadow:0 4px 24px rgba(0,0,0,.08);
+  --aa-ease:cubic-bezier(.4,0,.2,1);--aa-t:.26s;
+}
+
+/* ══ GAL GALLERY ══ */
+.gal{display:grid;grid-template-columns:88px 1fr;gap:12px;position:sticky;top:90px;align-self:start;}
+@media(max-width:960px){.gal{position:static;}}
+@media(max-width:540px){.gal{grid-template-columns:1fr;}}
+.gal__rail{display:flex;flex-direction:column;gap:8px;max-height:520px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#d4b896 transparent;padding:2px;}
+.gal__rail::-webkit-scrollbar{width:3px;}
+.gal__rail::-webkit-scrollbar-thumb{background:#d4b896;border-radius:99px;}
+@media(max-width:540px){.gal__rail{flex-direction:row;max-height:none;overflow-y:hidden;overflow-x:auto;order:2;}}
+.gal__thumb{flex-shrink:0;width:84px;height:84px;border-radius:10px;overflow:hidden;border:2px solid var(--aa-border);background:var(--aa-sand);cursor:pointer;transition:border-color .2s,transform .2s;}
+@media(max-width:540px){.gal__thumb{width:68px;height:68px;}}
+.gal__thumb img{width:100%;height:100%;object-fit:contain;padding:4px;display:block;}
+.gal__thumb:hover{border-color:var(--aa-gold);transform:translateX(2px);}
+@media(max-width:540px){.gal__thumb:hover{transform:translateY(-2px);}}
+.gal__thumb.is-active{border-color:var(--aa-ink);box-shadow:0 0 0 1px var(--aa-ink);}
+.gal__stage-wrap{position:relative;}
+.gal__stage{position:relative;width:100%;aspect-ratio:1/1;border-radius:16px;overflow:hidden;background:var(--aa-sand);cursor:zoom-in;}
+.gal__img{width:100%;height:100%;object-fit:contain;padding:24px;display:block;transition:opacity .18s ease;}
+.gal__img.fading{opacity:0;}
+.gal__placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--aa-gold);}
+.gal__arr{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.9);border:1px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;box-shadow:0 2px 10px rgba(0,0,0,.12);opacity:0;pointer-events:none;transition:opacity .2s;color:#1a1a1a;}
+.gal__stage:hover .gal__arr{opacity:1;pointer-events:auto;}
+.gal__arr--prev{left:10px;}.gal__arr--next{right:10px;}
+.gal__arr.hidden{display:none!important;}
+.gal__counter{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(10,10,10,.45);backdrop-filter:blur(6px);color:#fff;font-size:11px;font-weight:700;letter-spacing:.1em;padding:4px 12px;border-radius:99px;pointer-events:none;}
+.gal__counter.solo{display:none;}
+.gal__fs{position:absolute;bottom:12px;right:12px;width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.88);border:1px solid rgba(0,0,0,.07);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;opacity:0;pointer-events:none;transition:opacity .2s;}
+.gal__stage:hover .gal__fs{opacity:1;pointer-events:auto;}
+.gal__lb{display:none;position:fixed;inset:0;z-index:99999;background:rgba(6,6,6,.96);backdrop-filter:blur(16px);flex-direction:column;align-items:center;justify-content:center;gap:18px;}
+.gal__lb.open{display:flex;}
+.gal__lb-close{position:fixed;top:18px;right:22px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.gal__lb-img{max-width:88vw;max-height:76vh;object-fit:contain;border-radius:12px;}
+.gal__lb-nav{position:fixed;top:50%;transform:translateY(-50%);width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.gal__lb-nav--prev{left:18px;}.gal__lb-nav--next{right:18px;}
+.gal__lb-strip{display:flex;gap:8px;overflow-x:auto;max-width:90vw;scrollbar-width:thin;}
+.gal__lb-dot{flex-shrink:0;width:58px;height:58px;border-radius:8px;overflow:hidden;border:2.5px solid rgba(255,255,255,.15);cursor:pointer;transition:border-color .2s;}
+.gal__lb-dot img{width:100%;height:100%;object-fit:contain;padding:3px;}
+.gal__lb-dot.active{border-color:#d4b896;}
+.gal__lb-count{position:fixed;top:24px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.5);font-size:13px;font-weight:600;letter-spacing:.1em;}
+
+/* ══ PAGE ══ */
+.pd-page{max-width:1340px;margin:0 auto;padding:0 24px 100px;}
+.pd-crumb{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:16px 0 28px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--aa-muted);}
+.pd-crumb a{color:var(--aa-muted);text-decoration:none;transition:color var(--aa-t);}
+.pd-crumb a:hover{color:var(--aa-ink);}
+.pd-crumb-sep{font-size:10px;color:#ccc;}
+
+/* Kids banner strip */
+.kids-banner{background:linear-gradient(90deg,var(--aa-kids-lt),#fff5e8);border:1.5px solid rgba(90,127,212,.2);border-radius:var(--aa-radius);padding:12px 18px;display:flex;align-items:center;gap:10px;margin-bottom:24px;font-size:13px;font-weight:600;color:var(--aa-kids);}
+.kids-banner svg{flex-shrink:0;width:20px;height:20px;}
+
+.pd-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;}
+@media(max-width:960px){.pd-grid{grid-template-columns:1fr;gap:32px;}}
+.pi{display:flex;flex-direction:column;}
+.pi__badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+.pi__badge{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:4px;}
+.pi__badge--brand{background:var(--aa-sand);color:var(--aa-gold);}
+.pi__badge--sale{background:var(--aa-green-bg);color:var(--aa-green);}
+.pi__badge--kids{background:var(--aa-kids-lt);color:var(--aa-kids);}
+.pi__badge--type{background:#f0f0ff;color:#5558a8;}
+.pi__title{font-size:clamp(22px,2.6vw,32px);font-weight:800;line-height:1.15;color:var(--aa-ink);letter-spacing:-.03em;margin:0 0 10px;}
+.pi__meta{display:flex;align-items:center;gap:14px;margin-bottom:6px;flex-wrap:wrap;}
+.pi__brand{font-size:13px;color:var(--aa-muted);}
+.pi__brand strong{color:var(--aa-ink);}
+.pi__sku{font-size:11px;color:#c5c0b8;letter-spacing:.06em;}
+.pi__wish{margin-left:auto;flex-shrink:0;width:44px;height:44px;border-radius:50%;background:var(--aa-sand);border:2px solid var(--aa-border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--aa-t);}
+.pi__wish:hover,.pi__wish.is-on{border-color:#e05f5f;background:#fff5f5;}
+.pi__wish svg{width:18px;height:18px;transition:fill var(--aa-t),stroke var(--aa-t);}
+
+/* Inline rating snippet */
+.pi__rating-snap{display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer;}
+.pi__rating-snap:hover .pi__rating-snap-lbl{color:var(--aa-ink);}
+.pi__rating-stars{display:flex;gap:2px;}
+.pi__rating-stars .s{font-size:14px;}
+.pi__rating-stars .s.on{color:#f59e0b;}
+.pi__rating-stars .s.off{color:#d4cfc7;}
+.pi__rating-snap-num{font-size:13px;font-weight:700;color:var(--aa-ink);}
+.pi__rating-snap-lbl{font-size:12px;color:var(--aa-muted);text-decoration:underline;text-underline-offset:2px;transition:color .2s;}
+
+.pi__price-box{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:18px 22px;border-radius:var(--aa-radius);background:var(--aa-sand);border:1px solid rgba(184,151,106,.18);margin:0 0 22px;}
+.pi__price{font-size:34px;font-weight:900;color:var(--aa-ink);letter-spacing:-.04em;}
+.pi__price-was{font-size:17px;color:var(--aa-muted);text-decoration:line-through;}
+.pi__price-save{font-size:12px;font-weight:800;background:var(--aa-green);color:#fff;padding:3px 9px;border-radius:4px;}
+.pi__desc{font-size:14px;line-height:1.78;color:var(--aa-ink-soft);margin-bottom:22px;}
+.pi__lbl{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--aa-muted);margin-bottom:10px;}
+.pi__swatches{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;}
+.pi__swatch{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;outline:none;}
+.pi__swatch-dot{width:36px;height:36px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1.5px var(--aa-border);transition:all var(--aa-t);}
+.pi__swatch:hover .pi__swatch-dot,.pi__swatch.is-on .pi__swatch-dot{box-shadow:0 0 0 2.5px var(--aa-gold);transform:scale(1.1);}
+.pi__swatch-name{font-size:10px;color:var(--aa-muted);font-weight:500;}
+.pi__select{width:100%;padding:13px 16px;margin-bottom:22px;border:2px solid var(--aa-border);border-radius:var(--aa-radius);font-size:14px;font-weight:600;color:var(--aa-ink);background:#fff;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8580' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;transition:border-color var(--aa-t);}
+.pi__select:focus{border-color:var(--aa-gold);outline:none;}
+.pi__qty-wrap{margin-bottom:22px;}
+.pi__qty{display:inline-flex;align-items:center;border:2px solid var(--aa-border);border-radius:var(--aa-radius);overflow:hidden;}
+.pi__qty-btn{width:46px;height:46px;border:none;background:var(--aa-sand);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--aa-ink);transition:background var(--aa-t);line-height:1;}
+.pi__qty-btn:hover{background:var(--aa-border);}
+.pi__qty-num{width:56px;height:46px;border:none;border-left:2px solid var(--aa-border);border-right:2px solid var(--aa-border);text-align:center;font-size:16px;font-weight:700;color:var(--aa-ink);background:#fff;}
+.pi__qty-num:focus{outline:none;}
+.pi__lens-ok{display:none;align-items:center;gap:8px;background:var(--aa-green-bg);border:1px solid #3a8a2e;color:#2a6a20;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:14px;}
+.pi__lens-ok.is-show{display:flex;}
+.pi__lens-ok button{margin-left:auto;background:none;border:none;color:#2a6a20;font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline;}
+.pi__cta{display:flex;flex-direction:column;gap:12px;margin-bottom:26px;}
+.pi__btn{width:100%;padding:17px 24px;border-radius:50px;font-size:14px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all var(--aa-t);border:2px solid transparent;}
+.pi__btn--lens{background:#fff;border-color:var(--aa-gold);color:var(--aa-gold);}
+.pi__btn--lens:hover{background:var(--aa-gold);color:#fff;}
+.pi__btn--cart{background:var(--aa-ink);border-color:var(--aa-ink);color:#fff;}
+.pi__btn--cart:hover{background:#2a2a2a;}
+.pi__btn--buy{background:var(--aa-gold);border-color:var(--aa-gold);color:#fff;}
+.pi__btn--buy:hover{background:#a07050;border-color:#a07050;}
+.pi__trust{background:var(--aa-sand);border-radius:var(--aa-radius);padding:16px 20px;display:flex;flex-direction:column;gap:12px;border:1px solid rgba(184,151,106,.18);margin-bottom:24px;}
+.pi__trust-row{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--aa-ink);}
+.pi__trust-icon{width:34px;height:34px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 1px 6px rgba(0,0,0,.07);}
+.pi__trust-icon svg{width:15px;height:15px;color:var(--aa-gold);}
+.pi__specs-table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px;}
+.pi__specs-table tr{border-bottom:1px solid var(--aa-border);}
+.pi__specs-table td{padding:10px 0;vertical-align:top;}
+.pi__specs-table td:first-child{font-weight:600;color:var(--aa-ink);width:44%;}
+.pi__specs-table td:last-child{color:var(--aa-muted);}
+.pd-section{padding:52px 0;border-top:1px solid var(--aa-border);}
+.pd-section__h{font-size:22px;font-weight:800;color:var(--aa-ink);margin-bottom:18px;letter-spacing:-.02em;}
+.pd-section__body{font-size:15px;line-height:1.85;color:var(--aa-ink-soft);}
+.pd-rel-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:24px;}
+@media(max-width:860px){.pd-rel-grid{grid-template-columns:repeat(2,1fr);}}
+.pd-rel-card{text-decoration:none;color:inherit;display:block;border-radius:var(--aa-radius);overflow:hidden;border:1px solid var(--aa-border);background:#fff;transition:all var(--aa-t);}
+.pd-rel-card:hover{transform:translateY(-4px);box-shadow:var(--aa-shadow);border-color:var(--aa-gold-lt);}
+.pd-rel-card__img{aspect-ratio:1/1;background:var(--aa-sand);overflow:hidden;}
+.pd-rel-card__img img{width:100%;height:100%;object-fit:contain;padding:10px;transition:transform .4s;display:block;}
+.pd-rel-card:hover .pd-rel-card__img img{transform:scale(1.06);}
+.pd-rel-card__info{padding:14px;}
+.pd-rel-card__brand{font-size:10px;color:var(--aa-gold);font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
+.pd-rel-card__name{font-size:14px;font-weight:700;margin:4px 0;color:var(--aa-ink);line-height:1.3;}
+.pd-rel-card__price{font-size:15px;font-weight:800;color:var(--aa-ink);}
+.pd-toast{position:fixed;bottom:28px;right:28px;z-index:99999;padding:14px 22px;border-radius:var(--aa-radius);font-size:14px;font-weight:700;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,.2);pointer-events:none;transform:translateY(70px);opacity:0;transition:all .32s var(--aa-ease);max-width:320px;background:var(--aa-ink);}
+.pd-toast.is-show{transform:translateY(0);opacity:1;}
+.pd-toast--ok{background:var(--aa-green)!important;}
+.pd-toast--err{background:#c03020!important;}
+
+/* ══ LENS MODAL (for eyeglasses type) ══ */
+.lm-ov{display:none;position:fixed;inset:0;z-index:8888;background:rgba(13,13,13,.55);backdrop-filter:blur(5px);align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;}
+.lm-ov.is-open{display:flex;}
+.lm-box{background:#fff;width:100%;max-width:900px;border-radius:20px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.2);animation:lmIn .3s var(--aa-ease);margin:auto;}
+@keyframes lmIn{from{opacity:0;transform:translateY(22px) scale(.97);}to{opacity:1;transform:none;}}
+.lm-head{padding:22px 28px 0;display:flex;align-items:center;justify-content:space-between;}
+.lm-head h3{margin:0;font-size:20px;font-weight:800;}
+.lm-close{background:none;border:none;font-size:26px;cursor:pointer;color:var(--aa-muted);line-height:1;padding:0 4px;}
+.lm-close:hover{color:var(--aa-ink);}
+.lm-tabs{display:flex;border-bottom:2px solid var(--aa-border);overflow-x:auto;padding:0 28px;margin-top:18px;scrollbar-width:none;gap:0;}
+.lm-tabs::-webkit-scrollbar{display:none;}
+.lm-tab{padding:12px 18px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--aa-muted);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all var(--aa-t);letter-spacing:.01em;}
+.lm-tab:hover{color:var(--aa-ink);}
+.lm-tab.active{color:var(--aa-ink);border-bottom-color:var(--aa-ink);}
+.lm-panel{display:none;padding:22px 28px 0;}
+.lm-panel.active{display:block;}
+.lm-panel-h{font-size:15px;font-weight:800;color:var(--aa-ink);margin-bottom:16px;}
+.lm-opt{border:2px solid var(--aa-border);border-radius:var(--aa-radius);padding:16px 20px;margin-bottom:10px;cursor:pointer;transition:all var(--aa-t);}
+.lm-opt:hover{border-color:#aaa;box-shadow:var(--aa-shadow);}
+.lm-opt.is-on{border-color:var(--aa-ink);background:var(--aa-sand);}
+.lm-opt-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:5px;}
+.lm-opt-left{display:flex;align-items:center;gap:12px;}
+.lm-radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--aa-border);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--aa-t);}
+.lm-opt.is-on .lm-radio{border-color:var(--aa-ink);background:var(--aa-ink);}
+.lm-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff;display:none;}
+.lm-opt.is-on .lm-radio::after{display:block;}
+.lm-opt-name{font-size:14px;font-weight:700;}
+.lm-opt-idx{font-size:12px;color:var(--aa-muted);margin-top:2px;}
+.lm-opt-price{font-size:17px;font-weight:800;white-space:nowrap;flex-shrink:0;}
+.lm-feats{list-style:none;padding:0;margin:6px 0 0 32px;display:flex;flex-wrap:wrap;gap:6px;}
+.lm-feats li{font-size:12px;background:#fff;border:1px solid var(--aa-border);border-radius:4px;padding:3px 8px;color:#444;}
+.lm-addons{margin:12px 0 0 32px;padding-top:12px;border-top:1px solid var(--aa-border);display:none;}
+.lm-opt.is-on .lm-addons{display:block;}
+.lm-addon-lbl{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;transition:background var(--aa-t);margin-bottom:3px;}
+.lm-addon-lbl:hover{background:#f0f0f0;}
+.lm-addon-lbl input{accent-color:var(--aa-ink);}
+.lm-addon-n{flex:1;font-weight:500;}
+.lm-addon-p{color:var(--aa-gold);font-weight:700;font-size:12px;}
+.lm-addon-lbl.is-on{background:#fff8f0;}
+.rx-section{background:var(--aa-sand);border-radius:var(--aa-radius);padding:18px;margin:18px 0;}
+.rx-lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--aa-muted);margin-bottom:12px;}
+.rx-tbl{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;}
+.rx-tbl th{background:var(--aa-ink);color:#fff;padding:9px 12px;font-size:13px;font-weight:600;text-align:left;}
+.rx-tbl td{padding:9px 12px;border-bottom:1px solid var(--aa-border);}
+.rx-tbl tr:last-child td{border-bottom:none;}
+.rx-tbl td:first-child{font-weight:600;font-size:13px;white-space:nowrap;}
+.rx-inp{width:100%;padding:7px 9px;border:1.5px solid var(--aa-border);border-radius:6px;font-size:13px;min-width:60px;transition:border-color var(--aa-t);}
+.rx-inp:focus{border-color:var(--aa-gold);outline:none;}
+.lm-foot{padding:18px 28px 24px;border-top:1px solid var(--aa-border);background:#fff;position:sticky;bottom:0;}
+.lm-total{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.lm-total-lbl{font-size:14px;font-weight:600;}
+.lm-total-val{font-size:24px;font-weight:900;letter-spacing:-.03em;}
+.lm-confirm{width:100%;padding:15px;background:var(--aa-ink);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:800;cursor:pointer;transition:background var(--aa-t);letter-spacing:.04em;}
+.lm-confirm:hover{background:#2a2a2a;}
+
+/* ══ SUNGLASS POWER MODAL (for sunglasses type) ══ */
+.sg-lm{display:none;position:fixed;inset:0;z-index:8888;background:rgba(13,13,13,.55);backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+.sg-lm.is-open{display:flex;}
+.sg-lm__box{background:#fff;width:100%;max-width:640px;border-radius:20px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.2);animation:lmIn .3s var(--aa-ease);margin:auto;}
+.sg-lm__head{padding:22px 28px 18px;border-bottom:1px solid var(--aa-border);display:flex;align-items:center;justify-content:space-between;}
+.sg-lm__head h3{margin:0;font-size:18px;font-weight:800;}
+.sg-lm__close{background:none;border:none;font-size:26px;cursor:pointer;color:var(--aa-muted);padding:0;line-height:1;}
+.sg-lm__body{padding:22px 28px;max-height:68vh;overflow-y:auto;}
+.sg-lm__step{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--aa-muted);margin-bottom:12px;}
+.sg-lm__colors{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px;}
+.sg-lm__color-chip{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 14px;border:2px solid var(--aa-border);border-radius:var(--aa-radius);cursor:pointer;transition:all var(--aa-t);min-width:72px;text-align:center;}
+.sg-lm__color-chip:hover,.sg-lm__color-chip.is-on{border-color:var(--aa-ink);background:var(--aa-sand);}
+.sg-lm__color-dot{width:30px;height:30px;border-radius:50%;border:2px solid rgba(0,0,0,.07);}
+.sg-lm__color-name{font-size:12px;font-weight:600;color:var(--aa-ink);}
+.sg-lm__opt{border:2px solid var(--aa-border);border-radius:var(--aa-radius);padding:16px 20px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:14px;transition:all var(--aa-t);}
+.sg-lm__opt:hover{border-color:#aaa;box-shadow:var(--aa-shadow);}
+.sg-lm__opt.is-on{border-color:var(--aa-ink);background:var(--aa-sand);}
+.sg-lm__opt-left{display:flex;align-items:center;gap:12px;}
+.sg-lm__radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--aa-border);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--aa-t);}
+.sg-lm__opt.is-on .sg-lm__radio{border-color:var(--aa-ink);background:var(--aa-ink);}
+.sg-lm__radio::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff;display:none;}
+.sg-lm__opt.is-on .sg-lm__radio::after{display:block;}
+.sg-lm__opt-name{font-size:14px;font-weight:700;}
+.sg-lm__opt-desc{font-size:12px;color:var(--aa-muted);margin-top:2px;}
+.sg-lm__opt-price{font-size:17px;font-weight:800;white-space:nowrap;}
+.sg-lm__rx{background:var(--aa-sand);border-radius:var(--aa-radius);padding:18px;margin:18px 0 0;}
+.sg-lm__rx-table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;}
+.sg-lm__rx-table th{background:var(--aa-ink);color:#fff;padding:9px 12px;font-size:13px;font-weight:600;text-align:left;}
+.sg-lm__rx-table td{padding:9px 12px;border-bottom:1px solid var(--aa-border);}
+.sg-lm__rx-table tr:last-child td{border-bottom:none;}
+.sg-lm__rx-table td:first-child{font-weight:600;font-size:13px;white-space:nowrap;}
+.sg-lm__rx-input{width:100%;padding:7px 10px;border:1.5px solid var(--aa-border);border-radius:6px;font-size:13px;min-width:65px;transition:border-color var(--aa-t);}
+.sg-lm__rx-input:focus{border-color:var(--aa-gold);outline:none;}
+.sg-lm__foot{padding:18px 28px 24px;border-top:1px solid var(--aa-border);background:#fff;position:sticky;bottom:0;}
+.sg-lm__total{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sg-lm__total-lbl{font-size:14px;font-weight:600;}
+.sg-lm__total-val{font-size:24px;font-weight:900;letter-spacing:-.03em;}
+.sg-lm__confirm{width:100%;padding:15px;background:var(--aa-ink);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:800;cursor:pointer;transition:background var(--aa-t);letter-spacing:.04em;}
+.sg-lm__confirm:hover{background:#2a2a2a;}
+.pi__power-wrap{margin-bottom:22px;}
+.pi__power-toggle{display:flex;background:var(--aa-sand);border-radius:var(--aa-radius);padding:4px;border:1px solid rgba(184,151,106,.2);gap:4px;}
+.pi__power-btn{flex:1;padding:12px 8px;border:none;background:transparent;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--aa-muted);transition:all var(--aa-t);}
+.pi__power-btn.is-on{background:var(--aa-ink);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18);}
+.pi__btn--sg-lens{width:100%;padding:15px 24px;border-radius:50px;font-size:14px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all var(--aa-t);background:#fff;border:2px solid var(--aa-gold);color:var(--aa-gold);display:none;margin-bottom:12px;}
+.pi__btn--sg-lens.is-show{display:block;}
+.pi__btn--sg-lens:hover{background:var(--aa-gold);color:#fff;}
+
+/* ══ REVIEWS ══ */
+.rv-summary-grid{display:grid;grid-template-columns:220px 1fr;gap:0;background:var(--aa-sand);border:1px solid var(--aa-border);border-radius:var(--aa-radius);overflow:hidden;margin-bottom:28px;}
+@media(max-width:640px){.rv-summary-grid{grid-template-columns:1fr;}}
+.rv-avg-col{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;border-right:1px solid var(--aa-border);background:#fff;}
+@media(max-width:640px){.rv-avg-col{border-right:none;border-bottom:1px solid var(--aa-border);padding:22px;}}
+.rv-avg-number{font-size:64px;font-weight:900;color:var(--aa-ink);line-height:1;letter-spacing:-.05em;}
+.rv-avg-stars{display:flex;gap:3px;margin:10px 0 5px;}
+.rv-avg-stars .s{font-size:18px;}
+.rv-avg-stars .s.on{color:#f59e0b;}
+.rv-avg-stars .s.off{color:#d4cfc7;}
+.rv-avg-meta{font-size:12px;color:var(--aa-muted);font-weight:500;}
+.rv-bars-col{padding:20px 24px;display:flex;flex-direction:column;justify-content:center;gap:9px;}
+.rv-bar-row{display:grid;grid-template-columns:46px 1fr 26px;align-items:center;gap:10px;cursor:pointer;padding:3px 5px;border-radius:6px;transition:background .15s;}
+.rv-bar-row:hover{background:rgba(184,151,106,.08);}
+.rv-bar-lbl{font-size:12px;font-weight:600;color:var(--aa-muted);display:flex;align-items:center;gap:3px;}
+.rv-bar-lbl .s{color:#f59e0b;font-size:11px;}
+.rv-bar-track{height:6px;background:rgba(0,0,0,.07);border-radius:99px;overflow:hidden;}
+.rv-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--aa-gold),#e8975a);width:0%;transition:width 1s cubic-bezier(.34,1.2,.64,1);}
+.rv-bar-cnt{font-size:11px;color:var(--aa-muted);text-align:right;}
+.rv-action-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px 20px;background:var(--aa-sand);border:1px solid var(--aa-border);border-radius:var(--aa-radius);margin-bottom:22px;}
+.rv-action-bar p{font-size:13px;color:var(--aa-ink-soft);margin:0;}
+.rv-action-btn{display:inline-flex;align-items:center;gap:7px;background:var(--aa-ink);color:#fff;border:none;padding:11px 22px;border-radius:50px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:background .25s;font-family:inherit;white-space:nowrap;}
+.rv-action-btn:hover{background:#2a2a2a;color:#fff;}
+.rv-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+.rv-controls-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.rv-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:50px;font-size:12px;font-weight:600;border:1.5px solid var(--aa-border);background:#fff;color:var(--aa-muted);cursor:pointer;transition:all .2s;font-family:inherit;}
+.rv-chip:hover,.rv-chip.on{border-color:var(--aa-ink);background:var(--aa-ink);color:#fff;}
+.rv-sort{border:1.5px solid var(--aa-border);border-radius:8px;padding:7px 28px 7px 11px;font-size:12px;font-weight:600;color:var(--aa-ink);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238a8580' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 8px center #fff;appearance:none;cursor:pointer;font-family:inherit;outline:none;transition:border-color .2s;}
+.rv-sort:focus{border-color:var(--aa-gold);}
+.rv-list{display:flex;flex-direction:column;gap:14px;}
+.rv-card{background:#fff;border-radius:var(--aa-radius);border:1px solid var(--aa-border);padding:22px;transition:box-shadow .25s,border-color .25s;position:relative;}
+.rv-card:hover{box-shadow:var(--aa-shadow);border-color:var(--aa-gold-lt);}
+.rv-card--featured{border-color:rgba(184,151,106,.4);background:linear-gradient(160deg,#fffcf7 0%,#fff 60%);}
+.rv-card--featured::after{content:'✦ Featured';position:absolute;top:0;right:0;background:var(--aa-gold);color:#fff;font-size:9px;font-weight:700;letter-spacing:.1em;padding:4px 11px;border-radius:0 var(--aa-radius) 0 7px;}
+.rv-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:13px;flex-wrap:wrap;}
+.rv-card-left{display:flex;align-items:center;gap:11px;}
+.rv-avatar{width:42px;height:42px;border-radius:50%;background:var(--aa-ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;text-transform:uppercase;}
+.rv-avatar[data-c="1"]{background:linear-gradient(135deg,#1a4060,#2d6090);}
+.rv-avatar[data-c="2"]{background:linear-gradient(135deg,#3d1a1a,#7a3030);}
+.rv-avatar[data-c="3"]{background:linear-gradient(135deg,#1a3d20,#2d6a35);}
+.rv-avatar[data-c="4"]{background:linear-gradient(135deg,#3d2e10,#7a5a20);}
+.rv-avatar[data-c="5"]{background:linear-gradient(135deg,#261a3d,#4a2d7a);}
+.rv-name{font-size:14px;font-weight:700;color:var(--aa-ink);margin-bottom:4px;}
+.rv-badges{display:flex;gap:5px;flex-wrap:wrap;}
+.rv-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;letter-spacing:.05em;padding:2px 8px;border-radius:99px;}
+.rv-badge--verified{background:var(--aa-green-bg);color:var(--aa-green);}
+.rv-card-right{text-align:right;flex-shrink:0;}
+.rv-stars{display:flex;gap:2px;justify-content:flex-end;margin-bottom:4px;}
+.rv-stars .s{font-size:15px;}
+.rv-stars .s.on{color:#f59e0b;}
+.rv-stars .s.off{color:#e0dbd2;}
+.rv-date{font-size:11px;color:var(--aa-muted);}
+.rv-title{font-size:15px;font-weight:700;color:var(--aa-ink);margin:0 0 7px;}
+.rv-comment{font-size:13px;line-height:1.75;color:var(--aa-ink-soft);}
+.rv-readmore{display:inline-block;margin-top:5px;color:var(--aa-gold);font-size:12px;font-weight:600;cursor:pointer;border:none;background:none;padding:0;font-family:inherit;text-decoration:underline;}
+.rv-imgs{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;}
+.rv-img-thumb{width:68px;height:68px;border-radius:8px;overflow:hidden;border:1.5px solid var(--aa-border);cursor:pointer;flex-shrink:0;transition:border-color .2s,transform .2s;}
+.rv-img-thumb:hover{border-color:var(--aa-gold);transform:scale(1.04);}
+.rv-img-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.rv-card-foot{display:flex;align-items:center;justify-content:space-between;padding-top:13px;margin-top:14px;border-top:1px solid var(--aa-sand);flex-wrap:wrap;gap:10px;}
+.rv-helpful-lbl{font-size:12px;color:var(--aa-muted);}
+.rv-hbtn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:50px;border:1.5px solid var(--aa-border);background:#fff;font-size:12px;font-weight:600;color:var(--aa-muted);cursor:pointer;transition:all .2s;font-family:inherit;}
+.rv-hbtn.yes:hover{border-color:var(--aa-green);color:var(--aa-green);background:var(--aa-green-bg);}
+.rv-hbtn.no:hover{border-color:#c03020;color:#c03020;background:#fff5f5;}
+.rv-owner-btns{display:flex;gap:7px;}
+.rv-btn-edit{font-size:12px;font-weight:700;color:#5a58cc;text-decoration:none;padding:6px 13px;border:1.5px solid #5a58cc;border-radius:50px;transition:all .2s;}
+.rv-btn-edit:hover{background:#5a58cc;color:#fff;}
+.rv-btn-del{font-size:12px;font-weight:700;color:#c03020;border:1.5px solid #c03020;border-radius:50px;padding:6px 13px;background:#fff;cursor:pointer;transition:all .2s;font-family:inherit;}
+.rv-btn-del:hover{background:#c03020;color:#fff;}
+.rv-empty{text-align:center;padding:56px 30px;background:var(--aa-sand);border-radius:var(--aa-radius);border:1px dashed var(--aa-border);}
+.rv-empty svg{color:var(--aa-gold);opacity:.5;margin-bottom:14px;}
+.rv-empty h3{font-size:19px;font-weight:700;color:var(--aa-ink);margin:0 0 7px;}
+.rv-empty p{font-size:13px;color:var(--aa-muted);margin:0 0 22px;}
+.rv-empty-btn{display:inline-flex;align-items:center;gap:8px;background:var(--aa-ink);color:#fff;text-decoration:none;padding:12px 26px;border-radius:50px;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;transition:all .25s;}
+.rv-empty-btn:hover{background:#2a2a2a;transform:translateY(-2px);}
+#rvNoResults{text-align:center;padding:32px;font-size:13px;color:var(--aa-muted);background:var(--aa-sand);border-radius:var(--aa-radius);border:1px dashed var(--aa-border);}
+#rvNoResults button{color:var(--aa-gold);background:none;border:none;cursor:pointer;font-weight:700;text-decoration:underline;font-family:inherit;font-size:inherit;}
+.rv-lb{display:none;position:fixed;inset:0;z-index:99998;background:rgba(5,5,10,.94);backdrop-filter:blur(14px);align-items:center;justify-content:center;flex-direction:column;}
+.rv-lb.open{display:flex;}
+.rv-lb-img{max-width:90vw;max-height:82vh;object-fit:contain;border-radius:10px;}
+.rv-lb-close{position:fixed;top:20px;right:22px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;line-height:1;}
+.rv-del-modal{display:none;position:fixed;inset:0;z-index:99997;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:20px;}
+.rv-del-modal.open{display:flex;}
+.rv-del-box{background:#fff;border-radius:16px;padding:32px 28px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.2);}
+.rv-del-icon{width:56px;height:56px;border-radius:50%;background:#fff5f5;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:24px;}
+.rv-del-box h3{font-size:18px;font-weight:800;color:var(--aa-ink);margin:0 0 7px;}
+.rv-del-box p{font-size:13px;color:var(--aa-muted);margin:0 0 22px;}
+.rv-del-btns{display:flex;gap:10px;}
+.rv-del-cancel,.rv-del-confirm{flex:1;padding:12px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;}
+.rv-del-cancel{border:1.5px solid var(--aa-border);background:#fff;color:var(--aa-muted);}
+.rv-del-cancel:hover{border-color:var(--aa-ink);color:var(--aa-ink);}
+.rv-del-confirm{border:none;background:#c03020;color:#fff;}
+.rv-del-confirm:hover{background:#a02010;}
+</style>
+
+<div class="pd-page">
+
+  <nav class="pd-crumb">
+    <a href="{% url 'home' %}">Home</a>
+    <span class="pd-crumb-sep">›</span>
+    <a href="{% url 'catalog:kids_list' %}">Kids</a>
+    <span class="pd-crumb-sep">›</span>
+    <span>{{ product.name }}</span>
+  </nav>
+
+  <!-- Kids indicator banner -->
+  <div class="kids-banner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2z"/>
+      <path d="M12 14c-6 0-9 3-9 4v1h18v-1c0-1-3-4-9-4z"/>
+    </svg>
+    <span>Kids Collection — Safe, durable frames designed for children</span>
+  </div>
+
+  <div class="pd-grid">
+
+    <!-- ══ GALLERY ══ -->
+    <div>
+      <div class="gal" id="galRoot">
+        <div class="gal__rail" id="galRail">
+          {% if primary_image %}
+          <div class="gal__thumb is-active" data-src="{{ primary_image.image.url }}" tabindex="0">
+            <img src="{{ primary_image.image.url }}" alt="{{ product.name }}" loading="eager">
+          </div>
+          {% endif %}
+          {% for img in images %}
+          <div class="gal__thumb" data-src="{{ img.image.url }}" tabindex="0">
+            <img src="{{ img.image.url }}" alt="{{ product.name }}" loading="lazy">
+          </div>
+          {% endfor %}
+          {% for v in variants %}{% if v.images.exists %}
+          <div class="gal__thumb" data-src="{{ v.images.first.image.url }}" data-variant="{{ v.id }}" tabindex="0" title="{{ v.color_name }}">
+            <img src="{{ v.images.first.image.url }}" alt="{{ v.color_name }}" loading="lazy">
+          </div>
+          {% endif %}{% endfor %}
+        </div>
+        <div class="gal__stage-wrap">
+          <div class="gal__stage" id="galStage" tabindex="0">
+            {% if primary_image %}
+            <img class="gal__img" id="galMain" src="{{ primary_image.image.url }}" alt="{{ product.name }}">
+            {% else %}
+            <div class="gal__placeholder">
+              <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><rect x="8" y="8" width="64" height="64" rx="6" stroke="currentColor" stroke-width="2"/><circle cx="30" cy="32" r="8" stroke="currentColor" stroke-width="2"/><path d="M8 55l20-18 14 12 10-10 20 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            {% endif %}
+            <button class="gal__arr gal__arr--prev hidden" id="galPrev" type="button" aria-label="Previous image">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="gal__arr gal__arr--next hidden" id="galNext" type="button" aria-label="Next image">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <span class="gal__counter solo" id="galCounter">1 / 1</span>
+            <button class="gal__fs" id="galFs" type="button" aria-label="Fullscreen">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PRODUCT INFO ══ -->
+    <div class="pi">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
+        <div class="pi__badges">
+          {% if product.brand %}<span class="pi__badge pi__badge--brand">{{ product.brand.name }}</span>{% endif %}
+          {% if product.compare_at_price %}<span class="pi__badge pi__badge--sale">Sale</span>{% endif %}
+          <span class="pi__badge pi__badge--kids">Kids</span>
+          <span class="pi__badge pi__badge--type">{{ product.get_product_type_display }}</span>
+        </div>
+        <button class="pi__wish{% if product in request.user.wishlist.products.all %} is-on{% endif %}" id="piWishBtn" data-product-id="{{ product.id }}" aria-label="Wishlist">
+          <svg viewBox="0 0 24 24" fill="{% if product in request.user.wishlist.products.all %}#e05f5f{% else %}none{% endif %}" stroke="{% if product in request.user.wishlist.products.all %}#e05f5f{% else %}currentColor{% endif %}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+      </div>
+
+      <h1 class="pi__title">{{ product.name }}</h1>
+      <div class="pi__meta">
+        {% if product.brand %}<span class="pi__brand">Brand: <strong>{{ product.brand.name }}</strong></span>{% endif %}
+        {% if product.sku %}<span class="pi__sku">SKU: {{ product.sku }}</span>{% endif %}
+      </div>
+
+      {% if rating_stats.total_reviews %}
+      <div class="pi__rating-snap" onclick="document.getElementById('rvSection').scrollIntoView({behavior:'smooth'})">
+        <div class="pi__rating-stars">
+          {% for i in "12345" %}
+            {% if forloop.counter <= rating_stats.average_rating|floatformat:0|add:"0" %}
+              <span class="s on">★</span>
+            {% else %}
+              <span class="s off">★</span>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <span class="pi__rating-snap-num">{{ rating_stats.average_rating|floatformat:1 }}</span>
+        <span class="pi__rating-snap-lbl">{{ rating_stats.total_reviews }} review{{ rating_stats.total_reviews|pluralize }}</span>
+      </div>
+      {% endif %}
+
+      <div class="pi__price-box">
+        <span class="pi__price" id="dispPrice">QAR {{ product.base_price }}</span>
+        {% if product.compare_at_price %}
+        <span class="pi__price-was">QAR {{ product.compare_at_price }}</span>
+        <span class="pi__price-save">Save QAR {{ product.compare_at_price|floatformat:0 }}</span>
+        {% endif %}
+      </div>
+
+      {% if product.short_description %}<p class="pi__desc">{{ product.short_description }}</p>{% endif %}
+
+      <form id="pdForm" onsubmit="return false;">
+        {% csrf_token %}
+        <input type="hidden" name="product_id" value="{{ product.id }}">
+        <input type="hidden" name="selected_variant_id" id="hdVariant" value="">
+        <input type="hidden" name="product_type" value="{{ product.product_type }}">
+        {# Eyeglasses lens fields #}
+        <input type="hidden" name="selected_lens_option" id="hdLensOpt" value="">
+        <input type="hidden" name="lens_addon" id="hdLensAddon" value="">
+        <input type="hidden" name="total_lens_price" id="hdLensPrice" value="0">
+        <input type="hidden" name="lens_category" id="hdLensCat" value="">
+        <input type="hidden" name="right_sph" id="h_rSph">
+        <input type="hidden" name="right_cyl" id="h_rCyl">
+        <input type="hidden" name="right_axis" id="h_rAxis">
+        <input type="hidden" name="right_add" id="h_rAdd">
+        <input type="hidden" name="left_sph" id="h_lSph">
+        <input type="hidden" name="left_cyl" id="h_lCyl">
+        <input type="hidden" name="left_axis" id="h_lAxis">
+        <input type="hidden" name="left_add" id="h_lAdd">
+        {# Sunglasses power fields #}
+        <input type="hidden" name="power_type" id="hdPower" value="without">
+        <input type="hidden" name="selected_lens_color" id="hdSgLensColor" value="">
+        <input type="hidden" name="selected_sg_lens_option" id="hdSgLensOpt" value="">
+        <input type="hidden" name="total_sg_lens_price" id="hdSgLensPrice" value="0">
+
+        {% if variants %}
+        <p class="pi__lbl">Frame Color</p>
+        <div class="pi__swatches">
+          {% for v in variants %}
+          <div class="pi__swatch{% if forloop.first %} is-on{% endif %}"
+               data-variant="{{ v.id }}"
+               data-img="{% if v.images.exists %}{{ v.images.first.image.url }}{% endif %}"
+               onclick="pickVariant(this)" tabindex="0" role="button">
+            <div class="pi__swatch-dot" style="background:{% if v.color_code %}{{ v.color_code }}{% else %}linear-gradient(135deg,#ccc,#999){% endif %};"></div>
+            <span class="pi__swatch-name">{{ v.color_name }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if variants.0.size %}
+        <p class="pi__lbl">Frame Size</p>
+        <select class="pi__select" name="selected_size">
+          <option value="">Select size</option>
+          {% for v in variants %}{% if v.size %}<option value="{{ v.size }}">{{ v.size }}</option>{% endif %}{% endfor %}
+        </select>
+        {% endif %}
+
+        {# === EYEGLASSES — mandatory lens selection === #}
+        {% if product.product_type == 'eyeglasses' %}
+        <div class="pi__lens-ok" id="lensOk">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="lensOkTxt">Lens selected</span>
+          <button type="button" onclick="openLm()">Change</button>
+        </div>
+        {% endif %}
+
+        {# === SUNGLASSES — optional prescription === #}
+        {% if product.product_type == 'sunglasses' %}
+        <div class="pi__power-wrap">
+          <p class="pi__lbl">Prescription Lenses</p>
+          <div class="pi__power-toggle">
+            <button type="button" class="pi__power-btn is-on" onclick="setSgPower('without',this)">Without Power</button>
+            <button type="button" class="pi__power-btn" onclick="setSgPower('with',this)">+ Add Prescription</button>
+          </div>
+        </div>
+        <button type="button" class="pi__btn--sg-lens" id="sgLensBtn" onclick="openSgLm()">🔍 Select Prescription Lenses</button>
+        <div class="pi__lens-ok" id="sgLensOk">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="sgLensOkTxt">Lens selected</span>
+          <button type="button" onclick="openSgLm()">Change</button>
+        </div>
+        {% endif %}
+
+        <p class="pi__lbl">Quantity</p>
+        <div class="pi__qty-wrap">
+          <div class="pi__qty">
+            <button type="button" class="pi__qty-btn" onclick="chQty(-1)">−</button>
+            <input class="pi__qty-num" type="number" id="qtyVal" name="quantity" value="1" min="1" max="{{ product.stock_quantity|default:99 }}" readonly>
+            <button type="button" class="pi__qty-btn" onclick="chQty(1)">+</button>
+          </div>
+        </div>
+
+        <div class="pi__cta">
+          {% if product.product_type == 'eyeglasses' %}
+          <button type="button" class="pi__btn pi__btn--lens" onclick="openLm()">🔍 Select Lenses (Required)</button>
+          {% endif %}
+          <button type="button" class="pi__btn pi__btn--cart" id="cartBtn" onclick="addCart()">
+            <svg style="width:16px;height:16px;vertical-align:middle;margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Add to Cart
+          </button>
+          <button type="button" class="pi__btn pi__btn--buy" onclick="buyNow()">Buy it Now →</button>
+        </div>
+      </form>
+
+      <div class="pi__trust">
+        <div class="pi__trust-row"><div class="pi__trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div><span>Delivery in <strong>3–6 business days</strong> · Qatar / GCC</span></div>
+        <div class="pi__trust-row"><div class="pi__trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><span>Free returns within <strong>45 days</strong></span></div>
+        <div class="pi__trust-row"><div class="pi__trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div><span><strong>100% Authentic</strong> guaranteed</span></div>
+      </div>
+
+      {% if specifications %}
+      <p class="pi__lbl">Specifications</p>
+      <table class="pi__specs-table">
+        {% for s in specifications %}<tr><td>{{ s.spec_key }}</td><td>{{ s.spec_value }}</td></tr>{% endfor %}
+      </table>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if product.description %}
+  <div class="pd-section">
+    <h2 class="pd-section__h">About This Product</h2>
+    <div class="pd-section__body">{{ product.description|linebreaksbr }}</div>
+  </div>
+  {% endif %}
+
+  <!-- ════ CUSTOMER REVIEWS ════ -->
+  <div class="pd-section" id="rvSection">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px;">
+      <div>
+        <h2 class="pd-section__h" style="margin-bottom:4px;">Customer Reviews</h2>
+        <p style="font-size:13px;color:var(--aa-muted);margin:0;">
+          {% if rating_stats.total_reviews %}{{ rating_stats.total_reviews }} review{{ rating_stats.total_reviews|pluralize }} · {{ rating_stats.average_rating|floatformat:1 }} out of 5{% else %}No reviews yet — be the first!{% endif %}
+        </p>
+      </div>
+      {% if request.user.is_authenticated and can_review %}
+      <a href="{% url 'reviews:write_review' product.slug %}" class="rv-action-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4z"/></svg>
+        Write a Review
+      </a>
+      {% elif request.user.is_authenticated and user_review %}
+      <a href="{% url 'reviews:edit_review' user_review.id %}" class="rv-action-btn">Edit Your Review</a>
+      {% endif %}
+    </div>
+
+    {% if rating_stats.total_reviews %}
+    <div class="rv-summary-grid">
+      <div class="rv-avg-col">
+        <div class="rv-avg-number">{{ rating_stats.average_rating|floatformat:1 }}</div>
+        <div class="rv-avg-stars">
+          {% for i in "12345" %}{% if forloop.counter <= rating_stats.average_rating|floatformat:0|add:"0" %}<span class="s on">★</span>{% else %}<span class="s off">★</span>{% endif %}{% endfor %}
+        </div>
+        <div class="rv-avg-meta">{{ rating_stats.total_reviews }} review{{ rating_stats.total_reviews|pluralize }}</div>
+      </div>
+      <div class="rv-bars-col">
+        {% for star in "54321" %}
+        <div class="rv-bar-row" onclick="rvFilterChip('{{ star }}')">
+          <span class="rv-bar-lbl">{{ star }} <span class="s">★</span></span>
+          <div class="rv-bar-track"><div class="rv-bar-fill" data-pct="{% if star == '5' %}{{ rating_percentages.5|floatformat:0 }}{% elif star == '4' %}{{ rating_percentages.4|floatformat:0 }}{% elif star == '3' %}{{ rating_percentages.3|floatformat:0 }}{% elif star == '2' %}{{ rating_percentages.2|floatformat:0 }}{% else %}{{ rating_percentages.1|floatformat:0 }}{% endif %}"></div></div>
+          <span class="rv-bar-cnt">{% if star == '5' %}{{ rating_stats.five_star }}{% elif star == '4' %}{{ rating_stats.four_star }}{% elif star == '3' %}{{ rating_stats.three_star }}{% elif star == '2' %}{{ rating_stats.two_star }}{% else %}{{ rating_stats.one_star }}{% endif %}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if not request.user.is_authenticated %}
+    <div class="rv-action-bar">
+      <p>Have this product? <strong>Share your experience</strong></p>
+      <a href="{% url 'users:login' %}?next={{ request.path }}" class="rv-action-btn">Login to Review</a>
+    </div>
+    {% endif %}
+
+    {% with approved=product.reviews.all %}
+    {% if approved %}
+    <div class="rv-controls">
+      <div class="rv-controls-left">
+        <button class="rv-chip on" data-f="all" onclick="rvFilter('all',this)">All</button>
+        <button class="rv-chip" data-f="5" onclick="rvFilter('5',this)">★ 5 Star</button>
+        <button class="rv-chip" data-f="4" onclick="rvFilter('4',this)">★ 4 Star</button>
+        <button class="rv-chip" data-f="ver" onclick="rvFilter('ver',this)">✓ Verified</button>
+        <button class="rv-chip" data-f="imgs" onclick="rvFilter('imgs',this)">📷 With Photos</button>
+      </div>
+      <select class="rv-sort" onchange="rvSort(this.value)">
+        <option value="newest">Most Recent</option>
+        <option value="helpful">Most Helpful</option>
+        <option value="high">Highest Rating</option>
+        <option value="low">Lowest Rating</option>
+      </select>
+    </div>
+    <div id="rvNoResults" style="display:none;">No reviews match this filter. <button onclick="rvFilter('all',document.querySelector('[data-f=all]'))">Show all</button></div>
+    <div class="rv-list" id="rvList">
+      {% for review in approved %}
+      {% if review.is_approved %}
+      <div class="rv-card {% if review.is_featured %}rv-card--featured{% endif %}"
+           data-r="{{ review.rating }}" data-v="{{ review.is_verified_purchase|yesno:'1,0' }}"
+           data-i="{{ review.images.all|length|yesno:'1,0' }}" data-h="{{ review.helpful_count }}"
+           data-d="{{ review.created_at|date:'U' }}">
+        <div class="rv-card-top">
+          <div class="rv-card-left">
+            <div class="rv-avatar" data-c="{% cycle '1' '2' '3' '4' '5' %}">{{ review.customer.first_name|first|upper|default:review.customer.username|first|upper }}</div>
+            <div>
+              <div class="rv-name">{{ review.customer.get_full_name|default:review.customer.username }}</div>
+              <div class="rv-badges">
+                {% if review.is_verified_purchase %}<span class="rv-badge rv-badge--verified">✓ Verified Purchase</span>{% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="rv-card-right">
+            <div class="rv-stars">{% for i in "12345" %}{% if forloop.counter <= review.rating %}<span class="s on">★</span>{% else %}<span class="s off">★</span>{% endif %}{% endfor %}</div>
+            <div class="rv-date">{{ review.created_at|date:"d M Y" }}</div>
+          </div>
+        </div>
+        {% if review.title %}<div class="rv-title">{{ review.title }}</div>{% endif %}
+        <div class="rv-comment" id="rvc-{{ review.id }}">
+          {% if review.comment|length > 280 %}<span class="s-short">{{ review.comment|truncatechars:280 }}</span><span class="s-full" style="display:none">{{ review.comment }}</span><button class="rv-readmore" onclick="rvToggle({{ review.id }},this)">Read more ↓</button>{% else %}{{ review.comment }}{% endif %}
+        </div>
+        {% if review.images.all %}<div class="rv-imgs">{% for img in review.images.all %}<div class="rv-img-thumb" onclick="rvLbOpen('{{ img.image.url }}')"><img src="{{ img.image.url }}" alt="" loading="lazy"></div>{% endfor %}</div>{% endif %}
+        <div class="rv-card-foot">
+          <span class="rv-helpful-lbl">Was this helpful?</span>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            {% if request.user.is_authenticated %}
+            <div style="display:flex;gap:7px;">
+              <form method="post" action="{% url 'reviews:mark_helpful' review.id %}" style="display:inline">{% csrf_token %}<input type="hidden" name="is_helpful" value="true"><button type="submit" class="rv-hbtn yes">👍 Yes ({{ review.helpful_count }})</button></form>
+              <form method="post" action="{% url 'reviews:mark_helpful' review.id %}" style="display:inline">{% csrf_token %}<input type="hidden" name="is_helpful" value="false"><button type="submit" class="rv-hbtn no">👎 No ({{ review.not_helpful_count }})</button></form>
+            </div>
+            {% else %}<a href="{% url 'users:login' %}?next={{ request.path }}" style="font-size:12px;color:var(--aa-gold);text-decoration:underline;">Login to vote</a>{% endif %}
+            {% if request.user == review.customer %}
+            <div class="rv-owner-btns">
+              <a href="{% url 'reviews:edit_review' review.id %}" class="rv-btn-edit">Edit</a>
+              <button class="rv-btn-del" onclick="rvDelShow({{ review.id }})">Delete</button>
+              <form id="rvdf-{{ review.id }}" method="post" action="{% url 'reviews:delete_review' review.id %}" style="display:none">{% csrf_token %}</form>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="rv-empty">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <h3>No Reviews Yet</h3>
+      <p>Be the first to share your experience</p>
+      {% if request.user.is_authenticated and can_review %}
+      <a href="{% url 'reviews:write_review' product.slug %}" class="rv-empty-btn">Write the First Review</a>
+      {% elif not request.user.is_authenticated %}
+      <a href="{% url 'users:login' %}?next={{ request.path }}" class="rv-empty-btn">Login to Review</a>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% endwith %}
+  </div>
+
+  {% if related_products %}
+  <div class="pd-section">
+    <h2 class="pd-section__h">More for Kids</h2>
+    <div class="pd-rel-grid">
+      {% for r in related_products %}
+      <a href="{% url 'catalog:kids_detail' r.slug %}" class="pd-rel-card">
+        <div class="pd-rel-card__img">{% with r.images.first as rimg %}{% if rimg %}<img src="{{ rimg.image.url }}" alt="{{ r.name }}" loading="lazy">{% endif %}{% endwith %}</div>
+        <div class="pd-rel-card__info">
+          {% if r.brand %}<p class="pd-rel-card__brand">{{ r.brand.name }}</p>{% endif %}
+          <p class="pd-rel-card__name">{{ r.name }}</p>
+          <p class="pd-rel-card__price">QAR {{ r.base_price }}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div><!-- /pd-page -->
+
+<!-- ══ EYEGLASS LENS MODAL ══ -->
+<div class="lm-ov" id="lmOv" onclick="if(event.target===this)closeLm()">
+  <div class="lm-box">
+    <div class="lm-head"><h3>Select Your Lenses</h3><button class="lm-close" onclick="closeLm()">×</button></div>
+    <div class="lm-tabs">
+      <button class="lm-tab active" onclick="showPanel('p-sv',this)">Single Vision</button>
+      <button class="lm-tab" onclick="showPanel('p-prog',this)">Progressive & Bifocal</button>
+      <button class="lm-tab" onclick="showPanel('p-rd',this)">Reading</button>
+      <button class="lm-tab" onclick="showPanel('p-np',this)">No Prescription</button>
+    </div>
+    <!-- Single Vision -->
+    <div id="p-sv" class="lm-panel active">
+      <p class="lm-panel-h">Single-Vision Lenses</p>
+      <div class="lm-opt" onclick="selCard(this,'regular_basic',150,'sv')">
+        <div class="lm-opt-top"><div class="lm-opt-left"><div class="lm-radio"></div><div><div class="lm-opt-name">Regular Lens (Basic)</div><div class="lm-opt-idx">Index 1.56</div></div></div><div class="lm-opt-price">150 QAR</div></div>
+        <ul class="lm-feats"><li>Anti-reflection</li><li>Power ±4.00 / CYL ±2.00</li></ul>
+        <div class="lm-addons">
+          <div class="lm-addon-lbl" onclick="pickAddon(event,this,0)"><input type="radio" name="a_rb" value="none" checked><span class="lm-addon-n">Regular</span><span class="lm-addon-p">Included</span></div>
+          <div class="lm-addon-lbl" onclick="pickAddon(event,this,100)"><input type="radio" name="a_rb" value="blue_uv"><span class="lm-addon-n">Blue UV Protection</span><span class="lm-addon-p">+100 QAR</span></div>
+          <div class="lm-addon-lbl" onclick="pickAddon(event,this,100)"><input type="radio" name="a_rb" value="photochromic"><span class="lm-addon-n">Photochromic</span><span class="lm-addon-p">+100 QAR</span></div>
+        </div>
+      </div>
+      <div class="lm-opt" onclick="selCard(this,'essilor_easy_pro',270,'sv')">
+        <div class="lm-opt-top"><div class="lm-opt-left"><div class="lm-radio"></div><div><div class="lm-opt-name">Essilor Crizal Easy Pro</div><div class="lm-opt-idx">Index 1.56</div></div></div><div class="lm-opt-price">270 QAR</div></div>
+        <ul class="lm-feats"><li>Anti-reflection & UV</li><li>Easy cleaning</li><li>Power ±3.00</li></ul>
+        <div class="lm-addons">
+          <div class="lm-addon-lbl" onclick="pickAddon(event,this,0)"><input type="radio" name="a_ep" value="none" checked><span class="lm-addon-n">Regular</span><span class="lm-addon-p">Included</span></div>
+          <div class="lm-addon-lbl" onclick="pickAddon(event,this,60)"><input type="radio" name="a_ep" value="blue"><span class="lm-addon-n">Premium Blue Filtration</span><span class="lm-addon-p">+60 QAR</span></div>
+          <div class="lm-addon-lbl" onclick="pickAddon(event,this,90)"><input type="radio" name="a_ep" value="transition"><span class="lm-addon-n">Transition Classic</span><span class="lm-addon-p">+90 QAR</span></div>
+        </div>
+      </div>
+      <div class="lm-opt" onclick="selCard(this,'essilor_sapphire',525,'sv')">
+        <div class="lm-opt-top"><div class="lm-opt-left"><div class="lm-radio"></div><div><div class="lm-opt-name">Essilor Crizal Sapphire</div><div class="lm-opt-idx">Index 1.56</div></div></div><div class="lm-opt-price">525 QAR</div></div>
+        <ul class="lm-feats"><li>High transparency</li><li>Durable resistance</li></ul>
+        <div class="lm-addons">
+          <div class="lm-addon-lbl" onclick="pickAddon(event,this,0)"><input type="radio" name="a_sp" value="none" checked><span class="lm-addon-n">Regular</span><span class="lm-addon-p">Included</span></div>
+          <div class="lm-addon-lbl" onclick="pickAddon(event,this,850)"><input type="radio" name="a_sp" value="transition_gens"><span class="lm-addon-n">Transition Gen-S</span><span class="lm-addon-p">+850 QAR</span></div>
+        </div>
+      </div>
+      <div class="rx-section">
+        <p class="rx-lbl">Enter Prescription (Optional)</p>
+        <div style="overflow-x:auto;">
+          <table class="rx-tbl">
+            <thead><tr><th>Eye</th><th>SPH</th><th>CYL</th><th>AXIS</th><th>ADD</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Right (OD)</strong></td><td><input class="rx-inp" type="number" step="0.25" placeholder="-1.50" id="m_rSph"></td><td><input class="rx-inp" type="number" step="0.25" placeholder="-0.50" id="m_rCyl"></td><td><input class="rx-inp" type="number" min="0" max="180" placeholder="0–180" id="m_rAxis"></td><td><input class="rx-inp" type="number" step="0.25" placeholder="+1.00" id="m_rAdd"></td></tr>
+              <tr><td><strong>Left (OS)</strong></td><td><input class="rx-inp" type="number" step="0.25" placeholder="-2.00" id="m_lSph"></td><td><input class="rx-inp" type="number" step="0.25" placeholder="-0.75" id="m_lCyl"></td><td><input class="rx-inp" type="number" min="0" max="180" placeholder="0–180" id="m_lAxis"></td><td><input class="rx-inp" type="number" step="0.25" placeholder="+1.00" id="m_lAdd"></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- Progressive -->
+    <div id="p-prog" class="lm-panel">
+      <p class="lm-panel-h">Progressive & Bifocal Lenses</p>
+      <div class="lm-opt" onclick="selCard(this,'regular_progressive',250,'prog')">
+        <div class="lm-opt-top"><div class="lm-opt-left"><div class="lm-radio"></div><div><div class="lm-opt-name">Regular Progressive</div><div class="lm-opt-idx">Index 1.56</div></div></div><div class="lm-opt-price">250 QAR</div></div>
+        <ul class="lm-feats"><li>Near, intermediate & far vision</li></ul>
+      </div>
+      <div class="lm-opt" onclick="selCard(this,'essilor_espace',600,'prog')">
+        <div class="lm-opt-top"><div class="lm-opt-left"><div class="lm-radio"></div><div><div class="lm-opt-name">Essilor Espace Crizal Easy Pro</div><div class="lm-opt-idx">Index 1.56</div></div></div><div class="lm-opt-price">600 QAR</div></div>
+        <ul class="lm-feats"><li>Wide vision area</li><li>Enhanced comfort</li></ul>
+      </div>
+      <div class="rx-section">
+        <p class="rx-lbl">Enter Prescription (Optional)</p>
+        <div style="overflow-x:auto;">
+          <table class="rx-tbl"><thead><tr><th>Eye</th><th>SPH</th><th>CYL</th><th>AXIS</th><th>ADD</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Right</strong></td><td><input class="rx-inp" type="number" step="0.25" placeholder="-1.50" id="p_rSph"></td><td><input class="rx-inp" type="number" step="0.25" placeholder="-0.50" id="p_rCyl"></td><td><input class="rx-inp" type="number" min="0" max="180" placeholder="0–180" id="p_rAxis"></td><td><input class="rx-inp" type="number" step="0.25" placeholder="+1.00" id="p_rAdd"></td></tr>
+            <tr><td><strong>Left</strong></td><td><input class="rx-inp" type="number" step="0.25" placeholder="-2.00" id="p_lSph"></td><td><input class="rx-inp" type="number" step="0.25" placeholder="-0.75" id="p_lCyl"></td><td><input class="rx-inp" type="number" min="0" max="180" placeholder="0–180" id="p_lAxis"></td><td><input class="rx-inp" type="number" step="0.25" placeholder="+1.00" id="p_lAdd"></td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+    <!-- Reading -->
+    <div id="p-rd" class="lm-panel">
+      <p class="lm-panel-h">Reading Glasses — Select Power</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:10px;margin-bottom:18px;" id="rdGrid"></div>
+      <p style="font-size:13px;color:var(--aa-muted);">All reading powers: <strong>150 QAR</strong></p>
+    </div>
+    <!-- No Prescription -->
+    <div id="p-np" class="lm-panel">
+      <p class="lm-panel-h">Without Prescription Lenses</p>
+      <div class="lm-opt" onclick="selCard(this,'clear_lens',100,'nopow')"><div class="lm-opt-top"><div class="lm-opt-left"><div class="lm-radio"></div><div><div class="lm-opt-name">Clear Lens</div><div class="lm-opt-idx">Basic lens without power</div></div></div><div class="lm-opt-price">100 QAR</div></div></div>
+      <div class="lm-opt" onclick="selCard(this,'zero_blue',250,'nopow')"><div class="lm-opt-top"><div class="lm-opt-left"><div class="lm-radio"></div><div><div class="lm-opt-name">Zero Power Blue</div><div class="lm-opt-idx">Blue light protection</div></div></div><div class="lm-opt-price">250 QAR</div></div></div>
+    </div>
+    <div class="lm-foot">
+      <div class="lm-total"><span class="lm-total-lbl">Total Lens Price:</span><span class="lm-total-val" id="lmTotal">— QAR</span></div>
+      <button class="lm-confirm" onclick="confirmLens()">Confirm Lens Selection →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SUNGLASS PRESCRIPTION MODAL ══ -->
+<div class="sg-lm" id="sgLmOv" onclick="if(event.target===this)closeSgLm()">
+  <div class="sg-lm__box">
+    <div class="sg-lm__head"><h3>Choose Prescription Lenses</h3><button class="sg-lm__close" onclick="closeSgLm()">×</button></div>
+    <div class="sg-lm__body">
+      <p class="sg-lm__step">Step 1 — Lens Tint</p>
+      <div class="sg-lm__colors">
+        <div class="sg-lm__color-chip" onclick="pickSgColor(this,'grey')"><div class="sg-lm__color-dot" style="background:#808080;"></div><span class="sg-lm__color-name">Grey</span></div>
+        <div class="sg-lm__color-chip" onclick="pickSgColor(this,'brown')"><div class="sg-lm__color-dot" style="background:#8B4513;"></div><span class="sg-lm__color-name">Brown</span></div>
+        <div class="sg-lm__color-chip" onclick="pickSgColor(this,'green')"><div class="sg-lm__color-dot" style="background:#228B22;"></div><span class="sg-lm__color-name">Green</span></div>
+        <div class="sg-lm__color-chip" onclick="pickSgColor(this,'blue')"><div class="sg-lm__color-dot" style="background:#1a5fa8;"></div><span class="sg-lm__color-name">Blue</span></div>
+        <div class="sg-lm__color-chip" onclick="pickSgColor(this,'clear')"><div class="sg-lm__color-dot" style="background:linear-gradient(135deg,#e8f4ff,#c5d9f0);border:1.5px solid #b0c8e0;"></div><span class="sg-lm__color-name">Clear</span></div>
+      </div>
+      <p class="sg-lm__step">Step 2 — Lens Type</p>
+      <div class="sg-lm__opt" onclick="pickSgOpt(this,'regular_156',250)">
+        <div class="sg-lm__opt-left"><div class="sg-lm__radio"></div><div><div class="sg-lm__opt-name">Regular 1.56</div><div class="sg-lm__opt-desc">Anti-reflection · Mild prescriptions</div></div></div>
+        <div class="sg-lm__opt-price">250 QAR</div>
+      </div>
+      <div class="sg-lm__opt" onclick="pickSgOpt(this,'essilor_crizal',350)">
+        <div class="sg-lm__opt-left"><div class="sg-lm__radio"></div><div><div class="sg-lm__opt-name">Essilor Crizal Easy Pro 1.5</div><div class="sg-lm__opt-desc">UV · Scratch & dust resistant</div></div></div>
+        <div class="sg-lm__opt-price">350 QAR</div>
+      </div>
+      <p class="sg-lm__step" style="margin-top:22px;">Step 3 — Prescription (Rx)</p>
+      <div class="sg-lm__rx">
+        <table class="sg-lm__rx-table">
+          <thead><tr><th>Eye</th><th>SPH</th><th>CYL</th><th>AXIS</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Right (OD)</strong></td><td><input class="sg-lm__rx-input" type="number" step="0.25" placeholder="-1.50" id="sgRSph"></td><td><input class="sg-lm__rx-input" type="number" step="0.25" placeholder="-0.50" id="sgRCyl"></td><td><input class="sg-lm__rx-input" type="number" min="0" max="180" placeholder="0–180" id="sgRAxis"></td></tr>
+            <tr><td><strong>Left (OS)</strong></td><td><input class="sg-lm__rx-input" type="number" step="0.25" placeholder="-2.00" id="sgLSph"></td><td><input class="sg-lm__rx-input" type="number" step="0.25" placeholder="-0.75" id="sgLCyl"></td><td><input class="sg-lm__rx-input" type="number" min="0" max="180" placeholder="0–180" id="sgLAxis"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="sg-lm__foot">
+      <div class="sg-lm__total"><span class="sg-lm__total-lbl">Lens Price:</span><span class="sg-lm__total-val" id="sgLmTotal">— QAR</span></div>
+      <button class="sg-lm__confirm" onclick="confirmSgLens()">Confirm Lens Selection →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LIGHTBOX ══ -->
+<div class="gal__lb" id="galLb">
+  <button class="gal__lb-close" onclick="GAL.closeLb()" aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  <button class="gal__lb-nav gal__lb-nav--prev" onclick="GAL.lbNav(-1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+  <img class="gal__lb-img" id="lbImg" src="" alt="">
+  <button class="gal__lb-nav gal__lb-nav--next" onclick="GAL.lbNav(1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+  <div class="gal__lb-strip" id="lbStrip"></div>
+  <span class="gal__lb-count" id="lbCount"></span>
+</div>
+
+<!-- ══ REVIEW LIGHTBOX & DELETE MODAL ══ -->
+<div class="rv-lb" id="rvLb" onclick="rvLbClose()"><div class="rv-lb-close" onclick="rvLbClose()">×</div><img class="rv-lb-img" id="rvLbImg" src="" alt=""></div>
+<div class="rv-del-modal" id="rvDelModal" onclick="if(event.target===this)rvDelHide()">
+  <div class="rv-del-box"><div class="rv-del-icon">🗑️</div><h3>Delete Review?</h3><p>This is permanent and cannot be undone.</p><div class="rv-del-btns"><button class="rv-del-cancel" onclick="rvDelHide()">Cancel</button><button class="rv-del-confirm" onclick="rvDelDo()">Yes, Delete</button></div></div>
+</div>
+<div class="pd-toast" id="pdToast"></div>
+
+<script>
+/* ══ GALLERY ══ */
+var GAL=(function(){
+  var thumbs,srcs,cur=0,total=0,mainImg,counter,lb,lbImg,lbStrip,lbCount;
+  function init(){
+    thumbs=Array.from(document.querySelectorAll('#galRail .gal__thumb'));
+    srcs=thumbs.map(function(t){return t.dataset.src||'';});
+    total=srcs.length;mainImg=document.getElementById('galMain');counter=document.getElementById('galCounter');
+    lb=document.getElementById('galLb');lbImg=document.getElementById('lbImg');lbStrip=document.getElementById('lbStrip');lbCount=document.getElementById('lbCount');
+    if(!mainImg||total===0)return;
+    srcs.forEach(function(src,i){var d=document.createElement('div');d.className='gal__lb-dot'+(i===0?' active':'');var im=document.createElement('img');im.src=src;im.loading='lazy';d.appendChild(im);d.addEventListener('click',function(){lbGoTo(i);});lbStrip.appendChild(d);});
+    if(total>1){document.getElementById('galPrev').classList.remove('hidden');document.getElementById('galNext').classList.remove('hidden');counter.classList.remove('solo');}
+    updateCounter();
+    thumbs.forEach(function(t,i){t.addEventListener('click',function(){goTo(i);});t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();goTo(i);}});});
+    document.getElementById('galPrev').addEventListener('click',function(e){e.stopPropagation();goTo(cur-1);});
+    document.getElementById('galNext').addEventListener('click',function(e){e.stopPropagation();goTo(cur+1);});
+    document.getElementById('galFs').addEventListener('click',function(e){e.stopPropagation();openLb();});
+    document.getElementById('galStage').addEventListener('click',function(e){if(e.target.closest('#galPrev,#galNext,#galFs'))return;openLb();});
+    document.getElementById('galStage').addEventListener('keydown',function(e){if(e.key==='ArrowLeft')goTo(cur-1);if(e.key==='ArrowRight')goTo(cur+1);if(e.key==='Enter')openLb();});
+    var tx0=0;
+    document.getElementById('galStage').addEventListener('touchstart',function(e){tx0=e.changedTouches[0].screenX;},{passive:true});
+    document.getElementById('galStage').addEventListener('touchend',function(e){var dx=tx0-e.changedTouches[0].screenX;if(Math.abs(dx)>50){dx>0?goTo(cur+1):goTo(cur-1);}},{passive:true});
+    lb.addEventListener('click',function(e){if(e.target===lb)closeLb();});
+  }
+  function goTo(idx){if(idx<0)idx=total-1;if(idx>=total)idx=0;var s=srcs[idx];if(!s)return;mainImg.classList.add('fading');var tmp=new Image();tmp.onload=tmp.onerror=function(){mainImg.src=s;mainImg.classList.remove('fading');};tmp.src=s;thumbs.forEach(function(t,i){t.classList.toggle('is-active',i===idx);});if(thumbs[idx])thumbs[idx].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});cur=idx;updateCounter();if(lb.classList.contains('open'))lbGoTo(idx);}
+  function goToSrc(src){var idx=srcs.indexOf(src);if(idx!==-1){goTo(idx);return;}mainImg.classList.add('fading');setTimeout(function(){mainImg.src=src;mainImg.classList.remove('fading');},100);}
+  function updateCounter(){if(counter)counter.textContent=(cur+1)+' / '+total;var dots=lbStrip?lbStrip.querySelectorAll('.gal__lb-dot'):[];Array.from(dots).forEach(function(d,i){d.classList.toggle('active',i===cur);});if(lbCount)lbCount.textContent=(cur+1)+' / '+total;}
+  function openLb(){lbGoTo(cur);lb.classList.add('open');document.body.style.overflow='hidden';}
+  function closeLb(){lb.classList.remove('open');document.body.style.overflow='';}
+  function lbGoTo(idx){if(idx<0)idx=total-1;if(idx>=total)idx=0;lbImg.style.cssText='opacity:0;transform:scale(.94);transition:opacity .22s,transform .22s';setTimeout(function(){lbImg.src=srcs[idx];lbImg.style.cssText='opacity:1;transform:scale(1);transition:opacity .22s,transform .22s';},110);cur=idx;updateCounter();var dots=lbStrip.querySelectorAll('.gal__lb-dot');Array.from(dots).forEach(function(d,i){d.classList.toggle('active',i===idx);});if(dots[idx])dots[idx].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});}
+  document.addEventListener('keydown',function(e){if(!lb||!lb.classList.contains('open'))return;if(e.key==='ArrowLeft')lbGoTo(cur-1);if(e.key==='ArrowRight')lbGoTo(cur+1);if(e.key==='Escape')closeLb();});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+  return{goTo:goTo,goToSrc:goToSrc,openLb:openLb,closeLb:closeLb,lbNav:function(d){lbGoTo(cur+d);}};
+})();
+
+/* ══ PRODUCT TYPE ══ */
+var PRODUCT_TYPE = '{{ product.product_type }}';
+var BASE_PRICE   = parseFloat('{{ product.base_price|default:0 }}');
+
+/* ══ HELPERS ══ */
+function getCsrf(){var m=document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);return m?decodeURIComponent(m[1]):'';}
+var _tt;
+function toast(msg,type){var t=document.getElementById('pdToast');t.textContent=msg;t.className='pd-toast is-show'+(type?' pd-toast--'+type:'');clearTimeout(_tt);_tt=setTimeout(function(){t.classList.remove('is-show');},3400);}
+function pickVariant(el){document.querySelectorAll('.pi__swatch').forEach(function(s){s.classList.remove('is-on');});el.classList.add('is-on');document.getElementById('hdVariant').value=el.dataset.variant||'';var img=el.dataset.img;if(img)GAL.goToSrc(img);}
+function chQty(d){var i=document.getElementById('qtyVal');i.value=Math.min(Math.max(1,parseInt(i.value)+d),parseInt(i.max)||99);}
+
+/* ══ EYEGLASS LENS MODAL ══ */
+var activePan='p-sv',lensOpt='',lensAddon='',lensCat='sv',lensBase=0,addonP=0,lensConfirmed=false;
+function openLm(){document.getElementById('lmOv').classList.add('is-open');document.body.style.overflow='hidden';}
+function closeLm(){document.getElementById('lmOv').classList.remove('is-open');document.body.style.overflow='';}
+function showPanel(id,btn){document.querySelectorAll('.lm-panel').forEach(function(p){p.classList.remove('active');});document.querySelectorAll('.lm-tab').forEach(function(b){b.classList.remove('active');});document.getElementById(id).classList.add('active');btn.classList.add('active');activePan=id;lensOpt='';lensAddon='';lensBase=0;addonP=0;document.querySelectorAll('.lm-opt').forEach(function(c){c.classList.remove('is-on');});updTotal();}
+function selCard(card,val,price,cat){card.closest('.lm-panel').querySelectorAll('.lm-opt').forEach(function(c){c.classList.remove('is-on');});card.classList.add('is-on');lensOpt=val;lensBase=price;lensCat=cat;addonP=0;var first=card.querySelector('.lm-addon-lbl');if(first){var r=first.querySelector('input[type=radio]');if(r)r.checked=true;card.querySelectorAll('.lm-addon-lbl').forEach(function(l){l.classList.remove('is-on');});first.classList.add('is-on');}updTotal();}
+function pickAddon(ev,lbl,price){ev.stopPropagation();var r=lbl.querySelector('input[type=radio]');if(r)r.checked=true;lbl.closest('.lm-opt').querySelectorAll('.lm-addon-lbl').forEach(function(l){l.classList.remove('is-on');});lbl.classList.add('is-on');addonP=price;lensAddon=r?r.value:'';updTotal();}
+function updTotal(){document.getElementById('lmTotal').textContent=lensOpt?(lensBase+addonP)+' QAR':'— QAR';}
+function rdGrid_init(){var g=document.getElementById('rdGrid');if(!g)return;['+0.75','+1.00','+1.25','+1.50','+1.75','+2.00','+2.25','+2.50','+2.75','+3.00'].forEach(function(p){var c=document.createElement('div');c.className='pwr-chip';c.style.cssText='padding:12px 6px;border:2px solid var(--aa-border);border-radius:8px;text-align:center;cursor:pointer;font-size:14px;font-weight:600;transition:all .26s;background:#fff;';c.textContent=p;c.addEventListener('click',function(){document.querySelectorAll('.pwr-chip').forEach(function(x){x.style.background='#fff';x.style.color='';x.style.borderColor='var(--aa-border)';});c.style.background='var(--aa-ink)';c.style.color='#fff';c.style.borderColor='var(--aa-ink)';lensOpt='reading_'+p.replace('+','p').replace('.','_');lensBase=150;lensCat='reading';addonP=0;updTotal();});g.appendChild(c);});}
+function confirmLens(){if(!lensOpt){toast('Please select a lens option','err');return;}var total=lensBase+addonP;document.getElementById('hdLensOpt').value=lensOpt;document.getElementById('hdLensAddon').value=lensAddon;document.getElementById('hdLensPrice').value=total;document.getElementById('hdLensCat').value=lensCat;var pfx=activePan==='p-sv'?'m_':activePan==='p-prog'?'p_':null;if(pfx){['rSph','rCyl','rAxis','rAdd','lSph','lCyl','lAxis','lAdd'].forEach(function(k){var el=document.getElementById(pfx+k);document.getElementById('h_'+k).value=el?el.value:'';});}lensConfirmed=true;document.getElementById('dispPrice').textContent='QAR '+(BASE_PRICE+total).toFixed(2);var ok=document.getElementById('lensOk');ok.classList.add('is-show');document.getElementById('lensOkTxt').textContent=lensOpt.replace(/_/g,' ')+' · '+total+' QAR';closeLm();toast('Lens confirmed! +'+total+' QAR','ok');}
+
+/* ══ SUNGLASS POWER MODAL ══ */
+var sgLensColor='',sgLensOpt='',sgLensPrice=0,sgLensConfirmed=false,sgPowerType='without';
+function setSgPower(type,btn){sgPowerType=type;document.querySelectorAll('.pi__power-btn').forEach(function(b){b.classList.remove('is-on');});btn.classList.add('is-on');document.getElementById('hdPower').value=type;var lb=document.getElementById('sgLensBtn');if(type==='with'){lb.classList.add('is-show');}else{lb.classList.remove('is-show');sgLensColor='';sgLensOpt='';sgLensPrice=0;sgLensConfirmed=false;document.getElementById('sgLensOk').classList.remove('is-show');document.getElementById('hdSgLensPrice').value='0';document.getElementById('dispPrice').textContent='QAR '+BASE_PRICE.toFixed(2);}}
+function openSgLm(){document.getElementById('sgLmOv').classList.add('is-open');document.body.style.overflow='hidden';}
+function closeSgLm(){document.getElementById('sgLmOv').classList.remove('is-open');document.body.style.overflow='';}
+function pickSgColor(chip,c){document.querySelectorAll('.sg-lm__color-chip').forEach(function(x){x.classList.remove('is-on');});chip.classList.add('is-on');sgLensColor=c;}
+function pickSgOpt(card,val,price){document.querySelectorAll('.sg-lm__opt').forEach(function(x){x.classList.remove('is-on');});card.classList.add('is-on');sgLensOpt=val;sgLensPrice=price;document.getElementById('sgLmTotal').textContent=price+' QAR';}
+function confirmSgLens(){if(!sgLensColor){toast('Please select a lens tint color','err');return;}if(!sgLensOpt){toast('Please select a lens type','err');return;}document.getElementById('hdSgLensColor').value=sgLensColor;document.getElementById('hdSgLensOpt').value=sgLensOpt;document.getElementById('hdSgLensPrice').value=sgLensPrice;sgLensConfirmed=true;document.getElementById('dispPrice').textContent='QAR '+(BASE_PRICE+sgLensPrice).toFixed(2);var ok=document.getElementById('sgLensOk');ok.classList.add('is-show');document.getElementById('sgLensOkTxt').textContent=(sgLensOpt==='essilor_crizal'?'Essilor Crizal Easy Pro':'Regular 1.56')+' · '+sgLensColor.charAt(0).toUpperCase()+sgLensColor.slice(1)+' · '+sgLensPrice+' QAR';closeSgLm();toast('Lens confirmed! +'+sgLensPrice+' QAR','ok');}
+
+/* ══ CART / BUY ══ */
+function buildFd(){
+  var fd=new FormData();
+  fd.append('csrfmiddlewaretoken',getCsrf());
+  fd.append('product_id','{{ product.id }}');
+  fd.append('quantity',document.getElementById('qtyVal').value);
+  fd.append('selected_variant_id',document.getElementById('hdVariant').value);
+  if(PRODUCT_TYPE==='eyeglasses'){
+    fd.append('selected_lens_option',document.getElementById('hdLensOpt').value);
+    fd.append('lens_addon',document.getElementById('hdLensAddon').value);
+    fd.append('total_lens_price',document.getElementById('hdLensPrice').value);
+    fd.append('lens_category',document.getElementById('hdLensCat').value);
+  } else {
+    fd.append('power_type',document.getElementById('hdPower').value);
+    fd.append('selected_lens_color',document.getElementById('hdSgLensColor').value);
+    fd.append('selected_lens_option',document.getElementById('hdSgLensOpt').value);
+    fd.append('total_lens_price',document.getElementById('hdSgLensPrice').value);
+  }
+  return fd;
+}
+function getCartUrl(){return PRODUCT_TYPE==='eyeglasses'?"{% url 'cart:add_eyeglass_to_cart' %}":"{% url 'cart:add_to_cart' %}";}
+function addCart(){
+  if(PRODUCT_TYPE==='eyeglasses'&&!lensConfirmed){toast('Please select your lenses first','err');openLm();return;}
+  if(PRODUCT_TYPE==='sunglasses'&&sgPowerType==='with'&&!sgLensConfirmed){toast('Please select prescription lenses first','err');openSgLm();return;}
+  var btn=document.getElementById('cartBtn'),orig=btn.innerHTML;btn.textContent='Adding…';btn.disabled=true;
+  fetch(getCartUrl(),{method:'POST',body:buildFd(),headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){return r.json();})
+    .then(function(d){btn.innerHTML=orig;btn.disabled=false;if(d.success){toast('🛒 Added to cart!','ok');if(typeof window.updateCartBadge==='function')window.updateCartBadge(d.cart_count||0);}else{toast(d.message||'Error','err');}})
+    .catch(function(){btn.innerHTML=orig;btn.disabled=false;toast('Network error','err');});
+}
+function buyNow(){
+  if(PRODUCT_TYPE==='eyeglasses'&&!lensConfirmed){toast('Please select your lenses first','err');openLm();return;}
+  if(PRODUCT_TYPE==='sunglasses'&&sgPowerType==='with'&&!sgLensConfirmed){toast('Please select prescription lenses first','err');openSgLm();return;}
+  fetch(getCartUrl(),{method:'POST',body:buildFd(),headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){return r.json();})
+    .then(function(d){if(d.success){if(typeof window.updateCartBadge==='function')window.updateCartBadge(d.cart_count||0);window.location.href="{% url 'orders:checkout' %}";}else toast(d.message||'Error','err');})
+    .catch(function(){toast('Network error','err');});
+}
+
+/* ══ WISHLIST ══ */
+document.getElementById('piWishBtn').addEventListener('click',function(){
+  var btn=this,pid=btn.dataset.productId,csrf=getCsrf();
+  fetch("{% url 'wishlist:toggle' 0 %}".replace('/0/','/'+pid+'/'),{method:'POST',credentials:'same-origin',headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrf,'Content-Type':'application/x-www-form-urlencoded'},body:'csrfmiddlewaretoken='+encodeURIComponent(csrf)})
+    .then(function(r){return r.json();})
+    .then(function(d){var svg=btn.querySelector('svg');if(d.added){btn.classList.add('is-on');svg.setAttribute('fill','#e05f5f');svg.setAttribute('stroke','#e05f5f');toast('❤️ Added to wishlist!','ok');}else{btn.classList.remove('is-on');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');toast('Removed from wishlist','');}})
+    .catch(function(){toast('Please log in','');});
+});
+
+/* ══ REVIEWS ══ */
+(function(){
+  var fills=document.querySelectorAll('.rv-bar-fill[data-pct]');
+  if(fills.length&&'IntersectionObserver' in window){var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){fills.forEach(function(f){f.style.width=f.dataset.pct+'%';});obs.disconnect();}});},{threshold:0.2});var s=document.querySelector('.rv-summary-grid');if(s)obs.observe(s);}
+  else setTimeout(function(){fills.forEach(function(f){f.style.width=f.dataset.pct+'%';});},400);
+  window.rvFilter=function(type,btn){document.querySelectorAll('.rv-chip').forEach(function(c){c.classList.remove('on');});btn.classList.add('on');var cards=document.querySelectorAll('#rvList .rv-card'),shown=0;cards.forEach(function(c){var show=true;if(type==='5')show=c.dataset.r==='5';else if(type==='4')show=c.dataset.r==='4';else if(type==='ver')show=c.dataset.v==='1';else if(type==='imgs')show=c.dataset.i==='1';c.style.display=show?'':'none';if(show)shown++;});var nr=document.getElementById('rvNoResults');if(nr)nr.style.display=shown===0?'block':'none';};
+  window.rvFilterChip=function(r){var chip=document.querySelector('[data-f="'+r+'"]');if(chip)rvFilter(r,chip);var s=document.getElementById('rvSection');if(s)s.scrollIntoView({behavior:'smooth'});};
+  window.rvSort=function(val){var list=document.getElementById('rvList');if(!list)return;var cards=Array.from(list.querySelectorAll('.rv-card'));cards.sort(function(a,b){if(val==='high')return parseInt(b.dataset.r)-parseInt(a.dataset.r);if(val==='low')return parseInt(a.dataset.r)-parseInt(b.dataset.r);if(val==='helpful')return parseInt(b.dataset.h)-parseInt(a.dataset.h);return parseInt(b.dataset.d)-parseInt(a.dataset.d);});cards.forEach(function(c){list.appendChild(c);});};
+  window.rvToggle=function(id,btn){var w=document.getElementById('rvc-'+id);var sh=w.querySelector('.s-short'),fl=w.querySelector('.s-full');if(fl.style.display==='none'){sh.style.display='none';fl.style.display='';btn.textContent='Show less ↑';}else{sh.style.display='';fl.style.display='none';btn.textContent='Read more ↓';}};
+  window.rvLbOpen=function(url){document.getElementById('rvLbImg').src=url;document.getElementById('rvLb').classList.add('open');document.body.style.overflow='hidden';};
+  window.rvLbClose=function(){document.getElementById('rvLb').classList.remove('open');document.body.style.overflow='';};
+  var _rvDid=null;
+  window.rvDelShow=function(id){_rvDid=id;document.getElementById('rvDelModal').classList.add('open');};
+  window.rvDelHide=function(){document.getElementById('rvDelModal').classList.remove('open');};
+  window.rvDelDo=function(){if(_rvDid)document.getElementById('rvdf-'+_rvDid).submit();};
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){rvLbClose();rvDelHide();closeLm();closeSgLm();GAL.closeLb();}});
+  {% if messages %}{% for m in messages %}setTimeout(function(){toast('{{ m|escapejs }}','ok');},200);{% endfor %}{% endif %}
+})();
+
+/* ══ INIT ══ */
+document.addEventListener('DOMContentLoaded',function(){
+  rdGrid_init();
+  var first=document.querySelector('.pi__swatch');
+  if(first)document.getElementById('hdVariant').value=first.dataset.variant||'';
+});
+</script>
+{% endblock %}
