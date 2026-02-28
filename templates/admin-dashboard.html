@@ -176,7 +176,21 @@
       <span class="menu-title">Dashboard</span>
     </a>
   </li>
-
+<!-- Notifications -->
+<li class="nav-item menu-items">
+  <a class="nav-link" data-toggle="collapse" href="#notifMenu">
+    <span class="menu-icon"><i class="mdi mdi-bell-outline"></i></span>
+    <span class="menu-title">Notifications</span>
+    <i class="menu-arrow"></i>
+  </a>
+  <div class="collapse" id="notifMenu">
+    <ul class="nav flex-column sub-menu">
+      <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:notification_template_list' %}">Templates</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:notification_log_list' %}">Sent Logs</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:stock_alert_list' %}">Stock Alerts</a></li>
+    </ul>
+  </div>
+</li>
   <!-- Categories & Brands -->
   <li class="nav-item menu-items">
     <a class="nav-link" data-toggle="collapse" href="#catalogMenu">
