@@ -1,0 +1,208 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header d-flex justify-content-between align-items-center mb-4" style="background:linear-gradient(135deg,#4facfe,#00f2fe);color:white;padding:20px;border-radius:8px;">
+      <div>
+        <h3 class="mb-1"><i class="mdi mdi-bag-personal"></i> Add Accessory</h3>
+        <p class="mb-0 opacity-75">Cases, cords, cleaning kits, pouches, etc.</p>
+      </div>
+      <a href="{% url 'adminpanel:accessories_list' %}" class="btn btn-white text-info">
+        <i class="mdi mdi-arrow-left"></i> Back
+      </a>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button></div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="row">
+
+        <div class="col-md-8">
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-4">Basic Information</h5>
+              <div class="form-group">
+                <label class="font-weight-bold">Name <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control form-control-lg" placeholder="e.g. Premium Hard Case Black" required>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">SKU <span class="text-danger">*</span></label>
+                    <input type="text" name="sku" class="form-control" placeholder="ACC-001" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Slug <span class="text-danger">*</span></label>
+                    <input type="text" name="slug" class="form-control" placeholder="premium-hard-case-black" required>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Gender</label>
+                    <select name="gender" class="form-control">
+                      <option value="unisex">Unisex</option>
+                      <option value="male">For Him</option>
+                      <option value="female">For Her</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Age Group</label>
+                    <select name="age_group" class="form-control">
+                      <option value="adult">Adult</option>
+                      <option value="kids">Kids</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold">Short Description</label>
+                <input type="text" name="short_description" class="form-control" placeholder="One-line summary">
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold">Full Description</label>
+                <textarea name="description" class="form-control" rows="4" placeholder="Detailed description..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-4">Pricing & Inventory</h5>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Price (QAR) <span class="text-danger">*</span></label>
+                    <input type="number" name="base_price" class="form-control" step="0.01" value="0.00" required>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Compare Price</label>
+                    <input type="number" name="compare_at_price" class="form-control" step="0.01">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Stock</label>
+                    <input type="number" name="stock_quantity" class="form-control" value="0">
+                  </div>
+                </div>
+              </div>
+              <div class="form-check form-check-flat form-check-primary">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="track_inventory" checked> Track Inventory
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Specifications -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title text-muted mb-0">Specifications</h5>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="addSpec"><i class="mdi mdi-plus"></i> Add Spec</button>
+              </div>
+              <div id="specRows">
+                <div class="row spec-row mb-2">
+                  <div class="col-md-5"><input type="text" name="spec_key[]" class="form-control form-control-sm" placeholder="e.g. Material"></div>
+                  <div class="col-md-7"><input type="text" name="spec_value[]" class="form-control form-control-sm" placeholder="e.g. Hard Plastic"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-4">Category & Brand</h5>
+              <div class="form-group">
+                <label class="font-weight-bold">Category <span class="text-danger">*</span></label>
+                <select name="category" class="form-control" required>
+                  <option value="">Select Category</option>
+                  {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold">Brand</label>
+                <select name="brand" class="form-control">
+                  <option value="">No Brand</option>
+                  {% for b in brands %}
+                    <option value="{{ b.id }}">{{ b.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-3">Product Images</h5>
+              <input type="file" name="images" class="form-control-file" multiple accept="image/*">
+              <small class="text-muted">Multiple images allowed.</small>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-3">Visibility</h5>
+              <div class="form-check form-check-flat form-check-primary mb-2">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="is_active" checked> Active
+                </label>
+              </div>
+              <div class="form-check form-check-flat form-check-primary">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="is_featured"> Featured
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'adminpanel:accessories_list' %}" class="btn btn-light btn-lg">Cancel</a>
+            <button type="submit" class="btn btn-gradient-info btn-lg">Save Accessory</button>
+          </div>
+
+        </div>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+document.getElementById('addSpec').addEventListener('click', function(){
+  document.getElementById('specRows').insertAdjacentHTML('beforeend', `
+    <div class="row spec-row mb-2">
+      <div class="col-md-5"><input type="text" name="spec_key[]" class="form-control form-control-sm" placeholder="e.g. Material"></div>
+      <div class="col-md-7"><input type="text" name="spec_value[]" class="form-control form-control-sm" placeholder="Value"></div>
+    </div>`);
+});
+const nameInput = document.querySelector('[name="name"]');
+const slugInput = document.querySelector('[name="slug"]');
+if(nameInput && slugInput) {
+  nameInput.addEventListener('input', function(){ if(!slugInput.dataset.touched) slugInput.value = this.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); });
+  slugInput.addEventListener('input', function(){ this.dataset.touched = '1'; });
+}
+</script>
+{% endblock %}
