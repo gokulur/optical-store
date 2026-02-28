@@ -138,7 +138,8 @@
 
     .aa-header__badge {
       position: absolute;
-      top: 2px; right: 2px;
+      top: 2px;
+      right: 2px;
       background: var(--aa-red);
       color: #fff;
       font-size: 1rem;
@@ -153,11 +154,19 @@
       line-height: 1;
       transition: transform .3s cubic-bezier(.34,1.56,.64,1);
     }
+    /* Hide badge when count is 0 */
     .aa-header__badge[data-count="0"] { display: none; }
 
     .aa-wishlist-pulse .bi-heart,
     .aa-wishlist-pulse .bi-heart-fill { animation: heartPulse .4s cubic-bezier(.34,1.56,.64,1); }
-    @keyframes heartPulse { 0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)} }
+    @keyframes heartPulse { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+
+    .aa-header__search { display: flex; align-items: center; background: var(--aa-white); border: 1.5px solid var(--aa-border); border-radius: 50px; overflow: hidden; height: 40px; flex: 1; max-width: 400px; transition: border-color .2s, box-shadow .2s; }
+    .aa-header__search:focus-within { border-color: var(--aa-accent); box-shadow: 0 0 0 3px rgba(26,111,168,.12); }
+    .aa-header__search input { flex: 1; border: none; outline: none; padding: 0 16px; font-family: var(--font-body); font-size: 1.4rem; color: var(--aa-dark); background: transparent; }
+    .aa-header__search input::placeholder { color: #9ab; }
+    .aa-header__search button { width: 44px; height: 100%; border: none; background: var(--aa-accent); color: #fff; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; transition: background .2s; flex-shrink: 0; }
+    .aa-header__search button:hover { background: var(--aa-accent-hover); }
 
     .aa-header__account-links { display: flex; align-items: center; gap: 4px; }
     .aa-header__account-links a { font-size: 1.3rem; font-weight: 500; color: var(--aa-mid); padding: 4px 8px; border-radius: 4px; white-space: nowrap; transition: color .2s; }
@@ -176,7 +185,7 @@
     .aa-nav__sale-tag { background: var(--aa-red); color: #fff; font-size: 1rem; font-weight: 700; padding: 2px 6px; border-radius: 3px; margin-left: 4px; letter-spacing: .03em; }
 
     .aa-nav__dropdown { display: none; position: absolute; top: 100%; left: 0; min-width: 220px; background: var(--aa-white); border: 1px solid var(--aa-border); border-top: 3px solid var(--aa-accent); border-radius: 0 0 var(--aa-radius) var(--aa-radius); box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 9999; padding: 8px 0; animation: dropIn .18s ease; }
-    @keyframes dropIn { from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)} }
+    @keyframes dropIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
     .aa-nav__item:hover .aa-nav__dropdown { display: block; }
     .aa-nav__dropdown a { display: block; padding: 10px 20px; font-size: 1.35rem; color: var(--aa-dark); font-weight: 500; transition: background .15s, color .15s, padding-left .15s; }
     .aa-nav__dropdown a:hover { background: var(--aa-bg); color: var(--aa-accent); padding-left: 26px; }
@@ -190,12 +199,16 @@
 
     /* ── MOBILE MENU ── */
     .aa-mobile-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: var(--z-mobile-menu); animation: fadeIn .2s; }
-    @keyframes fadeIn { from{opacity:0}to{opacity:1} }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .aa-mobile-menu-overlay.open { display: block; }
     .aa-mobile-menu { position: fixed; top: 0; left: 0; bottom: 0; width: 300px; background: var(--aa-white); z-index: calc(var(--z-mobile-menu) + 1); transform: translateX(-100%); transition: transform .3s ease; display: flex; flex-direction: column; overflow-y: auto; }
     .aa-mobile-menu.open { transform: translateX(0); }
     .aa-mobile-menu__header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--aa-border); background: var(--aa-bg-header); }
     .aa-mobile-menu__close { background: none; border: none; font-size: 2.4rem; color: var(--aa-dark); line-height: 1; }
+    .aa-mobile-menu__search { padding: 12px 16px; border-bottom: 1px solid var(--aa-border); }
+    .aa-mobile-menu__search form { display: flex; background: var(--aa-bg); border: 1px solid var(--aa-border); border-radius: 50px; overflow: hidden; }
+    .aa-mobile-menu__search input { flex: 1; border: none; background: transparent; padding: 10px 14px; font-size: 1.4rem; outline: none; }
+    .aa-mobile-menu__search button { padding: 0 14px; background: none; border: none; font-size: 1.8rem; color: var(--aa-accent); }
     .aa-mobile-nav__item { border-bottom: 1px solid var(--aa-border); }
     .aa-mobile-nav__link { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; font-size: 1.5rem; font-weight: 600; color: var(--aa-dark); }
     .aa-mobile-nav__link:hover { color: var(--aa-accent); background: var(--aa-bg); }
@@ -275,230 +288,13 @@
 
     /* ── RESPONSIVE ── */
     @media (max-width: 1100px) { .aa-footer__main { grid-template-columns: 1fr 1fr 1fr; } .aa-footer__top-inner { grid-template-columns: 1fr 1fr; } .aa-footer__top-cta { display: none; } }
-    @media (max-width: 900px)  { .aa-nav-wrap { display: none; } .aa-header { grid-template-columns: auto 1fr auto; } .aa-header__account-links { display: none; } .aa-footer__main { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 900px)  { .aa-nav-wrap { display: none; } .aa-header { grid-template-columns: auto 1fr auto; } .aa-header__search { display: none; } .aa-header__account-links { display: none; } .aa-footer__main { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 600px)  { .aa-footer__main { grid-template-columns: 1fr; } .aa-footer__top-inner { grid-template-columns: 1fr; text-align: center; } .aa-footer__tagline { font-size: 1.8rem; } .aa-footer__bottom-inner { flex-direction: column; text-align: center; } .aa-header { padding: 8px 14px; gap: 10px; } .aa-eyetest-btn__text { display: none; } .aa-eyetest-btn { padding: 7px 8px; } }
 
     /* ── UTILITY ── */
     .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
     .aa-container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
     .aa-section { padding: 60px 0; }
-
-    /* ══════════════════════════════════════════════
-       PREMIUM SEARCH COMPONENT
-       ══════════════════════════════════════════════ */
-
-    /* ── Desktop Search Wrap (inside .aa-nav) ─────── */
-    .aa-search-wrap {
-      position: relative;
-      flex: 1;
-      max-width: 520px;
-      margin-right: 24px;
-    }
-    .aa-search-form {
-      display: flex;
-      align-items: center;
-      background: var(--aa-white);
-      border: 1.5px solid var(--aa-border);
-      border-radius: 50px;
-      overflow: visible;
-      height: 42px;
-      transition: border-color .2s, box-shadow .2s;
-      position: relative;
-      z-index: 2;
-    }
-    .aa-search-wrap.focused .aa-search-form {
-      border-color: var(--aa-accent);
-      box-shadow: 0 0 0 3px rgba(26,111,168,.13);
-      border-radius: 18px 18px 0 0;
-      border-bottom-color: transparent;
-    }
-    .aa-search-wrap.focused.empty .aa-search-form,
-    .aa-search-wrap.focused:not(.has-value) .aa-search-form {
-      border-radius: 18px 18px 0 0;
-      border-bottom-color: transparent;
-    }
-    .aa-search-input {
-      flex: 1;
-      border: none;
-      outline: none;
-      padding: 0 16px 0 18px;
-      font-family: var(--font-body);
-      font-size: 1.35rem;
-      color: var(--aa-dark);
-      background: transparent;
-      min-width: 0;
-    }
-    .aa-search-input::placeholder { color: #9ab; }
-    .aa-search-clear {
-      display: none;
-      background: none;
-      border: none;
-      padding: 0 4px 0 0;
-      color: #bbb;
-      font-size: 1.6rem;
-      line-height: 1;
-      cursor: pointer;
-      transition: color .2s;
-      flex-shrink: 0;
-    }
-    .aa-search-clear:hover { color: var(--aa-accent); }
-    .aa-search-wrap.has-value .aa-search-clear { display: flex; align-items: center; }
-    .aa-search-submit {
-      width: 46px;
-      height: 42px;
-      border: none;
-      background: var(--aa-accent);
-      color: #fff;
-      font-size: 1.55rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 0 50px 50px 0;
-      transition: background .2s;
-      flex-shrink: 0;
-      cursor: pointer;
-    }
-    .aa-search-submit:hover { background: var(--aa-accent-hover); }
-
-    /* ── Dropdown ─────────────────────────────────── */
-    .aa-search-dropdown {
-      position: absolute;
-      top: calc(100% - 2px);
-      left: 0; right: 0;
-      background: var(--aa-white);
-      border: 1.5px solid var(--aa-accent);
-      border-top: none;
-      border-radius: 0 0 18px 18px;
-      box-shadow: 0 16px 40px rgba(26,42,58,.18);
-      z-index: 99999;
-      overflow: hidden;
-      display: none;
-      max-height: 480px;
-      overflow-y: auto;
-    }
-    .aa-search-wrap.focused .aa-search-dropdown.has-results,
-    .aa-search-wrap.focused .aa-search-dropdown.show-popular { display: block; }
-    .aa-search-dropdown::-webkit-scrollbar { width: 4px; }
-    .aa-search-dropdown::-webkit-scrollbar-track { background: transparent; }
-    .aa-search-dropdown::-webkit-scrollbar-thumb { background: var(--aa-border); border-radius: 2px; }
-
-    .aa-dd-section-label {
-      display: flex; align-items: center; gap: 8px;
-      padding: 10px 18px 6px;
-      font-size: 1.05rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .1em;
-      color: var(--aa-accent);
-    }
-    .aa-dd-section-label::after { content: ''; flex: 1; height: 1px; background: var(--aa-border); }
-
-    .aa-dd-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 16px;
-      text-decoration: none; color: var(--aa-dark);
-      font-size: 1.3rem;
-      border-bottom: 1px solid #f3f7fb;
-      cursor: pointer;
-      transition: background .15s, padding-left .15s;
-    }
-    .aa-dd-item:last-child { border-bottom: none; }
-    .aa-dd-item:hover, .aa-dd-item.highlighted { background: #eef3f8; padding-left: 22px; }
-
-    .aa-dd-thumb {
-      width: 42px; height: 42px;
-      border-radius: 8px; background: var(--aa-bg);
-      object-fit: contain; flex-shrink: 0;
-      border: 1px solid var(--aa-border); padding: 4px;
-    }
-    .aa-dd-icon {
-      width: 42px; height: 42px;
-      border-radius: 8px; background: var(--aa-bg);
-      border: 1px solid var(--aa-border);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; font-size: 1.6rem;
-    }
-    .aa-dd-text { flex: 1; min-width: 0; }
-    .aa-dd-name {
-      font-weight: 600; color: var(--aa-dark);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      font-size: 1.3rem;
-    }
-    .aa-dd-name mark { background: transparent; color: var(--aa-accent); font-weight: 700; }
-    .aa-dd-sub { font-size: 1.1rem; color: #8aa; margin-top: 1px; }
-    .aa-dd-price { font-size: 1.2rem; font-weight: 700; color: var(--aa-accent); flex-shrink: 0; white-space: nowrap; }
-
-    .aa-dd-badge { font-size: .95rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; flex-shrink: 0; white-space: nowrap; }
-    .aa-dd-badge--brand    { background: #e8f4ff; color: #1a6fa8; }
-    .aa-dd-badge--category { background: #eef8ee; color: #2a8a2a; }
-    .aa-dd-badge--popular  { background: #fff4e5; color: #c07000; }
-
-    .aa-dd-viewall {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 14px 16px;
-      background: #f5f9fd; color: var(--aa-accent);
-      font-size: 1.25rem; font-weight: 700;
-      text-decoration: none; text-transform: uppercase; letter-spacing: .06em;
-      border-top: 1px solid var(--aa-border);
-      transition: background .2s;
-    }
-    .aa-dd-viewall:hover { background: var(--aa-bg); color: var(--aa-accent); }
-
-    .aa-dd-loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 24px; color: #9ab; font-size: 1.3rem; }
-    .aa-dd-spinner { width: 18px; height: 18px; border: 2px solid var(--aa-border); border-top-color: var(--aa-accent); border-radius: 50%; animation: aaSearchSpin .7s linear infinite; }
-    @keyframes aaSearchSpin { to { transform: rotate(360deg); } }
-
-    .aa-dd-empty { text-align: center; padding: 28px 20px; color: #9ab; font-size: 1.3rem; }
-    .aa-dd-empty span { display: block; font-size: 2.4rem; margin-bottom: 8px; }
-
-    .aa-dd-recent-remove { background: none; border: none; color: #bbb; font-size: 1.4rem; line-height: 1; cursor: pointer; padding: 0 4px; flex-shrink: 0; transition: color .2s; }
-    .aa-dd-recent-remove:hover { color: var(--aa-red); }
-
-    .aa-dd-pills { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px 16px; }
-    .aa-dd-pill {
-      display: inline-flex; align-items: center; gap: 5px;
-      background: var(--aa-bg); border: 1.5px solid var(--aa-border);
-      border-radius: 50px; padding: 6px 14px;
-      font-size: 1.2rem; font-weight: 600; color: var(--aa-mid);
-      text-decoration: none; transition: all .2s; white-space: nowrap;
-    }
-    .aa-dd-pill:hover { background: var(--aa-accent); border-color: var(--aa-accent); color: #fff; transform: translateY(-1px); }
-
-    /* ── Mobile Search (inside slide-out menu) ─────── */
-    .aa-mobile-search-wrap {
-      position: relative;
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--aa-border);
-    }
-    .aa-mobile-search-form {
-      display: flex;
-      background: var(--aa-white);
-      border: 1.5px solid var(--aa-border);
-      border-radius: 50px;
-      overflow: hidden;
-      height: 42px;
-      transition: border-color .2s;
-    }
-    .aa-mobile-search-form:focus-within { border-color: var(--aa-accent); box-shadow: 0 0 0 3px rgba(26,111,168,.1); }
-    .aa-mobile-search-input { flex: 1; border: none; outline: none; padding: 0 14px; font-size: 1.4rem; font-family: var(--font-body); color: var(--aa-dark); background: transparent; }
-    .aa-mobile-search-input::placeholder { color: #9ab; }
-    .aa-mobile-search-btn { width: 44px; background: var(--aa-accent); border: none; color: #fff; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
-    .aa-mobile-search-btn:hover { background: var(--aa-accent-hover); }
-
-    .aa-mobile-dd {
-      position: absolute;
-      left: 16px; right: 16px;
-      top: calc(100% - 12px);
-      background: var(--aa-white);
-      border: 1.5px solid var(--aa-accent);
-      border-radius: 0 0 14px 14px;
-      box-shadow: 0 12px 30px rgba(26,42,58,.16);
-      z-index: 999999;
-      display: none;
-      max-height: 360px;
-      overflow-y: auto;
-    }
-    .aa-mobile-dd.open { display: block; }
-
-    @media (max-width: 600px) { .aa-mobile-search-wrap { padding: 10px 12px; } }
 
     {% block extra_styles %}{% endblock %}
   </style>
@@ -521,9 +317,7 @@
     <button class="aa-topbar__close" onclick="document.getElementById('aa-topbar').style.display='none'" aria-label="Close">×</button>
   </div>
 
-  <!-- ══════════════════════════════════════════════ -->
-  <!-- HEADER                                         -->
-  <!-- ══════════════════════════════════════════════ -->
+  <!-- HEADER -->
   <div class="aa-header-wrap">
     <header class="aa-header">
 
@@ -554,8 +348,10 @@
         </a>
       </div>
 
-      <!-- RIGHT: Account + Wishlist + Cart + Hamburger -->
+      <!-- RIGHT: Icons --> 
       <div class="aa-header__right">
+
+        <!-- Account links (desktop) -->
         <div class="aa-header__account-links">
           {% if user.is_authenticated %}
             <a href="{% url 'users:profile' %}">My Account</a>
@@ -573,57 +369,54 @@
         <!-- Wishlist -->
         <a href="{% url 'wishlist:wishlist' %}" class="aa-header__icon-btn" aria-label="Wishlist" id="aa-wishlist-icon-link">
           <i class="bi bi-heart"></i>
-          <span class="aa-header__badge" id="aa-wishlist-count"
+          <span class="aa-header__badge"
+                id="aa-wishlist-count"
                 data-count="{{ wishlist_count|default:0 }}"
                 {% if not wishlist_count %}style="display:none"{% endif %}>
             {{ wishlist_count|default:0 }}
           </span>
         </a>
 
-        <!-- Cart -->
+        <!-- Cart — goes directly to cart page -->
         <a href="{% url 'cart:cart_view' %}" class="aa-header__icon-btn" aria-label="Shopping Cart" id="aa-cart-icon-link">
           <i class="bi bi-bag"></i>
-          <span class="aa-header__badge" id="aa-cart-count"
+          <span class="aa-header__badge"
+                id="aa-cart-count"
                 data-count="{{ cart_count|default:0 }}"
                 {% if not cart_count %}style="display:none"{% endif %}>
             {{ cart_count|default:0 }}
           </span>
         </a>
 
-        <!-- Hamburger (mobile only) -->
+        <!-- Hamburger (mobile) -->
         <button class="aa-header__icon-btn" id="aa-menu-toggle" aria-label="Menu" style="display:none">
           <i class="bi bi-list"></i>
         </button>
       </div>
+
     </header>
 
-    <!-- ── DESKTOP NAVIGATION + SEARCH ── -->
+    <!-- Mobile search bar -->
+    <div id="aa-search-bar" style="display:none; background:var(--aa-bg-header); padding:10px 24px; border-top:1px solid var(--aa-border);">
+      <form method="get" action="{% url 'catalog:search' %}">
+        <div class="aa-header__search" style="max-width:100%;">
+          <input type="text" name="q" placeholder="Search glasses, brands, lenses…"
+                 value="{{ request.GET.q }}" autocomplete="off">
+          <button type="submit"><i class="bi bi-search"></i></button>
+        </div>
+      </form>
+    </div>
+
+    <!-- NAVIGATION -->
     <nav class="aa-nav-wrap" aria-label="Main navigation">
       <div class="aa-nav">
 
-        <!-- ★ PREMIUM SEARCH — desktop -->
-        <div class="aa-search-wrap" id="aa-search-wrap-desktop">
-          <form class="aa-search-form" method="get" action="{% url 'search:search' %}"
-                id="aa-search-form-desktop" autocomplete="off" role="search">
-            <i class="bi bi-search" style="color:#9ab;font-size:1.4rem;padding-left:14px;flex-shrink:0;"></i>
-            <input
-              type="text" name="q"
-              class="aa-search-input"
-              id="aa-search-input-desktop"
-              placeholder="Search glasses, brands, lenses…"
-              value="{{ request.GET.q }}"
-              autocomplete="off"
-              aria-label="Search products"
-              aria-autocomplete="list"
-              aria-controls="aa-search-dropdown-desktop"
-            >
-            <button type="button" class="aa-search-clear" id="aa-search-clear-desktop" aria-label="Clear search">×</button>
-            <button type="submit" class="aa-search-submit" aria-label="Submit search">
-              <i class="bi bi-search"></i>
-            </button>
-          </form>
-          <div class="aa-search-dropdown" id="aa-search-dropdown-desktop" role="listbox"></div>
-        </div>
+        <form method="get" action="{% url 'catalog:search' %}" style="margin-right:24px;">
+          <div class="aa-header__search">
+            <input type="text" name="q" placeholder="Search…" value="{{ request.GET.q }}">
+            <button type="submit"><i class="bi bi-search"></i></button>
+          </div>
+        </form>
 
         <ul class="aa-nav__list" role="list">
 
@@ -645,7 +438,7 @@
                 <a href="{% url 'catalog:sunglasses_list' %}?gender=men">Men's Sunglasses</a>
                 <a href="{% url 'catalog:sunglasses_list' %}?gender=women">Women's Sunglasses</a>
                 <a href="{% url 'catalog:sunglasses_list' %}?gender=unisex">Unisex</a>
-                <a href="{% url 'catalog:sunglasses_list' %}?gender=kids">Kids</a>
+                <a href="{% url 'catalog:product_list' 'reading_glasses' %}">Kids</a>
               </div>
               <div class="aa-mega__col">
                 <h4>By Style</h4>
@@ -748,12 +541,9 @@
   </div>
   <!-- END HEADER -->
 
-  <!-- ══════════════════════════════════════════════ -->
-  <!-- MOBILE SIDE MENU                               -->
-  <!-- ══════════════════════════════════════════════ -->
+  <!-- MOBILE SIDE MENU -->
   <div class="aa-mobile-menu-overlay" id="aa-mobile-overlay"></div>
   <nav class="aa-mobile-menu" id="aa-mobile-menu" aria-label="Mobile navigation">
-
     <div class="aa-mobile-menu__header">
       <a href="{% url 'home' %}">
         <div class="aa-logo-text" style="--aa-accent:#1a6fa8">
@@ -763,26 +553,12 @@
       </a>
       <button class="aa-mobile-menu__close" id="aa-mobile-close">×</button>
     </div>
-
-    <!-- ★ PREMIUM SEARCH — mobile (replaces old .aa-mobile-menu__search) -->
-    <div class="aa-mobile-search-wrap" id="aa-mobile-search-wrap">
-      <form class="aa-mobile-search-form" method="get" action="{% url 'search:search' %}"
-            id="aa-mobile-search-form" autocomplete="off">
-        <input
-          type="text" name="q"
-          class="aa-mobile-search-input"
-          id="aa-mobile-search-input"
-          placeholder="Search products, brands…"
-          value="{{ request.GET.q }}"
-          autocomplete="off"
-        >
-        <button type="submit" class="aa-mobile-search-btn" aria-label="Search">
-          <i class="bi bi-search"></i>
-        </button>
+    <div class="aa-mobile-menu__search">
+      <form method="get" action="{% url 'catalog:search' %}">
+        <input type="text" name="q" placeholder="Search…" value="{{ request.GET.q }}">
+        <button type="submit"><i class="bi bi-search"></i></button>
       </form>
-      <div class="aa-mobile-dd" id="aa-mobile-dd" role="listbox"></div>
     </div>
-
     <ul>
       <li class="aa-mobile-nav__item">
         <div class="aa-mobile-nav__link" onclick="toggleMobileSub(this)">
@@ -812,7 +588,6 @@
       <li class="aa-mobile-nav__item"><div class="aa-mobile-nav__link"><a href="{% url 'content:eye_test_booking' %}">Book Eye Test</a></div></li>
       <li class="aa-mobile-nav__item"><div class="aa-mobile-nav__link"><a href="{% url 'catalog:sunglasses_list' %}" style="color:var(--aa-red)">Sale — Up to 50% Off</a></div></li>
     </ul>
-
     <div class="aa-mobile-menu__footer">
       {% if user.is_authenticated %}
         <a href="{% url 'users:profile' %}"><i class="bi bi-person"></i> My Account</a>
@@ -846,9 +621,7 @@
     {% block content %}{% endblock %}
   </main>
 
-  <!-- ══════════════════════════════════════════════ -->
-  <!-- FOOTER                                         -->
-  <!-- ══════════════════════════════════════════════ -->
+  <!-- FOOTER -->
   <footer class="aa-footer">
     <div class="aa-footer__top">
       <div class="aa-footer__top-inner">
@@ -955,9 +728,9 @@
     </div>
   </footer>
 
-  <!-- ══════════════════════════════════════════════ -->
-  <!-- SCRIPTS                                        -->
-  <!-- ══════════════════════════════════════════════ -->
+  <!-- ============================================================
+       SCRIPTS
+       ============================================================ -->
   <script>
   (function () {
     "use strict";
@@ -1018,34 +791,54 @@
     }
     window.csrftoken = getCookie('csrftoken');
 
-    // ── Cart badge ────────────────────────────────────────────────
+    // ── Cart badge update ─────────────────────────────────────────
+    // This is the ONE authoritative function for updating the nav badge.
+    // Product pages call window.updateCartBadge(count) after AJAX add-to-cart.
     function updateCartBadge(count) {
-      var n = parseInt(count) || 0;
+      var n     = parseInt(count) || 0;
       var badge = document.getElementById('aa-cart-count');
       if (!badge) return;
-      badge.textContent = n; badge.dataset.count = n;
+      badge.textContent   = n;
+      badge.dataset.count = n;
+      // Show or hide badge based on count
       badge.style.display = n > 0 ? 'flex' : 'none';
+      // Pop animation
       badge.style.transform = 'scale(1.5)';
       setTimeout(function () { badge.style.transform = 'scale(1)'; }, 350);
     }
     window.updateCartBadge = updateCartBadge;
 
-    // ── Wishlist badge ────────────────────────────────────────────
+    // ── Wishlist badge update ─────────────────────────────────────
     function updateWishlistCount(count) {
-      var n = parseInt(count) || 0;
+      var n     = parseInt(count) || 0;
       var badge = document.getElementById('aa-wishlist-count');
       if (!badge) return;
-      badge.textContent = n; badge.dataset.count = n;
+      badge.textContent   = n;
+      badge.dataset.count = n;
       badge.style.display = n > 0 ? 'flex' : 'none';
       var link = document.getElementById('aa-wishlist-icon-link');
       if (link) { link.classList.add('aa-wishlist-pulse'); setTimeout(function() { link.classList.remove('aa-wishlist-pulse'); }, 500); }
     }
     window.updateWishlistCount = updateWishlistCount;
 
-    // ── AJAX Add to Cart ──────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════
+    //  AJAX ADD TO CART — SINGLE, DEDUPLICATED HANDLER
+    //
+    //  HOW IT WORKS:
+    //  • We only listen on 'submit' (capturing phase).
+    //  • The click listener is REMOVED — it was causing every
+    //    button click to also trigger the submit, resulting in
+    //    TWO fetch calls (double-add bug).
+    //  • Product pages that need custom cart logic (sunglasses,
+    //    eyeglasses with prescriptions) should call
+    //    window.ajaxAddToCart(url, formData, btn) directly
+    //    from their own submit handler after e.preventDefault().
+    // ════════════════════════════════════════════════════════════
     function ajaxAddToCart(url, formData, btn) {
+      // Guard: prevent double-fire if already in flight
       if (btn && btn.dataset.inFlight === '1') return;
       if (btn) { btn.dataset.inFlight = '1'; btn.disabled = true; btn.style.opacity = '.6'; }
+
       fetch(url, {
         method: 'POST',
         headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': window.csrftoken },
@@ -1054,6 +847,7 @@
       .then(function (r) { return r.json(); })
       .then(function (data) {
         if (data.success || data.cart_count !== undefined) {
+          // Always update badge with the count the server returns
           updateCartBadge(data.cart_count || 0);
           showToast(data.message || 'Added to cart!', 'success');
         } else if (data.limit || data.limit_reached) {
@@ -1069,12 +863,18 @@
     }
     window.ajaxAddToCart = ajaxAddToCart;
 
-    // Single submit listener for .add-to-cart-form (capturing)
+    // ── SINGLE submit listener (no duplicate click listener) ──────
+    //
+    // Intercepts any form with class 'add-to-cart-form'.
+    // Does NOT intercept forms inside #cart-rows (cart page qty forms).
+    // Uses capturing (true) so it fires before the form's own onsubmit.
     document.addEventListener('submit', function (e) {
       var form = e.target;
       if (!form.classList.contains('add-to-cart-form')) return;
+      // Don't intercept cart-page internal forms
       if (form.closest('#cart-rows')) return;
-      e.preventDefault(); e.stopPropagation();
+      e.preventDefault();
+      e.stopPropagation();  // stop any other submit listeners
       var btn = form.querySelector('[type="submit"]');
       ajaxAddToCart(form.action, new FormData(form), btn);
     }, true);
@@ -1101,16 +901,20 @@
     // ── Auto-dismiss flash messages ───────────────────────────────
     document.querySelectorAll('.aa-message').forEach(function (msg) {
       setTimeout(function () {
-        msg.style.opacity = '0'; msg.style.transition = 'opacity .3s, transform .3s'; msg.style.transform = 'translateY(-8px)';
+        msg.style.opacity = '0';
+        msg.style.transition = 'opacity .3s, transform .3s';
+        msg.style.transform = 'translateY(-8px)';
         setTimeout(function () { msg.remove(); }, 300);
       }, 5000);
     });
 
-    // ── Django messages as toasts ─────────────────────────────────
+    // ── Show Django messages as toasts (on page load) ─────────────
     {% if messages %}
     document.addEventListener('DOMContentLoaded', function () {
       {% for message in messages %}
-      setTimeout(function () { showToast("{{ message|escapejs }}", "{{ message.tags }}"); }, {{ forloop.counter0 }} * 200);
+      setTimeout(function () {
+        showToast("{{ message|escapejs }}", "{{ message.tags }}");
+      }, {{ forloop.counter0 }} * 200);
       {% endfor %}
     });
     {% endif %}
@@ -1120,349 +924,232 @@
 
   {% block extra_scripts %}{% endblock %}
 
-  <!-- URL bridge for Django template tags -->
-  <div id="aa-autocomplete-url" data-url="{% url 'search:autocomplete' %}" style="display:none;"></div>
+</div><!-- #xo-root -->
 
-  <script>
+ 
+<script>
   window.URLS = {
     wishlistToggle: "{% url 'wishlist:toggle' 0 %}".replace('/0/', '/'),
     addToCart:      "{% url 'cart:add_to_cart' %}",
     checkout:       "{% url 'orders:checkout' %}"
   };
-  </script>
+</script>
 
-  <!-- ★ PREMIUM SEARCH JS ─────────────────────────────────────── -->
-  <script>
-  (function () {
-    'use strict';
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  'use strict';
 
-    var AUTOCOMPLETE_URL = '/search/autocomplete/';
-    try {
-      var _u = document.getElementById('aa-autocomplete-url');
-      if (_u) AUTOCOMPLETE_URL = _u.dataset.url;
-    } catch(e) {}
+  /* ── CSRF ─────────────────────────────────────────── */
+  function getCsrf() {
+    var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+    if (m) return decodeURIComponent(m[1]);
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
+  }
 
-    var DEBOUNCE_MS = 250;
-    var MIN_CHARS   = 2;
+  /* ── Build wishlist URL with correct i18n prefix ─── */
+  function wishlistUrl(pid) {
+    return window.URLS.wishlistToggle + pid + '/';
+  }
 
-    function debounce(fn, ms) {
-      var t;
-      return function() { var a = arguments, c = this; clearTimeout(t); t = setTimeout(function(){ fn.apply(c,a); }, ms); };
+  /* ── Safe JSON ────────────────────────────────────── */
+  function safeJson(r) {
+    var ct = r.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      return Promise.resolve({ __httpStatus: r.status, __notJson: true });
     }
-    function escHtml(s) {
-      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return r.json().then(function (d) { d.__httpStatus = r.status; return d; });
+  }
+
+  /* ── Toast ────────────────────────────────────────── */
+  /* Use base.html's showToast — it's already on window */
+  function toast(msg, type) {
+    if (typeof window.showToast === 'function') {
+      var mapped = (type === 'ok' || type === 'wish') ? 'success'
+                 : type === 'err'  ? 'error'
+                 : type === 'info' ? 'info' : 'info';
+      window.showToast(msg, mapped);
     }
-    function highlightQuery(text, q) {
-      if (!q) return escHtml(text);
-      var esc = q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-      return escHtml(text).replace(new RegExp('('+esc+')','gi'),'<mark>$1</mark>');
+  }
+
+  /* ── Heart burst ─────────────────────────────────── */
+  function triggerHeartBurst(btn) {
+    btn.classList.add('burst');
+    setTimeout(function () { btn.classList.remove('burst'); }, 450);
+  }
+
+  /* ── Ripple ──────────────────────────────────────── */
+  function addRipple(btn, e) {
+    if (!e || !e.clientX) return;
+    var r = document.createElement('span'); r.className = 'ripple';
+    var rect = btn.getBoundingClientRect();
+    r.style.left = (e.clientX - rect.left - 10) + 'px';
+    r.style.top  = (e.clientY - rect.top  - 10) + 'px';
+    btn.appendChild(r);
+    setTimeout(function () { r.remove(); }, 600);
+  }
+
+  /* ════════════════════════════════════════════════════
+     WISHLIST TOGGLE
+  ════════════════════════════════════════════════════ */
+  document.addEventListener('click', function (e) {
+    var heartBtn = e.target.closest('.aa-pcard__heart');
+    if (!heartBtn) return;
+    e.preventDefault(); e.stopPropagation();
+
+    var pid = heartBtn.dataset.productId;
+    if (!pid || pid === 'undefined' || pid === '') {
+      heartBtn.classList.toggle('wishlisted');
+      triggerHeartBurst(heartBtn);
+      toast('❤️ Saved!', 'wish');
+      return;
     }
 
-    /* Recent searches */
-    var RKEY = 'aa_recent_searches';
-    function getRecent() { try { return JSON.parse(localStorage.getItem(RKEY)||'[]'); } catch(e){ return []; } }
-    function addRecent(q) {
-      if (!q||q.length<2) return;
-      var l = getRecent().filter(function(x){ return x.toLowerCase()!==q.toLowerCase(); });
-      l.unshift(q); l = l.slice(0,5);
-      try { localStorage.setItem(RKEY,JSON.stringify(l)); } catch(e){}
-    }
-    function removeRecent(q) {
-      try { localStorage.setItem(RKEY,JSON.stringify(getRecent().filter(function(x){return x!==q;}))); } catch(e){}
-    }
+    var wasWishlisted = heartBtn.classList.contains('wishlisted');
+    heartBtn.classList.toggle('wishlisted');
+    triggerHeartBurst(heartBtn);
+    heartBtn.style.pointerEvents = 'none';
 
-    /* Render helpers */
-    function renderLoading() {
-      return '<div class="aa-dd-loading"><div class="aa-dd-spinner"></div>Searching…</div>';
-    }
-    function renderEmpty(q) {
-      return '<div class="aa-dd-empty"><span>🔍</span>No results for "<strong>'+escHtml(q)+'</strong>"</div>';
-    }
-    function renderItem(s, q) {
-      var icon = {product:'👓',brand:'🏷️',category:'📂',popular:'🔥'}[s.type]||'🔍';
-      var badge = {brand:'<span class="aa-dd-badge aa-dd-badge--brand">Brand</span>',
-                   category:'<span class="aa-dd-badge aa-dd-badge--category">Category</span>',
-                   popular:'<span class="aa-dd-badge aa-dd-badge--popular">Popular</span>'}[s.type]||'';
-      var thumb = (s.type==='product'&&s.image)
-        ? '<img class="aa-dd-thumb" src="'+escHtml(s.image)+'" alt="" loading="lazy">'
-        : '<div class="aa-dd-icon">'+icon+'</div>';
-      var sub = s.brand ? '<div class="aa-dd-sub">'+escHtml(s.brand)+'</div>' : '';
-      var price = (s.price&&s.type==='product') ? '<span class="aa-dd-price">'+escHtml(s.price)+' QAR</span>' : '';
-      return '<a class="aa-dd-item" href="'+escHtml(s.url)+'" role="option">'+
-        thumb+'<div class="aa-dd-text"><div class="aa-dd-name">'+highlightQuery(s.name,q)+'</div>'+sub+'</div>'+price+badge+'</a>';
-    }
-    function renderPopularState() {
-      var recent = getRecent(), html = '';
-      if (recent.length) {
-        html += '<div class="aa-dd-section-label">Recent</div>';
-        recent.forEach(function(r) {
-          html += '<div class="aa-dd-item" data-recent="'+escHtml(r)+'" role="option" tabindex="0">'+
-            '<div class="aa-dd-icon">🕐</div>'+
-            '<div class="aa-dd-text"><div class="aa-dd-name">'+escHtml(r)+'</div></div>'+
-            '<button class="aa-dd-recent-remove" data-remove="'+escHtml(r)+'" aria-label="Remove">×</button></div>';
-        });
+    var csrf = getCsrf();
+    fetch(wishlistUrl(pid), {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrf, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'csrfmiddlewaretoken=' + encodeURIComponent(csrf)
+    })
+    .then(function (r) {
+      if (r.status === 401) {
+        wasWishlisted ? heartBtn.classList.add('wishlisted') : heartBtn.classList.remove('wishlisted');
+        toast('💛 Please log in to save items to your wishlist.', 'info');
+        heartBtn.style.pointerEvents = ''; return null;
       }
-      html += '<div class="aa-dd-section-label">Popular</div><div class="aa-dd-pills">';
-      ['Ray-Ban','Oakley','Contact Lenses','Progressive Lenses','Kids Glasses','Sunglasses','Reading Glasses'].forEach(function(t){
-        html += '<a class="aa-dd-pill" href="/search/?q='+encodeURIComponent(t)+'">🔥 '+escHtml(t)+'</a>';
-      });
-      return html + '</div>';
-    }
-    function renderResults(suggestions, q) {
-      if (!suggestions||!suggestions.length) return renderEmpty(q);
-      var groups = {product:[],brand:[],category:[],popular:[]};
-      suggestions.forEach(function(s){ (groups[s.type]||groups.popular).push(s); });
-      var html = '';
-      var labels = {product:'Products',brand:'Brands',category:'Categories',popular:'Suggestions'};
-      ['product','brand','category','popular'].forEach(function(t){
-        if (!groups[t].length) return;
-        html += '<div class="aa-dd-section-label">'+labels[t]+'</div>';
-        groups[t].forEach(function(s){ html += renderItem(s,q); });
-      });
-      html += '<a class="aa-dd-viewall" href="/search/?q='+encodeURIComponent(q)+'"><i class="bi bi-search"></i> See all results for "'+escHtml(q)+'"</a>';
-      return html;
-    }
-
-    /* Desktop controller */
-    function SearchController(inputEl, dropdownEl, wrapEl) {
-      var self = this;
-      self.input = inputEl; self.dropdown = dropdownEl; self.wrap = wrapEl;
-      self.lastQ = ''; self.abortCtrl = null; self.highlighted = -1; self._items = [];
-
-      self.open = function(html, classes) {
-        self.dropdown.innerHTML = html||'';
-        self.dropdown.className = 'aa-search-dropdown '+(classes||'');
-        self._items = self.dropdown.querySelectorAll('.aa-dd-item');
-        self.highlighted = -1;
-        self.dropdown.querySelectorAll('.aa-dd-recent-remove').forEach(function(btn){
-          btn.addEventListener('click', function(e){
-            e.preventDefault(); e.stopPropagation();
-            removeRecent(btn.dataset.remove);
-            self.open(renderPopularState(),'show-popular');
-          });
-        });
-        self.dropdown.querySelectorAll('[data-recent]').forEach(function(item){
-          item.addEventListener('click', function(){ self.input.value=item.dataset.recent; self.input.form&&self.input.form.submit(); });
-          item.addEventListener('keydown', function(e){ if(e.key==='Enter'){self.input.value=item.dataset.recent;self.input.form&&self.input.form.submit();} });
-        });
-      };
-      self.close = function(){ self.dropdown.className='aa-search-dropdown'; self.dropdown.innerHTML=''; self.highlighted=-1; self._items=[]; };
-
-      self.moveHighlight = function(dir) {
-        self._items = self.dropdown.querySelectorAll('.aa-dd-item');
-        var max = self._items.length; if (!max) return;
-        if (self.highlighted>=0) self._items[self.highlighted].classList.remove('highlighted');
-        self.highlighted = (self.highlighted+dir+max)%max;
-        var el = self._items[self.highlighted];
-        el.classList.add('highlighted'); el.scrollIntoView({block:'nearest'});
-        var nm = el.querySelector('.aa-dd-name'); if(nm) self.input.value=nm.textContent.trim();
-      };
-
-      self.fetch = function(q) {
-        if (self.abortCtrl) { try{self.abortCtrl.abort();}catch(e){} }
-        if (typeof AbortController!=='undefined') self.abortCtrl = new AbortController();
-        var opts = self.abortCtrl ? {signal:self.abortCtrl.signal} : {};
-        fetch(AUTOCOMPLETE_URL+'?q='+encodeURIComponent(q), opts)
-          .then(function(r){return r.json();})
-          .then(function(data){ self.open(renderResults(data.suggestions,q),'has-results'); })
-          .catch(function(e){ if(e&&e.name==='AbortError')return; self.open(renderEmpty(q),'has-results'); });
-      };
-
-      self.updateWrapState = function(){
-        var q=self.input.value.trim();
-        self.wrap.classList.toggle('has-value',q.length>0);
-      };
-
-      self.onInput = debounce(function(){
-        var q=self.input.value.trim(); self.updateWrapState();
-        if(q===self.lastQ) return; self.lastQ=q;
-        if(q.length<MIN_CHARS){ if(q.length===0){self.open(renderPopularState(),'show-popular');}else{self.close();} return; }
-        self.open(renderLoading(),'has-results'); self.fetch(q);
-      }, DEBOUNCE_MS);
-
-      self.input.addEventListener('input', self.onInput);
-      self.input.addEventListener('focus', function(){
-        self.wrap.classList.add('focused'); self.updateWrapState();
-        var q=self.input.value.trim();
-        if(q.length===0){self.open(renderPopularState(),'show-popular');}
-        else if(q.length>=MIN_CHARS){self.open(renderLoading(),'has-results');self.fetch(q);}
-      });
-      self.input.addEventListener('keydown', function(e){
-        if(e.key==='ArrowDown'){e.preventDefault();self.moveHighlight(1);}
-        if(e.key==='ArrowUp'){e.preventDefault();self.moveHighlight(-1);}
-        if(e.key==='Escape'){self.close();self.wrap.classList.remove('focused');self.input.blur();}
-        if(e.key==='Enter'){addRecent(self.input.value.trim());}
-      });
-      self.input.form&&self.input.form.addEventListener('submit',function(){addRecent(self.input.value.trim());});
-
-      var clearBtn = self.wrap.querySelector('.aa-search-clear');
-      if(clearBtn){clearBtn.addEventListener('click',function(){
-        self.input.value=''; self.lastQ=''; self.updateWrapState(); self.input.focus();
-        self.open(renderPopularState(),'show-popular');
-      });}
-
-      document.addEventListener('click', function(e){
-        if(!self.wrap.contains(e.target)){self.close();self.wrap.classList.remove('focused');}
-      });
-    }
-
-    /* Mobile controller */
-    function MobileSearchController(inputEl, dropdownEl, wrapEl) {
-      var self = this;
-      self.input=inputEl; self.dropdown=dropdownEl; self.wrap=wrapEl;
-      var fetchD = debounce(function(q){
-        if(q.length<MIN_CHARS){self.dropdown.classList.remove('open');return;}
-        self.dropdown.innerHTML=renderLoading(); self.dropdown.classList.add('open');
-        fetch(AUTOCOMPLETE_URL+'?q='+encodeURIComponent(q))
-          .then(function(r){return r.json();})
-          .then(function(data){
-            self.dropdown.innerHTML=renderResults(data.suggestions,q);
-            self.dropdown.classList.add('open');
-            self.dropdown.querySelectorAll('.aa-dd-item[href]').forEach(function(a){a.addEventListener('click',function(){addRecent(q);});});
-          })
-          .catch(function(){self.dropdown.classList.remove('open');});
-      }, DEBOUNCE_MS);
-      self.input.addEventListener('input',function(){fetchD(self.input.value.trim());});
-      self.input.form&&self.input.form.addEventListener('submit',function(){addRecent(self.input.value.trim());});
-      document.addEventListener('click',function(e){if(!self.wrap.contains(e.target))self.dropdown.classList.remove('open');});
-    }
-
-    /* Init */
-    document.addEventListener('DOMContentLoaded', function(){
-      var di=document.getElementById('aa-search-input-desktop');
-      var dd=document.getElementById('aa-search-dropdown-desktop');
-      var dw=document.getElementById('aa-search-wrap-desktop');
-      if(di&&dd&&dw) new SearchController(di,dd,dw);
-
-      var mi=document.getElementById('aa-mobile-search-input');
-      var md=document.getElementById('aa-mobile-dd');
-      var mw=document.getElementById('aa-mobile-search-wrap');
-      if(mi&&md&&mw) new MobileSearchController(mi,md,mw);
-    });
-
-  }());
-  </script>
-
-  <!-- Home page JS (wishlist, buy now, carousels, scroll reveal) -->
-  <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    'use strict';
-    function getCsrf() {
-      var m=document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
-      if(m) return decodeURIComponent(m[1]);
-      var meta=document.querySelector('meta[name="csrf-token"]');
-      return meta?meta.getAttribute('content'):'';
-    }
-    function wishlistUrl(pid){return window.URLS.wishlistToggle+pid+'/';}
-    function safeJson(r){
-      var ct=r.headers.get('content-type')||'';
-      if(!ct.includes('application/json')) return Promise.resolve({__httpStatus:r.status,__notJson:true});
-      return r.json().then(function(d){d.__httpStatus=r.status;return d;});
-    }
-    function toast(msg,type){
-      if(typeof window.showToast==='function'){
-        var mapped=(type==='ok'||type==='wish')?'success':type==='err'?'error':type==='info'?'info':'info';
-        window.showToast(msg,mapped);
+      return safeJson(r);
+    })
+    .then(function (data) {
+      if (!data) return;
+      if (data.__notJson || data.error) {
+        wasWishlisted ? heartBtn.classList.add('wishlisted') : heartBtn.classList.remove('wishlisted');
+        toast(data.message || 'Something went wrong.', 'err');
+        heartBtn.style.pointerEvents = ''; return;
       }
-    }
-    function triggerHeartBurst(btn){btn.classList.add('burst');setTimeout(function(){btn.classList.remove('burst');},450);}
-
-    /* Wishlist hearts (.aa-pcard__heart) */
-    document.addEventListener('click', function(e){
-      var heartBtn=e.target.closest('.aa-pcard__heart');
-      if(!heartBtn) return;
-      e.preventDefault(); e.stopPropagation();
-      var pid=heartBtn.dataset.productId;
-      if(!pid||pid==='undefined'||pid===''){heartBtn.classList.toggle('wishlisted');triggerHeartBurst(heartBtn);toast('❤️ Saved!','wish');return;}
-      var was=heartBtn.classList.contains('wishlisted');
-      heartBtn.classList.toggle('wishlisted'); triggerHeartBurst(heartBtn); heartBtn.style.pointerEvents='none';
-      var csrf=getCsrf();
-      fetch(wishlistUrl(pid),{method:'POST',credentials:'same-origin',
-        headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrf,'Content-Type':'application/x-www-form-urlencoded'},
-        body:'csrfmiddlewaretoken='+encodeURIComponent(csrf)})
-      .then(function(r){
-        if(r.status===401){was?heartBtn.classList.add('wishlisted'):heartBtn.classList.remove('wishlisted');toast('💛 Please log in to save items.','info');heartBtn.style.pointerEvents='';return null;}
-        return safeJson(r);
-      })
-      .then(function(data){
-        if(!data) return;
-        if(data.__notJson||data.error){was?heartBtn.classList.add('wishlisted'):heartBtn.classList.remove('wishlisted');toast(data.message||'Something went wrong.','err');heartBtn.style.pointerEvents='';return;}
-        if(typeof window.updateWishlistCount==='function') window.updateWishlistCount(data.wishlist_count);
-        toast(data.added?'❤️ Added to wishlist!':'💔 Removed from wishlist.',data.added?'wish':'info');
-        document.querySelectorAll('.aa-pcard__heart[data-product-id="'+pid+'"]').forEach(function(b){
-          data.added?b.classList.add('wishlisted'):b.classList.remove('wishlisted');b.style.pointerEvents='';
-        });
-      })
-      .catch(function(){was?heartBtn.classList.add('wishlisted'):heartBtn.classList.remove('wishlisted');toast('Network error.','err');heartBtn.style.pointerEvents='';});
+      /* ✅ Use base.html's updateWishlistCount */
+      if (typeof window.updateWishlistCount === 'function') {
+        window.updateWishlistCount(data.wishlist_count);
+      }
+      toast(data.added ? '❤️ Added to wishlist!' : '💔 Removed from wishlist.', data.added ? 'wish' : 'info');
+      document.querySelectorAll('.aa-pcard__heart[data-product-id="' + pid + '"]').forEach(function (b) {
+        data.added ? b.classList.add('wishlisted') : b.classList.remove('wishlisted');
+        b.style.pointerEvents = '';
+      });
+    })
+    .catch(function () {
+      wasWishlisted ? heartBtn.classList.add('wishlisted') : heartBtn.classList.remove('wishlisted');
+      toast('Network error. Please try again.', 'err');
+      heartBtn.style.pointerEvents = '';
     });
-
-    /* Buy Now */
-    document.addEventListener('click', function(e){
-      var buyBtn=e.target.closest('.aa-pcard__buy-btn[data-product-id]');
-      if(!buyBtn) return;
-      e.preventDefault();
-      var pid=buyBtn.dataset.productId, orig=buyBtn.innerHTML;
-      buyBtn.innerHTML='⏳ Please wait…'; buyBtn.style.pointerEvents='none';
-      fetch(window.URLS.addToCart,{method:'POST',credentials:'same-origin',
-        headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':getCsrf(),'Content-Type':'application/x-www-form-urlencoded'},
-        body:'product_id='+encodeURIComponent(pid)+'&quantity=1'})
-      .then(function(r){return safeJson(r);})
-      .then(function(data){
-        if(data.success){if(typeof window.updateCartBadge==='function')window.updateCartBadge(data.cart_count||0);window.location.href=window.URLS.checkout;}
-        else{toast(data.message||'Could not process.','err');buyBtn.innerHTML=orig;buyBtn.style.pointerEvents='';}
-      })
-      .catch(function(){toast('Network error.','err');buyBtn.innerHTML=orig;buyBtn.style.pointerEvents='';});
-    });
-
-    /* Color swatches */
-    document.addEventListener('click', function(e){
-      var dot=e.target.closest('.aa-pcard__color-dot');
-      if(!dot) return;
-      e.preventDefault(); e.stopPropagation();
-      var p=dot.closest('.aa-pcard__colors');
-      if(p) p.querySelectorAll('.aa-pcard__color-dot').forEach(function(d){d.classList.remove('active');});
-      dot.classList.add('active');
-    });
-
-    /* Brands Carousel */
-    var track=document.querySelector('.our-brands-carousel-track');
-    var prevBtn=document.querySelector('.brands-carousel-prev');
-    var nextBtn=document.querySelector('.brands-carousel-next');
-    if(track&&prevBtn&&nextBtn){
-      var items=track.querySelectorAll('.brand-carousel-item');
-      var gap=60,currentPos=0,autoTimer;
-      function getStep(){return(items[0]?items[0].offsetWidth:180)+gap;}
-      function getMax(){return-(getStep()*Math.max(0,items.length-4));}
-      function slide(){track.style.transform='translateX('+currentPos+'px)';}
-      function scrollNext(){currentPos=currentPos>getMax()?currentPos-getStep():0;slide();}
-      function scrollPrev(){currentPos=currentPos<0?currentPos+getStep():getMax();slide();}
-      nextBtn.addEventListener('click',function(){scrollNext();resetAuto();});
-      prevBtn.addEventListener('click',function(){scrollPrev();resetAuto();});
-      function startAuto(){autoTimer=setInterval(scrollNext,3000);}
-      function stopAuto(){clearInterval(autoTimer);}
-      function resetAuto(){stopAuto();startAuto();}
-      startAuto();
-      track.addEventListener('mouseenter',stopAuto);
-      track.addEventListener('mouseleave',startAuto);
-      window.addEventListener('resize',function(){currentPos=0;slide();});
-    }
-
-    /* Scroll reveal */
-    if('IntersectionObserver' in window){
-      var cards=document.querySelectorAll('.aa-pcard');
-      cards.forEach(function(c){c.style.opacity='0';c.style.transform='translateY(24px)';c.style.transition='opacity .5s ease,transform .5s ease';});
-      var io=new IntersectionObserver(function(entries){
-        entries.forEach(function(entry){
-          if(entry.isIntersecting){setTimeout(function(){entry.target.style.opacity='1';entry.target.style.transform='translateY(0)';},60);io.unobserve(entry.target);}
-        });
-      },{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
-      cards.forEach(function(c){io.observe(c);});
-    }
   });
-  </script>
 
-  <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
+  /* ════════════════════════════════════════════════════
+     ADD TO CART
+     ─────────────────────────────────────────────────
+     ⚠️  NO submit listener here.
+     base.html already has ONE submit listener for
+     .add-to-cart-form (capturing phase). Adding another
+     here caused EVERY cart add to fire TWICE (double-add
+     bug seen on home page). base.html's handler calls
+     window.ajaxAddToCart() which calls
+     window.updateCartBadge() automatically.
 
-</div><!-- #xo-root -->
+     We only need to handle BUY NOW (click, not submit).
+  ════════════════════════════════════════════════════ */
+
+  /* ── BUY NOW ─────────────────────────────────────── */
+  document.addEventListener('click', function (e) {
+    var buyBtn = e.target.closest('.aa-pcard__buy-btn[data-product-id]');
+    if (!buyBtn) return;
+    e.preventDefault();
+    var pid = buyBtn.dataset.productId;
+    var orig = buyBtn.innerHTML;
+    buyBtn.innerHTML = '⏳ Please wait…';
+    buyBtn.style.pointerEvents = 'none';
+
+    fetch(window.URLS.addToCart, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'product_id=' + encodeURIComponent(pid) + '&quantity=1'
+    })
+    .then(function (r) { return safeJson(r); })
+    .then(function (data) {
+      if (data.success) {
+        /* ✅ Update nav badge before redirecting */
+        if (typeof window.updateCartBadge === 'function') {
+          window.updateCartBadge(data.cart_count || 0);
+        }
+        window.location.href = window.URLS.checkout;
+      } else {
+        toast(data.message || 'Could not process.', 'err');
+        buyBtn.innerHTML = orig; buyBtn.style.pointerEvents = '';
+      }
+    })
+    .catch(function () {
+      toast('Network error.', 'err');
+      buyBtn.innerHTML = orig; buyBtn.style.pointerEvents = '';
+    });
+  });
+
+  /* ── Color swatches ──────────────────────────────── */
+  document.addEventListener('click', function (e) {
+    var dot = e.target.closest('.aa-pcard__color-dot');
+    if (!dot) return;
+    e.preventDefault(); e.stopPropagation();
+    var p = dot.closest('.aa-pcard__colors');
+    if (p) p.querySelectorAll('.aa-pcard__color-dot').forEach(function (d) { d.classList.remove('active'); });
+    dot.classList.add('active');
+  });
+
+  /* ── Brands Carousel ─────────────────────────────── */
+  var track = document.querySelector('.our-brands-carousel-track');
+  var prevBtn = document.querySelector('.brands-carousel-prev');
+  var nextBtn = document.querySelector('.brands-carousel-next');
+  if (track && prevBtn && nextBtn) {
+    var items = track.querySelectorAll('.brand-carousel-item');
+    var gap = 60, currentPos = 0, autoTimer;
+    function getStep() { return (items[0] ? items[0].offsetWidth : 180) + gap; }
+    function getMax() { return -(getStep() * Math.max(0, items.length - 4)); }
+    function slide() { track.style.transform = 'translateX(' + currentPos + 'px)'; }
+    function scrollNext() { currentPos = currentPos > getMax() ? currentPos - getStep() : 0; slide(); }
+    function scrollPrev() { currentPos = currentPos < 0 ? currentPos + getStep() : getMax(); slide(); }
+    nextBtn.addEventListener('click', function () { scrollNext(); resetAuto(); });
+    prevBtn.addEventListener('click', function () { scrollPrev(); resetAuto(); });
+    function startAuto() { autoTimer = setInterval(scrollNext, 3000); }
+    function stopAuto() { clearInterval(autoTimer); }
+    function resetAuto() { stopAuto(); startAuto(); }
+    startAuto();
+    track.addEventListener('mouseenter', stopAuto);
+    track.addEventListener('mouseleave', startAuto);
+    window.addEventListener('resize', function () { currentPos = 0; slide(); });
+  }
+
+  /* ── Scroll reveal ───────────────────────────────── */
+  if ('IntersectionObserver' in window) {
+    var cards = document.querySelectorAll('.aa-pcard');
+    cards.forEach(function (c) {
+      c.style.opacity = '0'; c.style.transform = 'translateY(24px)';
+      c.style.transition = 'opacity .5s ease,transform .5s ease';
+    });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          setTimeout(function () { entry.target.style.opacity = '1'; entry.target.style.transform = 'translateY(0)'; }, 60);
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    cards.forEach(function (c) { io.observe(c); });
+  }
+
+});
+</script>
+<style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
+ 
 </body>
 </html>
