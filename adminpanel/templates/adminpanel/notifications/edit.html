@@ -1,0 +1,143 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+<style>
+  .page-header{background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:20px;border-radius:8px;margin-bottom:30px}
+  .var-chip{display:inline-block;background:#eef0ff;border:1px solid #c7d2fe;color:#667eea;
+    border-radius:4px;padding:2px 8px;font-size:.72rem;font-family:monospace;cursor:pointer;
+    margin:2px;transition:background .2s;user-select:none}
+  .var-chip:hover{background:#667eea;color:#fff}
+  #id_body_template{font-family:monospace;font-size:.85rem;min-height:220px;resize:vertical;}
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <div>
+        <h3 class="mb-1"><i class="mdi mdi-pencil"></i> Edit Template: {{ tmpl.name }}</h3>
+        <p class="mb-0 opacity-75">Last updated {{ tmpl.updated_at|date:"d M Y, H:i" }}</p>
+      </div>
+      <a href="{% url 'adminpanel:notification_template_list' %}" class="btn btn-white text-primary">
+        <i class="mdi mdi-arrow-left"></i> Back
+      </a>
+    </div>
+
+    {% if messages %}{% for m in messages %}
+      <div class="alert alert-{{ m.tags }} alert-dismissible fade show">{{ m }}<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button></div>
+    {% endfor %}{% endif %}
+
+    <div class="row">
+      <div class="col-md-8">
+        <form method="POST">
+          {% csrf_token %}
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-4">Template Information</h5>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Template Name <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control form-control-lg" value="{{ tmpl.name }}" required>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Event Type <span class="text-danger">*</span></label>
+                    <select name="event_type" class="form-control" required>
+                      {% for code, label in event_types %}
+                        <option value="{{ code }}" {% if tmpl.event_type == code %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Channel <span class="text-danger">*</span></label>
+                    <select name="channel" class="form-control" id="channelSelect" required onchange="toggleSubject(this.value)">
+                      {% for code, label in channel_choices %}
+                        <option value="{{ code }}" {% if tmpl.channel == code %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group" id="subjectRow">
+                <label class="font-weight-bold">Email Subject</label>
+                <input type="text" name="subject" class="form-control" value="{{ tmpl.subject }}" placeholder="Email subject line...">
+              </div>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Message Body <span class="text-danger">*</span></label>
+                <div class="mb-2">
+                  <span class="text-muted" style="font-size:.75rem;">Click to insert:</span><br>
+                  {% for v in "customer_name,order_number,total_amount,currency,tracking_number,carrier,appointment_date,appointment_time,location_name,order_url,track_url"|split:"," %}
+                    <span class="var-chip" onclick="insertVar('{{ v }}')">{{ v }}</span>
+                  {% endfor %}
+                </div>
+                <textarea name="body_template" id="id_body_template" class="form-control" rows="12" required>{{ tmpl.body_template }}</textarea>
+              </div>
+
+              <div class="form-check form-check-flat form-check-primary">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="is_active" {% if tmpl.is_active %}checked{% endif %}> Active
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'adminpanel:notification_template_list' %}" class="btn btn-light btn-lg">Cancel</a>
+            <button type="submit" class="btn btn-gradient-warning btn-lg">Update Template</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="font-weight-bold text-muted mb-3">Template Info</h6>
+            <table class="table table-sm table-borderless" style="font-size:.82rem;">
+              <tr><td class="text-muted">Created</td><td>{{ tmpl.created_at|date:"d M Y" }}</td></tr>
+              <tr><td class="text-muted">Updated</td><td>{{ tmpl.updated_at|date:"d M Y, H:i" }}</td></tr>
+              <tr><td class="text-muted">Event</td><td><code>{{ tmpl.event_type }}</code></td></tr>
+              <tr><td class="text-muted">Channel</td><td>{{ tmpl.get_channel_display }}</td></tr>
+              <tr><td class="text-muted">Status</td><td>{% if tmpl.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-secondary">Inactive</span>{% endif %}</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="font-weight-bold text-muted mb-3"><i class="mdi mdi-variable"></i> Variables</h6>
+            <table class="table table-sm" style="font-size:.78rem;">
+              <tr><td><code>customer_name</code></td><td class="text-muted">First name</td></tr>
+              <tr><td><code>order_number</code></td><td class="text-muted">Order #</td></tr>
+              <tr><td><code>total_amount</code></td><td class="text-muted">Total</td></tr>
+              <tr><td><code>currency</code></td><td class="text-muted">QAR / USD</td></tr>
+              <tr><td><code>tracking_number</code></td><td class="text-muted">Shipment</td></tr>
+              <tr><td><code>appointment_date</code></td><td class="text-muted">Eye test date</td></tr>
+              <tr><td><code>order_url</code></td><td class="text-muted">Order link</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleSubject(val) {
+  document.getElementById('subjectRow').style.display = (val === 'email') ? 'block' : 'none';
+}
+toggleSubject(document.getElementById('channelSelect').value);
+function insertVar(varName) {
+  const ta = document.getElementById('id_body_template');
+  const start = ta.selectionStart;
+  const insert = '{{ ' + varName + ' }}';
+  ta.value = ta.value.substring(0, start) + insert + ta.value.substring(ta.selectionEnd);
+  ta.selectionStart = ta.selectionEnd = start + insert.length;
+  ta.focus();
+}
+</script>
+{% endblock %}
