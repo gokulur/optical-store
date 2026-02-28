@@ -1,0 +1,169 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+<style>
+  .page-header{background:linear-gradient(135deg,#11998e,#38ef7d);color:white;padding:20px;border-radius:8px;margin-bottom:30px}
+  .ch-email{background:#eef0ff;color:#667eea}
+  .ch-sms  {background:#e6faf7;color:#1bcfb4}
+  .ch-push {background:#fff3e8;color:#f97316}
+  .ch-pill{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:2px 9px;font-size:.7rem;font-weight:700}
+  .ns-sent   {background:#e6faf7;color:#0f8c6f}
+  .ns-pending{background:#fff8e8;color:#b45309}
+  .ns-failed {background:#fff0ef;color:#c0392b}
+  .ns-bounced{background:#f5f5f5;color:#aaa}
+  .n-status{display:inline-flex;align-items:center;gap:3px;border-radius:20px;padding:3px 9px;font-size:.7rem;font-weight:700}
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+          <h3 class="mb-1"><i class="mdi mdi-email-check-outline"></i> Notification Logs</h3>
+          <p class="mb-0 opacity-75">All sent, pending and failed notifications</p>
+        </div>
+      </div>
+    </div>
+
+    {% if messages %}{% for m in messages %}
+      <div class="alert alert-{{ m.tags }} alert-dismissible fade show">{{ m }}<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button></div>
+    {% endfor %}{% endif %}
+
+    <!-- Stats -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card text-center p-3" style="border-left:4px solid #667eea;">
+          <h4 class="font-weight-bold mb-0">{{ total }}</h4><small class="text-muted">Total</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center p-3" style="border-left:4px solid #1bcfb4;">
+          <h4 class="font-weight-bold mb-0 text-success">{{ sent_count }}</h4><small class="text-muted">Sent</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center p-3" style="border-left:4px solid #ffc107;">
+          <h4 class="font-weight-bold mb-0 text-warning">{{ pending_count }}</h4><small class="text-muted">Pending</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center p-3" style="border-left:4px solid #dc3545;">
+          <h4 class="font-weight-bold mb-0 text-danger">{{ failed_count }}</h4><small class="text-muted">Failed</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+      <div class="card-body py-3">
+        <form method="GET" class="form-inline flex-wrap" style="gap:10px;">
+          <input type="text" name="search" class="form-control" placeholder="Search recipient, subject..." value="{{ search }}">
+          <select name="status" class="form-control">
+            <option value="">All Statuses</option>
+            <option value="sent" {% if status == 'sent' %}selected{% endif %}>Sent</option>
+            <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="failed" {% if status == 'failed' %}selected{% endif %}>Failed</option>
+            <option value="bounced" {% if status == 'bounced' %}selected{% endif %}>Bounced</option>
+          </select>
+          <select name="channel" class="form-control">
+            <option value="">All Channels</option>
+            <option value="email" {% if channel == 'email' %}selected{% endif %}>Email</option>
+            <option value="sms" {% if channel == 'sms' %}selected{% endif %}>SMS</option>
+            <option value="push" {% if channel == 'push' %}selected{% endif %}>Push</option>
+          </select>
+          <button type="submit" class="btn btn-gradient-primary">Filter</button>
+          <a href="{% url 'adminpanel:notification_log_list' %}" class="btn btn-light">Reset</a>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Recipient</th>
+                <th>Subject / Body</th>
+                <th>Channel</th>
+                <th>Event</th>
+                <th>Status</th>
+                <th>Sent At</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for log in logs %}
+              <tr>
+                <td>
+                  <span class="font-weight-bold" style="font-size:.85rem;">{{ log.recipient }}</span><br>
+                  <small class="text-muted">{{ log.user.get_full_name|default:log.user.email }}</small>
+                </td>
+                <td style="max-width:220px;">
+                  {% if log.subject %}
+                    <div class="font-weight-bold" style="font-size:.84rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ log.subject }}</div>
+                  {% endif %}
+                  <small class="text-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:200px;">{{ log.body|truncatewords:10 }}</small>
+                </td>
+                <td>
+                  <span class="ch-pill ch-{{ log.channel }}">
+                    {{ log.channel|upper }}
+                  </span>
+                </td>
+                <td>
+                  {% if log.template %}
+                    <small><code>{{ log.template.event_type }}</code></small>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="n-status ns-{{ log.status }}">
+                    {% if log.status == 'sent' %}<svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>{% endif %}
+                    {{ log.get_status_display }}
+                  </span>
+                  {% if log.error_message %}
+                    <br><small class="text-danger" title="{{ log.error_message }}" style="cursor:help;">⚠ Error</small>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if log.sent_at %}
+                    <small>{{ log.sent_at|date:"d M, H:i" }}</small>
+                  {% else %}
+                    <small class="text-muted">—</small>
+                  {% endif %}
+                </td>
+                <td class="text-right">
+                  <a href="{% url 'adminpanel:notification_log_detail' log.id %}" class="btn btn-inverse-info btn-sm btn-icon" title="View">
+                    <i class="mdi mdi-eye"></i>
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="text-center py-5">
+                  <i class="mdi mdi-email-outline text-muted" style="font-size:3rem;"></i>
+                  <p class="mt-2 text-muted">No notifications found.</p>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% if logs.has_other_pages %}
+        <nav class="mt-3">
+          <ul class="pagination justify-content-center">
+            {% if logs.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ logs.previous_page_number }}&search={{ search }}&status={{ status }}&channel={{ channel }}">Prev</a></li>{% endif %}
+            {% for n in logs.paginator.page_range %}<li class="page-item {% if n == logs.number %}active{% endif %}"><a class="page-link" href="?page={{ n }}&search={{ search }}&status={{ status }}&channel={{ channel }}">{{ n }}</a></li>{% endfor %}
+            {% if logs.has_next %}<li class="page-item"><a class="page-link" href="?page={{ logs.next_page_number }}&search={{ search }}&status={{ status }}&channel={{ channel }}">Next</a></li>{% endif %}
+          </ul>
+        </nav>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

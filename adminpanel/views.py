@@ -3157,8 +3157,8 @@ def reading_glasses_delete(request, product_id):
 
 
 
-# ==================== NOTIFICATIONS (Admin Panel) ====================
-# Append these to your existing adminpanel/views.py
+# ==================== NOTIFICATIONS  ====================
+ 
 
 from notifications.models import Notification, NotificationTemplate, StockAlert
 
@@ -3171,7 +3171,7 @@ def notification_template_list(request):
     templates = NotificationTemplate.objects.all().order_by('channel', 'event_type')
     active_count = templates.filter(is_active=True).count()
     inactive_count = templates.filter(is_active=False).count()
-    return render(request, 'adminpanel/notifications/templates/list.html', {
+    return render(request, 'adminpanel/notifications/list.html', {
         'templates': templates,
         'active_count': active_count,
         'inactive_count': inactive_count,
@@ -3196,7 +3196,7 @@ def notification_template_add(request):
         except Exception as e:
             messages.error(request, f'Error: {str(e)}')
 
-    return render(request, 'adminpanel/notifications/templates/add.html', {
+    return render(request, 'adminpanel/notifications/add.html', {
         'event_types': NotificationTemplate.EVENT_TYPES,
         'channel_choices': NotificationTemplate.CHANNEL_CHOICES,
     })
@@ -3220,7 +3220,7 @@ def notification_template_edit(request, template_id):
         except Exception as e:
             messages.error(request, f'Error: {str(e)}')
 
-    return render(request, 'adminpanel/notifications/templates/edit.html', {
+    return render(request, 'adminpanel/notifications/edit.html', {
         'tmpl': tmpl,
         'event_types': NotificationTemplate.EVENT_TYPES,
         'channel_choices': NotificationTemplate.CHANNEL_CHOICES,
@@ -3235,7 +3235,7 @@ def notification_template_delete(request, template_id):
         tmpl.delete()
         messages.success(request, 'Template deleted.')
         return redirect('adminpanel:notification_template_list')
-    return render(request, 'adminpanel/notifications/templates/delete_confirm.html', {'tmpl': tmpl})
+    return render(request, 'adminpanel/notifications/delete_confirm.html', {'tmpl': tmpl})
 
 
 @login_required
