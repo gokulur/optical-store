@@ -1,0 +1,155 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+<style>
+  .page-header{background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:20px;border-radius:8px;margin-bottom:30px}
+  .var-chip{display:inline-block;background:#eef0ff;border:1px solid #c7d2fe;color:#667eea;
+    border-radius:4px;padding:2px 8px;font-size:.72rem;font-family:monospace;cursor:pointer;
+    margin:2px;transition:background .2s;user-select:none}
+  .var-chip:hover{background:#667eea;color:#fff}
+  #id_body_template{font-family:monospace;font-size:.85rem;min-height:220px;resize:vertical;}
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <div>
+        <h3 class="mb-1"><i class="mdi mdi-email-plus-outline"></i> Add Notification Template</h3>
+        <p class="mb-0 opacity-75">Create an email or SMS template for automated messages</p>
+      </div>
+      <a href="{% url 'adminpanel:notification_template_list' %}" class="btn btn-white text-primary">
+        <i class="mdi mdi-arrow-left"></i> Back
+      </a>
+    </div>
+
+    {% if messages %}{% for m in messages %}
+      <div class="alert alert-{{ m.tags }} alert-dismissible fade show">{{ m }}<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button></div>
+    {% endfor %}{% endif %}
+
+    <div class="row">
+      <div class="col-md-8">
+        <form method="POST">
+          {% csrf_token %}
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-4">Template Information</h5>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Template Name <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control form-control-lg" placeholder="e.g. Order Confirmation Email" required>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Event Type <span class="text-danger">*</span></label>
+                    <select name="event_type" class="form-control" required>
+                      <option value="">Select Event</option>
+                      {% for code, label in event_types %}
+                        <option value="{{ code }}">{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                    <small class="text-muted">Each event type can have one active template.</small>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Channel <span class="text-danger">*</span></label>
+                    <select name="channel" class="form-control" id="channelSelect" required onchange="toggleSubject(this.value)">
+                      {% for code, label in channel_choices %}
+                        <option value="{{ code }}">{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group" id="subjectRow">
+                <label class="font-weight-bold">Email Subject</label>
+                <input type="text" name="subject" class="form-control" placeholder="e.g. Your order #{{ order_number }} is confirmed!">
+                <small class="text-muted">Supports template variables.</small>
+              </div>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Message Body <span class="text-danger">*</span></label>
+                <div class="mb-2">
+                  <span class="text-muted" style="font-size:.75rem;">Click to insert variable:</span><br>
+                  {% for v in "customer_name,order_number,total_amount,currency,tracking_number,carrier,appointment_date,appointment_time,location_name,order_url,track_url"|split:"," %}
+                    <span class="var-chip" onclick="insertVar('{{ v }}')">{{ v }}</span>
+                  {% endfor %}
+                </div>
+                <textarea name="body_template" id="id_body_template" class="form-control" rows="10"
+                  placeholder="Hi {{ '{{' }} customer_name {{ '}}' }},&#10;&#10;Your order #{{ '{{' }} order_number {{ '}}' }} has been confirmed.&#10;&#10;Total: {{ '{{' }} currency {{ '}}' }} {{ '{{' }} total_amount {{ '}}' }}&#10;&#10;View your order: {{ '{{' }} order_url {{ '}}' }}" required></textarea>
+                <small class="text-muted">Use Django template syntax: <code>&#123;&#123; variable &#125;&#125;</code></small>
+              </div>
+
+              <div class="form-check form-check-flat form-check-primary">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="is_active" checked> Active (will be used when event fires)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'adminpanel:notification_template_list' %}" class="btn btn-light btn-lg">Cancel</a>
+            <button type="submit" class="btn btn-gradient-primary btn-lg">Save Template</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Sidebar Help -->
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="font-weight-bold text-muted mb-3"><i class="mdi mdi-information-outline"></i> Template Guide</h6>
+            <p class="text-muted" style="font-size:.82rem;">Templates use Django's template engine. You can use:</p>
+            <ul style="font-size:.8rem;color:#666;padding-left:18px;">
+              <li class="mb-1"><code>&#123;&#123; variable &#125;&#125;</code> — Insert a value</li>
+              <li class="mb-1"><code>&#123;% if condition %&#125; ... &#123;% endif %&#125;</code> — Conditionals</li>
+              <li class="mb-1"><code>&#123;% for item in list %&#125; ... &#123;% endfor %&#125;</code> — Loops</li>
+            </ul>
+          </div>
+        </div>
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="font-weight-bold text-muted mb-3"><i class="mdi mdi-variable"></i> Variable Reference</h6>
+            <table class="table table-sm" style="font-size:.78rem;">
+              <tr><td><code>customer_name</code></td><td class="text-muted">First name</td></tr>
+              <tr><td><code>order_number</code></td><td class="text-muted">Order #</td></tr>
+              <tr><td><code>total_amount</code></td><td class="text-muted">Order total</td></tr>
+              <tr><td><code>currency</code></td><td class="text-muted">QAR / USD</td></tr>
+              <tr><td><code>tracking_number</code></td><td class="text-muted">Shipment ID</td></tr>
+              <tr><td><code>carrier</code></td><td class="text-muted">Courier name</td></tr>
+              <tr><td><code>appointment_date</code></td><td class="text-muted">Eye test date</td></tr>
+              <tr><td><code>appointment_time</code></td><td class="text-muted">Eye test time</td></tr>
+              <tr><td><code>location_name</code></td><td class="text-muted">Store name</td></tr>
+              <tr><td><code>order_url</code></td><td class="text-muted">Order link</td></tr>
+              <tr><td><code>track_url</code></td><td class="text-muted">Tracking link</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleSubject(val) {
+  document.getElementById('subjectRow').style.display = (val === 'email') ? 'block' : 'none';
+}
+toggleSubject(document.getElementById('channelSelect').value);
+
+function insertVar(varName) {
+  const ta = document.getElementById('id_body_template');
+  const start = ta.selectionStart;
+  const end = ta.selectionEnd;
+  const text = ta.value;
+  const insert = '{{ ' + varName + ' }}';
+  ta.value = text.substring(0, start) + insert + text.substring(end);
+  ta.selectionStart = ta.selectionEnd = start + insert.length;
+  ta.focus();
+}
+</script>
+{% endblock %}
