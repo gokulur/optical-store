@@ -3154,3 +3154,208 @@ def reading_glasses_delete(request, product_id):
         messages.success(request, 'Reading glasses deleted.')
         return redirect('adminpanel:reading_glasses_list')
     return render(request, 'adminpanel/reading_glasses/delete_confirm.html', {'product': product})
+
+
+
+# ==================== NOTIFICATIONS (Admin Panel) ====================
+# Append these to your existing adminpanel/views.py
+
+from notifications.models import Notification, NotificationTemplate, StockAlert
+
+
+# ── NOTIFICATION TEMPLATES ──────────────────────────────────────────
+
+@login_required
+@user_passes_test(is_admin)
+def notification_template_list(request):
+    templates = NotificationTemplate.objects.all().order_by('channel', 'event_type')
+    active_count = templates.filter(is_active=True).count()
+    inactive_count = templates.filter(is_active=False).count()
+    return render(request, 'adminpanel/notifications/templates/list.html', {
+        'templates': templates,
+        'active_count': active_count,
+        'inactive_count': inactive_count,
+    })
+
+
+@login_required
+@user_passes_test(is_admin)
+def notification_template_add(request):
+    if request.method == 'POST':
+        try:
+            NotificationTemplate.objects.create(
+                name=request.POST.get('name'),
+                event_type=request.POST.get('event_type'),
+                channel=request.POST.get('channel'),
+                subject=request.POST.get('subject', ''),
+                body_template=request.POST.get('body_template', ''),
+                is_active=request.POST.get('is_active') == 'on',
+            )
+            messages.success(request, 'Notification template created!')
+            return redirect('adminpanel:notification_template_list')
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+
+    return render(request, 'adminpanel/notifications/templates/add.html', {
+        'event_types': NotificationTemplate.EVENT_TYPES,
+        'channel_choices': NotificationTemplate.CHANNEL_CHOICES,
+    })
+
+
+@login_required
+@user_passes_test(is_admin)
+def notification_template_edit(request, template_id):
+    tmpl = get_object_or_404(NotificationTemplate, id=template_id)
+    if request.method == 'POST':
+        try:
+            tmpl.name = request.POST.get('name')
+            tmpl.event_type = request.POST.get('event_type')
+            tmpl.channel = request.POST.get('channel')
+            tmpl.subject = request.POST.get('subject', '')
+            tmpl.body_template = request.POST.get('body_template', '')
+            tmpl.is_active = request.POST.get('is_active') == 'on'
+            tmpl.save()
+            messages.success(request, 'Template updated!')
+            return redirect('adminpanel:notification_template_list')
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+
+    return render(request, 'adminpanel/notifications/templates/edit.html', {
+        'tmpl': tmpl,
+        'event_types': NotificationTemplate.EVENT_TYPES,
+        'channel_choices': NotificationTemplate.CHANNEL_CHOICES,
+    })
+
+
+@login_required
+@user_passes_test(is_admin)
+def notification_template_delete(request, template_id):
+    tmpl = get_object_or_404(NotificationTemplate, id=template_id)
+    if request.method == 'POST':
+        tmpl.delete()
+        messages.success(request, 'Template deleted.')
+        return redirect('adminpanel:notification_template_list')
+    return render(request, 'adminpanel/notifications/templates/delete_confirm.html', {'tmpl': tmpl})
+
+
+@login_required
+@user_passes_test(is_admin)
+def notification_template_toggle(request, template_id):
+    tmpl = get_object_or_404(NotificationTemplate, id=template_id)
+    tmpl.is_active = not tmpl.is_active
+    tmpl.save()
+    status = 'activated' if tmpl.is_active else 'deactivated'
+    messages.success(request, f'Template "{tmpl.name}" {status}.')
+    return redirect('adminpanel:notification_template_list')
+
+
+# ── NOTIFICATION LOGS ───────────────────────────────────────────────
+
+@login_required
+@user_passes_test(is_admin)
+def notification_log_list(request):
+    search = request.GET.get('search', '')
+    status = request.GET.get('status', '')
+    channel = request.GET.get('channel', '')
+
+    logs = Notification.objects.select_related('user', 'template').order_by('-created_at')
+
+    total = logs.count()
+    sent_count = logs.filter(status='sent').count()
+    failed_count = logs.filter(status='failed').count()
+    pending_count = logs.filter(status='pending').count()
+
+    if search:
+        logs = logs.filter(
+            Q(recipient__icontains=search) |
+            Q(subject__icontains=search) |
+            Q(user__email__icontains=search)
+        )
+    if status:
+        logs = logs.filter(status=status)
+    if channel:
+        logs = logs.filter(channel=channel)
+
+    paginator = Paginator(logs, 25)
+    logs = paginator.get_page(request.GET.get('page', 1))
+
+    return render(request, 'adminpanel/notifications/logs/list.html', {
+        'logs': logs,
+        'search': search,
+        'status': status,
+        'channel': channel,
+        'total': total,
+        'sent_count': sent_count,
+        'failed_count': failed_count,
+        'pending_count': pending_count,
+    })
+
+
+@login_required
+@user_passes_test(is_admin)
+def notification_log_detail(request, log_id):
+    log = get_object_or_404(Notification.objects.select_related('user', 'template'), id=log_id)
+    return render(request, 'adminpanel/notifications/logs/detail.html', {'log': log})
+
+
+# ── STOCK ALERTS ────────────────────────────────────────────────────
+
+@login_required
+@user_passes_test(is_admin)
+def stock_alert_list(request):
+    search = request.GET.get('search', '')
+    status = request.GET.get('status', '')
+
+    alerts = StockAlert.objects.select_related('product', 'variant').order_by('-created_at')
+
+    total = alerts.count()
+    active_count = alerts.filter(is_notified=False).count()
+    notified_count = alerts.filter(is_notified=True).count()
+
+    if search:
+        alerts = alerts.filter(
+            Q(customer_email__icontains=search) |
+            Q(product__name__icontains=search)
+        )
+    if status == 'active':
+        alerts = alerts.filter(is_notified=False)
+    elif status == 'notified':
+        alerts = alerts.filter(is_notified=True)
+
+    paginator = Paginator(alerts, 25)
+    alerts = paginator.get_page(request.GET.get('page', 1))
+
+    return render(request, 'adminpanel/notifications/stock_alerts/list.html', {
+        'alerts': alerts,
+        'search': search,
+        'status': status,
+        'total': total,
+        'active_count': active_count,
+        'notified_count': notified_count,
+    })
+
+
+@login_required
+@user_passes_test(is_admin)
+def stock_alert_delete(request, alert_id):
+    alert = get_object_or_404(StockAlert, id=alert_id)
+    if request.method == 'POST':
+        alert.delete()
+        messages.success(request, 'Stock alert deleted.')
+        return redirect('adminpanel:stock_alert_list')
+    return redirect('adminpanel:stock_alert_list')
+
+
+@login_required
+@user_passes_test(is_admin)
+@require_http_methods(["POST"])
+def stock_alert_notify(request, alert_id):
+    """Manually trigger notification for a stock alert"""
+    from notifications.views import notify_stock_alerts
+    alert = get_object_or_404(StockAlert, id=alert_id)
+    try:
+        notify_stock_alerts(alert.product, alert.variant)
+        messages.success(request, f'Notification sent to {alert.customer_email}.')
+    except Exception as e:
+        messages.error(request, f'Failed to notify: {str(e)}')
+    return redirect('adminpanel:stock_alert_list')
