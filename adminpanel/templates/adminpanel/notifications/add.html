@@ -1,5 +1,6 @@
 {% extends 'admin-dashboard.html' %}
 {% load static %}
+{% load dict_filters %}
 {% block content %}
 <style>
   .page-header{background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:20px;border-radius:8px;margin-bottom:30px}
@@ -79,8 +80,18 @@
                     <span class="var-chip" onclick="insertVar('{{ v }}')">{{ v }}</span>
                   {% endfor %}
                 </div>
-                <textarea name="body_template" id="id_body_template" class="form-control" rows="10"
-                  placeholder="Hi {{ '{{' }} customer_name {{ '}}' }},&#10;&#10;Your order #{{ '{{' }} order_number {{ '}}' }} has been confirmed.&#10;&#10;Total: {{ '{{' }} currency {{ '}}' }} {{ '{{' }} total_amount {{ '}}' }}&#10;&#10;View your order: {{ '{{' }} order_url {{ '}}' }}" required></textarea>
+                <textarea name="body_template"
+          id="id_body_template"
+          class="form-control"
+          rows="10"
+          placeholder="Hi &#123;&#123; customer_name &#125;&#125;,
+
+Your order #&#123;&#123; order_number &#125;&#125; has been confirmed.
+
+Total: &#123;&#123; currency &#125;&#125; &#123;&#123; total_amount &#125;&#125;
+
+View your order: &#123;&#123; order_url &#125;&#125;"
+required></textarea>
                 <small class="text-muted">Use Django template syntax: <code>&#123;&#123; variable &#125;&#125;</code></small>
               </div>
 
