@@ -1,0 +1,228 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header d-flex justify-content-between align-items-center mb-4" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb);color:white;padding:20px;border-radius:8px;">
+      <div>
+        <h3 class="mb-1"><i class="mdi mdi-pencil"></i> Edit Reading Glasses</h3>
+        <p class="mb-0 opacity-75">{{ product.name }}</p>
+      </div>
+      <a href="{% url 'adminpanel:reading_glasses_list' %}" class="btn btn-white" style="color:#a18cd1!important;">
+        <i class="mdi mdi-arrow-left"></i> Back
+      </a>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button></div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" name="delete_image_ids" id="deleteImageIds" value="">
+      <div class="row">
+
+        <div class="col-md-8">
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-4">Basic Information</h5>
+              <div class="form-group">
+                <label class="font-weight-bold">Product Name <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control form-control-lg" value="{{ product.name }}" required>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">SKU</label>
+                    <input type="text" name="sku" class="form-control" value="{{ product.sku }}" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Slug</label>
+                    <input type="text" name="slug" class="form-control" value="{{ product.slug }}" required>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold">Gender</label>
+                <select name="gender" class="form-control">
+                  <option value="unisex" {% if product.gender == 'unisex' %}selected{% endif %}>Unisex</option>
+                  <option value="male" {% if product.gender == 'male' %}selected{% endif %}>For Him</option>
+                  <option value="female" {% if product.gender == 'female' %}selected{% endif %}>For Her</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold">Short Description</label>
+                <input type="text" name="short_description" class="form-control" value="{{ product.short_description }}">
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold">Full Description</label>
+                <textarea name="description" class="form-control" rows="4">{{ product.description }}</textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-4">Pricing & Inventory</h5>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Price (QAR)</label>
+                    <input type="number" name="base_price" class="form-control" step="0.01" value="{{ product.base_price }}" required>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Compare Price</label>
+                    <input type="number" name="compare_at_price" class="form-control" step="0.01" value="{{ product.compare_at_price|default:'' }}">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Stock</label>
+                    <input type="number" name="stock_quantity" class="form-control" value="{{ product.stock_quantity }}">
+                  </div>
+                </div>
+              </div>
+              <div class="form-check form-check-flat form-check-primary">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="track_inventory" {% if product.track_inventory %}checked{% endif %}> Track Inventory
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Variants -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title text-muted mb-0">Color Variants</h5>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="addVariant"><i class="mdi mdi-plus"></i> Add Color</button>
+              </div>
+
+              <div class="mb-3 p-3" style="background:#f8f0ff;border-radius:6px;">
+                <label class="font-weight-bold text-muted small">Available Powers at Checkout:</label>
+                <div class="mt-1">
+                  {% for power in reading_powers %}
+                    <span class="badge badge-light mr-1" style="border:1px solid #a18cd1;color:#a18cd1;">{{ power }}</span>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <div id="variantRows">
+                {% for v in variants %}
+                <div class="row variant-row mb-2 align-items-center">
+                  <input type="hidden" name="variant_id[]" value="{{ v.id }}">
+                  <div class="col-md-4"><input type="text" name="variant_sku[]" class="form-control form-control-sm" value="{{ v.variant_sku }}" placeholder="SKU"></div>
+                  <div class="col-md-4"><input type="text" name="variant_color[]" class="form-control form-control-sm" value="{{ v.color_name }}" placeholder="Color"></div>
+                  <div class="col-md-2"><input type="number" name="variant_price[]" class="form-control form-control-sm" value="{{ v.price_adjustment }}" placeholder="+Price" step="0.01"></div>
+                  <div class="col-md-2"><input type="number" name="variant_stock[]" class="form-control form-control-sm" value="{{ v.stock_quantity }}" placeholder="Stock"></div>
+                </div>
+                {% empty %}
+                <div class="row variant-row mb-2 align-items-center">
+                  <input type="hidden" name="variant_id[]" value="0">
+                  <div class="col-md-4"><input type="text" name="variant_sku[]" class="form-control form-control-sm" placeholder="SKU"></div>
+                  <div class="col-md-4"><input type="text" name="variant_color[]" class="form-control form-control-sm" placeholder="Color"></div>
+                  <div class="col-md-2"><input type="number" name="variant_price[]" class="form-control form-control-sm" placeholder="+Price" step="0.01"></div>
+                  <div class="col-md-2"><input type="number" name="variant_stock[]" class="form-control form-control-sm" placeholder="Stock"></div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-4">Category & Brand</h5>
+              <div class="form-group">
+                <label class="font-weight-bold">Category</label>
+                <select name="category" class="form-control">
+                  {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold">Brand</label>
+                <select name="brand" class="form-control">
+                  <option value="">No Brand</option>
+                  {% for b in brands %}
+                    <option value="{{ b.id }}" {% if product.brand_id == b.id %}selected{% endif %}>{{ b.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {% if images %}
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-3">Current Images</h5>
+              <div class="row">
+                {% for img in images %}
+                <div class="col-4 mb-2" id="imgWrapper_{{ img.id }}">
+                  <div style="position:relative;">
+                    <img src="{{ img.image.url }}" style="width:100%;height:70px;object-fit:cover;border-radius:6px;">
+                    <button type="button" onclick="removeImage({{ img.id }})" style="position:absolute;top:2px;right:2px;background:rgba(220,53,69,0.9);color:white;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;line-height:1;">×</button>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-3">Add More Images</h5>
+              <input type="file" name="images" class="form-control-file" multiple accept="image/*">
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-3">Visibility</h5>
+              <div class="form-check form-check-flat form-check-primary mb-2">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="is_active" {% if product.is_active %}checked{% endif %}> Active
+                </label>
+              </div>
+              <div class="form-check form-check-flat form-check-primary">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="is_featured" {% if product.is_featured %}checked{% endif %}> Featured
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'adminpanel:reading_glasses_list' %}" class="btn btn-light btn-lg">Cancel</a>
+            <button type="submit" class="btn btn-lg text-white font-weight-bold" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb);">Update</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+let deleteIds = [];
+function removeImage(id){ deleteIds.push(id); document.getElementById('deleteImageIds').value = deleteIds.join(','); document.getElementById('imgWrapper_' + id).style.opacity = '0.3'; }
+document.getElementById('addVariant').addEventListener('click', function(){
+  document.getElementById('variantRows').insertAdjacentHTML('beforeend', `
+    <div class="row variant-row mb-2 align-items-center">
+      <input type="hidden" name="variant_id[]" value="0">
+      <div class="col-md-4"><input type="text" name="variant_sku[]" class="form-control form-control-sm" placeholder="SKU"></div>
+      <div class="col-md-4"><input type="text" name="variant_color[]" class="form-control form-control-sm" placeholder="Color"></div>
+      <div class="col-md-2"><input type="number" name="variant_price[]" class="form-control form-control-sm" placeholder="+Price" step="0.01"></div>
+      <div class="col-md-2"><input type="number" name="variant_stock[]" class="form-control form-control-sm" placeholder="Stock"></div>
+    </div>`);
+});
+</script>
+{% endblock %}
