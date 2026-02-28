@@ -2623,3 +2623,534 @@ def job_customer_search(request):
     else:
         data = []
     return JsonResponse({'results': data})
+
+
+
+@login_required
+@user_passes_test(is_admin)
+def kids_list(request):
+    search = request.GET.get('search', '')
+    brand_id = request.GET.get('brand', '')
+    stock_status = request.GET.get('stock_status', '')
+
+    products = Product.objects.select_related('brand', 'category').filter(
+        age_group='kids'
+    ).order_by('-created_at')
+
+    total_count = products.count()
+    low_stock_count = products.filter(track_inventory=True, stock_quantity__lte=5, stock_quantity__gt=0).count()
+    out_of_stock_count = products.filter(track_inventory=True, stock_quantity=0).count()
+
+    if search:
+        products = products.filter(Q(name__icontains=search) | Q(sku__icontains=search))
+    if brand_id:
+        products = products.filter(brand_id=brand_id)
+    if stock_status == 'in_stock':
+        products = products.filter(stock_quantity__gt=5)
+    elif stock_status == 'low_stock':
+        products = products.filter(stock_quantity__lte=5, stock_quantity__gt=0)
+    elif stock_status == 'out_of_stock':
+        products = products.filter(stock_quantity=0)
+
+    paginator = Paginator(products, 20)
+    products = paginator.get_page(request.GET.get('page', 1))
+
+    context = {
+        'products': products,
+        'brands': Brand.objects.filter(available_for_kids=True, is_active=True),
+        'categories': Category.objects.filter(is_active=True),
+        'search': search,
+        'current_brand': brand_id,
+        'stock_status': stock_status,
+        'total_count': total_count,
+        'low_stock_count': low_stock_count,
+        'out_of_stock_count': out_of_stock_count,
+        'product_type_label': 'Kids',
+        'add_url': 'adminpanel:kids_add',
+    }
+    return render(request, 'adminpanel/kids/list.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def kids_add(request):
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                product = Product.objects.create(
+                    name=request.POST.get('name'),
+                    sku=request.POST.get('sku'),
+                    slug=request.POST.get('slug'),
+                    product_type=request.POST.get('product_type', 'eyeglasses'),
+                    category_id=request.POST.get('category'),
+                    brand_id=request.POST.get('brand') or None,
+                    short_description=request.POST.get('short_description', ''),
+                    description=request.POST.get('description', ''),
+                    gender=request.POST.get('gender', 'unisex'),
+                    age_group='kids',
+                    base_price=request.POST.get('base_price'),
+                    compare_at_price=request.POST.get('compare_at_price') or None,
+                    track_inventory=request.POST.get('track_inventory') == 'on',
+                    stock_quantity=int(request.POST.get('stock_quantity') or 0),
+                    is_active=request.POST.get('is_active') == 'on',
+                    is_featured=request.POST.get('is_featured') == 'on',
+                )
+                for idx, img in enumerate(request.FILES.getlist('images')):
+                    ProductImage.objects.create(product=product, image=img, is_primary=(idx == 0))
+
+                v_skus = request.POST.getlist('variant_sku[]')
+                v_colors = request.POST.getlist('variant_color[]')
+                v_sizes = request.POST.getlist('variant_size[]')
+                v_prices = request.POST.getlist('variant_price[]')
+                v_stocks = request.POST.getlist('variant_stock[]')
+                for sku, color, size, price, stock in zip(v_skus, v_colors, v_sizes, v_prices, v_stocks):
+                    if sku.strip():
+                        ProductVariant.objects.create(
+                            product=product, variant_sku=sku, color_name=color, size=size,
+                            price_adjustment=price or 0, stock_quantity=stock or 0
+                        )
+
+                s_keys = request.POST.getlist('spec_key[]')
+                s_values = request.POST.getlist('spec_value[]')
+                for key, val in zip(s_keys, s_values):
+                    if key.strip():
+                        ProductSpecification.objects.create(product=product, spec_key=key, spec_value=val)
+
+                messages.success(request, 'Kids product added!')
+                return redirect('adminpanel:kids_list')
+        except IntegrityError:
+            messages.error(request, 'SKU or Slug already exists.')
+        except Exception as e:
+            messages.error(request, str(e))
+
+    context = {
+        'brands': Brand.objects.filter(available_for_kids=True, is_active=True),
+        'categories': Category.objects.filter(is_active=True),
+        'product_types': [('eyeglasses', 'Eyeglasses'), ('sunglasses', 'Sunglasses')],
+        'section_label': 'Kids',
+        'list_url': 'adminpanel:kids_list',
+    }
+    return render(request, 'adminpanel/kids/add.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def kids_edit(request, product_id):
+    product = get_object_or_404(Product, id=product_id, age_group='kids')
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                product.name = request.POST.get('name')
+                product.sku = request.POST.get('sku')
+                product.slug = request.POST.get('slug')
+                product.product_type = request.POST.get('product_type')
+                product.category_id = request.POST.get('category')
+                product.brand_id = request.POST.get('brand') or None
+                product.short_description = request.POST.get('short_description', '')
+                product.description = request.POST.get('description', '')
+                product.gender = request.POST.get('gender', 'unisex')
+                product.base_price = request.POST.get('base_price')
+                product.compare_at_price = request.POST.get('compare_at_price') or None
+                product.track_inventory = request.POST.get('track_inventory') == 'on'
+                product.stock_quantity = int(request.POST.get('stock_quantity') or 0)
+                product.is_active = request.POST.get('is_active') == 'on'
+                product.is_featured = request.POST.get('is_featured') == 'on'
+                product.save()
+
+                for img in request.FILES.getlist('images'):
+                    ProductImage.objects.create(product=product, image=img)
+                del_ids = request.POST.get('delete_image_ids', '')
+                if del_ids:
+                    ProductImage.objects.filter(id__in=[int(i) for i in del_ids.split(',') if i.isdigit()]).delete()
+
+                v_ids = request.POST.getlist('variant_id[]')
+                v_skus = request.POST.getlist('variant_sku[]')
+                v_colors = request.POST.getlist('variant_color[]')
+                v_sizes = request.POST.getlist('variant_size[]')
+                v_prices = request.POST.getlist('variant_price[]')
+                v_stocks = request.POST.getlist('variant_stock[]')
+                kept_ids = []
+                for i, sku in enumerate(v_skus):
+                    if not sku.strip():
+                        continue
+                    vid = v_ids[i] if i < len(v_ids) else None
+                    if vid and vid != '0':
+                        v = ProductVariant.objects.get(id=vid)
+                        v.variant_sku = sku; v.color_name = v_colors[i]
+                        v.size = v_sizes[i]; v.price_adjustment = v_prices[i] or 0
+                        v.stock_quantity = v_stocks[i] or 0; v.save()
+                        kept_ids.append(v.id)
+                    else:
+                        v = ProductVariant.objects.create(
+                            product=product, variant_sku=sku, color_name=v_colors[i],
+                            size=v_sizes[i], price_adjustment=v_prices[i] or 0, stock_quantity=v_stocks[i] or 0
+                        )
+                        kept_ids.append(v.id)
+                product.variants.exclude(id__in=kept_ids).delete()
+
+                messages.success(request, 'Kids product updated!')
+                return redirect('adminpanel:kids_list')
+        except Exception as e:
+            messages.error(request, str(e))
+
+    context = {
+        'product': product,
+        'brands': Brand.objects.filter(available_for_kids=True, is_active=True),
+        'categories': Category.objects.filter(is_active=True),
+        'product_types': [('eyeglasses', 'Eyeglasses'), ('sunglasses', 'Sunglasses')],
+        'images': product.images.all(),
+        'variants': product.variants.all(),
+        'specifications': product.specifications.all(),
+        'section_label': 'Kids',
+        'list_url': 'adminpanel:kids_list',
+    }
+    return render(request, 'adminpanel/kids/edit.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def kids_delete(request, product_id):
+    product = get_object_or_404(Product, id=product_id, age_group='kids')
+    if request.method == 'POST':
+        product.delete()
+        messages.success(request, 'Kids product deleted.')
+        return redirect('adminpanel:kids_list')
+    return render(request, 'adminpanel/kids/delete_confirm.html', {'product': product})
+
+
+# ==================== ACCESSORIES ====================
+
+@login_required
+@user_passes_test(is_admin)
+def accessories_list(request):
+    search = request.GET.get('search', '')
+    brand_id = request.GET.get('brand', '')
+    stock_status = request.GET.get('stock_status', '')
+
+    products = Product.objects.select_related('brand', 'category').filter(
+        product_type='accessories'
+    ).order_by('-created_at')
+
+    total_count = products.count()
+    low_stock_count = products.filter(track_inventory=True, stock_quantity__lte=5, stock_quantity__gt=0).count()
+    out_of_stock_count = products.filter(track_inventory=True, stock_quantity=0).count()
+
+    if search:
+        products = products.filter(Q(name__icontains=search) | Q(sku__icontains=search))
+    if brand_id:
+        products = products.filter(brand_id=brand_id)
+    if stock_status == 'in_stock':
+        products = products.filter(stock_quantity__gt=5)
+    elif stock_status == 'low_stock':
+        products = products.filter(stock_quantity__lte=5, stock_quantity__gt=0)
+    elif stock_status == 'out_of_stock':
+        products = products.filter(stock_quantity=0)
+
+    paginator = Paginator(products, 20)
+    products = paginator.get_page(request.GET.get('page', 1))
+
+    context = {
+        'products': products,
+        'brands': Brand.objects.filter(available_for_accessories=True, is_active=True),
+        'categories': Category.objects.filter(is_active=True),
+        'search': search,
+        'current_brand': brand_id,
+        'stock_status': stock_status,
+        'total_count': total_count,
+        'low_stock_count': low_stock_count,
+        'out_of_stock_count': out_of_stock_count,
+    }
+    return render(request, 'adminpanel/accessories/list.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def accessories_add(request):
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                product = Product.objects.create(
+                    name=request.POST.get('name'),
+                    sku=request.POST.get('sku'),
+                    slug=request.POST.get('slug'),
+                    product_type='accessories',
+                    category_id=request.POST.get('category'),
+                    brand_id=request.POST.get('brand') or None,
+                    short_description=request.POST.get('short_description', ''),
+                    description=request.POST.get('description', ''),
+                    gender=request.POST.get('gender', 'unisex'),
+                    age_group=request.POST.get('age_group', 'adult'),
+                    base_price=request.POST.get('base_price'),
+                    compare_at_price=request.POST.get('compare_at_price') or None,
+                    track_inventory=request.POST.get('track_inventory') == 'on',
+                    stock_quantity=int(request.POST.get('stock_quantity') or 0),
+                    is_active=request.POST.get('is_active') == 'on',
+                    is_featured=request.POST.get('is_featured') == 'on',
+                )
+                for idx, img in enumerate(request.FILES.getlist('images')):
+                    ProductImage.objects.create(product=product, image=img, is_primary=(idx == 0))
+
+                s_keys = request.POST.getlist('spec_key[]')
+                s_values = request.POST.getlist('spec_value[]')
+                for key, val in zip(s_keys, s_values):
+                    if key.strip():
+                        ProductSpecification.objects.create(product=product, spec_key=key, spec_value=val)
+
+                messages.success(request, 'Accessory added!')
+                return redirect('adminpanel:accessories_list')
+        except IntegrityError:
+            messages.error(request, 'SKU or Slug already exists.')
+        except Exception as e:
+            messages.error(request, str(e))
+
+    context = {
+        'brands': Brand.objects.filter(available_for_accessories=True, is_active=True),
+        'categories': Category.objects.filter(is_active=True),
+    }
+    return render(request, 'adminpanel/accessories/add.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def accessories_edit(request, product_id):
+    product = get_object_or_404(Product, id=product_id, product_type='accessories')
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                product.name = request.POST.get('name')
+                product.sku = request.POST.get('sku')
+                product.slug = request.POST.get('slug')
+                product.category_id = request.POST.get('category')
+                product.brand_id = request.POST.get('brand') or None
+                product.short_description = request.POST.get('short_description', '')
+                product.description = request.POST.get('description', '')
+                product.gender = request.POST.get('gender', 'unisex')
+                product.age_group = request.POST.get('age_group', 'adult')
+                product.base_price = request.POST.get('base_price')
+                product.compare_at_price = request.POST.get('compare_at_price') or None
+                product.track_inventory = request.POST.get('track_inventory') == 'on'
+                product.stock_quantity = int(request.POST.get('stock_quantity') or 0)
+                product.is_active = request.POST.get('is_active') == 'on'
+                product.is_featured = request.POST.get('is_featured') == 'on'
+                product.save()
+
+                for img in request.FILES.getlist('images'):
+                    ProductImage.objects.create(product=product, image=img)
+                del_ids = request.POST.get('delete_image_ids', '')
+                if del_ids:
+                    ProductImage.objects.filter(id__in=[int(i) for i in del_ids.split(',') if i.isdigit()]).delete()
+
+                messages.success(request, 'Accessory updated!')
+                return redirect('adminpanel:accessories_list')
+        except Exception as e:
+            messages.error(request, str(e))
+
+    context = {
+        'product': product,
+        'brands': Brand.objects.filter(available_for_accessories=True, is_active=True),
+        'categories': Category.objects.filter(is_active=True),
+        'images': product.images.all(),
+        'specifications': product.specifications.all(),
+    }
+    return render(request, 'adminpanel/accessories/edit.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def accessories_delete(request, product_id):
+    product = get_object_or_404(Product, id=product_id, product_type='accessories')
+    if request.method == 'POST':
+        product.delete()
+        messages.success(request, 'Accessory deleted.')
+        return redirect('adminpanel:accessories_list')
+    return render(request, 'adminpanel/accessories/delete_confirm.html', {'product': product})
+
+
+# ==================== READING GLASSES ====================
+
+@login_required
+@user_passes_test(is_admin)
+def reading_glasses_list(request):
+    search = request.GET.get('search', '')
+    brand_id = request.GET.get('brand', '')
+    stock_status = request.GET.get('stock_status', '')
+
+    products = Product.objects.select_related('brand', 'category').filter(
+        product_type='reading_glasses'
+    ).order_by('-created_at')
+
+    total_count = products.count()
+    low_stock_count = products.filter(track_inventory=True, stock_quantity__lte=5, stock_quantity__gt=0).count()
+    out_of_stock_count = products.filter(track_inventory=True, stock_quantity=0).count()
+
+    if search:
+        products = products.filter(Q(name__icontains=search) | Q(sku__icontains=search))
+    if brand_id:
+        products = products.filter(brand_id=brand_id)
+    if stock_status == 'in_stock':
+        products = products.filter(stock_quantity__gt=5)
+    elif stock_status == 'low_stock':
+        products = products.filter(stock_quantity__lte=5, stock_quantity__gt=0)
+    elif stock_status == 'out_of_stock':
+        products = products.filter(stock_quantity=0)
+
+    paginator = Paginator(products, 20)
+    products = paginator.get_page(request.GET.get('page', 1))
+
+    context = {
+        'products': products,
+        'brands': Brand.objects.filter(available_for_reading_glasses=True, is_active=True),
+        'categories': Category.objects.filter(is_active=True),
+        'search': search,
+        'current_brand': brand_id,
+        'stock_status': stock_status,
+        'total_count': total_count,
+        'low_stock_count': low_stock_count,
+        'out_of_stock_count': out_of_stock_count,
+    }
+    return render(request, 'adminpanel/reading_glasses/list.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def reading_glasses_add(request):
+    # Reading glasses have power options (e.g. +1.00, +1.50 ... +3.50)
+    READING_POWERS = ['+1.00', '+1.25', '+1.50', '+1.75', '+2.00', '+2.25', '+2.50', '+2.75', '+3.00', '+3.25', '+3.50']
+
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                product = Product.objects.create(
+                    name=request.POST.get('name'),
+                    sku=request.POST.get('sku'),
+                    slug=request.POST.get('slug'),
+                    product_type='reading_glasses',
+                    category_id=request.POST.get('category'),
+                    brand_id=request.POST.get('brand') or None,
+                    short_description=request.POST.get('short_description', ''),
+                    description=request.POST.get('description', ''),
+                    gender=request.POST.get('gender', 'unisex'),
+                    age_group='adult',
+                    base_price=request.POST.get('base_price'),
+                    compare_at_price=request.POST.get('compare_at_price') or None,
+                    track_inventory=request.POST.get('track_inventory') == 'on',
+                    stock_quantity=int(request.POST.get('stock_quantity') or 0),
+                    is_active=request.POST.get('is_active') == 'on',
+                    is_featured=request.POST.get('is_featured') == 'on',
+                )
+                for idx, img in enumerate(request.FILES.getlist('images')):
+                    ProductImage.objects.create(product=product, image=img, is_primary=(idx == 0))
+
+                # Save color variants
+                v_skus = request.POST.getlist('variant_sku[]')
+                v_colors = request.POST.getlist('variant_color[]')
+                v_prices = request.POST.getlist('variant_price[]')
+                v_stocks = request.POST.getlist('variant_stock[]')
+                for sku, color, price, stock in zip(v_skus, v_colors, v_prices, v_stocks):
+                    if sku.strip():
+                        ProductVariant.objects.create(
+                            product=product, variant_sku=sku, color_name=color,
+                            price_adjustment=price or 0, stock_quantity=stock or 0
+                        )
+
+                s_keys = request.POST.getlist('spec_key[]')
+                s_values = request.POST.getlist('spec_value[]')
+                for key, val in zip(s_keys, s_values):
+                    if key.strip():
+                        ProductSpecification.objects.create(product=product, spec_key=key, spec_value=val)
+
+                messages.success(request, 'Reading glasses added!')
+                return redirect('adminpanel:reading_glasses_list')
+        except IntegrityError:
+            messages.error(request, 'SKU or Slug already exists.')
+        except Exception as e:
+            messages.error(request, str(e))
+
+    context = {
+        'brands': Brand.objects.filter(available_for_reading_glasses=True, is_active=True),
+        'categories': Category.objects.filter(is_active=True),
+        'reading_powers': READING_POWERS,
+    }
+    return render(request, 'adminpanel/reading_glasses/add.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def reading_glasses_edit(request, product_id):
+    READING_POWERS = ['+1.00', '+1.25', '+1.50', '+1.75', '+2.00', '+2.25', '+2.50', '+2.75', '+3.00', '+3.25', '+3.50']
+    product = get_object_or_404(Product, id=product_id, product_type='reading_glasses')
+
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                product.name = request.POST.get('name')
+                product.sku = request.POST.get('sku')
+                product.slug = request.POST.get('slug')
+                product.category_id = request.POST.get('category')
+                product.brand_id = request.POST.get('brand') or None
+                product.short_description = request.POST.get('short_description', '')
+                product.description = request.POST.get('description', '')
+                product.gender = request.POST.get('gender', 'unisex')
+                product.base_price = request.POST.get('base_price')
+                product.compare_at_price = request.POST.get('compare_at_price') or None
+                product.track_inventory = request.POST.get('track_inventory') == 'on'
+                product.stock_quantity = int(request.POST.get('stock_quantity') or 0)
+                product.is_active = request.POST.get('is_active') == 'on'
+                product.is_featured = request.POST.get('is_featured') == 'on'
+                product.save()
+
+                for img in request.FILES.getlist('images'):
+                    ProductImage.objects.create(product=product, image=img)
+                del_ids = request.POST.get('delete_image_ids', '')
+                if del_ids:
+                    ProductImage.objects.filter(id__in=[int(i) for i in del_ids.split(',') if i.isdigit()]).delete()
+
+                v_ids = request.POST.getlist('variant_id[]')
+                v_skus = request.POST.getlist('variant_sku[]')
+                v_colors = request.POST.getlist('variant_color[]')
+                v_prices = request.POST.getlist('variant_price[]')
+                v_stocks = request.POST.getlist('variant_stock[]')
+                kept_ids = []
+                for i, sku in enumerate(v_skus):
+                    if not sku.strip():
+                        continue
+                    vid = v_ids[i] if i < len(v_ids) else None
+                    if vid and vid != '0':
+                        v = ProductVariant.objects.get(id=vid)
+                        v.variant_sku = sku; v.color_name = v_colors[i]
+                        v.price_adjustment = v_prices[i] or 0; v.stock_quantity = v_stocks[i] or 0
+                        v.save(); kept_ids.append(v.id)
+                    else:
+                        v = ProductVariant.objects.create(
+                            product=product, variant_sku=sku, color_name=v_colors[i],
+                            price_adjustment=v_prices[i] or 0, stock_quantity=v_stocks[i] or 0
+                        )
+                        kept_ids.append(v.id)
+                product.variants.exclude(id__in=kept_ids).delete()
+
+                messages.success(request, 'Reading glasses updated!')
+                return redirect('adminpanel:reading_glasses_list')
+        except Exception as e:
+            messages.error(request, str(e))
+
+    context = {
+        'product': product,
+        'brands': Brand.objects.filter(available_for_reading_glasses=True, is_active=True),
+        'categories': Category.objects.filter(is_active=True),
+        'images': product.images.all(),
+        'variants': product.variants.all(),
+        'specifications': product.specifications.all(),
+        'reading_powers': READING_POWERS,
+    }
+    return render(request, 'adminpanel/reading_glasses/edit.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def reading_glasses_delete(request, product_id):
+    product = get_object_or_404(Product, id=product_id, product_type='reading_glasses')
+    if request.method == 'POST':
+        product.delete()
+        messages.success(request, 'Reading glasses deleted.')
+        return redirect('adminpanel:reading_glasses_list')
+    return render(request, 'adminpanel/reading_glasses/delete_confirm.html', {'product': product})
