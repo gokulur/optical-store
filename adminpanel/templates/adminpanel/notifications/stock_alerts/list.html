@@ -1,0 +1,171 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+<style>
+  .page-header{background:linear-gradient(135deg,#f97316,#ff5858);color:white;padding:20px;border-radius:8px;margin-bottom:30px}
+  .sa-badge-active  {background:#fff3e8;color:#b45309;display:inline-flex;align-items:center;gap:3px;border-radius:20px;padding:3px 10px;font-size:.7rem;font-weight:700}
+  .sa-badge-notified{background:#e6faf7;color:#0f8c6f;display:inline-flex;align-items:center;gap:3px;border-radius:20px;padding:3px 10px;font-size:.7rem;font-weight:700}
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+          <h3 class="mb-1"><i class="mdi mdi-bell-ring-outline"></i> Stock Alerts</h3>
+          <p class="mb-0 opacity-75">Customers waiting for out-of-stock products</p>
+        </div>
+      </div>
+    </div>
+
+    {% if messages %}{% for m in messages %}
+      <div class="alert alert-{{ m.tags }} alert-dismissible fade show">{{ m }}<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button></div>
+    {% endfor %}{% endif %}
+
+    <!-- Stats -->
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <div class="card text-center p-3" style="border-left:4px solid #f97316;">
+          <h4 class="font-weight-bold mb-0">{{ total }}</h4><small class="text-muted">Total Alerts</small>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center p-3" style="border-left:4px solid #ffc107;">
+          <h4 class="font-weight-bold mb-0 text-warning">{{ active_count }}</h4><small class="text-muted">Active (Waiting)</small>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center p-3" style="border-left:4px solid #1bcfb4;">
+          <h4 class="font-weight-bold mb-0 text-success">{{ notified_count }}</h4><small class="text-muted">Notified</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+      <div class="card-body py-3">
+        <form method="GET" class="form-inline flex-wrap" style="gap:10px;">
+          <input type="text" name="search" class="form-control" placeholder="Search email or product..." value="{{ search }}">
+          <select name="status" class="form-control">
+            <option value="">All</option>
+            <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+            <option value="notified" {% if status == 'notified' %}selected{% endif %}>Notified</option>
+          </select>
+          <button type="submit" class="btn btn-gradient-primary">Filter</button>
+          <a href="{% url 'adminpanel:stock_alert_list' %}" class="btn btn-light">Reset</a>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Customer Email</th>
+                <th>Variant</th>
+                <th>Power</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for alert in alerts %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    {% with alert.product.images.first as img %}
+                      {% if img %}
+                        <img src="{{ img.image.url }}" alt="" style="width:38px;height:38px;object-fit:cover;border-radius:6px;" class="mr-2">
+                      {% else %}
+                        <div class="mr-2" style="width:38px;height:38px;background:#fff3e8;border-radius:6px;display:flex;align-items:center;justify-content:center;">
+                          <i class="mdi mdi-bell text-warning"></i>
+                        </div>
+                      {% endif %}
+                    {% endwith %}
+                    <span class="font-weight-bold" style="font-size:.88rem;">{{ alert.product.name|truncatechars:30 }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span style="font-size:.85rem;">{{ alert.customer_email }}</span>
+                  {% if alert.customer_phone %}
+                    <br><small class="text-muted">{{ alert.customer_phone }}</small>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if alert.variant %}
+                    <span class="badge badge-light">{{ alert.variant.color_name }}</span>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if alert.required_power_left %}
+                    <small class="font-weight-bold">L: {{ alert.required_power_left }}<br>R: {{ alert.required_power_right }}</small>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if alert.is_notified %}
+                    <span class="sa-badge-notified">
+                      <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                      Notified {{ alert.notified_at|date:"d M" }}
+                    </span>
+                  {% else %}
+                    <span class="sa-badge-active">
+                      <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                      Watching
+                    </span>
+                  {% endif %}
+                </td>
+                <td><small class="text-muted">{{ alert.created_at|date:"d M Y" }}</small></td>
+                <td class="text-right">
+                  {% if not alert.is_notified %}
+                  <form method="POST" action="{% url 'adminpanel:stock_alert_notify' alert.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-inverse-success btn-sm btn-icon" title="Send Notification Now" onclick="return confirm('Send stock alert notification now?')">
+                      <i class="mdi mdi-send"></i>
+                    </button>
+                  </form>
+                  {% endif %}
+                  <form method="POST" action="{% url 'adminpanel:stock_alert_delete' alert.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-inverse-danger btn-sm btn-icon" title="Delete" onclick="return confirm('Delete this alert?')">
+                      <i class="mdi mdi-delete"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="text-center py-5">
+                  <i class="mdi mdi-bell-off-outline text-muted" style="font-size:3rem;"></i>
+                  <p class="mt-2 text-muted">No stock alerts found.</p>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% if alerts.has_other_pages %}
+        <nav class="mt-3">
+          <ul class="pagination justify-content-center">
+            {% if alerts.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ alerts.previous_page_number }}&search={{ search }}&status={{ status }}">Prev</a></li>{% endif %}
+            {% for n in alerts.paginator.page_range %}<li class="page-item {% if n == alerts.number %}active{% endif %}"><a class="page-link" href="?page={{ n }}&search={{ search }}&status={{ status }}">{{ n }}</a></li>{% endfor %}
+            {% if alerts.has_next %}<li class="page-item"><a class="page-link" href="?page={{ alerts.next_page_number }}&search={{ search }}&status={{ status }}">Next</a></li>{% endif %}
+          </ul>
+        </nav>
+        {% endif %}
+
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
