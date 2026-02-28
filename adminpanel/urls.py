@@ -166,6 +166,23 @@ urlpatterns = [
     path('reading-glasses/add/',                         views.reading_glasses_add,    name='reading_glasses_add'),
     path('reading-glasses/<int:product_id>/edit/',       views.reading_glasses_edit,   name='reading_glasses_edit'),
     path('reading-glasses/<int:product_id>/delete/',     views.reading_glasses_delete, name='reading_glasses_delete'),
+
+
+    # ── NOTIFICATION TEMPLATES ─────────────────────────────────────────────────
+    path('notifications/templates/',                              views.notification_template_list,   name='notification_template_list'),
+    path('notifications/templates/add/',                          views.notification_template_add,    name='notification_template_add'),
+    path('notifications/templates/<int:template_id>/edit/',       views.notification_template_edit,   name='notification_template_edit'),
+    path('notifications/templates/<int:template_id>/delete/',     views.notification_template_delete, name='notification_template_delete'),
+    path('notifications/templates/<int:template_id>/toggle/',     views.notification_template_toggle, name='notification_template_toggle'),
+
+    # ── NOTIFICATION LOGS ──────────────────────────────────────────────────────
+    path('notifications/logs/',                       views.notification_log_list,   name='notification_log_list'),
+    path('notifications/logs/<int:log_id>/',          views.notification_log_detail, name='notification_log_detail'),
+
+    # ── STOCK ALERTS ───────────────────────────────────────────────────────────
+    path('notifications/stock-alerts/',                            views.stock_alert_list,   name='stock_alert_list'),
+    path('notifications/stock-alerts/<int:alert_id>/delete/',      views.stock_alert_delete, name='stock_alert_delete'),
+    path('notifications/stock-alerts/<int:alert_id>/notify/',      views.stock_alert_notify, name='stock_alert_notify'),
 ]
 
 
