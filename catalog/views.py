@@ -645,3 +645,59 @@ def medical_lens_detail(request, pk):
         'related_lens_options': related_lens_options,
     }
     return render(request, 'medical_lens_detail.html', context)
+
+
+
+# ── Accessories List ───────────────────────────────────────────────────────────
+def accessories_list(request):
+    """Accessories listing page with filtering"""
+    queryset = Product.objects.filter(
+        product_type='accessories',
+        is_active=True
+    ).select_related('brand', 'category').prefetch_related('images', 'variants')
+
+    # 1. Brand Filter
+    selected_brands = request.GET.getlist('brand')
+    if selected_brands:
+        queryset = queryset.filter(brand__slug__in=selected_brands)
+
+    # 2. Category Filter (accessory sub-types: cases, cleaners, straps, etc.)
+    selected_categories = request.GET.getlist('category')
+    if selected_categories:
+        queryset = queryset.filter(category__slug__in=selected_categories)
+
+    # 3. Price Filter
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        queryset = queryset.filter(base_price__gte=min_price)
+    if max_price:
+        queryset = queryset.filter(base_price__lte=max_price)
+
+    # 4. Sorting
+    sort_option = request.GET.get('sort', '-created_at')
+    valid_sorts = ['-created_at', 'base_price', '-base_price', 'name', '-name']
+    queryset = queryset.order_by(sort_option if sort_option in valid_sorts else '-created_at')
+
+    # 5. Pagination
+    paginator = Paginator(queryset, 24)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Price range for slider
+    price_range = Product.objects.filter(
+        product_type='accessories', is_active=True
+    ).aggregate(min_price=Min('base_price'), max_price=Max('base_price'))
+
+    context = {
+        'products':           page_obj,
+        'page_obj':           page_obj,
+        'is_paginated':       page_obj.has_other_pages(),
+        'brands':             Brand.objects.filter(is_active=True).order_by('display_order', 'name'),
+        'categories':         Category.objects.filter(is_active=True).order_by('name'),
+        'price_range':        price_range,
+        'selected_brands':    selected_brands,
+        'selected_categories': selected_categories,
+        'current_sort':       sort_option,
+    }
+    return render(request, 'accessories_list.html', context)
