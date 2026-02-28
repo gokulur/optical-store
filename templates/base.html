@@ -298,7 +298,388 @@
 
     {% block extra_styles %}{% endblock %}
   </style>
+<style id="aa-search-css">
 
+/* ── Search Wrapper ──────────────────────────────────────────────── */
+.aa-search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 520px;
+  margin-right: 24px;
+}
+
+.aa-search-form {
+  display: flex;
+  align-items: center;
+  background: var(--aa-white);
+  border: 1.5px solid var(--aa-border);
+  border-radius: 50px;
+  overflow: visible;
+  height: 42px;
+  transition: border-color .2s, box-shadow .2s;
+  position: relative;
+  z-index: 2;
+}
+.aa-search-wrap.focused .aa-search-form {
+  border-color: var(--aa-accent);
+  box-shadow: 0 0 0 3px rgba(26,111,168,.13);
+  border-radius: 18px 18px 0 0;
+  border-bottom-color: transparent;
+}
+.aa-search-wrap.focused.empty .aa-search-form {
+  border-radius: 50px;
+  border-bottom-color: var(--aa-accent);
+}
+
+.aa-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 0 16px 0 18px;
+  font-family: var(--font-body);
+  font-size: 1.35rem;
+  color: var(--aa-dark);
+  background: transparent;
+  min-width: 0;
+}
+.aa-search-input::placeholder { color: #9ab; }
+
+.aa-search-clear {
+  display: none;
+  background: none;
+  border: none;
+  padding: 0 4px 0 0;
+  color: #bbb;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color .2s;
+  flex-shrink: 0;
+}
+.aa-search-clear:hover { color: var(--aa-accent); }
+.aa-search-wrap.has-value .aa-search-clear { display: flex; align-items: center; }
+
+.aa-search-submit {
+  width: 46px;
+  height: 42px;
+  border: none;
+  background: var(--aa-accent);
+  color: #fff;
+  font-size: 1.55rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 50px 50px 0;
+  transition: background .2s;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.aa-search-submit:hover { background: var(--aa-accent-hover); }
+
+/* ── Dropdown ────────────────────────────────────────────────────── */
+.aa-search-dropdown {
+  position: absolute;
+  top: calc(100% - 2px);
+  left: 0; right: 0;
+  background: var(--aa-white);
+  border: 1.5px solid var(--aa-accent);
+  border-top: none;
+  border-radius: 0 0 18px 18px;
+  box-shadow: 0 16px 40px rgba(26,42,58,.18);
+  z-index: 99999;
+  overflow: hidden;
+  display: none;
+  max-height: 480px;
+  overflow-y: auto;
+}
+.aa-search-wrap.focused:not(.empty) .aa-search-dropdown.has-results,
+.aa-search-wrap.focused .aa-search-dropdown.show-popular { display: block; }
+
+/* Scrollbar */
+.aa-search-dropdown::-webkit-scrollbar { width: 4px; }
+.aa-search-dropdown::-webkit-scrollbar-track { background: transparent; }
+.aa-search-dropdown::-webkit-scrollbar-thumb { background: var(--aa-border); border-radius: 2px; }
+
+/* Section label */
+.aa-dd-section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--aa-accent);
+}
+.aa-dd-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--aa-border);
+}
+
+/* Item row */
+.aa-dd-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  text-decoration: none;
+  color: var(--aa-dark);
+  font-size: 1.3rem;
+  border-bottom: 1px solid #f3f7fb;
+  cursor: pointer;
+  transition: background .15s, padding-left .15s;
+  position: relative;
+}
+.aa-dd-item:last-child { border-bottom: none; }
+.aa-dd-item:hover,
+.aa-dd-item.highlighted { background: #eef3f8; padding-left: 22px; }
+
+/* Thumb */
+.aa-dd-thumb {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: var(--aa-bg);
+  object-fit: contain;
+  flex-shrink: 0;
+  border: 1px solid var(--aa-border);
+  padding: 4px;
+}
+.aa-dd-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: var(--aa-bg);
+  border: 1px solid var(--aa-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.6rem;
+}
+
+/* Text */
+.aa-dd-text { flex: 1; min-width: 0; }
+.aa-dd-name {
+  font-weight: 600;
+  color: var(--aa-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 1.3rem;
+}
+.aa-dd-name mark {
+  background: transparent;
+  color: var(--aa-accent);
+  font-weight: 700;
+}
+.aa-dd-sub {
+  font-size: 1.1rem;
+  color: #8aa;
+  margin-top: 1px;
+}
+
+/* Price tag */
+.aa-dd-price {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--aa-accent);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Type badge */
+.aa-dd-badge {
+  font-size: .95rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.aa-dd-badge--brand    { background: #e8f4ff; color: #1a6fa8; }
+.aa-dd-badge--category { background: #eef8ee; color: #2a8a2a; }
+.aa-dd-badge--popular  { background: #fff4e5; color: #c07000; }
+
+/* View all row */
+.aa-dd-viewall {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 16px;
+  background: #f5f9fd;
+  color: var(--aa-accent);
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  border-top: 1px solid var(--aa-border);
+  transition: background .2s;
+}
+.aa-dd-viewall:hover { background: var(--aa-bg); color: var(--aa-accent); }
+
+/* Loading spinner */
+.aa-dd-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+  color: #9ab;
+  font-size: 1.3rem;
+}
+.aa-dd-spinner {
+  width: 18px; height: 18px;
+  border: 2px solid var(--aa-border);
+  border-top-color: var(--aa-accent);
+  border-radius: 50%;
+  animation: aaSearchSpin .7s linear infinite;
+}
+@keyframes aaSearchSpin { to { transform: rotate(360deg); } }
+
+/* No results */
+.aa-dd-empty {
+  text-align: center;
+  padding: 28px 20px;
+  color: #9ab;
+  font-size: 1.3rem;
+}
+.aa-dd-empty span { display: block; font-size: 2.4rem; margin-bottom: 8px; }
+
+/* Recent tag with remove */
+.aa-dd-recent-remove {
+  background: none;
+  border: none;
+  color: #bbb;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  flex-shrink: 0;
+  transition: color .2s;
+}
+.aa-dd-recent-remove:hover { color: var(--aa-red); }
+
+/* Popular pill tags (shown when input empty) */
+.aa-dd-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 16px 16px;
+}
+.aa-dd-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--aa-bg);
+  border: 1.5px solid var(--aa-border);
+  border-radius: 50px;
+  padding: 6px 14px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--aa-mid);
+  text-decoration: none;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.aa-dd-pill:hover {
+  background: var(--aa-accent);
+  border-color: var(--aa-accent);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+/* ── Mobile Search (full-width overlay style) ───────────────────── */
+.aa-mobile-search-wrap {
+  position: relative;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--aa-border);
+  background: var(--aa-bg-header);
+}
+.aa-mobile-search-form {
+  display: flex;
+  background: var(--aa-white);
+  border: 1.5px solid var(--aa-border);
+  border-radius: 50px;
+  overflow: hidden;
+  height: 42px;
+  transition: border-color .2s;
+}
+.aa-mobile-search-form:focus-within {
+  border-color: var(--aa-accent);
+  box-shadow: 0 0 0 3px rgba(26,111,168,.1);
+}
+.aa-mobile-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 0 14px;
+  font-size: 1.4rem;
+  font-family: var(--font-body);
+  color: var(--aa-dark);
+  background: transparent;
+}
+.aa-mobile-search-input::placeholder { color: #9ab; }
+.aa-mobile-search-btn {
+  width: 44px;
+  background: var(--aa-accent);
+  border: none;
+  color: #fff;
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.aa-mobile-search-btn:hover { background: var(--aa-accent-hover); }
+
+.aa-mobile-dd {
+  position: absolute;
+  left: 16px; right: 16px;
+  top: calc(100% - 12px);
+  background: var(--aa-white);
+  border: 1.5px solid var(--aa-accent);
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 12px 30px rgba(26,42,58,.16);
+  z-index: 999999;
+  display: none;
+  max-height: 360px;
+  overflow-y: auto;
+}
+.aa-mobile-dd.open { display: block; }
+
+/* ── Search toggle btn in header (mobile) ───────────────────────── */
+.aa-search-toggle-btn {
+  position: relative;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--aa-dark);
+  font-size: 2rem;
+  transition: background .2s, color .2s;
+}
+.aa-search-toggle-btn:hover { background: rgba(26,111,168,.1); color: var(--aa-accent); }
+
+@media (max-width: 900px) {
+  .aa-search-toggle-btn { display: flex; }
+  /* Hide desktop search in nav (already hidden by nav-wrap display:none on mobile) */
+}
+@media (max-width: 600px) {
+  .aa-mobile-search-wrap { padding: 10px 12px; }
+}
+
+</style>
   {% block extra_head %}{% endblock %}
 </head>
 
@@ -396,27 +777,55 @@
 
     </header>
 
-    <!-- Mobile search bar -->
-    <div id="aa-search-bar" style="display:none; background:var(--aa-bg-header); padding:10px 24px; border-top:1px solid var(--aa-border);">
-      <form method="get" action="{% url 'catalog:search' %}">
-        <div class="aa-header__search" style="max-width:100%;">
-          <input type="text" name="q" placeholder="Search glasses, brands, lenses…"
-                 value="{{ request.GET.q }}" autocomplete="off">
-          <button type="submit"><i class="bi bi-search"></i></button>
-        </div>
-      </form>
-    </div>
+   <!-- MOBILE SEARCH (paste as .aa-mobile-menu__search replacement) -->
+<div class="aa-mobile-search-wrap" id="aa-mobile-search-wrap">
+  <form class="aa-mobile-search-form" method="get" action="{% url 'search:search' %}" id="aa-mobile-search-form" autocomplete="off">
+    <input
+      type="text"
+      name="q"
+      class="aa-mobile-search-input"
+      id="aa-mobile-search-input"
+      placeholder="Search products, brands…"
+      value="{{ request.GET.q }}"
+      autocomplete="off"
+    >
+    <button type="submit" class="aa-mobile-search-btn" aria-label="Search">
+      <i class="bi bi-search"></i>
+    </button>
+  </form>
+  <div class="aa-mobile-dd" id="aa-mobile-dd" role="listbox">
+    <!-- Populated by JS -->
+  </div>
+</div>
 
     <!-- NAVIGATION -->
     <nav class="aa-nav-wrap" aria-label="Main navigation">
       <div class="aa-nav">
 
-        <form method="get" action="{% url 'catalog:search' %}" style="margin-right:24px;">
-          <div class="aa-header__search">
-            <input type="text" name="q" placeholder="Search…" value="{{ request.GET.q }}">
-            <button type="submit"><i class="bi bi-search"></i></button>
-          </div>
-        </form>
+        <div class="aa-search-wrap" id="aa-search-wrap-desktop">
+  <form class="aa-search-form" method="get" action="{% url 'search:search' %}" id="aa-search-form-desktop" autocomplete="off" role="search">
+    <i class="bi bi-search" style="color:#9ab;font-size:1.4rem;padding-left:14px;flex-shrink:0;"></i>
+    <input
+      type="text"
+      name="q"
+      class="aa-search-input"
+      id="aa-search-input-desktop"
+      placeholder="Search glasses, brands, lenses…"
+      value="{{ request.GET.q }}"
+      autocomplete="off"
+      aria-label="Search products"
+      aria-autocomplete="list"
+      aria-controls="aa-search-dropdown-desktop"
+    >
+    <button type="button" class="aa-search-clear" id="aa-search-clear-desktop" aria-label="Clear search">×</button>
+    <button type="submit" class="aa-search-submit" aria-label="Submit search">
+      <i class="bi bi-search"></i>
+    </button>
+  </form>
+  <div class="aa-search-dropdown" id="aa-search-dropdown-desktop" role="listbox">
+    <!-- Populated by JS -->
+  </div>
+</div>
 
         <ul class="aa-nav__list" role="list">
 
@@ -1149,6 +1558,401 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
+<script id="aa-search-js">
+(function () {
+  'use strict';
+
+  /* ── Config ──────────────────────────────────────── */
+  var AUTOCOMPLETE_URL = '/search/autocomplete/';  // adjust if needed
+  /* Try to get from Django URL tag via a hidden element */
+  try {
+    var _u = document.getElementById('aa-autocomplete-url');
+    if (_u) AUTOCOMPLETE_URL = _u.dataset.url;
+  } catch(e) {}
+
+  var DEBOUNCE_MS = 250;
+  var MIN_CHARS   = 2;
+
+  /* Type icons map */
+  var TYPE_ICONS = {
+    product:  '👓',
+    brand:    '🏷️',
+    category: '📂',
+    popular:  '🔥',
+    recent:   '🕐'
+  };
+
+  /* ── Helpers ─────────────────────────────────────── */
+  function debounce(fn, ms) {
+    var t;
+    return function() {
+      var args = arguments, ctx = this;
+      clearTimeout(t);
+      t = setTimeout(function() { fn.apply(ctx, args); }, ms);
+    };
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function highlightQuery(text, query) {
+    if (!query) return escHtml(text);
+    var esc = query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    return escHtml(text).replace(
+      new RegExp('(' + esc + ')', 'gi'),
+      '<mark>$1</mark>'
+    );
+  }
+
+  /* ── Recent searches (localStorage) ─────────────── */
+  var RECENT_KEY = 'aa_recent_searches';
+  function getRecent() {
+    try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); }
+    catch(e) { return []; }
+  }
+  function addRecent(q) {
+    if (!q || q.length < 2) return;
+    var list = getRecent().filter(function(x) { return x.toLowerCase() !== q.toLowerCase(); });
+    list.unshift(q);
+    list = list.slice(0, 5);
+    try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch(e) {}
+  }
+  function removeRecent(q) {
+    var list = getRecent().filter(function(x) { return x !== q; });
+    try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch(e) {}
+  }
+
+  /* ── Render helpers ─────────────────────────────── */
+  function renderLoading() {
+    return '<div class="aa-dd-loading"><div class="aa-dd-spinner"></div>Searching…</div>';
+  }
+
+  function renderEmpty(q) {
+    return '<div class="aa-dd-empty"><span>🔍</span>No results for "<strong>' + escHtml(q) + '</strong>"</div>';
+  }
+
+  function renderProductItem(s, q) {
+    return '<a class="aa-dd-item" href="' + escHtml(s.url) + '" role="option">' +
+      (s.image
+        ? '<img class="aa-dd-thumb" src="' + escHtml(s.image) + '" alt="" loading="lazy">'
+        : '<div class="aa-dd-icon">' + (TYPE_ICONS.product) + '</div>') +
+      '<div class="aa-dd-text">' +
+        '<div class="aa-dd-name">' + highlightQuery(s.name, q) + '</div>' +
+        (s.brand ? '<div class="aa-dd-sub">' + escHtml(s.brand) + '</div>' : '') +
+      '</div>' +
+      (s.price ? '<span class="aa-dd-price">' + escHtml(s.price) + ' QAR</span>' : '') +
+    '</a>';
+  }
+
+  function renderBrandItem(s, q) {
+    return '<a class="aa-dd-item" href="' + escHtml(s.url) + '" role="option">' +
+      '<div class="aa-dd-icon">🏷️</div>' +
+      '<div class="aa-dd-text"><div class="aa-dd-name">' + highlightQuery(s.name, q) + '</div></div>' +
+      '<span class="aa-dd-badge aa-dd-badge--brand">Brand</span>' +
+    '</a>';
+  }
+
+  function renderCategoryItem(s, q) {
+    return '<a class="aa-dd-item" href="' + escHtml(s.url) + '" role="option">' +
+      '<div class="aa-dd-icon">📂</div>' +
+      '<div class="aa-dd-text"><div class="aa-dd-name">' + highlightQuery(s.name, q) + '</div></div>' +
+      '<span class="aa-dd-badge aa-dd-badge--category">Category</span>' +
+    '</a>';
+  }
+
+  function renderPopularItem(s, q) {
+    return '<a class="aa-dd-item" href="' + escHtml(s.url) + '" role="option">' +
+      '<div class="aa-dd-icon">🔥</div>' +
+      '<div class="aa-dd-text"><div class="aa-dd-name">' + highlightQuery(s.name, q) + '</div></div>' +
+      '<span class="aa-dd-badge aa-dd-badge--popular">Popular</span>' +
+    '</a>';
+  }
+
+  function renderItem(s, q) {
+    switch (s.type) {
+      case 'product':  return renderProductItem(s, q);
+      case 'brand':    return renderBrandItem(s, q);
+      case 'category': return renderCategoryItem(s, q);
+      case 'popular':  return renderPopularItem(s, q);
+      default:         return renderPopularItem(s, q);
+    }
+  }
+
+  function renderPopularState() {
+    var recent = getRecent();
+    var html = '';
+
+    if (recent.length) {
+      html += '<div class="aa-dd-section-label">Recent</div>';
+      recent.forEach(function(r) {
+        html += '<div class="aa-dd-item" data-recent="' + escHtml(r) + '" role="option" tabindex="0" style="cursor:pointer">' +
+          '<div class="aa-dd-icon">🕐</div>' +
+          '<div class="aa-dd-text"><div class="aa-dd-name">' + escHtml(r) + '</div></div>' +
+          '<button class="aa-dd-recent-remove" data-remove="' + escHtml(r) + '" title="Remove" aria-label="Remove">×</button>' +
+        '</div>';
+      });
+    }
+
+    html += '<div class="aa-dd-section-label">Popular</div>';
+    var popularTerms = ['Ray-Ban', 'Oakley', 'Contact Lenses', 'Progressive Lenses', 'Kids Glasses', 'Sunglasses', 'Reading Glasses'];
+    html += '<div class="aa-dd-pills">';
+    popularTerms.forEach(function(t) {
+      html += '<a class="aa-dd-pill" href="/search/?q=' + encodeURIComponent(t) + '">🔥 ' + escHtml(t) + '</a>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function renderResults(suggestions, q) {
+    if (!suggestions || !suggestions.length) return renderEmpty(q);
+
+    var products   = suggestions.filter(function(s) { return s.type === 'product'; });
+    var brands     = suggestions.filter(function(s) { return s.type === 'brand'; });
+    var categories = suggestions.filter(function(s) { return s.type === 'category'; });
+    var popular    = suggestions.filter(function(s) { return s.type === 'popular'; });
+    var html = '';
+
+    if (products.length) {
+      html += '<div class="aa-dd-section-label">Products</div>';
+      products.forEach(function(s) { html += renderItem(s, q); });
+    }
+    if (brands.length) {
+      html += '<div class="aa-dd-section-label">Brands</div>';
+      brands.forEach(function(s) { html += renderItem(s, q); });
+    }
+    if (categories.length) {
+      html += '<div class="aa-dd-section-label">Categories</div>';
+      categories.forEach(function(s) { html += renderItem(s, q); });
+    }
+    if (popular.length) {
+      html += '<div class="aa-dd-section-label">Suggestions</div>';
+      popular.forEach(function(s) { html += renderItem(s, q); });
+    }
+
+    html += '<a class="aa-dd-viewall" href="/search/?q=' + encodeURIComponent(q) + '">' +
+      '<i class="bi bi-search"></i> See all results for "' + escHtml(q) + '"' +
+    '</a>';
+    return html;
+  }
+
+  /* ── Core search controller ─────────────────────── */
+  function SearchController(inputEl, dropdownEl, wrapEl) {
+    var self        = this;
+    self.input      = inputEl;
+    self.dropdown   = dropdownEl;
+    self.wrap       = wrapEl;
+    self.lastQ      = '';
+    self.abortCtrl  = null;
+    self.highlighted = -1;
+    self._items     = [];
+
+    /* ── Open/close ── */
+    self.open = function(html, classes) {
+      self.dropdown.innerHTML = html || '';
+      self.dropdown.className = 'aa-search-dropdown ' + (classes || '');
+      // Bind events to new items
+      self._items = self.dropdown.querySelectorAll('.aa-dd-item');
+      self.highlighted = -1;
+
+      // Recent remove buttons
+      self.dropdown.querySelectorAll('.aa-dd-recent-remove').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault(); e.stopPropagation();
+          var q = btn.dataset.remove;
+          removeRecent(q);
+          // re-render popular state
+          self.open(renderPopularState(), 'show-popular');
+        });
+      });
+
+      // Recent item click
+      self.dropdown.querySelectorAll('[data-recent]').forEach(function(item) {
+        item.addEventListener('click', function() {
+          self.input.value = item.dataset.recent;
+          self.input.form && self.input.form.submit();
+        });
+        item.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') { self.input.value = item.dataset.recent; self.input.form && self.input.form.submit(); }
+        });
+      });
+    };
+
+    self.close = function() {
+      self.dropdown.className = 'aa-search-dropdown';
+      self.dropdown.innerHTML = '';
+      self.highlighted = -1;
+      self._items = [];
+    };
+
+    /* ── Highlight arrows ── */
+    self.moveHighlight = function(dir) {
+      self._items = self.dropdown.querySelectorAll('.aa-dd-item');
+      var max = self._items.length;
+      if (!max) return;
+      if (self.highlighted >= 0) self._items[self.highlighted].classList.remove('highlighted');
+      self.highlighted = (self.highlighted + dir + max) % max;
+      var el = self._items[self.highlighted];
+      el.classList.add('highlighted');
+      el.scrollIntoView({ block: 'nearest' });
+      // Fill input with name if navigating
+      var name = el.querySelector('.aa-dd-name');
+      if (name) self.input.value = name.textContent.trim();
+    };
+
+    /* ── Fetch ── */
+    self.fetch = function(q) {
+      if (self.abortCtrl) { try { self.abortCtrl.abort(); } catch(e) {} }
+      if (typeof AbortController !== 'undefined') self.abortCtrl = new AbortController();
+
+      var url = AUTOCOMPLETE_URL + '?q=' + encodeURIComponent(q);
+      var opts = self.abortCtrl ? { signal: self.abortCtrl.signal } : {};
+
+      fetch(url, opts)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var html = renderResults(data.suggestions, q);
+          self.open(html, 'has-results');
+        })
+        .catch(function(e) {
+          if (e && e.name === 'AbortError') return;
+          self.open(renderEmpty(q), 'has-results');
+        });
+    };
+
+    /* ── Input handler ── */
+    self.onInput = debounce(function() {
+      var q = self.input.value.trim();
+      self.updateWrapState();
+      if (q === self.lastQ) return;
+      self.lastQ = q;
+
+      if (q.length < MIN_CHARS) {
+        if (q.length === 0) {
+          self.open(renderPopularState(), 'show-popular');
+        } else {
+          self.close();
+        }
+        return;
+      }
+      self.open(renderLoading(), 'has-results');
+      self.fetch(q);
+    }, DEBOUNCE_MS);
+
+    self.updateWrapState = function() {
+      var q = self.input.value.trim();
+      self.wrap.classList.toggle('has-value', q.length > 0);
+      self.wrap.classList.toggle('empty', q.length === 0);
+    };
+
+    /* ── Bind events ── */
+    self.input.addEventListener('input', self.onInput);
+
+    self.input.addEventListener('focus', function() {
+      self.wrap.classList.add('focused');
+      self.updateWrapState();
+      var q = self.input.value.trim();
+      if (q.length === 0) {
+        self.open(renderPopularState(), 'show-popular');
+      } else if (q.length >= MIN_CHARS) {
+        self.open(renderLoading(), 'has-results');
+        self.fetch(q);
+      }
+    });
+
+    self.input.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowDown')  { e.preventDefault(); self.moveHighlight(1); }
+      if (e.key === 'ArrowUp')    { e.preventDefault(); self.moveHighlight(-1); }
+      if (e.key === 'Escape')     { self.close(); self.wrap.classList.remove('focused'); self.input.blur(); }
+      if (e.key === 'Enter')      { addRecent(self.input.value.trim()); }
+    });
+
+    self.input.form && self.input.form.addEventListener('submit', function() {
+      addRecent(self.input.value.trim());
+    });
+
+    /* Clear button */
+    var clearBtn = self.wrap.querySelector('.aa-search-clear');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function() {
+        self.input.value = '';
+        self.lastQ = '';
+        self.updateWrapState();
+        self.input.focus();
+        self.open(renderPopularState(), 'show-popular');
+      });
+    }
+
+    /* Close on outside click */
+    document.addEventListener('click', function(e) {
+      if (!self.wrap.contains(e.target)) {
+        self.close();
+        self.wrap.classList.remove('focused');
+      }
+    });
+  }
+
+  /* ── Mobile simplified controller ──────────────── */
+  function MobileSearchController(inputEl, dropdownEl, wrapEl) {
+    var self = this;
+    self.input    = inputEl;
+    self.dropdown = dropdownEl;
+    self.wrap     = wrapEl;
+
+    var fetchDebounced = debounce(function(q) {
+      if (q.length < MIN_CHARS) { self.dropdown.classList.remove('open'); return; }
+      self.dropdown.innerHTML = renderLoading();
+      self.dropdown.classList.add('open');
+      fetch(AUTOCOMPLETE_URL + '?q=' + encodeURIComponent(q))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          self.dropdown.innerHTML = renderResults(data.suggestions, q);
+          self.dropdown.classList.add('open');
+          // bind submit on anchor clicks to track recent
+          self.dropdown.querySelectorAll('.aa-dd-item[href]').forEach(function(a) {
+            a.addEventListener('click', function() { addRecent(q); });
+          });
+        })
+        .catch(function() { self.dropdown.classList.remove('open'); });
+    }, DEBOUNCE_MS);
+
+    self.input.addEventListener('input', function() {
+      fetchDebounced(self.input.value.trim());
+    });
+
+    self.input.form && self.input.form.addEventListener('submit', function() {
+      addRecent(self.input.value.trim());
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!self.wrap.contains(e.target)) self.dropdown.classList.remove('open');
+    });
+  }
+
+  /* ── Init on DOMContentLoaded ───────────────────── */
+  document.addEventListener('DOMContentLoaded', function() {
+    /* Desktop */
+    var di = document.getElementById('aa-search-input-desktop');
+    var dd = document.getElementById('aa-search-dropdown-desktop');
+    var dw = document.getElementById('aa-search-wrap-desktop');
+    if (di && dd && dw) {
+      new SearchController(di, dd, dw);
+    }
+
+    /* Mobile */
+    var mi = document.getElementById('aa-mobile-search-input');
+    var md = document.getElementById('aa-mobile-dd');
+    var mw = document.getElementById('aa-mobile-search-wrap');
+    if (mi && md && mw) {
+      new MobileSearchController(mi, md, mw);
+    }
+  });
+
+}());
+</script>
+
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
  
 </body>
