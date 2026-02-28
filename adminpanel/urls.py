@@ -147,6 +147,25 @@ urlpatterns = [
     path('jobs/<int:job_id>/document/', views.job_upload_document,name='job_upload_document'),
     path('jobs/<int:job_id>/delete/',   views.job_delete,         name='job_delete'),
     path('jobs/customer-search/',       views.job_customer_search,name='job_customer_search'),
+
+
+    # ── KIDS ───────────────────────────────────────────────────────────────────
+    path('kids/',                            views.kids_list,   name='kids_list'),
+    path('kids/add/',                        views.kids_add,    name='kids_add'),
+    path('kids/<int:product_id>/edit/',      views.kids_edit,   name='kids_edit'),
+    path('kids/<int:product_id>/delete/',    views.kids_delete, name='kids_delete'),
+
+    # ── ACCESSORIES ────────────────────────────────────────────────────────────
+    path('accessories/',                             views.accessories_list,   name='accessories_list'),
+    path('accessories/add/',                         views.accessories_add,    name='accessories_add'),
+    path('accessories/<int:product_id>/edit/',       views.accessories_edit,   name='accessories_edit'),
+    path('accessories/<int:product_id>/delete/',     views.accessories_delete, name='accessories_delete'),
+
+    # ── READING GLASSES ────────────────────────────────────────────────────────
+    path('reading-glasses/',                             views.reading_glasses_list,   name='reading_glasses_list'),
+    path('reading-glasses/add/',                         views.reading_glasses_add,    name='reading_glasses_add'),
+    path('reading-glasses/<int:product_id>/edit/',       views.reading_glasses_edit,   name='reading_glasses_edit'),
+    path('reading-glasses/<int:product_id>/delete/',     views.reading_glasses_delete, name='reading_glasses_delete'),
 ]
 
 
