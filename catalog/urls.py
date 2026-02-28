@@ -36,5 +36,7 @@ urlpatterns = [
     path('api/lens-options/', views.get_lens_options, name='get_lens_options'),
     path('api/contact-lens-powers/', views.get_contact_lens_powers, name='get_contact_lens_powers'),
 
-    
+    path('accessories/',     views.accessories_list,     name='accessories_list'),
+    path('reading-glasses/', views.reading_glasses_list, name='reading_glasses_list'),
+    path('kids/',            views.kids_list,            name='kids_list'),
 ]
