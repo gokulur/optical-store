@@ -257,6 +257,51 @@
   </div>
 </li>
 
+<!-- Kids -->
+<li class="nav-item menu-items">
+  <a class="nav-link" data-toggle="collapse" href="#kidsMenu">
+    <span class="menu-icon"><i class="mdi mdi-human-child"></i></span>
+    <span class="menu-title">Kids</span>
+    <i class="menu-arrow"></i>
+  </a>
+  <div class="collapse" id="kidsMenu">
+    <ul class="nav flex-column sub-menu">
+      <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:kids_list' %}">All Kids Products</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:kids_add' %}">Add Kids Product</a></li>
+    </ul>
+  </div>
+</li>
+
+<!-- Accessories -->
+<li class="nav-item menu-items">
+  <a class="nav-link" data-toggle="collapse" href="#accessoriesMenu">
+    <span class="menu-icon"><i class="mdi mdi-bag-personal"></i></span>
+    <span class="menu-title">Accessories</span>
+    <i class="menu-arrow"></i>
+  </a>
+  <div class="collapse" id="accessoriesMenu">
+    <ul class="nav flex-column sub-menu">
+      <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:accessories_list' %}">All Accessories</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:accessories_add' %}">Add Accessory</a></li>
+    </ul>
+  </div>
+</li>
+
+<!-- Reading Glasses -->
+<li class="nav-item menu-items">
+  <a class="nav-link" data-toggle="collapse" href="#readingMenu">
+    <span class="menu-icon"><i class="mdi mdi-book-open-variant"></i></span>
+    <span class="menu-title">Reading Glasses</span>
+    <i class="menu-arrow"></i>
+  </a>
+  <div class="collapse" id="readingMenu">
+    <ul class="nav flex-column sub-menu">
+      <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:reading_glasses_list' %}">All Reading Glasses</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'adminpanel:reading_glasses_add' %}">Add Reading Glasses</a></li>
+    </ul>
+  </div>
+</li>
+
 
   <!-- Prescription Lenses -->
   <li class="nav-item menu-items">
