@@ -1,0 +1,228 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header d-flex justify-content-between align-items-center mb-4" style="background:linear-gradient(135deg,#f093fb,#f5576c);color:white;padding:20px;border-radius:8px;">
+      <div>
+        <h3 class="mb-1"><i class="mdi mdi-human-child"></i> Add Kids Product</h3>
+        <p class="mb-0 opacity-75">Eyeglasses or sunglasses for children</p>
+      </div>
+      <a href="{% url 'adminpanel:kids_list' %}" class="btn btn-white text-danger">
+        <i class="mdi mdi-arrow-left"></i> Back to Kids
+      </a>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button></div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="row">
+
+        <!-- Left Column -->
+        <div class="col-md-8">
+
+          <!-- Basic Info -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-4">Basic Information</h5>
+              <div class="form-group">
+                <label class="font-weight-bold">Product Name <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control form-control-lg" placeholder="e.g. Kids Flex Frame Blue" required>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">SKU <span class="text-danger">*</span></label>
+                    <input type="text" name="sku" class="form-control" placeholder="KID-001" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Slug <span class="text-danger">*</span></label>
+                    <input type="text" name="slug" class="form-control" placeholder="kids-flex-frame-blue" required>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Product Type</label>
+                    <select name="product_type" class="form-control">
+                      {% for code, label in product_types %}
+                        <option value="{{ code }}">{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Gender</label>
+                    <select name="gender" class="form-control">
+                      <option value="unisex">Unisex</option>
+                      <option value="male">For Him</option>
+                      <option value="female">For Her</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold">Short Description</label>
+                <input type="text" name="short_description" class="form-control" placeholder="Brief product description">
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold">Full Description</label>
+                <textarea name="description" class="form-control" rows="4" placeholder="Detailed product description..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pricing & Stock -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-4">Pricing & Inventory</h5>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Price (QAR) <span class="text-danger">*</span></label>
+                    <input type="number" name="base_price" class="form-control" step="0.01" placeholder="0.00" required>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Compare Price (QAR)</label>
+                    <input type="number" name="compare_at_price" class="form-control" step="0.01" placeholder="0.00">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Stock Quantity</label>
+                    <input type="number" name="stock_quantity" class="form-control" value="0">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-check form-check-flat form-check-primary">
+                    <label class="form-check-label">
+                      <input type="checkbox" class="form-check-input" name="track_inventory" checked> Track Inventory
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-check form-check-flat form-check-primary">
+                    <label class="form-check-label">
+                      <input type="checkbox" class="form-check-input" name="is_featured"> Featured Product
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Color Variants -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title text-muted mb-0">Color / Size Variants</h5>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="addVariant"><i class="mdi mdi-plus"></i> Add Variant</button>
+              </div>
+              <div id="variantRows">
+                <div class="row variant-row mb-2">
+                  <div class="col-md-3"><input type="text" name="variant_sku[]" class="form-control form-control-sm" placeholder="SKU"></div>
+                  <div class="col-md-3"><input type="text" name="variant_color[]" class="form-control form-control-sm" placeholder="Color"></div>
+                  <div class="col-md-2"><input type="text" name="variant_size[]" class="form-control form-control-sm" placeholder="Size"></div>
+                  <div class="col-md-2"><input type="number" name="variant_price[]" class="form-control form-control-sm" placeholder="+Price" step="0.01"></div>
+                  <div class="col-md-2"><input type="number" name="variant_stock[]" class="form-control form-control-sm" placeholder="Stock"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-md-4">
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-4">Category & Brand</h5>
+              <div class="form-group">
+                <label class="font-weight-bold">Category <span class="text-danger">*</span></label>
+                <select name="category" class="form-control" required>
+                  <option value="">Select Category</option>
+                  {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold">Brand</label>
+                <select name="brand" class="form-control">
+                  <option value="">No Brand</option>
+                  {% for b in brands %}
+                    <option value="{{ b.id }}">{{ b.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-3">Product Images</h5>
+              <input type="file" name="images" class="form-control-file" multiple accept="image/*">
+              <small class="text-muted">First image = primary. Multiple allowed.</small>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-3">Visibility</h5>
+              <div class="form-check form-check-flat form-check-primary">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="is_active" checked> Active (visible in store)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'adminpanel:kids_list' %}" class="btn btn-light btn-lg">Cancel</a>
+            <button type="submit" class="btn btn-gradient-primary btn-lg">Save Product</button>
+          </div>
+
+        </div>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+document.getElementById('addVariant').addEventListener('click', function(){
+  const row = `<div class="row variant-row mb-2">
+    <div class="col-md-3"><input type="text" name="variant_sku[]" class="form-control form-control-sm" placeholder="SKU"></div>
+    <div class="col-md-3"><input type="text" name="variant_color[]" class="form-control form-control-sm" placeholder="Color"></div>
+    <div class="col-md-2"><input type="text" name="variant_size[]" class="form-control form-control-sm" placeholder="Size"></div>
+    <div class="col-md-2"><input type="number" name="variant_price[]" class="form-control form-control-sm" placeholder="+Price" step="0.01"></div>
+    <div class="col-md-2"><input type="number" name="variant_stock[]" class="form-control form-control-sm" placeholder="Stock"></div>
+  </div>`;
+  document.getElementById('variantRows').insertAdjacentHTML('beforeend', row);
+});
+// Auto slug
+const nameInput = document.querySelector('[name="name"]');
+const slugInput = document.querySelector('[name="slug"]');
+if(nameInput && slugInput) {
+  nameInput.addEventListener('input', function(){
+    if(!slugInput.dataset.touched) slugInput.value = this.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+  });
+  slugInput.addEventListener('input', function(){ this.dataset.touched = '1'; });
+}
+</script>
+{% endblock %}
