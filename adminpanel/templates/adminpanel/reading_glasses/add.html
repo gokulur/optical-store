@@ -1,0 +1,212 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header d-flex justify-content-between align-items-center mb-4" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb);color:white;padding:20px;border-radius:8px;">
+      <div>
+        <h3 class="mb-1"><i class="mdi mdi-book-open-variant"></i> Add Reading Glasses</h3>
+        <p class="mb-0 opacity-75">Pre-powered glasses with fixed reading strength</p>
+      </div>
+      <a href="{% url 'adminpanel:reading_glasses_list' %}" class="btn btn-white" style="color:#a18cd1!important;">
+        <i class="mdi mdi-arrow-left"></i> Back
+      </a>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button></div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="row">
+
+        <div class="col-md-8">
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-4">Basic Information</h5>
+              <div class="form-group">
+                <label class="font-weight-bold">Product Name <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control form-control-lg" placeholder="e.g. Classic Reading Glasses Black" required>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">SKU <span class="text-danger">*</span></label>
+                    <input type="text" name="sku" class="form-control" placeholder="RG-001" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Slug <span class="text-danger">*</span></label>
+                    <input type="text" name="slug" class="form-control" placeholder="classic-reading-glasses-black" required>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold">Gender</label>
+                <select name="gender" class="form-control">
+                  <option value="unisex">Unisex</option>
+                  <option value="male">For Him</option>
+                  <option value="female">For Her</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold">Short Description</label>
+                <input type="text" name="short_description" class="form-control" placeholder="One-line summary">
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold">Full Description</label>
+                <textarea name="description" class="form-control" rows="4" placeholder="Full product description..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-4">Pricing & Inventory</h5>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Price (QAR) <span class="text-danger">*</span></label>
+                    <input type="number" name="base_price" class="form-control" step="0.01" value="0.00" required>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Compare Price</label>
+                    <input type="number" name="compare_at_price" class="form-control" step="0.01">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="font-weight-bold">Stock</label>
+                    <input type="number" name="stock_quantity" class="form-control" value="0">
+                  </div>
+                </div>
+              </div>
+              <div class="form-check form-check-flat form-check-primary">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="track_inventory" checked> Track Inventory
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reading Power / Color Variants -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title text-muted mb-0">Color Variants</h5>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="addVariant"><i class="mdi mdi-plus"></i> Add Color</button>
+              </div>
+              <small class="text-muted d-block mb-3">Add each color option. Available reading powers will be selectable at checkout.</small>
+
+              <!-- Available Powers Preview -->
+              <div class="mb-3 p-3" style="background:#f8f0ff;border-radius:6px;">
+                <label class="font-weight-bold text-muted">Available Powers at Checkout:</label>
+                <div class="mt-2">
+                  {% for power in reading_powers %}
+                    <span class="badge badge-light mr-1 mb-1" style="border:1px solid #a18cd1;color:#a18cd1;font-size:0.85rem;">{{ power }}</span>
+                  {% endfor %}
+                </div>
+                <small class="text-muted">These are standard reading powers. Customers select their power during checkout.</small>
+              </div>
+
+              <div id="variantRows">
+                <div class="row variant-row mb-2 align-items-center">
+                  <div class="col-md-4"><input type="text" name="variant_sku[]" class="form-control form-control-sm" placeholder="SKU e.g. RG-001-BLK"></div>
+                  <div class="col-md-4"><input type="text" name="variant_color[]" class="form-control form-control-sm" placeholder="Color e.g. Black"></div>
+                  <div class="col-md-2"><input type="number" name="variant_price[]" class="form-control form-control-sm" placeholder="+Price" step="0.01" value="0"></div>
+                  <div class="col-md-2"><input type="number" name="variant_stock[]" class="form-control form-control-sm" placeholder="Stock" value="0"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-4">Category & Brand</h5>
+              <div class="form-group">
+                <label class="font-weight-bold">Category <span class="text-danger">*</span></label>
+                <select name="category" class="form-control" required>
+                  <option value="">Select Category</option>
+                  {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold">Brand</label>
+                <select name="brand" class="form-control">
+                  <option value="">No Brand</option>
+                  {% for b in brands %}
+                    <option value="{{ b.id }}">{{ b.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-3">Product Images</h5>
+              <input type="file" name="images" class="form-control-file" multiple accept="image/*">
+              <small class="text-muted">First image = primary.</small>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title text-muted mb-3">Visibility</h5>
+              <div class="form-check form-check-flat form-check-primary mb-2">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="is_active" checked> Active
+                </label>
+              </div>
+              <div class="form-check form-check-flat form-check-primary">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" name="is_featured"> Featured
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'adminpanel:reading_glasses_list' %}" class="btn btn-light btn-lg">Cancel</a>
+            <button type="submit" class="btn btn-lg text-white font-weight-bold" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb);">Save</button>
+          </div>
+
+        </div>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+document.getElementById('addVariant').addEventListener('click', function(){
+  document.getElementById('variantRows').insertAdjacentHTML('beforeend', `
+    <div class="row variant-row mb-2 align-items-center">
+      <div class="col-md-4"><input type="text" name="variant_sku[]" class="form-control form-control-sm" placeholder="SKU"></div>
+      <div class="col-md-4"><input type="text" name="variant_color[]" class="form-control form-control-sm" placeholder="Color"></div>
+      <div class="col-md-2"><input type="number" name="variant_price[]" class="form-control form-control-sm" placeholder="+Price" step="0.01" value="0"></div>
+      <div class="col-md-2"><input type="number" name="variant_stock[]" class="form-control form-control-sm" placeholder="Stock" value="0"></div>
+    </div>`);
+});
+const nameInput = document.querySelector('[name="name"]');
+const slugInput = document.querySelector('[name="slug"]');
+if(nameInput && slugInput) {
+  nameInput.addEventListener('input', function(){ if(!slugInput.dataset.touched) slugInput.value = this.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); });
+  slugInput.addEventListener('input', function(){ this.dataset.touched = '1'; });
+}
+</script>
+{% endblock %}
