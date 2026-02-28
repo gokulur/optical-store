@@ -1,0 +1,123 @@
+{% extends 'admin-dashboard.html' %}
+{% load static %}
+{% block content %}
+<style>
+  .page-header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:20px;border-radius:8px;margin-bottom:30px}
+  .channel-pill{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 10px;font-size:.72rem;font-weight:700;text-transform:uppercase}
+  .ch-email{background:#eef0ff;color:#667eea}
+  .ch-sms  {background:#e6faf7;color:#1bcfb4}
+  .ch-push {background:#fff3e8;color:#f97316}
+  .var-tag{display:inline-block;background:#f0f0f0;border:1px solid #e0e0e0;border-radius:4px;padding:1px 6px;font-size:.7rem;color:#888;margin:1px;font-family:monospace}
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+          <h3 class="mb-1"><i class="mdi mdi-email-edit-outline"></i> Notification Templates</h3>
+          <p class="mb-0 opacity-75">Email &amp; SMS templates for automated messages</p>
+        </div>
+        <a href="{% url 'adminpanel:notification_template_add' %}" class="btn btn-white text-primary font-weight-bold">
+          <i class="mdi mdi-plus"></i> Add Template
+        </a>
+      </div>
+    </div>
+
+    {% if messages %}{% for m in messages %}
+      <div class="alert alert-{{ m.tags }} alert-dismissible fade show">{{ m }}<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button></div>
+    {% endfor %}{% endif %}
+
+    <!-- Stats -->
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <div class="card text-center p-3" style="border-left:4px solid #667eea;">
+          <h4 class="font-weight-bold mb-0">{{ templates|length }}</h4><small class="text-muted">Total Templates</small>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center p-3" style="border-left:4px solid #1bcfb4;">
+          <h4 class="font-weight-bold mb-0 text-success">{{ active_count }}</h4><small class="text-muted">Active</small>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center p-3" style="border-left:4px solid #dc3545;">
+          <h4 class="font-weight-bold mb-0 text-danger">{{ inactive_count }}</h4><small class="text-muted">Inactive</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Template Name</th>
+                <th>Event</th>
+                <th>Channel</th>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Updated</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in templates %}
+              <tr>
+                <td class="font-weight-bold">{{ t.name }}</td>
+                <td><code style="font-size:.78rem;">{{ t.event_type }}</code></td>
+                <td>
+                  <span class="channel-pill ch-{{ t.channel }}">
+                    {% if t.channel == 'email' %}<i class="mdi mdi-email-outline"></i>
+                    {% elif t.channel == 'sms' %}<i class="mdi mdi-message-text-outline"></i>
+                    {% else %}<i class="mdi mdi-bell-outline"></i>{% endif %}
+                    {{ t.get_channel_display }}
+                  </span>
+                </td>
+                <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                  {{ t.subject|default:"—" }}
+                </td>
+                <td>
+                  {% if t.is_active %}<span class="badge badge-success">Active</span>
+                  {% else %}<span class="badge badge-secondary">Inactive</span>{% endif %}
+                </td>
+                <td><small class="text-muted">{{ t.updated_at|date:"d M Y" }}</small></td>
+                <td class="text-right">
+                  <a href="{% url 'adminpanel:notification_template_toggle' t.id %}" class="btn btn-inverse-{% if t.is_active %}warning{% else %}success{% endif %} btn-sm btn-icon" title="{% if t.is_active %}Deactivate{% else %}Activate{% endif %}">
+                    <i class="mdi mdi-{% if t.is_active %}pause{% else %}play{% endif %}"></i>
+                  </a>
+                  <a href="{% url 'adminpanel:notification_template_edit' t.id %}" class="btn btn-inverse-info btn-sm btn-icon" title="Edit"><i class="mdi mdi-pencil"></i></a>
+                  <a href="{% url 'adminpanel:notification_template_delete' t.id %}" class="btn btn-inverse-danger btn-sm btn-icon" title="Delete"><i class="mdi mdi-delete"></i></a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="text-center py-5">
+                  <i class="mdi mdi-email-edit-outline text-muted" style="font-size:3rem;"></i>
+                  <p class="mt-2 text-muted">No templates created yet.</p>
+                  <a href="{% url 'adminpanel:notification_template_add' %}" class="btn btn-gradient-primary btn-sm">Create First Template</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Variables Reference -->
+        <div class="mt-4 p-3" style="background:#f8f9fc;border-radius:8px;border:1px solid #e8ecf0;">
+          <p class="font-weight-bold text-muted mb-2" style="font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;">Available Template Variables</p>
+          <div>
+            {% for v in "customer_name,order_number,total_amount,currency,tracking_number,carrier,appointment_date,appointment_time,location_name,order_url,track_url"|split:"," %}
+              <span class="var-tag">&#123;&#123; {{ v }} &#125;&#125;</span>
+            {% endfor %}
+          </div>
+          <small class="text-muted d-block mt-2">Use Django template syntax. Variables are injected at send time.</small>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
