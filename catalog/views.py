@@ -701,3 +701,57 @@ def accessories_list(request):
         'current_sort':       sort_option,
     }
     return render(request, 'accessories_list.html', context)
+
+
+
+# ── Reading Glasses List ───────────────────────────────────────────────────────
+def reading_glasses_list(request):
+    """Reading glasses listing page with filtering"""
+    queryset = Product.objects.filter(
+        product_type='reading_glasses',
+        is_active=True
+    ).select_related('brand', 'category').prefetch_related('images', 'variants')
+
+    # 1. Gender Filter
+    gender = request.GET.get('gender', 'all')
+    if gender != 'all':
+        queryset = queryset.filter(gender=gender)
+
+    # 2. Brand Filter
+    selected_brands = request.GET.getlist('brand')
+    if selected_brands:
+        queryset = queryset.filter(brand__slug__in=selected_brands)
+
+    # 3. Price Filter
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        queryset = queryset.filter(base_price__gte=min_price)
+    if max_price:
+        queryset = queryset.filter(base_price__lte=max_price)
+
+    # 4. Sorting
+    sort_option = request.GET.get('sort', '-created_at')
+    valid_sorts = ['-created_at', 'base_price', '-base_price', 'name', '-name']
+    queryset = queryset.order_by(sort_option if sort_option in valid_sorts else '-created_at')
+
+    # 5. Pagination
+    paginator = Paginator(queryset, 24)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    price_range = Product.objects.filter(
+        product_type='reading_glasses', is_active=True
+    ).aggregate(min_price=Min('base_price'), max_price=Max('base_price'))
+
+    context = {
+        'products':        page_obj,
+        'page_obj':        page_obj,
+        'is_paginated':    page_obj.has_other_pages(),
+        'brands':          Brand.objects.filter(is_active=True).order_by('display_order', 'name'),
+        'price_range':     price_range,
+        'selected_gender': gender,
+        'selected_brands': selected_brands,
+        'current_sort':    sort_option,
+    }
+    return render(request, 'reading_glasses_list.html', context)
+
